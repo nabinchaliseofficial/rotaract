@@ -11,10 +11,9 @@
     <meta name="theme-color" content="#1D2A44">
     <link rel="canonical" href="https://rotaractgalkot.org/">
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+    <!-- Favicon (Club Logo) -->
+    <link rel="icon" type="image/jpeg" href="images/rotaract-logo.jpg">
+    <link rel="apple-touch-icon" href="images/rotaract-logo.jpg">
     <link rel="manifest" href="site.webmanifest">
 
     <!-- Open Graph / Facebook -->
@@ -41,7 +40,7 @@
         "@type": "NGO",
         "name": "Rotaract Club of Galkot Baglung",
         "url": "https://rotaractgalkot.org/",
-        "logo": "https://rotaractgalkot.org/images/logo.png",
+        "logo": "https://rotaractgalkot.org/images/rotaract-logo.jpg",
         "foundingDate": "2020-04-23",
         "description": "Rotaract Club of Galkot Baglung, chartered April 23, 2020 under RI District 3292, is a youth-led service organization in Baglung, Nepal.",
         "address": {
@@ -765,6 +764,104 @@
             background: #e2e8f0;
             color: var(--text-main);
         }
+        /* ====== PORTAL LOGIN MODAL ====== */
+        .portal-login-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 17, 32, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            z-index: 2000;
+            padding: 20px;
+        }
+        .portal-login-overlay.active { opacity: 1; visibility: visible; }
+        .portal-login-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 40px 32px;
+            max-width: 380px;
+            width: 100%;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            transform: scale(0.95);
+            transition: var(--transition);
+            text-align: left;
+        }
+        .portal-login-overlay.active .portal-login-card { transform: scale(1); }
+        .portal-login-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            line-height: 1;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+        .portal-login-close:hover { color: var(--primary-color); }
+        .portal-login-title { font-size: 1.3rem; font-weight: 700; color: var(--secondary-color); margin-bottom: 4px; }
+        .portal-login-sub { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px; }
+        .portal-login-field { margin-bottom: 16px; }
+        .portal-login-field label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 6px; }
+        .portal-login-field input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            font-size: 0.95rem;
+            background: transparent;
+            color: var(--text-main);
+        }
+        .portal-login-field input:focus { outline: none; border-color: var(--primary-color); }
+        .portal-password-wrap { position: relative; }
+        .portal-toggle-pass {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+        .portal-login-error { color: var(--primary-color); font-size: 0.85rem; margin-bottom: 12px; min-height: 1em; }
+        .portal-login-btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 50px;
+            background: var(--primary-color);
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .portal-login-btn:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-2px); }
+        .portal-login-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .portal-login-btn .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: portal-spin 0.7s linear infinite;
+        }
+        .portal-login-btn.loading .spinner { display: inline-block; }
+        .portal-login-btn.loading .btn-text { display: none; }
+        @keyframes portal-spin { to { transform: rotate(360deg); } }
+
         @media (max-width: 480px) {
             .welcome-popup-card { padding: 32px 20px; }
             .welcome-popup-title { font-size: 1.3rem; }
@@ -1058,7 +1155,7 @@
         <!-- ====== STICKY NAVBAR ====== -->
         <nav class="site-navbar" aria-label="Primary">
             <a href="/index.html" class="navbar-brand">
-                <img src="images/logo.png" alt="Rotaract Club of Galkot Baglung logo"
+                <img src="images/rotaract-logo.jpg" alt="Rotaract Club of Galkot Baglung logo"
                      onerror="this.src='https://ui-avatars.com/api/?name=RC+Galkot&background=D91A5C&color=fff&size=80'">
                 <span class="brand-text" data-en="Rotaract Club of Galkot Baglung" data-ne="रोटार्याक्ट क्लब अफ गल्कोट बाग्लुङ">Rotaract Club of Galkot Baglung</span>
             </a>
@@ -1070,7 +1167,7 @@
                 </div>
                 <button class="navbar-icon-btn" id="searchToggleBtn" aria-label="Toggle search" aria-expanded="false">🔍</button>
                 <button class="navbar-icon-btn" id="darkModeToggleBtn" aria-label="Toggle dark mode">🌙</button>
-                <button class="navbar-icon-btn" id="langToggleBtn" aria-label="Switch language" title="नेपाली / English">EN</button>
+                <button class="navbar-icon-btn" id="portalLoginBtn" aria-label="Secretary Login" title="Secretary Login">🔐</button>
                 <a href="membership.html" class="navbar-join-btn" data-en="Join Us" data-ne="सामेल हुनुहोस्">Join Us</a>
             </div>
         </nav>
@@ -1105,19 +1202,46 @@
                     <span class="icon">🚀</span>
                     <span class="label">Upcoming Projects</span>
                 </a>
-                <a href="loginminutes.html" class="welcome-popup-item">
+                <a href="#portal-login" class="welcome-popup-item">
                     <span class="icon">🔐</span>
-                    <span class="label">Rotaract Login</span>
+                    <span class="label">Secretary Login</span>
                 </a>
             </div>
             <a href="#" class="welcome-popup-continue" id="welcomePopupContinue">Continue to Dashboard</a>
         </div>
     </div>
 
+    <!-- ====== PORTAL LOGIN MODAL (Admin only) ====== -->
+    <div class="portal-login-overlay" id="portalLoginOverlay" role="dialog" aria-modal="true" aria-labelledby="portalLoginTitle" aria-hidden="true">
+        <div class="portal-login-card">
+            <button class="portal-login-close" id="portalLoginClose" aria-label="Close login">&times;</button>
+            <div class="portal-login-title" id="portalLoginTitle">🔐 Secretary Login</div>
+            <div class="portal-login-sub">Sign in to access the meeting minutes portal</div>
+            <form id="portalLoginForm" autocomplete="off">
+                <div class="portal-login-field">
+                    <label for="portalLoginEmail">Email</label>
+                    <input type="email" id="portalLoginEmail" placeholder="you@example.com" required autocomplete="username">
+                </div>
+                <div class="portal-login-field">
+                    <label for="portalLoginPassword">Password</label>
+                    <div class="portal-password-wrap">
+                        <input type="password" id="portalLoginPassword" placeholder="••••••••" required autocomplete="current-password">
+                        <button type="button" class="portal-toggle-pass" id="portalTogglePass" aria-label="Show password">👁</button>
+                    </div>
+                </div>
+                <div class="portal-login-error" id="portalLoginError" role="alert"></div>
+                <button type="submit" class="portal-login-btn" id="portalLoginSubmitBtn">
+                    <span class="btn-text">Login</span>
+                    <span class="spinner" aria-hidden="true"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <div class="dashboard-container">
         <!-- ====== HERO ====== -->
         <section class="hero-section" aria-label="Welcome">
-            <img class="hero-logo" src="images/logo.png" alt="Rotaract Club of Galkot Baglung logo"
+            <img class="hero-logo" src="images/rotaract-logo.jpg" alt="Rotaract Club of Galkot Baglung logo"
                  onerror="this.src='https://ui-avatars.com/api/?name=RC+Galkot&background=D91A5C&color=fff&size=150'">
             <span class="hero-eyebrow" data-en="RI District 3292 · Chartered April 23, 2020" data-ne="आर.आई. डिस्ट्रिक्ट ३२९२ · स्थापना अप्रिल २३, २०२०">RI District 3292 · Chartered April 23, 2020</span>
             <h1 class="hero-title">
@@ -1187,7 +1311,7 @@
                     <li><a href="upcomming-projects.html"><span class="icon" aria-hidden="true">🚀</span><span class="tab-title">Upcoming Projects</span></a></li>
                     <li><a href="past-projects.html"><span class="icon" aria-hidden="true">⏳</span><span class="tab-title">Past Projects</span></a></li>
                     <li><a href="anthem.html"><span class="icon" aria-hidden="true">🎵</span><span class="tab-title">Club Anthem</span></a></li>
-                    <li><a href="loginminutes.html"><span class="icon" aria-hidden="true">🔐</span><span class="tab-title">Rotaract Login</span></a></li>
+                    <li><a href="#portal-login"><span class="icon" aria-hidden="true">🔐</span><span class="tab-title">Secretary Login</span></a></li>
 
                 </ul>
             </nav>
@@ -1471,8 +1595,7 @@
 
             // ---------- SUPABASE SETUP ----------
             const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
-            const SUPABASE_KEY =
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
+            const SUPABASE_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
             // ---------- MEMBER SLIDER ----------
@@ -1784,22 +1907,104 @@
                 applyThemeIcon();
             });
 
-            // ---------- LANGUAGE SWITCH (English / Nepali) ----------
-            const langBtn = document.getElementById('langToggleBtn');
-            function applyLanguage(lang) {
-                document.querySelectorAll('[data-en][data-ne]').forEach(el => {
-                    el.textContent = lang === 'ne' ? el.getAttribute('data-ne') : el.getAttribute('data-en');
-                });
-                document.documentElement.setAttribute('lang', lang === 'ne' ? 'ne' : 'en');
-                if (langBtn) langBtn.textContent = lang === 'ne' ? 'NE' : 'EN';
-                try { localStorage.setItem('rc-lang', lang); } catch (e) {}
+            // ---------- PORTAL LOGIN (Supabase Auth, admin role only) ----------
+            const portalLoginOverlay = document.getElementById('portalLoginOverlay');
+            const portalLoginClose = document.getElementById('portalLoginClose');
+            const portalLoginForm = document.getElementById('portalLoginForm');
+            const portalLoginEmail = document.getElementById('portalLoginEmail');
+            const portalLoginPassword = document.getElementById('portalLoginPassword');
+            const portalLoginError = document.getElementById('portalLoginError');
+            const portalLoginSubmitBtn = document.getElementById('portalLoginSubmitBtn');
+            const portalTogglePass = document.getElementById('portalTogglePass');
+            const portalLoginBtn = document.getElementById('portalLoginBtn');
+
+            function openPortalLogin() {
+                if (!portalLoginOverlay) return;
+                portalLoginError.textContent = '';
+                portalLoginForm.reset();
+                portalLoginOverlay.classList.add('active');
+                portalLoginOverlay.setAttribute('aria-hidden', 'false');
+                setTimeout(() => portalLoginEmail?.focus(), 100);
             }
-            let currentLang = 'en';
-            try { currentLang = localStorage.getItem('rc-lang') || 'en'; } catch (e) {}
-            applyLanguage(currentLang);
-            langBtn?.addEventListener('click', () => {
-                currentLang = currentLang === 'ne' ? 'en' : 'ne';
-                applyLanguage(currentLang);
+            function closePortalLogin() {
+                portalLoginOverlay.classList.remove('active');
+                portalLoginOverlay.setAttribute('aria-hidden', 'true');
+            }
+            portalLoginBtn?.addEventListener('click', openPortalLogin);
+            portalLoginClose?.addEventListener('click', closePortalLogin);
+            portalLoginOverlay?.addEventListener('click', (e) => { if (e.target === portalLoginOverlay) closePortalLogin(); });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && portalLoginOverlay?.classList.contains('active')) closePortalLogin(); });
+            document.addEventListener('click', (e) => {
+                const trigger = e.target.closest('a[href="#portal-login"]');
+                if (trigger) { e.preventDefault(); openPortalLogin(); }
+            });
+            portalTogglePass?.addEventListener('click', () => {
+                const isPass = portalLoginPassword.type === 'password';
+                portalLoginPassword.type = isPass ? 'text' : 'password';
+                portalTogglePass.textContent = isPass ? '🙈' : '👁';
+            });
+
+            portalLoginForm?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = portalLoginEmail.value.trim();
+                const password = portalLoginPassword.value;
+                if (!email || !password) return;
+                portalLoginError.textContent = '';
+                portalLoginSubmitBtn.classList.add('loading');
+                portalLoginSubmitBtn.disabled = true;
+                try {
+                    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                    if (error) throw error;
+                    const user = data.user;
+
+                    // Secretary check against real tables:
+                    // user_roles (user_id, role, status) — role === 'secretary' (admins allowed too) and status active
+                    let isSecretary = false;
+                    try {
+                        const { data: roleRow } = await supabase
+                            .from('user_roles')
+                            .select('role, status')
+                            .eq('user_id', user.id)
+                            .in('role', ['secretary', 'admin'])
+                            .maybeSingle();
+                        if (roleRow && (!roleRow.status || roleRow.status === 'active')) isSecretary = true;
+                    } catch (_) { /* ignore */ }
+
+                    if (!isSecretary) {
+                        try {
+                            const { data: adminRow } = await supabase
+                                .from('admin_users')
+                                .select('id')
+                                .eq('user_id', user.id)
+                                .maybeSingle();
+                            if (adminRow) isSecretary = true;
+                        } catch (_) { /* table may not be reachable under current RLS; fall through */ }
+                    }
+
+                    if (isSecretary) {
+                        // Best-effort audit log; don't block login if this fails
+                        try {
+                            await supabase.from('admin_activity_log').insert([{
+                                admin_id: user.id,
+                                admin_email: user.email,
+                                action: 'secretary_login',
+                                details: 'Secretary login from public site'
+                            }]);
+                        } catch (_) { /* ignore logging errors */ }
+                        window.location.href = 'minutes.html';
+                    } else {
+                        await supabase.auth.signOut();
+                        portalLoginError.textContent = 'Only secretary users can access this portal.';
+                    }
+                } catch (err) {
+                    console.error('Secretary login error:', err);
+                    portalLoginError.textContent = (err.message === 'Invalid login credentials')
+                        ? 'Incorrect email or password.'
+                        : "Couldn't sign in right now — please try again.";
+                } finally {
+                    portalLoginSubmitBtn.classList.remove('loading');
+                    portalLoginSubmitBtn.disabled = false;
+                }
             });
 
             // ---------- SEARCH ----------
@@ -1818,7 +2023,7 @@
                 { title: 'About the Club', url: '#main-content', keywords: 'about history charter neetu khadka' },
                 { title: 'Gallery', url: '#gallery', keywords: 'gallery photos videos images' },
                 { title: 'Donate / Newsletter', url: '#donate', keywords: 'donate donation newsletter subscribe support' },
-                { title: 'Rotaract Login', url: 'loginminutes.html', keywords: 'login minutes admin' },
+                { title: 'Secretary Login', url: '#portal-login', keywords: 'login portal secretary minutes' },
             ];
             searchToggleBtn?.addEventListener('click', () => {
                 const willOpen = !navSearchWrap.classList.contains('active');
