@@ -1,0 +1,2593 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Banner Settings</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #f0f2f5 0%, #e8eaf0 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: #ffffff;
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 1000px;
+        }
+        h2, h3 {
+            text-align: center;
+            color: #d32f2f;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        h2 {
+            font-size: 1.8rem;
+            border-bottom: 3px solid #d32f2f;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #333;
+            font-size: 0.95rem;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="file"],
+        input[type="number"],
+        input[type="time"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            background: #fafafa;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #d32f2f;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(211, 47, 47, 0.4);
+        }
+        .btn-secondary {
+            background: #555;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #333;
+            transform: translateY(-2px);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #2e7d32, #1b5e20);
+            color: white;
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: white;
+        }
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #c62828, #8e0000);
+            color: white;
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(198, 40, 40, 0.4);
+        }
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            width: auto;
+            margin: 0;
+            display: inline-block;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .msg {
+            text-align: center;
+            margin-top: 12px;
+            font-weight: 600;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .success {
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            color: #721c24;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            color: #0c5460;
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+        }
+        .saved-data-section {
+            margin-bottom: 30px;
+            border-bottom: 3px solid #e0e0e0;
+            padding-bottom: 25px;
+        }
+        .live-preview-panel {
+            position: sticky;
+            top: 10px;
+            z-index: 20;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+        }
+        .live-preview-label {
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+            color: white;
+            padding: 8px 16px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .live-preview-box {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            padding: 28px 20px;
+            text-align: center;
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .live-preview-logo {
+            max-height: 60px;
+            max-width: 160px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+        }
+        .live-preview-meeting {
+            font-weight: 800;
+            font-size: 1.6rem;
+            line-height: 1.2;
+        }
+        .live-preview-sub {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        .live-preview-org {
+            font-size: 1.05rem;
+            color: #d4af37;
+            font-weight: 600;
+        }
+        .live-preview-datetime {
+            font-size: 0.85rem;
+            opacity: 0.85;
+            margin-top: 6px;
+        }
+        .live-preview-notice {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 14px;
+            border-radius: 20px;
+        }
+        @media (max-width: 600px) {
+            .live-preview-panel { position: static; }
+            .live-preview-meeting { font-size: 1.2rem; }
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        .edit-btn {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            margin: 2px;
+        }
+        .edit-btn:hover {
+            background: #1b5e20;
+            transform: scale(1.05);
+        }
+        .preview-img {
+            max-height: 80px;
+            max-width: 200px;
+            margin-top: 8px;
+            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+            padding: 3px;
+            background: white;
+        }
+        .date-time-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .nepali-date-display {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            margin-top: 10px;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #333;
+        }
+        .nepali-date-display strong {
+            color: #d32f2f;
+        }
+        .time-picker {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .time-picker select {
+            flex: 1;
+            min-width: 80px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .font-size-section {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px 25px;
+            margin-bottom: 25px;
+        }
+        .font-size-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .font-size-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+        .font-size-item label {
+            margin: 0;
+            font-size: 0.85rem;
+            min-width: 100px;
+            color: #555;
+        }
+        .font-size-item input[type="number"] {
+            width: 70px;
+            padding: 6px 10px;
+            border: 2px solid #d32f2f;
+            border-radius: 6px;
+            font-weight: 700;
+            text-align: center;
+            background: white;
+        }
+        .font-size-item .unit {
+            font-weight: 700;
+            color: #d32f2f;
+            font-size: 0.9rem;
+        }
+        .font-size-item .btn-sm {
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            border: none;
+            border-radius: 4px;
+            background: #d32f2f;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .font-size-item .btn-sm:hover {
+            background: #b71c1c;
+            transform: scale(1.05);
+        }
+        .global-scale-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 12px 0;
+            border-top: 2px solid #e0e0e0;
+            margin-top: 15px;
+        }
+        .global-scale-control button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+            color: white;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(211, 47, 47, 0.3);
+        }
+        .global-scale-control button:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 18px rgba(211, 47, 47, 0.4);
+        }
+        .global-scale-control .font-size-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #d32f2f;
+            min-width: 80px;
+            text-align: center;
+            background: white;
+            padding: 4px 16px;
+            border-radius: 8px;
+            border: 2px solid #d32f2f;
+        }
+        .login-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(20, 20, 25, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        .login-modal-box {
+            background: #ffffff;
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+            width: 100%;
+            max-width: 400px;
+        }
+        .file-upload-wrapper {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .file-upload-wrapper input[type="file"] {
+            flex: 1;
+            min-width: 150px;
+        }
+        .file-status {
+            font-size: 0.85rem;
+            padding: 4px 12px;
+            border-radius: 4px;
+        }
+        .file-status.uploaded {
+            background: #d4edda;
+            color: #155724;
+        }
+        .file-status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .image-preview-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .image-preview-container .preview-box {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            background: #fafafa;
+            flex: 1;
+            min-width: 200px;
+        }
+        .image-preview-container .preview-box label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .image-preview-container .preview-box img {
+            max-height: 100px;
+            max-width: 100%;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            padding: 3px;
+            background: white;
+        }
+        .image-preview-container .preview-box .url-text {
+            font-size: 0.75rem;
+            color: #888;
+            word-break: break-all;
+            margin-top: 5px;
+        }
+
+        /* ===== AGENDA EDITOR ===== */
+        .agenda-editor-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .agenda-editor-row input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            background: #fafafa;
+        }
+        .agenda-editor-row input:focus {
+            border-color: #d32f2f;
+            outline: none;
+        }
+        .agenda-editor-row .remove-agenda-btn {
+            flex-shrink: 0;
+            background: #c62828;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+        .agenda-editor-row .remove-agenda-btn:hover {
+            background: #8e0000;
+            transform: scale(1.05);
+        }
+
+        /* ===== PRESENTATION PDF ROWS ===== */
+        .presentation-link-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .presentation-link-row .presentation-link-name {
+            flex: 0 0 30%;
+        }
+        .presentation-link-row .presentation-link-input {
+            flex: 1;
+        }
+        .presentation-link-row .remove-link-btn {
+            flex-shrink: 0;
+            background: #c62828;
+            color: white;
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+        .presentation-link-row .remove-link-btn:hover {
+            background: #8e0000;
+            transform: scale(1.05);
+        }
+        .presentation-link-row.pdf-row {
+            align-items: flex-start;
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .presentation-link-row.pdf-row .presentation-link-name {
+            flex: 0 0 26%;
+        }
+        .presentation-pdf-filewrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+        .presentation-pdf-status {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #555;
+        }
+        .presentation-pdf-status.uploaded {
+            color: #2e7d32;
+        }
+        .presentation-pdf-status.pending-upload {
+            color: #b8860b;
+        }
+        .presentation-pdf-view {
+            font-size: 0.85rem;
+            color: #1565c0;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .presentation-pdf-view:hover {
+            text-decoration: underline;
+        }
+        .presentation-pdf-file {
+            font-size: 0.85rem;
+        }
+
+        /* ===== CELEBRATION BUTTONS ===== */
+        .celebration-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .celebration-grid .btn {
+            margin: 0;
+            padding: 10px 14px;
+            font-size: 0.95rem;
+            text-align: center;
+        }
+
+        /* ===== TOGGLE SWITCH ===== */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 8px 0;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            background: #ccc;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            flex-shrink: 0;
+        }
+        .toggle-switch.active {
+            background: #2e7d32;
+        }
+        .toggle-switch .toggle-knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .toggle-switch.active .toggle-knob {
+            transform: translateX(22px);
+        }
+        .toggle-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+        .toggle-status {
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 2px 12px;
+            border-radius: 12px;
+        }
+        .toggle-status.on {
+            color: #2e7d32;
+            background: #d4edda;
+        }
+        .toggle-status.off {
+            color: #c62828;
+            background: #f8d7da;
+        }
+
+        @media (max-width: 768px) {
+            .font-size-grid {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 20px;
+            }
+            h2 {
+                font-size: 1.4rem;
+            }
+            .date-time-selector {
+                grid-template-columns: 1fr;
+            }
+            .image-preview-container {
+                flex-direction: column;
+            }
+            .presentation-link-row {
+                flex-wrap: wrap;
+            }
+            .presentation-link-row .presentation-link-name {
+                flex: 1 1 100%;
+            }
+            .presentation-link-row .presentation-link-input {
+                flex: 1 1 auto;
+            }
+            .celebration-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .agenda-editor-row {
+                flex-wrap: wrap;
+            }
+        }
+        @media (max-width: 480px) {
+            .celebration-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login Popup -->
+    <div class="login-modal-overlay" id="loginSection">
+        <div class="login-modal-box">
+            <h2 id="loginTitle">🔐 Admin Login</h2>
+            <div class="form-group">
+                <label id="emailLabel">📧 इमेल (Email)</label>
+                <input type="email" id="adminEmail" placeholder="admin@example.com" autofocus>
+            </div>
+            <div class="form-group">
+                <label id="passwordLabel">🔑 पासवर्ड (Password)</label>
+                <input type="password" id="adminPassword" placeholder="********" onkeydown="if(event.key==='Enter') loginAdmin()">
+            </div>
+            <button class="btn btn-primary" onclick="loginAdmin()" id="loginBtn">लगइन गर्नुहोस् (Login)</button>
+            <p id="loginMsg" class="msg"></p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="dashboardSection" class="hidden">
+
+            <button class="btn btn-primary" style="background:linear-gradient(135deg,#d4af37,#b8860b); margin-bottom:20px;" onclick="triggerProgramStart()">🎬 कार्यक्रमको सुरुवात गर्नुहोस्</button>
+
+            <div class="saved-data-section">
+                <h3>📋 सेभ भएका ब्यानरहरूको सूची</h3>
+                <div class="form-group" style="margin-bottom:14px;">
+                    <input type="text" id="bannerSearchInput" placeholder="🔍 बैठकको नाम, उप-बैठक वा आयोजकको नामले खोज्नुहोस्..." oninput="renderBannerTable()">
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>लाइभ</th>
+                                <th>बैठकको नाम</th>
+                                <th>उप-बैठक</th>
+                                <th>आयोजक</th>
+                                <th>मिति</th>
+                                <th>समय</th>
+                                <th>कार्य</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                            <tr><td colspan="7" style="color: #999;">लोड हुँदै...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <button class="btn btn-secondary hidden" id="showMoreBtn" onclick="toggleShowAllBanners()" style="margin-top:12px;"></button>
+            </div>
+
+            <h2>✏️ Banner Update Form</h2>
+
+            <div class="live-preview-panel" id="livePreviewPanel">
+                <div class="live-preview-label">👁️ Live Preview <span style="font-weight:400; font-size:0.75rem; opacity:0.8;">(Save नगरी हेर्नुहोस्)</span></div>
+                <div class="live-preview-box" id="livePreviewBox">
+                    <img id="previewLogo" class="live-preview-logo" style="display:none;" alt="Logo">
+                    <div class="live-preview-meeting" id="previewMeetingName">बैठकको नाम</div>
+                    <div class="live-preview-sub" id="previewSubMeeting"></div>
+                    <div class="live-preview-org" id="previewOrganizedBy">आयोजकको नाम</div>
+                    <div class="live-preview-datetime">
+                        <span id="previewDate">मिति: --</span> &nbsp;|&nbsp; <span id="previewTime">समय: --</span>
+                    </div>
+                    <div class="live-preview-notice" id="previewNotice">कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।</div>
+                </div>
+            </div>
+            <input type="hidden" id="recordId" value="1">
+
+            <!-- Font Size Controls -->
+            <div class="font-size-section">
+                <h3>🔠 प्रत्येक बाक्सको फन्ट साइज</h3>
+                <div class="font-size-grid">
+                    <div class="font-size-item">
+                        <label>🏛️ बैठकको नाम</label>
+                        <input type="number" id="meetingNameFontSize" value="4.5" min="1" max="10" step="0.1">
+                        <span class="unit">rem</span>
+                    </div>
+                    <div class="font-size-item">
+                        <label>📌 उप-बैठक</label>
+                        <input type="number" id="subMeetingFontSize" value="2.5" min="1" max="8" step="0.1">
+                        <span class="unit">rem</span>
+                    </div>
+                    <div class="font-size-item">
+                        <label>🏢 आयोजक</label>
+                        <input type="number" id="organizedByFontSize" value="2.8" min="1" max="8" step="0.1">
+                        <span class="unit">rem</span>
+                    </div>
+                    <div class="font-size-item">
+                        <label>📅 मिति</label>
+                        <input type="number" id="dateFontSize" value="1.6" min="0.5" max="5" step="0.1">
+                        <span class="unit">rem</span>
+                    </div>
+                    <div class="font-size-item">
+                        <label>🕐 समय</label>
+                        <input type="number" id="timeFontSize" value="1.6" min="0.5" max="5" step="0.1">
+                        <span class="unit">rem</span>
+                    </div>
+                </div>
+                <div class="global-scale-control">
+                    <span style="font-weight:600; color:#555;">🌍 Global Scale:</span>
+                    <button onclick="adjustGlobalScale(-10)">−</button>
+                    <span class="font-size-value" id="globalScaleDisplay">100%</span>
+                    <button onclick="adjustGlobalScale(10)">+</button>
+                    <input type="hidden" id="fontScale" value="100">
+                </div>
+            </div>
+
+            <!-- ===== SCROLLING NOTICE ===== -->
+            <div class="font-size-section">
+                <h3>📝 Scrolling Notice</h3>
+                <div class="toggle-container">
+                    <div class="toggle-switch active" id="noticeToggle" onclick="toggleNotice()">
+                        <div class="toggle-knob"></div>
+                    </div>
+                    <span class="toggle-label">Enable Scrolling Notice</span>
+                    <span class="toggle-status on" id="noticeStatus">ON</span>
+                </div>
+                <div class="form-group">
+                    <label>Notice Text</label>
+                    <textarea id="noticeText" rows="2" placeholder="कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।">कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।</textarea>
+                </div>
+            </div>
+
+            <!-- ===== AGENDA EDITOR ===== -->
+            <div class="font-size-section">
+                <h3>📋 Agenda Editor</h3>
+                <div id="agendaEditorContainer"></div>
+                <button type="button" class="btn btn-secondary" style="width:auto; margin-top:8px; padding:8px 18px;" onclick="addAgendaRow()">➕ नयाँ Agenda थप्नुहोस्</button>
+            </div>
+
+            <!-- ===== PROGRAM START TIME ===== -->
+            <div class="font-size-section">
+                <h3>⏱ Countdown Timer</h3>
+                <div class="form-group">
+                    <label>Program Start Time</label>
+                    <input type="time" id="programStartTime" step="60">
+                    <p style="font-size:0.85rem; color:#666; margin-top:4px;">ब्यानरमा यो समयको काउन्टडाउन देखिनेछ।</p>
+                </div>
+            </div>
+
+            <!-- Meeting Details -->
+            <div class="form-group">
+                <h3 style="margin-bottom:15px;">🏛️ बैठकको विवरण</h3>
+                <label>🏛️ बैठकको नाम (Meeting Name)</label>
+                <textarea id="meetingName" rows="2" placeholder="e.g., कर्मचारी मासिक बैठक"></textarea>
+
+                <label style="margin-top:14px;">📌 उप-बैठकको नाम (Sub-Meeting Name)</label>
+                <input type="text" id="subMeetingName" placeholder="e.g., विशेष समिति बैठक">
+
+                <label style="margin-top:14px;">🏢 आयोजक (Organized By)</label>
+                <input type="text" id="organizedBy" placeholder="e.g., गलकोट नगरपालिका">
+
+                <label style="margin-top:14px;">🔗 Open Link URL (ब्यानरमा देखिने बटनको लिंक)</label>
+                <input type="text" id="openLinkUrl" placeholder="e.g., https://example.com">
+
+                <label style="margin-top:14px;">📄 PDF प्रस्तुतिहरू (PDF Player) — ब्यानरमा देखिने PDF बटनहरू</label>
+                <div id="presentationLinksContainer"></div>
+                <button type="button" class="btn btn-secondary" style="width:auto; margin-top:6px; padding:8px 18px;" onclick="addPresentationPdfRow()">➕ नयाँ PDF थप्नुहोस् (Add PDF)</button>
+            </div>
+
+            <!-- ===== CELEBRATION EFFECTS ===== -->
+            <div class="font-size-section">
+                <h3>🎉 Celebration Effects</h3>
+                <p style="text-align:center; color:#666; font-size:0.9rem; margin-bottom:12px;">
+                    ब्यानरमा तुरुन्त इफेक्ट देखाउन तलको बटन क्लिक गर्नुहोस्
+                </p>
+                <div class="celebration-grid">
+                    <button class="btn btn-primary" onclick="triggerCelebration('colorful')">🎊 Colorful Confetti</button>
+                    <button class="btn btn-gold" onclick="triggerCelebration('golden')">✨ Golden Confetti</button>
+                    <button class="btn btn-success" onclick="triggerCelebration('balloon')">🎈 Balloon Burst</button>
+                    <button class="btn btn-danger" onclick="triggerCelebration('fireworks')">🎇 Fireworks</button>
+                    <button class="btn btn-secondary" onclick="triggerCelebration('petals')">🌸 Flower Petals</button>
+                </div>
+                <p id="celebrationMsg" class="msg hidden"></p>
+            </div>
+
+            <!-- Nepali Date & Time -->
+            <div class="form-group">
+                <label>📅 नेपाली मिति</label>
+                <div class="date-time-selector">
+                    <div>
+                        <select id="nepaliYear" onchange="updateNepaliDateDisplay()"></select>
+                        <label style="font-size:0.85rem;">वर्ष</label>
+                    </div>
+                    <div>
+                        <select id="nepaliMonth" onchange="updateNepaliDateDisplay()"></select>
+                        <label style="font-size:0.85rem;">महिना</label>
+                    </div>
+                    <div>
+                        <select id="nepaliDay" onchange="updateNepaliDateDisplay()"></select>
+                        <label style="font-size:0.85rem;">दिन</label>
+                    </div>
+                    <div>
+                        <select id="nepaliWeekday" onchange="updateNepaliDateDisplay()"></select>
+                        <label style="font-size:0.85rem;">बार</label>
+                    </div>
+                </div>
+                <div class="nepali-date-display">
+                    <strong>📆</strong> <span id="selectedNepaliDate">--</span>
+                </div>
+                <button type="button" class="btn btn-secondary" style="margin-top:10px;" onclick="setTodayDate()">📅 आजको मिति सेट गर्नुहोस्</button>
+            </div>
+
+            <div class="form-group">
+                <label>🕐 नेपाली समय</label>
+                <div class="time-picker">
+                    <select id="nepaliHour"></select>
+                    <span>:</span>
+                    <select id="nepaliMinute"></select>
+                    <select id="nepaliPeriod">
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                    </select>
+                </div>
+                <button type="button" class="btn btn-secondary" style="margin-top:10px;" onclick="setCurrentTime()">🕐 अहिलेको समय सेट गर्नुहोस्</button>
+            </div>
+
+            <input type="hidden" id="dateText">
+            <input type="hidden" id="timeText">
+
+            <!-- BACKGROUND IMAGE -->
+            <div class="form-group">
+                <label>🖼️ Background Image</label>
+                <div class="file-upload-wrapper">
+                    <input type="file" id="bgFile" accept="image/*">
+                    <span class="file-status pending" id="bgStatus">📤 फाइल छान्नुहोस्</span>
+                </div>
+                <div class="image-preview-container">
+                    <div class="preview-box">
+                        <label>हालको Background:</label>
+                        <img id="bgPreview" style="display:none;" alt="Background Preview">
+                        <div class="url-text" id="bgUrlDisplay">कुनै छैन</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SAMPLE BACKGROUND GALLERY -->
+            <div class="font-size-section">
+                <h3>🖼️ नमूना Background ग्यालरी</h3>
+                <div class="file-upload-wrapper" style="margin-bottom:12px;">
+                    <input type="file" id="galleryFile" accept="image/*">
+                    <button class="btn btn-primary" style="width:auto; margin:0; padding:10px 18px;" onclick="uploadToGallery()" id="galleryUploadBtn">⬆️ ग्यालरीमा थप्नुहोस्</button>
+                </div>
+                <p id="galleryMsg" class="msg hidden"></p>
+                <div class="image-preview-container" id="galleryContainer" style="margin-top:10px;">
+                    <div class="preview-box"><label>लोड हुँदै...</label></div>
+                </div>
+                <button class="btn btn-primary" onclick="useRandomBackground()" style="margin-top:15px;">
+                    🎲 अहिले लाइभ रहेको ब्यानरमा अनियमित (Random) Background लगाउनुहोस्
+                </button>
+                <p id="randomBgMsg" class="msg hidden"></p>
+            </div>
+
+            <!-- TYPEWRITER ANIMATION -->
+            <div class="font-size-section">
+                <h3>⌨️ Typewriter एनिमेसन</h3>
+                <p style="text-align:center; color:#666; font-size:0.9rem; margin-bottom:12px;">
+                    क्लिक गर्दा लाइभ ब्यानरको 🏛️ बैठकको नाम टाइप हुँदै ३ पटक देखिनेछ
+                </p>
+                <button class="btn btn-primary" onclick="triggerTypewriter()">▶️ Typewriter एनिमेसन चलाउनुहोस्</button>
+                <p id="typewriterMsg" class="msg hidden"></p>
+            </div>
+
+            <!-- LOGO IMAGE -->
+            <div class="form-group">
+                <label>🏷️ Logo Image</label>
+                <div class="file-upload-wrapper">
+                    <input type="file" id="logoFile" accept="image/*">
+                    <span class="file-status pending" id="logoStatus">📤 फाइल छान्नुहोस्</span>
+                </div>
+                <div class="image-preview-container">
+                    <div class="preview-box">
+                        <label>हालको Logo:</label>
+                        <img id="logoPreview" style="display:none;" alt="Logo Preview">
+                        <div class="url-text" id="logoUrlDisplay">कुनै छैन</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="updateBannerData()" id="updateBtn">
+                💾 सेभ र अपडेट गर्नुहोस्
+            </button>
+            <p id="updateMsg" class="msg"></p>
+
+            <button class="btn btn-secondary" id="logoutBtn" onclick="logoutAdmin()">🚪 लगआउट</button>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // ===== ACCESS CONTROL =====
+        // ============================================================
+        let bannerAdminLoginOn = true;
+
+        // ============================================================
+        // ===== SUPABASE CONFIG =====
+        // ============================================================
+        const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
+        const STORAGE_BUCKET = 'banner-assets';
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ============================================================
+        // ===== NEPALI DATE SYSTEM =====
+        // ============================================================
+        const NepaliDate = {
+            months: ['बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कात्तिक', 'मंसिर', 'पुष', 'माघ', 'फागुन', 'चैत'],
+            weekdays: ['आइतबार', 'सोमबार', 'मंगलबार', 'बुधबार', 'बिहिबार', 'शुक्रबार', 'शनिबार'],
+            monthDays: {
+                2080: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2081: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2082: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2083: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2084: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2085: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2086: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30]
+            },
+            referenceYear: 2080,
+            referenceMonth: 0,
+            referenceDay: 1,
+            referenceEnglishDate: new Date(2023, 3, 14)
+        };
+
+        function toEnglishDigits(input) {
+            const map = {
+                '०': '0', '१': '1', '२': '2', '३': '3', '४': '4',
+                '५': '5', '६': '6', '७': '7', '८': '8', '९': '9'
+            };
+            return String(input).replace(/[०-९]/g, d => map[d] || d);
+        }
+
+        function toNepaliDigits(input) {
+            const digits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+            return String(input).replace(/[0-9]/g, d => digits[d]);
+        }
+
+        function initializeNepaliDateSelectors() {
+            const yearSelect = document.getElementById('nepaliYear');
+            const monthSelect = document.getElementById('nepaliMonth');
+            const weekdaySelect = document.getElementById('nepaliWeekday');
+            const daySelect = document.getElementById('nepaliDay');
+
+            for (let y = 2080; y <= 2086; y++) {
+                yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+            }
+            NepaliDate.months.forEach((m, i) => {
+                monthSelect.innerHTML += `<option value="${i}">${m}</option>`;
+            });
+            NepaliDate.weekdays.forEach((d, i) => {
+                weekdaySelect.innerHTML += `<option value="${i}">${d}</option>`;
+            });
+
+            for (let d = 1; d <= 32; d++) {
+                daySelect.innerHTML += `<option value="${d}">${toNepaliDigits(d)}</option>`;
+            }
+
+            for (let i = 1; i <= 12; i++) {
+                document.getElementById('nepaliHour').innerHTML +=
+                    `<option value="${i}">${i.toString().padStart(2, '0')}</option>`;
+            }
+            for (let i = 0; i < 60; i += 5) {
+                document.getElementById('nepaliMinute').innerHTML +=
+                    `<option value="${i}">${i.toString().padStart(2, '0')}</option>`;
+            }
+
+            yearSelect.value = 2081;
+            monthSelect.value = 0;
+            daySelect.value = 1;
+            updateNepaliDateDisplay();
+        }
+
+        function updateNepaliDateDisplay() {
+            const year = document.getElementById('nepaliYear').value;
+            const month = parseInt(document.getElementById('nepaliMonth').value);
+            const day = document.getElementById('nepaliDay').value || 1;
+            const weekday = document.getElementById('nepaliWeekday').value;
+
+            document.getElementById('selectedNepaliDate').textContent =
+                `${toNepaliDigits(year)} ${NepaliDate.months[month]} ${toNepaliDigits(day)}, ${NepaliDate.weekdays[weekday]}`;
+
+            document.getElementById('dateText').value =
+                `मिति: ${toNepaliDigits(year)} ${NepaliDate.months[month]} ${toNepaliDigits(day)} गते, ${NepaliDate.weekdays[weekday]}`;
+
+            const hour = document.getElementById('nepaliHour').value;
+            const minute = document.getElementById('nepaliMinute').value;
+            const period = document.getElementById('nepaliPeriod').value;
+            const hour12 = parseInt(hour);
+            document.getElementById('timeText').value =
+                `बैठक सुरु समय: ${toNepaliDigits(hour12)}:${toNepaliDigits(minute.padStart(2, '0'))} बजे`;
+
+            if (typeof updateLivePreview === 'function') updateLivePreview();
+        }
+
+        function setTodayDate() {
+            const now = new Date();
+            const refDate = NepaliDate.referenceEnglishDate;
+            const diffDays = Math.floor((now - refDate) / (1000 * 60 * 60 * 24));
+
+            let remainingDays = diffDays;
+            let year = NepaliDate.referenceYear;
+            let month = NepaliDate.referenceMonth;
+
+            while (remainingDays > 0) {
+                const daysInYear = NepaliDate.monthDays[year];
+                if (!daysInYear) {
+                    alert('माफ गर्नुहोस्, आजको मिति उपलब्ध वर्ष दायरा (2080-2086) बाहिर छ। कृपया manual select गर्नुहोस्।');
+                    return;
+                }
+                const totalDaysInYear = daysInYear.reduce((a, b) => a + b, 0);
+                if (remainingDays >= totalDaysInYear) {
+                    remainingDays -= totalDaysInYear;
+                    year++;
+                } else {
+                    for (let m = 0; m < daysInYear.length; m++) {
+                        if (remainingDays >= daysInYear[m]) {
+                            remainingDays -= daysInYear[m];
+                            month = m + 1;
+                        } else {
+                            month = m;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+
+            const day = remainingDays + 1;
+            const weekdayIndex = ((5 + diffDays) % 7 + 7) % 7;
+
+            document.getElementById('nepaliYear').value = year;
+            document.getElementById('nepaliMonth').value = month;
+            document.getElementById('nepaliDay').value = day;
+            document.getElementById('nepaliWeekday').value = weekdayIndex;
+            updateNepaliDateDisplay();
+        }
+
+        function setCurrentTime() {
+            const now = new Date();
+            const totalMinutes = now.getHours() * 60 + now.getMinutes();
+            const rounded = Math.round(totalMinutes / 5) * 5 % (24 * 60);
+            const hour24 = Math.floor(rounded / 60);
+            const minute = rounded % 60;
+            const period = hour24 >= 12 ? 'PM' : 'AM';
+            let hour12 = hour24 % 12;
+            if (hour12 === 0) hour12 = 12;
+
+            document.getElementById('nepaliHour').value = hour12;
+            document.getElementById('nepaliMinute').value = minute;
+            document.getElementById('nepaliPeriod').value = period;
+            updateNepaliDateDisplay();
+        }
+
+        function adjustGlobalScale(delta) {
+            const input = document.getElementById('fontScale');
+            let val = Math.min(Math.max(parseInt(input.value) + delta, 50), 200);
+            input.value = val;
+            document.getElementById('globalScaleDisplay').textContent = val + '%';
+        }
+
+        // ============================================================
+        // ===== SCROLLING NOTICE TOGGLE =====
+        // ============================================================
+        let noticeEnabled = true;
+
+        async function toggleNotice() {
+            const toggle = document.getElementById('noticeToggle');
+            const status = document.getElementById('noticeStatus');
+            noticeEnabled = toggle.classList.toggle('active');
+            status.textContent = noticeEnabled ? 'ON' : 'OFF';
+            status.className = 'toggle-status ' + (noticeEnabled ? 'on' : 'off');
+
+            // Persist immediately so banner.html gets it via realtime,
+            // without waiting for the full "Update" form save.
+            const recordId = document.getElementById('recordId').value;
+            const msgEl = document.getElementById('updateMsg');
+            if (!recordId) return;
+
+            toggle.style.pointerEvents = 'none';
+
+            const { error } = await supabaseClient
+                .from('banner_settings')
+                .update({
+                    scrolling_notice_enabled: noticeEnabled,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', recordId);
+
+            toggle.style.pointerEvents = '';
+
+            if (error) {
+                // Revert UI if the save failed
+                noticeEnabled = toggle.classList.toggle('active');
+                status.textContent = noticeEnabled ? 'ON' : 'OFF';
+                status.className = 'toggle-status ' + (noticeEnabled ? 'on' : 'off');
+                if (msgEl) {
+                    msgEl.innerText = '❌ Scrolling Notice टगल असफल: ' + error.message;
+                    msgEl.className = 'msg error';
+                }
+            } else if (msgEl) {
+                msgEl.innerText = noticeEnabled
+                    ? '✅ Scrolling Notice ON गरियो (लाइभ अपडेट भयो)'
+                    : '✅ Scrolling Notice OFF गरियो (लाइभ अपडेट भयो)';
+                msgEl.className = 'msg success';
+            }
+        }
+
+        // ============================================================
+        // ===== AGENDA EDITOR =====
+        // ============================================================
+        let agendaItems = [];
+
+        function addAgendaRow(text = '') {
+            const container = document.getElementById('agendaEditorContainer');
+            const row = document.createElement('div');
+            row.className = 'agenda-editor-row';
+            row.innerHTML = `
+                <input type="text" placeholder="Agenda item..." value="${text.replace(/"/g, '&quot;')}" class="agenda-input">
+                <button type="button" class="remove-agenda-btn" onclick="removeAgendaRow(this)">✕</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function removeAgendaRow(btn) {
+            const row = btn.closest('.agenda-editor-row');
+            if (document.querySelectorAll('.agenda-editor-row').length > 1) {
+                row.remove();
+            } else {
+                row.querySelector('.agenda-input').value = '';
+            }
+        }
+
+        function collectAgendaItems() {
+            const rows = document.querySelectorAll('.agenda-editor-row');
+            const items = [];
+            rows.forEach(row => {
+                const text = row.querySelector('.agenda-input').value.trim();
+                if (text) items.push(text);
+            });
+            return items;
+        }
+
+        function setAgendaEditor(items) {
+            const container = document.getElementById('agendaEditorContainer');
+            container.innerHTML = '';
+            if (!items || items.length === 0) {
+                addAgendaRow('');
+            } else {
+                items.forEach(item => addAgendaRow(item));
+            }
+        }
+
+        // ============================================================
+        // ===== PRESENTATION PDFs =====
+        // ============================================================
+        let pendingPdfDeletions = [];
+
+        function addPresentationPdfRow(name = '', url = '') {
+            const container = document.getElementById('presentationLinksContainer');
+            const row = document.createElement('div');
+            row.className = 'presentation-link-row pdf-row';
+            row.dataset.originalUrl = url || '';
+
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.className = 'presentation-link-name';
+            nameInput.placeholder = 'नाम (e.g., मुख्य प्रस्तुति)';
+            nameInput.value = name || '';
+
+            const fileWrap = document.createElement('div');
+            fileWrap.className = 'presentation-pdf-filewrap';
+
+            const statusSpan = document.createElement('span');
+            statusSpan.className = 'presentation-pdf-status' + (url ? ' uploaded' : '');
+            statusSpan.textContent = url ? '✅ PDF अपलोड भएको' : '📤 कुनै PDF अपलोड गरिएको छैन';
+
+            const viewLink = document.createElement('a');
+            viewLink.className = 'presentation-pdf-view';
+            viewLink.target = '_blank';
+            viewLink.rel = 'noopener';
+            if (url) {
+                viewLink.href = url;
+                viewLink.textContent = '👁 PDF हेर्नुहोस्';
+            } else {
+                viewLink.style.display = 'none';
+            }
+
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'application/pdf';
+            fileInput.className = 'presentation-pdf-file';
+            fileInput.addEventListener('change', () => {
+                const f = fileInput.files[0];
+                if (f) {
+                    statusSpan.textContent = '🆕 ' + f.name + ' (सेभ गर्दा अपलोड/बदल्ने छ)';
+                    statusSpan.className = 'presentation-pdf-status pending-upload';
+                }
+            });
+
+            fileWrap.appendChild(statusSpan);
+            fileWrap.appendChild(viewLink);
+            fileWrap.appendChild(fileInput);
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'remove-link-btn';
+            removeBtn.textContent = '✕';
+            removeBtn.title = 'हटाउनुहोस् (Delete)';
+            removeBtn.onclick = () => removePresentationPdfRow(removeBtn, row);
+
+            row.appendChild(nameInput);
+            row.appendChild(fileWrap);
+            row.appendChild(removeBtn);
+            container.appendChild(row);
+        }
+
+        function removePresentationPdfRow(btn, row) {
+            const container = document.getElementById('presentationLinksContainer');
+            if (row.dataset.originalUrl) {
+                pendingPdfDeletions.push(row.dataset.originalUrl);
+            }
+            if (container.children.length > 1) {
+                row.remove();
+            } else {
+                row.remove();
+                addPresentationPdfRow('', '');
+            }
+        }
+
+        function setPresentationLinks(items) {
+            const container = document.getElementById('presentationLinksContainer');
+            container.innerHTML = '';
+            pendingPdfDeletions = [];
+            const list = (items && items.length)
+                ? items.map(it => (typeof it === 'string') ? { name: '', url: it } : (it || { name: '', url: '' }))
+                : [];
+            if (list.length === 0) {
+                addPresentationPdfRow('', '');
+            } else {
+                list.forEach(it => addPresentationPdfRow(it.name, it.url));
+            }
+        }
+
+        async function collectPresentationPdfs() {
+            const rows = document.querySelectorAll('#presentationLinksContainer .pdf-row');
+            const result = [];
+
+            for (const row of rows) {
+                const name = row.querySelector('.presentation-link-name').value.trim();
+                const fileInput = row.querySelector('.presentation-pdf-file');
+                const originalUrl = row.dataset.originalUrl || '';
+                const file = fileInput.files[0];
+
+                if (file) {
+                    const uploadedUrl = await uploadPdf(file);
+                    if (!uploadedUrl) {
+                        throw new Error('PDF अपलोड असफल भयो' + (name ? ' (' + name + ')' : ''));
+                    }
+                    if (originalUrl) {
+                        pendingPdfDeletions.push(originalUrl);
+                    }
+                    result.push({ name, url: uploadedUrl });
+                } else if (originalUrl) {
+                    result.push({ name, url: originalUrl });
+                }
+            }
+            return result;
+        }
+
+        async function flushPendingPdfDeletions() {
+            const urls = pendingPdfDeletions;
+            pendingPdfDeletions = [];
+            for (const url of urls) {
+                await deletePdfFromStorage(url);
+            }
+        }
+
+        async function uploadPdf(file) {
+            if (!file) return null;
+            const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+            if (!isPdf) {
+                console.error('Only PDF files are allowed');
+                return null;
+            }
+
+            const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const fileName = `presentations/${Date.now()}_${safeName}`;
+
+            const { data, error } = await supabaseClient.storage
+                .from(STORAGE_BUCKET)
+                .upload(fileName, file, {
+                    cacheControl: '3600',
+                    upsert: true,
+                    contentType: 'application/pdf'
+                });
+
+            if (error) {
+                console.error('PDF upload error:', error);
+                return null;
+            }
+
+            const { data: urlData } = supabaseClient.storage
+                .from(STORAGE_BUCKET)
+                .getPublicUrl(fileName);
+
+            return urlData.publicUrl;
+        }
+
+        async function deletePdfFromStorage(url) {
+            const path = extractStoragePath(url);
+            if (path) {
+                await supabaseClient.storage.from(STORAGE_BUCKET).remove([path]);
+            }
+        }
+
+        function extractStoragePath(url) {
+            const marker = `/object/public/${STORAGE_BUCKET}/`;
+            const idx = url.indexOf(marker);
+            if (idx === -1) return null;
+            return decodeURIComponent(url.substring(idx + marker.length));
+        }
+
+        // ============================================================
+        // ===== IMAGE UPLOAD =====
+        // ============================================================
+        async function uploadImage(file, folder) {
+            if (!file) return null;
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${folder}/${Date.now()}.${fileExt}`;
+
+            const { data, error } = await supabaseClient.storage
+                .from(STORAGE_BUCKET)
+                .upload(fileName, file, {
+                    cacheControl: '3600',
+                    upsert: true
+                });
+
+            if (error) {
+                console.error('Upload error:', error);
+                return null;
+            }
+
+            const { data: urlData } = supabaseClient.storage
+                .from(STORAGE_BUCKET)
+                .getPublicUrl(fileName);
+
+            return urlData.publicUrl;
+        }
+
+        // ============================================================
+        // ===== SAMPLE BACKGROUND GALLERY =====
+        // ============================================================
+        async function loadGallery() {
+            const container = document.getElementById('galleryContainer');
+            const { data, error } = await supabaseClient
+                .from('banner_backgrounds')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                container.innerHTML = '<div class="preview-box"><label style="color:#c62828;">❌ ग्यालरी लोड गर्न असफल</label></div>';
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div class="preview-box"><label>अहिलेसम्म कुनै नमूना background थपिएको छैन।</label></div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            data.forEach(item => {
+                container.innerHTML += `
+                    <div class="preview-box">
+                        <img src="${item.url}" alt="background" loading="lazy" decoding="async">
+                        <div style="display:flex; gap:8px; margin-top:8px;">
+                            <button class="edit-btn" style="flex:1; background:#1565c0;" onclick="useGalleryImage('${item.url}')">✅ प्रयोग गर्नुहोस्</button>
+                            <button class="edit-btn" style="background:#c62828;" onclick="deleteGalleryImage(${item.id}, '${item.url.replace(/'/g, "\\'")}')">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function uploadToGallery() {
+            const file = document.getElementById('galleryFile').files[0];
+            const msgEl = document.getElementById('galleryMsg');
+            msgEl.classList.remove('hidden');
+
+            if (!file) {
+                msgEl.innerText = "कृपया पहिले फाइल छान्नुहोस्";
+                msgEl.className = "msg error";
+                return;
+            }
+
+            msgEl.innerText = "⏳ अपलोड हुँदै...";
+            msgEl.className = "msg info";
+
+            const url = await uploadImage(file, 'gallery');
+            if (!url) {
+                msgEl.innerText = "❌ अपलोड असफल";
+                msgEl.className = "msg error";
+                return;
+            }
+
+            const { error } = await supabaseClient.from('banner_backgrounds').insert({ url });
+            if (error) {
+                msgEl.innerText = "❌ ग्यालरीमा थप्न असफल: " + error.message;
+                msgEl.className = "msg error";
+                return;
+            }
+
+            msgEl.innerText = "✅ ग्यालरीमा थपियो!";
+            msgEl.className = "msg success";
+            document.getElementById('galleryFile').value = '';
+            loadGallery();
+        }
+
+        async function useGalleryImage(url) {
+            document.getElementById('bgPreview').src = url;
+            document.getElementById('bgPreview').style.display = 'block';
+            document.getElementById('bgUrlDisplay').textContent = '✅ ' + url;
+            document.getElementById('bgStatus').textContent = '✅ अपलोड भएको';
+            document.getElementById('bgStatus').className = 'file-status uploaded';
+            updateLivePreview();
+
+            const msgEl = document.getElementById('updateMsg');
+            const galleryMsgEl = document.getElementById('galleryMsg');
+            galleryMsgEl.classList.remove('hidden');
+
+            if (!currentActiveId) {
+                galleryMsgEl.innerText = "❌ कुनै ब्यानर लाइभ छैन, background लाग्न सकेन";
+                galleryMsgEl.className = "msg error";
+                return;
+            }
+
+            galleryMsgEl.innerText = "⏳ लाइभ ब्यानरमा लगाउँदै...";
+            galleryMsgEl.className = "msg info";
+
+            const { error } = await supabaseClient
+                .from('banner_settings')
+                .update({ background_url: url, updated_at: new Date().toISOString() })
+                .eq('id', currentActiveId);
+
+            if (error) {
+                galleryMsgEl.innerText = "❌ लाइभ ब्यानरमा लगाउन असफल: " + error.message;
+                galleryMsgEl.className = "msg error";
+                return;
+            }
+
+            galleryMsgEl.innerText = "✅ लाइभ ब्यानरमा background अटोमेटिक लाग्यो!";
+            galleryMsgEl.className = "msg success";
+            msgEl.innerText = "✅ लाइभ ब्यानरमा background अटोमेटिक लाग्यो!";
+            msgEl.className = "msg success";
+            loadSavedData();
+        }
+
+        async function deleteGalleryImage(id, url) {
+            if (!confirm('के तपाईं यो नमूना background पूर्ण रूपमा हटाउन चाहनुहुन्छ? यो पछि फिर्ता ल्याउन सकिँदैन।')) {
+                return;
+            }
+
+            const path = extractStoragePath(url);
+            if (path) {
+                await supabaseClient.storage.from(STORAGE_BUCKET).remove([path]);
+            }
+            await supabaseClient.from('banner_backgrounds').delete().eq('id', id);
+            loadGallery();
+        }
+
+        async function useRandomBackground() {
+            const msgEl = document.getElementById('randomBgMsg');
+            msgEl.classList.remove('hidden');
+
+            if (!currentActiveId) {
+                msgEl.innerText = "❌ कुनै ब्यानर लाइभ छैन";
+                msgEl.className = "msg error";
+                return;
+            }
+
+            const { data, error } = await supabaseClient.from('banner_backgrounds').select('*');
+            if (error || !data || data.length === 0) {
+                msgEl.innerText = "❌ ग्यालरीमा कुनै background छैन, पहिले थप्नुहोस्";
+                msgEl.className = "msg error";
+                return;
+            }
+
+            const pick = data[Math.floor(Math.random() * data.length)];
+            const { error: updateError } = await supabaseClient
+                .from('banner_settings')
+                .update({ background_url: pick.url, updated_at: new Date().toISOString() })
+                .eq('id', currentActiveId);
+
+            if (updateError) {
+                msgEl.innerText = "❌ लाइभ ब्यानरमा लगाउन असफल: " + updateError.message;
+                msgEl.className = "msg error";
+                return;
+            }
+
+            msgEl.innerText = "✅ लाइभ ब्यानरमा अनियमित background लगाइयो!";
+            msgEl.className = "msg success";
+            loadSavedData();
+        }
+
+        // ============================================================
+        // ===== TYPEWRITER TRIGGER =====
+        // ============================================================
+        async function triggerTypewriter() {
+            const msgEl = document.getElementById('typewriterMsg');
+            msgEl.classList.remove('hidden');
+
+            if (!currentActiveId) {
+                msgEl.innerText = "❌ कुनै ब्यानर लाइभ छैन";
+                msgEl.className = "msg error";
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from('banner_settings')
+                .update({ typewriter_trigger: Date.now() })
+                .eq('id', currentActiveId);
+
+            if (error) {
+                msgEl.innerText = "❌ एनिमेसन चलाउन असफल: " + error.message;
+                msgEl.className = "msg error";
+                return;
+            }
+
+            msgEl.innerText = "✅ एनिमेसन लाइभ ब्यानरमा पठाइयो!";
+            msgEl.className = "msg success";
+        }
+
+        // ============================================================
+        // ===== CELEBRATION TRIGGER =====
+        // ============================================================
+        async function triggerCelebration(type) {
+            const msgEl = document.getElementById('celebrationMsg');
+            msgEl.classList.remove('hidden');
+
+            if (!currentActiveId) {
+                msgEl.innerText = "❌ कुनै ब्यानर लाइभ छैन";
+                msgEl.className = "msg error";
+                return;
+            }
+
+            msgEl.innerText = "🎉 पठाउँदै...";
+            msgEl.className = "msg info";
+
+            const { error } = await supabaseClient
+                .from('banner_settings')
+                .update({
+                    celebration_trigger: Date.now(),
+                    celebration_type: type,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', currentActiveId);
+
+            if (error) {
+                msgEl.innerText = "❌ इफेक्ट पठाउन असफल: " + error.message;
+                msgEl.className = "msg error";
+                return;
+            }
+
+            const typeLabels = {
+                'colorful': '🎊 Colorful Confetti',
+                'golden': '✨ Golden Confetti',
+                'balloon': '🎈 Balloon Burst',
+                'fireworks': '🎇 Fireworks',
+                'petals': '🌸 Flower Petals'
+            };
+            msgEl.innerText = "✅ " + (typeLabels[type] || type) + " लाइभ ब्यानरमा पठाइयो!";
+            msgEl.className = "msg success";
+
+            // Reset the trigger in DB after a moment
+            setTimeout(() => {
+                supabaseClient
+                    .from('banner_settings')
+                    .update({ celebration_trigger: null, celebration_type: null })
+                    .eq('id', currentActiveId)
+                    .then(() => {});
+            }, 1000);
+        }
+
+        // ============================================================
+        // ===== AUTH FUNCTIONS =====
+        // ============================================================
+        async function isAdminUser(user) {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('user_roles')
+                    .select('role, status')
+                    .eq('email', user.email)
+                    .eq('role', 'admin')
+                    .eq('status', 'active')
+                    .maybeSingle();
+
+                if (error || !data) return false;
+                return true;
+            } catch (err) {
+                return false;
+            }
+        }
+
+        async function getBannerAdminLoginMode() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('app_settings')
+                    .select('setting_value')
+                    .eq('setting_key', 'banner_admin_login')
+                    .maybeSingle();
+
+                if (!error && data) {
+                    return data.setting_value === 'true' || data.setting_value === true;
+                }
+
+                await supabaseClient
+                    .from('app_settings')
+                    .insert([{ setting_key: 'banner_admin_login', setting_value: 'true' }]);
+                return true;
+            } catch (err) {
+                return true;
+            }
+        }
+
+        function applyLoginModeUI() {
+            const title = document.getElementById('loginTitle');
+            const emailLabel = document.getElementById('emailLabel');
+            const passwordLabel = document.getElementById('passwordLabel');
+            const emailInput = document.getElementById('adminEmail');
+
+            if (bannerAdminLoginOn) {
+                title.textContent = '🔐 Admin Login';
+                emailLabel.textContent = '📧 इमेल (Email)';
+                emailInput.type = 'email';
+                emailInput.placeholder = 'admin@example.com';
+                passwordLabel.textContent = '🔑 पासवर्ड (Password)';
+            } else {
+                title.textContent = '⚡ Quick Login';
+                emailLabel.textContent = '👤 Username';
+                emailInput.type = 'text';
+                emailInput.placeholder = 'Username';
+                passwordLabel.textContent = '🔑 Password';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            initializeNepaliDateSelectors();
+            setPresentationLinks([]);
+            setAgendaEditor([]);
+
+            bannerAdminLoginOn = await getBannerAdminLoginMode();
+            applyLoginModeUI();
+
+            if (bannerAdminLoginOn) {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session) {
+                    const allowed = await isAdminUser(session.user);
+                    if (allowed) {
+                        showDashboard();
+                        return;
+                    } else {
+                        await supabaseClient.auth.signOut();
+                    }
+                }
+            }
+            document.getElementById('loginSection').classList.remove('hidden');
+            if (LoginLockout.isLocked()) {
+                const msgEl = document.getElementById('loginMsg');
+                document.getElementById('loginBtn').disabled = true;
+                msgEl.innerText = `🔒 धेरै गलत प्रयासका कारण अस्थायी रूपमा रोकिएको छ। कृपया ${LoginLockout.formatRemaining()} पछि फेरि प्रयास गर्नुहोस्।`;
+                msgEl.className = "msg error";
+                const unlockCheck = setInterval(() => {
+                    if (!LoginLockout.isLocked()) {
+                        document.getElementById('loginBtn').disabled = false;
+                        msgEl.innerText = '';
+                        msgEl.className = 'msg';
+                        clearInterval(unlockCheck);
+                    }
+                }, 2000);
+            }
+        });
+
+        // ============================================================
+        // ===== LOGIN LOCKOUT MODULE (invalid attempt limiting) =====
+        // ============================================================
+        // Client-side rate limiting. Note: this raises the bar against casual
+        // brute-forcing from the login UI, but a determined attacker can clear
+        // localStorage or call the API directly. It is NOT a substitute for
+        // server-side protection (e.g. Supabase Auth's own rate limits) —
+        // it's a defense-in-depth layer on top of that.
+        const LoginLockout = (function () {
+            const STORAGE_KEY = 'admin_login_lockout';
+            const MAX_ATTEMPTS = 5;
+            const LOCKOUT_MS = 5 * 60 * 1000; // 5 minutes
+
+            function read() {
+                try {
+                    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { count: 0, lockUntil: 0 };
+                } catch (e) {
+                    return { count: 0, lockUntil: 0 };
+                }
+            }
+
+            function write(state) {
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+            }
+
+            function remainingLockMs() {
+                const state = read();
+                const remaining = state.lockUntil - Date.now();
+                return remaining > 0 ? remaining : 0;
+            }
+
+            function isLocked() {
+                return remainingLockMs() > 0;
+            }
+
+            function recordFailure() {
+                const state = read();
+                if (state.lockUntil && state.lockUntil < Date.now()) {
+                    state.count = 0; // previous lockout expired, start fresh
+                }
+                state.count = (state.count || 0) + 1;
+                if (state.count >= MAX_ATTEMPTS) {
+                    state.lockUntil = Date.now() + LOCKOUT_MS;
+                    state.count = 0;
+                }
+                write(state);
+            }
+
+            function recordSuccess() {
+                write({ count: 0, lockUntil: 0 });
+            }
+
+            function attemptsLeft() {
+                const state = read();
+                return Math.max(0, MAX_ATTEMPTS - (state.count || 0));
+            }
+
+            function formatRemaining() {
+                const mins = Math.ceil(remainingLockMs() / 60000);
+                return mins + ' मिनेट';
+            }
+
+            return { isLocked, recordFailure, recordSuccess, attemptsLeft, formatRemaining };
+        })();
+
+        async function loginAdmin() {
+            const emailOrUser = document.getElementById('adminEmail').value.trim();
+            const password = document.getElementById('adminPassword').value;
+            const msgEl = document.getElementById('loginMsg');
+            const loginBtn = document.getElementById('loginBtn');
+
+            if (LoginLockout.isLocked()) {
+                msgEl.innerText = `🔒 धेरै गलत प्रयासका कारण अस्थायी रूपमा रोकिएको छ। कृपया ${LoginLockout.formatRemaining()} पछि फेरि प्रयास गर्नुहोस्।`;
+                msgEl.className = "msg error";
+                return;
+            }
+
+            if (!emailOrUser || !password) {
+                msgEl.innerText = bannerAdminLoginOn ? "कृपया इमेल र पासवर्ड भर्नुहोस्" : "कृपया Username र Password भर्नुहोस्";
+                msgEl.className = "msg error";
+                return;
+            }
+
+            if (!bannerAdminLoginOn) {
+                if (emailOrUser === '1111' && password === '0000') {
+                    LoginLockout.recordSuccess();
+                    showDashboard();
+                } else {
+                    LoginLockout.recordFailure();
+                    msgEl.innerText = LoginLockout.isLocked()
+                        ? `🔒 धेरै गलत प्रयासका कारण अस्थायी रूपमा रोकिएको छ। कृपया ${LoginLockout.formatRemaining()} पछि फेरि प्रयास गर्नुहोस्।`
+                        : `❌ गलत Username वा Password (${LoginLockout.attemptsLeft()} प्रयास बाँकी)`;
+                    msgEl.className = "msg error";
+                }
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '⏳ लगइन हुँदै...';
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email: emailOrUser, password });
+
+            if (error) {
+                LoginLockout.recordFailure();
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = 'लगइन गर्नुहोस्';
+                msgEl.innerText = LoginLockout.isLocked()
+                    ? `🔒 धेरै गलत प्रयासका कारण अस्थायी रूपमा रोकिएको छ। कृपया ${LoginLockout.formatRemaining()} पछि फेरि प्रयास गर्नुहोस्।`
+                    : `❌ लगइन असफल: ${error.message} (${LoginLockout.attemptsLeft()} प्रयास बाँकी)`;
+                msgEl.className = "msg error";
+                return;
+            }
+
+            const allowed = await isAdminUser(data.user);
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = 'लगइन गर्नुहोस्';
+
+            if (!allowed) {
+                LoginLockout.recordFailure();
+                await supabaseClient.auth.signOut();
+                msgEl.innerText = "❌ पहुँच अस्वीकृत: एडमिन रोल छैन!";
+                msgEl.className = "msg error";
+                return;
+            }
+
+            LoginLockout.recordSuccess();
+            showDashboard();
+        }
+
+        function showDashboard() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.toggle('hidden', !bannerAdminLoginOn);
+            loadSavedData();
+            loadGallery();
+            updateLivePreview();
+        }
+
+        // ============================================================
+        // ===== LOAD SAVED DATA =====
+        // ============================================================
+        const BANNER_LIST_PAGE_SIZE = 5;
+        let __allBanners = [];
+        let __showAllBanners = false;
+        let currentActiveId = null;
+
+        async function loadSavedData() {
+            const tableBody = document.getElementById('dataTableBody');
+
+            const { data, error } = await supabaseClient
+                .from('banner_settings')
+                .select('*')
+                .order('id', { ascending: true });
+
+            if (error) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="color: red;">❌ डाटा लोड गर्न असफल</td></tr>';
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                const defaultData = {
+                    meeting_name: 'बैठकको नाम',
+                    sub_meeting_name: '',
+                    organized_by: 'आयोजकको नाम',
+                    open_link_url: '',
+                    presentation_url: '',
+                    presentation_urls: [],
+                    date_text: 'मिति: २०८१ बैशाख १ गते, सोमबार',
+                    time_text: 'बैठक सुरु समय: १०:०० बजे',
+                    is_active: true,
+                    font_scale: 100,
+                    background_url: '',
+                    logo_url: '',
+                    scrolling_notice: 'कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।',
+                    scrolling_notice_enabled: true,
+                    agenda: [],
+                    program_start_time: ''
+                };
+                await supabaseClient.from('banner_settings').insert(defaultData);
+                loadSavedData();
+                return;
+            }
+
+            __allBanners = data;
+            const activeItem = data.find(item => item.is_active);
+            currentActiveId = activeItem ? activeItem.id : null;
+            renderBannerTable();
+        }
+
+        function renderBannerTable() {
+            const tableBody = document.getElementById('dataTableBody');
+            const showMoreBtn = document.getElementById('showMoreBtn');
+            const searchInput = document.getElementById('bannerSearchInput');
+            const query = (searchInput ? searchInput.value : '').trim().toLowerCase();
+
+            const filtered = query
+                ? __allBanners.filter(item => {
+                    const haystack = [item.meeting_name, item.sub_meeting_name, item.organized_by]
+                        .filter(Boolean).join(' ').toLowerCase();
+                    return haystack.includes(query);
+                })
+                : __allBanners;
+
+            const rows = __showAllBanners ? filtered : filtered.slice(0, BANNER_LIST_PAGE_SIZE);
+
+            if (filtered.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="color:#999;">कुनै ब्यानर फेला परेन।</td></tr>';
+                showMoreBtn.classList.add('hidden');
+                return;
+            }
+
+            tableBody.innerHTML = '';
+            rows.forEach((item) => {
+                const isActive = item.is_active ? 'checked' : '';
+                const liveTag = item.is_active ? ' 🟢' : '';
+                tableBody.innerHTML += `
+                    <tr>
+                        <td><input type="radio" name="activeRadio" ${isActive} onclick="setActiveBanner(${item.id})" title="यो ब्यानर लाइभ देखाउनुहोस्"></td>
+                        <td><strong>${item.meeting_name || ''}</strong>${liveTag}</td>
+                        <td>${item.sub_meeting_name || ''}</td>
+                        <td>${item.organized_by || ''}</td>
+                        <td>${item.date_text || ''}</td>
+                        <td>${item.time_text || ''}</td>
+                        <td>
+                            <button class="edit-btn" onclick='editRecord(${JSON.stringify(item).replace(/'/g, "&#39;")})'>✏️ Edit</button>
+                            <button class="edit-btn" style="background:#1565c0;" onclick='cloneBanner(${JSON.stringify(item).replace(/'/g, "&#39;")})'>📋 Clone</button>
+                            <button class="edit-btn" style="background:#c62828;" onclick="deleteBanner(${item.id})">🗑️ Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            if (filtered.length > BANNER_LIST_PAGE_SIZE) {
+                showMoreBtn.classList.remove('hidden');
+                showMoreBtn.textContent = __showAllBanners
+                    ? `▲ कम देखाउनुहोस् (५ वटा मात्र)`
+                    : `▼ थप देखाउनुहोस् (जम्मा ${filtered.length} वटा)`;
+            } else {
+                showMoreBtn.classList.add('hidden');
+            }
+        }
+
+        function toggleShowAllBanners() {
+            __showAllBanners = !__showAllBanners;
+            renderBannerTable();
+        }
+
+        async function triggerProgramStart() {
+            const { error } = await supabaseClient
+                .from('banner_settings')
+                .update({ program_start_trigger: Date.now() })
+                .eq('is_active', true);
+
+            if (error) {
+                alert('❌ सुरुवात गर्न असफल: ' + error.message);
+                return;
+            }
+
+            window.open('banner.html', '_blank');
+        }
+
+        async function setActiveBanner(id) {
+            await supabaseClient.from('banner_settings').update({ is_active: false }).neq('id', id);
+            await supabaseClient.from('banner_settings').update({ is_active: true }).eq('id', id);
+            currentActiveId = id;
+            loadSavedData();
+        }
+
+        async function cloneBanner(item) {
+            if (!confirm(`"${item.meeting_name || 'यो बैठक'}" जस्तै नयाँ बैठक बनाउने हो?`)) {
+                return;
+            }
+
+            const clone = {
+                meeting_name: item.meeting_name,
+                sub_meeting_name: item.sub_meeting_name,
+                organized_by: item.organized_by,
+                open_link_url: item.open_link_url,
+                presentation_url: item.presentation_url,
+                presentation_urls: item.presentation_urls || (item.presentation_url ? [item.presentation_url] : []),
+                date_text: item.date_text,
+                time_text: item.time_text,
+                is_active: false,
+                font_scale: item.font_scale,
+                meeting_name_font_size: item.meeting_name_font_size,
+                sub_meeting_font_size: item.sub_meeting_font_size,
+                organized_by_font_size: item.organized_by_font_size,
+                date_font_size: item.date_font_size,
+                time_font_size: item.time_font_size,
+                background_url: item.background_url,
+                logo_url: item.logo_url,
+                scrolling_notice: item.scrolling_notice || 'कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।',
+                scrolling_notice_enabled: item.scrolling_notice_enabled !== false,
+                agenda: item.agenda || [],
+                program_start_time: item.program_start_time || ''
+            };
+
+            const { error } = await supabaseClient.from('banner_settings').insert(clone);
+            if (error) {
+                alert('❌ Clone गर्न असफल: ' + error.message);
+                return;
+            }
+            loadSavedData();
+        }
+
+        async function deleteBanner(id) {
+            if (__allBanners.length <= 1) {
+                alert('❌ कम्तिमा एउटा ब्यानर बाँकी रहनुपर्छ, यसलाई मेटाउन मिल्दैन।');
+                return;
+            }
+
+            const item = __allBanners.find(b => b.id === id);
+            const warnActive = item && item.is_active ? '\n\n⚠️ यो अहिले लाइभ रहेको ब्यानर हो!' : '';
+
+            if (!confirm(`के तपाईं "${item ? (item.meeting_name || 'यो बैठक') : 'यो बैठक'}" पूर्ण रूपमा मेटाउन चाहनुहुन्छ? यो पछि फिर्ता ल्याउन सकिँदैन।${warnActive}`)) {
+                return;
+            }
+
+            const { error } = await supabaseClient.from('banner_settings').delete().eq('id', id);
+            if (error) {
+                alert('❌ मेटाउन असफल: ' + error.message);
+                return;
+            }
+
+            if (item && item.is_active) {
+                const remaining = __allBanners.find(b => b.id !== id);
+                if (remaining) {
+                    await supabaseClient.from('banner_settings').update({ is_active: true }).eq('id', remaining.id);
+                }
+            }
+
+            loadSavedData();
+        }
+
+        // ============================================================
+        // ===== PARSE DATE/TIME =====
+        // ============================================================
+        function parseDateFromText(dateText) {
+            if (!dateText) return null;
+            const normalized = toEnglishDigits(dateText);
+            const match = normalized.match(/मिति:\s*(\d+)\s*([^,]+?)\s*(\d+)\s*गते,\s*([^,]+)/);
+            if (match) {
+                const year = match[1];
+                const monthName = match[2].trim();
+                const day = match[3];
+                const weekday = match[4].trim();
+                const monthIndex = NepaliDate.months.indexOf(monthName);
+                const weekdayIndex = NepaliDate.weekdays.indexOf(weekday);
+                return { year, month: monthIndex, day, weekday: weekdayIndex };
+            }
+            return null;
+        }
+
+        function parseTimeFromText(timeText) {
+            if (!timeText) return null;
+            const normalized = toEnglishDigits(timeText);
+            const match = normalized.match(/बैठक सुरु समय:\s*(\d+):(\d+)\s*बजे/);
+            if (match) {
+                let hour = parseInt(match[1]);
+                const minute = match[2];
+                const period = hour >= 6 ? 'PM' : 'AM';
+                if (hour > 12) hour = hour - 12;
+                if (hour === 0) hour = 12;
+                return { hour, minute, period };
+            }
+            return null;
+        }
+
+        // ============================================================
+        // ===== EDIT RECORD =====
+        // ============================================================
+        window.editRecord = function(item) {
+            document.getElementById('recordId').value = item.id;
+
+            document.getElementById('meetingName').value = item.meeting_name || '';
+            document.getElementById('subMeetingName').value = item.sub_meeting_name || '';
+            document.getElementById('organizedBy').value = item.organized_by || '';
+            document.getElementById('openLinkUrl').value = item.open_link_url || '';
+            setPresentationLinks(
+                (item.presentation_urls && item.presentation_urls.length)
+                    ? item.presentation_urls
+                    : (item.presentation_url ? [item.presentation_url] : [])
+            );
+
+            document.getElementById('fontScale').value = item.font_scale || 100;
+            document.getElementById('globalScaleDisplay').textContent = (item.font_scale || 100) + '%';
+
+            document.getElementById('meetingNameFontSize').value = item.meeting_name_font_size || 4.5;
+            document.getElementById('subMeetingFontSize').value = item.sub_meeting_font_size || 2.5;
+            document.getElementById('organizedByFontSize').value = item.organized_by_font_size || 2.8;
+            document.getElementById('dateFontSize').value = item.date_font_size || 1.6;
+            document.getElementById('timeFontSize').value = item.time_font_size || 1.6;
+
+            // ===== SCROLLING NOTICE =====
+            const noticeText = item.scrolling_notice || 'कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।';
+            document.getElementById('noticeText').value = noticeText;
+            noticeEnabled = item.scrolling_notice_enabled !== false;
+            const toggle = document.getElementById('noticeToggle');
+            const status = document.getElementById('noticeStatus');
+            if (noticeEnabled) {
+                toggle.classList.add('active');
+                status.textContent = 'ON';
+                status.className = 'toggle-status on';
+            } else {
+                toggle.classList.remove('active');
+                status.textContent = 'OFF';
+                status.className = 'toggle-status off';
+            }
+
+            // ===== AGENDA =====
+            setAgendaEditor(item.agenda || []);
+
+            // ===== PROGRAM START TIME =====
+            document.getElementById('programStartTime').value = item.program_start_time || '';
+
+            // ===== DATE =====
+            const dateData = parseDateFromText(item.date_text);
+            if (dateData) {
+                const yearSelect = document.getElementById('nepaliYear');
+                for (let opt of yearSelect.options) {
+                    if (opt.value === dateData.year) { opt.selected = true; break; }
+                }
+                if (dateData.month !== -1) {
+                    document.getElementById('nepaliMonth').value = dateData.month;
+                }
+                const daySelect = document.getElementById('nepaliDay');
+                for (let opt of daySelect.options) {
+                    if (opt.value === dateData.day) { opt.selected = true; break; }
+                }
+                if (dateData.weekday !== -1) {
+                    document.getElementById('nepaliWeekday').value = dateData.weekday;
+                }
+            }
+
+            // ===== TIME =====
+            const timeData = parseTimeFromText(item.time_text);
+            if (timeData) {
+                const hourSelect = document.getElementById('nepaliHour');
+                for (let opt of hourSelect.options) {
+                    if (parseInt(opt.value) === timeData.hour) { opt.selected = true; break; }
+                }
+                const minSelect = document.getElementById('nepaliMinute');
+                for (let opt of minSelect.options) {
+                    if (parseInt(opt.value) === parseInt(timeData.minute)) { opt.selected = true; break; }
+                }
+                document.getElementById('nepaliPeriod').value = timeData.period;
+            }
+
+            updateNepaliDateDisplay();
+
+            // ===== BACKGROUND =====
+            if (item.background_url && item.background_url !== '') {
+                const bgPreview = document.getElementById('bgPreview');
+                bgPreview.src = item.background_url;
+                bgPreview.style.display = 'block';
+                document.getElementById('bgUrlDisplay').textContent = '✅ ' + item.background_url;
+                document.getElementById('bgStatus').textContent = '✅ अपलोड भएको';
+                document.getElementById('bgStatus').className = 'file-status uploaded';
+            } else {
+                document.getElementById('bgPreview').style.display = 'none';
+                document.getElementById('bgUrlDisplay').textContent = 'कुनै छैन';
+                document.getElementById('bgStatus').textContent = '📤 फाइल छान्नुहोस्';
+                document.getElementById('bgStatus').className = 'file-status pending';
+            }
+
+            // ===== LOGO =====
+            if (item.logo_url && item.logo_url !== '') {
+                const logoPreview = document.getElementById('logoPreview');
+                logoPreview.src = item.logo_url;
+                logoPreview.style.display = 'block';
+                document.getElementById('logoUrlDisplay').textContent = '✅ ' + item.logo_url;
+                document.getElementById('logoStatus').textContent = '✅ अपलोड भएको';
+                document.getElementById('logoStatus').className = 'file-status uploaded';
+            } else {
+                document.getElementById('logoPreview').style.display = 'none';
+                document.getElementById('logoUrlDisplay').textContent = 'कुनै छैन';
+                document.getElementById('logoStatus').textContent = '📤 फाइल छान्नुहोस्';
+                document.getElementById('logoStatus').className = 'file-status pending';
+            }
+
+            document.getElementById('updateMsg').innerText = '📝 एडिट मोड: ID ' + item.id;
+            document.getElementById('updateMsg').className = 'msg info';
+
+            updateLivePreview();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ============================================================
+        // ===== UPDATE BANNER DATA =====
+        // ============================================================
+        async function updateBannerData() {
+            const recordId = document.getElementById('recordId').value;
+            const meetingName = document.getElementById('meetingName').value.trim();
+            const subMeetingName = document.getElementById('subMeetingName').value.trim();
+            const organizedBy = document.getElementById('organizedBy').value.trim();
+            const openLinkUrl = document.getElementById('openLinkUrl').value.trim();
+            const fontScale = parseInt(document.getElementById('fontScale').value) || 100;
+            const dateText = document.getElementById('dateText').value;
+            const timeText = document.getElementById('timeText').value;
+
+            const meetingNameFontSize = parseFloat(document.getElementById('meetingNameFontSize').value) || 4.5;
+            const subMeetingFontSize = parseFloat(document.getElementById('subMeetingFontSize').value) || 2.5;
+            const organizedByFontSize = parseFloat(document.getElementById('organizedByFontSize').value) || 2.8;
+            const dateFontSize = parseFloat(document.getElementById('dateFontSize').value) || 1.6;
+            const timeFontSize = parseFloat(document.getElementById('timeFontSize').value) || 1.6;
+
+            // ===== SCROLLING NOTICE =====
+            const noticeText = document.getElementById('noticeText').value.trim();
+            const noticeEnabled = document.getElementById('noticeToggle').classList.contains('active');
+
+            // ===== AGENDA =====
+            const agendaItems = collectAgendaItems();
+
+            // ===== PROGRAM START TIME =====
+            const programStartTime = document.getElementById('programStartTime').value;
+
+            const msgEl = document.getElementById('updateMsg');
+
+            if (!meetingName || !organizedBy) {
+                msgEl.innerText = "कृपया बैठकको नाम र आयोजक भर्नुहोस्";
+                msgEl.className = "msg error";
+                return;
+            }
+
+            msgEl.innerText = "⏳ सेभ हुँदैछ...";
+            msgEl.className = "msg info";
+
+            // Upload PDFs
+            let presentationUrls;
+            try {
+                presentationUrls = await collectPresentationPdfs();
+            } catch (pdfErr) {
+                msgEl.innerText = "❌ " + pdfErr.message;
+                msgEl.className = "msg error";
+                return;
+            }
+
+            // Upload background
+            const bgFile = document.getElementById('bgFile').files[0];
+            let bgUrl = document.getElementById('bgUrlDisplay').textContent.replace('✅ ', '');
+            if (bgUrl === 'कुनै छैन') bgUrl = '';
+
+            if (bgFile) {
+                const uploaded = await uploadImage(bgFile, 'backgrounds');
+                if (uploaded) {
+                    bgUrl = uploaded;
+                    document.getElementById('bgStatus').textContent = '✅ अपलोड भयो';
+                    document.getElementById('bgStatus').className = 'file-status uploaded';
+                } else {
+                    msgEl.innerText = "❌ Background अपलोड असफल";
+                    msgEl.className = "msg error";
+                    return;
+                }
+            }
+
+            // Upload logo
+            const logoFile = document.getElementById('logoFile').files[0];
+            let logoUrl = document.getElementById('logoUrlDisplay').textContent.replace('✅ ', '');
+            if (logoUrl === 'कुनै छैन') logoUrl = '';
+
+            if (logoFile) {
+                const uploaded = await uploadImage(logoFile, 'logos');
+                if (uploaded) {
+                    logoUrl = uploaded;
+                    document.getElementById('logoStatus').textContent = '✅ अपलोड भयो';
+                    document.getElementById('logoStatus').className = 'file-status uploaded';
+                } else {
+                    msgEl.innerText = "❌ Logo अपलोड असफल";
+                    msgEl.className = "msg error";
+                    return;
+                }
+            }
+
+            // Update database
+            const { error } = await supabaseClient
+                .from('banner_settings')
+                .update({
+                    meeting_name: meetingName,
+                    sub_meeting_name: subMeetingName,
+                    organized_by: organizedBy,
+                    open_link_url: openLinkUrl,
+                    presentation_url: (presentationUrls[0] && presentationUrls[0].url) || '',
+                    presentation_urls: presentationUrls,
+                    date_text: dateText,
+                    time_text: timeText,
+                    font_scale: fontScale,
+                    meeting_name_font_size: meetingNameFontSize,
+                    sub_meeting_font_size: subMeetingFontSize,
+                    organized_by_font_size: organizedByFontSize,
+                    date_font_size: dateFontSize,
+                    time_font_size: timeFontSize,
+                    background_url: bgUrl,
+                    logo_url: logoUrl,
+                    scrolling_notice: noticeText || 'कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।',
+                    scrolling_notice_enabled: noticeEnabled,
+                    agenda: agendaItems,
+                    program_start_time: programStartTime,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', recordId);
+
+            if (error) {
+                msgEl.innerText = "❌ अपडेट असफल: " + error.message;
+                msgEl.className = "msg error";
+                return;
+            }
+
+            // Sync date/time to all other banners
+            const { error: syncError } = await supabaseClient
+                .from('banner_settings')
+                .update({
+                    date_text: dateText,
+                    time_text: timeText,
+                    updated_at: new Date().toISOString()
+                })
+                .neq('id', recordId);
+
+            await flushPendingPdfDeletions();
+
+            if (syncError) {
+                msgEl.innerText = "✅ यो ब्यानर अपडेट भयो, तर बाँकीमा मिति/समय सिंक हुन असफल: " + syncError.message;
+                msgEl.className = "msg error";
+            } else {
+                msgEl.innerText = "✅ सफलतापूर्वक अपडेट भयो! (मिति/समय सबै ब्यानरमा सिंक भयो)";
+                msgEl.className = "msg success";
+            }
+            loadSavedData();
+
+            document.getElementById('bgFile').value = '';
+            document.getElementById('logoFile').value = '';
+        }
+
+        // ============================================================
+        // ===== PROGRAM START TIME - LIVE SAVE (feeds realtime) =====
+        // ============================================================
+        async function saveProgramStartTimeLive() {
+            const recordId = document.getElementById('recordId').value;
+            if (!recordId) return;
+
+            const programStartTime = document.getElementById('programStartTime').value;
+            const msgEl = document.getElementById('updateMsg');
+
+            const { error } = await supabaseClient
+                .from('banner_settings')
+                .update({
+                    program_start_time: programStartTime,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', recordId);
+
+            if (!msgEl) return;
+            if (error) {
+                msgEl.innerText = '❌ Program Start Time सेभ असफल: ' + error.message;
+                msgEl.className = 'msg error';
+            } else {
+                msgEl.innerText = '✅ Program Start Time लाइभ अपडेट भयो — Countdown banner मा auto देखिनेछ';
+                msgEl.className = 'msg success';
+            }
+        }
+
+        // ============================================================
+        // ===== NOTICE TEXT - LIVE SAVE (debounced, feeds realtime) =====
+        // ============================================================
+        let __noticeTextSaveTimeout = null;
+        async function saveNoticeTextLive() {
+            const recordId = document.getElementById('recordId').value;
+            if (!recordId) return;
+
+            const noticeText = document.getElementById('noticeText').value.trim();
+            const msgEl = document.getElementById('updateMsg');
+
+            const { error } = await supabaseClient
+                .from('banner_settings')
+                .update({
+                    scrolling_notice: noticeText || 'कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।',
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', recordId);
+
+            if (!msgEl) return;
+            if (error) {
+                msgEl.innerText = '❌ Notice Text सेभ असफल: ' + error.message;
+                msgEl.className = 'msg error';
+            } else {
+                msgEl.innerText = '✅ Notice Text लाइभ अपडेट भयो (Refresh नगरी banner मा change भयो)';
+                msgEl.className = 'msg success';
+            }
+        }
+
+        async function logoutAdmin() {
+            await supabaseClient.auth.signOut();
+            location.reload();
+        }
+
+        // ============================================================
+        // ===== LIVE PREVIEW (no save required) =====
+        // ============================================================
+        function updateLivePreview() {
+            const meetingName = document.getElementById('meetingName').value.trim() || 'बैठकको नाम';
+            const subMeetingName = document.getElementById('subMeetingName').value.trim();
+            const organizedBy = document.getElementById('organizedBy').value.trim() || 'आयोजकको नाम';
+            const noticeText = document.getElementById('noticeText').value.trim() || 'कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।';
+            const dateText = document.getElementById('dateText').value || 'मिति: --';
+            const timeText = document.getElementById('timeText').value || 'समय: --';
+
+            const meetingNameFontSize = parseFloat(document.getElementById('meetingNameFontSize').value) || 4.5;
+            const subMeetingFontSize = parseFloat(document.getElementById('subMeetingFontSize').value) || 2.5;
+            const organizedByFontSize = parseFloat(document.getElementById('organizedByFontSize').value) || 2.8;
+
+            const previewMeeting = document.getElementById('previewMeetingName');
+            previewMeeting.textContent = meetingName;
+            previewMeeting.style.fontSize = Math.min(meetingNameFontSize, 3) + 'rem'; // capped so the preview box stays readable
+
+            const previewSub = document.getElementById('previewSubMeeting');
+            previewSub.textContent = subMeetingName;
+            previewSub.style.display = subMeetingName ? 'block' : 'none';
+            previewSub.style.fontSize = Math.min(subMeetingFontSize, 1.6) + 'rem';
+
+            const previewOrg = document.getElementById('previewOrganizedBy');
+            previewOrg.textContent = organizedBy;
+            previewOrg.style.fontSize = Math.min(organizedByFontSize, 1.8) + 'rem';
+
+            document.getElementById('previewDate').textContent = dateText;
+            document.getElementById('previewTime').textContent = timeText;
+            document.getElementById('previewNotice').textContent = noticeText;
+
+            const logoImg = document.getElementById('previewLogo');
+            const logoSrc = document.getElementById('logoPreview').src;
+            if (logoSrc && document.getElementById('logoPreview').style.display !== 'none') {
+                logoImg.src = logoSrc;
+                logoImg.style.display = 'block';
+            } else {
+                logoImg.style.display = 'none';
+            }
+
+            const bgSrc = document.getElementById('bgPreview').src;
+            const box = document.getElementById('livePreviewBox');
+            if (bgSrc && document.getElementById('bgPreview').style.display !== 'none') {
+                box.style.backgroundImage = `linear-gradient(rgba(10,10,25,0.55), rgba(10,10,25,0.55)), url('${bgSrc}')`;
+                box.style.backgroundSize = 'cover';
+                box.style.backgroundPosition = 'center';
+            } else {
+                box.style.backgroundImage = '';
+            }
+        }
+
+        // Local instant preview when a new file is chosen (feeds both the
+        // upload preview and the live preview, without needing to upload/save first)
+        function wireLocalImagePreview(fileInputId, previewImgId) {
+            document.getElementById(fileInputId).addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function (ev) {
+                    const img = document.getElementById(previewImgId);
+                    img.src = ev.target.result;
+                    img.style.display = 'block';
+                    updateLivePreview();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        wireLocalImagePreview('bgFile', 'bgPreview');
+        wireLocalImagePreview('logoFile', 'logoPreview');
+
+        // Live preview updates as the admin types / changes settings — no save needed
+        ['meetingName', 'subMeetingName', 'organizedBy', 'noticeText',
+         'meetingNameFontSize', 'subMeetingFontSize', 'organizedByFontSize'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', updateLivePreview);
+        });
+
+        // Event listeners for date/time update
+        document.getElementById('nepaliHour').addEventListener('change', updateNepaliDateDisplay);
+        document.getElementById('nepaliMinute').addEventListener('change', updateNepaliDateDisplay);
+        document.getElementById('nepaliPeriod').addEventListener('change', updateNepaliDateDisplay);
+        document.getElementById('nepaliDay').addEventListener('change', updateNepaliDateDisplay);
+        document.getElementById('nepaliMonth').addEventListener('change', updateNepaliDateDisplay);
+        document.getElementById('nepaliYear').addEventListener('change', updateNepaliDateDisplay);
+        document.getElementById('nepaliWeekday').addEventListener('change', updateNepaliDateDisplay);
+
+        // Program Start Time -> save immediately on change (realtime countdown)
+        document.getElementById('programStartTime').addEventListener('change', saveProgramStartTimeLive);
+
+        // Notice Text -> debounced live save while typing, and immediate save on blur
+        document.getElementById('noticeText').addEventListener('input', function () {
+            clearTimeout(__noticeTextSaveTimeout);
+            __noticeTextSaveTimeout = setTimeout(saveNoticeTextLive, 800);
+        });
+        document.getElementById('noticeText').addEventListener('blur', function () {
+            clearTimeout(__noticeTextSaveTimeout);
+            saveNoticeTextLive();
+        });
+    </script>
+</body>
+</html>

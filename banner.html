@@ -1,0 +1,2048 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Digital Banner - Live Supabase with Nepali Date/Time</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://kbyfvqkfcxqgjjtfvvxf.supabase.co" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100vh;
+            height: calc(var(--vh, 1vh) * 100);
+            overflow: hidden;
+            font-family: 'Mukta', 'Segoe UI', sans-serif;
+            background-color: #000;
+        }
+
+        .banner-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            height: calc(var(--vh, 1vh) * 100);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            border: 12px solid #d4af37;
+            transition: background-image 0.5s ease, border-color 0.3s ease;
+            background-color: #1a1a2e;
+        }
+
+        .start-screen {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            height: calc(var(--vh, 1vh) * 100);
+            z-index: 5000;
+            overflow: hidden;
+        }
+
+        .start-screen.hidden {
+            display: none;
+        }
+
+        .curtain {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background:
+                repeating-linear-gradient(90deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 2px, transparent 2px, transparent 34px),
+                linear-gradient(135deg, #8a0f0f 0%, #5c0808 45%, #8a0f0f 100%);
+            box-shadow: inset -30px 0 60px rgba(0,0,0,0.45);
+            transition: transform 3.2s cubic-bezier(0.65, 0, 0.35, 1);
+            z-index: 2;
+        }
+
+        .curtain-left {
+            left: 0;
+            border-right: 5px solid #d4af37;
+        }
+
+        .curtain-right {
+            right: 0;
+            border-left: 5px solid #d4af37;
+        }
+
+        .start-screen.opening .curtain-left {
+            transform: translateX(-100%);
+        }
+
+        .start-screen.opening .curtain-right {
+            transform: translateX(100%);
+        }
+
+        .start-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 22px;
+            z-index: 3;
+            text-align: center;
+            padding: 20px;
+            transition: opacity 0.4s ease;
+        }
+
+        .start-screen.opening .start-content {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .start-screen h1 {
+            font-family: 'Mukta', 'Segoe UI', sans-serif;
+            font-size: 1.6rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .start-btn {
+            font-family: 'Mukta', 'Segoe UI', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1a1a2e;
+            background: linear-gradient(135deg, #ffd76a, #d4af37);
+            border: none;
+            padding: 22px 55px;
+            border-radius: 16px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            letter-spacing: 1px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 14px 38px rgba(212, 175, 55, 0.55);
+        }
+
+        .start-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        @media (max-width: 480px) {
+            .start-screen h1 { font-size: 1.1rem; }
+            .start-btn { font-size: 1.15rem; padding: 16px 34px; }
+        }
+
+        .header-section {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 12px;
+            z-index: 10;
+            position: relative;
+        }
+
+        .live-clock {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #111;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            backdrop-filter: blur(5px);
+            border: 2px solid #d4af37;
+        }
+
+        .center-logo-container {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 10px 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(3px);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .center-logo-container img {
+            max-height: 70px;
+            max-width: 180px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .content-section {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(212, 175, 55, 0.2);
+            max-width: 90%;
+        }
+
+        .meeting-title {
+            font-size: calc(var(--meeting-title-size, 4.5rem) * var(--font-scale, 1));
+            font-weight: 800;
+            color: #d32f2f;
+            text-shadow: 3px 3px 0px rgba(255,255,255,0.8), 
+                        -3px -3px 0px rgba(255,255,255,0.8),
+                        3px -3px 0px rgba(255,255,255,0.8),
+                        -3px 3px 0px rgba(255,255,255,0.8),
+                        0px 0px 20px rgba(255,255,255,0.5);
+            letter-spacing: 2px;
+            line-height: 1.3;
+            white-space: normal;
+            word-wrap: break-word;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .sub-meeting-title {
+            font-size: calc(var(--sub-meeting-title-size, 2.5rem) * var(--font-scale, 1));
+            font-weight: 700;
+            color: #e65100;
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.7), 
+                        -2px -2px 0px rgba(255,255,255,0.7),
+                        2px -2px 0px rgba(255,255,255,0.7),
+                        -2px 2px 0px rgba(255,255,255,0.7);
+            letter-spacing: 1px;
+            line-height: 1.2;
+            white-space: normal;
+            word-wrap: break-word;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .organized-by {
+            font-size: calc(var(--organized-by-size, 2.8rem) * var(--font-scale, 1));
+            font-weight: 700;
+            color: #b71c1c;
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.8), 
+                        -2px -2px 0px rgba(255,255,255,0.8),
+                        2px -2px 0px rgba(255,255,255,0.8),
+                        -2px 2px 0px rgba(255,255,255,0.8);
+            margin-top: 5px;
+        }
+
+        /* ===== AGENDA SECTION ===== */
+        .agenda-section {
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            padding: 12px 24px;
+            max-width: 80%;
+            width: 100%;
+            margin: 5px auto;
+            display: none;
+        }
+
+        .agenda-section.visible {
+            display: block;
+        }
+
+        .agenda-title {
+            color: #d4af37;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .agenda-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .agenda-item {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            padding: 4px 12px;
+            border-left: 3px solid #d4af37;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            text-align: left;
+        }
+
+        .agenda-item .agenda-num {
+            color: #d4af37;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        /* ===== COUNTDOWN ===== */
+        .countdown-section {
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            padding: 8px 24px;
+            display: none;
+            text-align: center;
+        }
+
+        .countdown-section.visible {
+            display: block;
+        }
+
+        .countdown-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .countdown-timer {
+            color: #d4af37;
+            font-size: 2rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 2px;
+        }
+
+        .countdown-timer.started {
+            color: #4caf50;
+            font-size: 1.5rem;
+        }
+
+        /* ===== INTERNET STATUS (top-right, next to clock) ===== */
+        .internet-badge-top {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 46px;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            backdrop-filter: blur(5px);
+            border: 2px solid #d4af37;
+            transition: border-color 0.3s ease;
+        }
+
+        .internet-badge-top svg {
+            width: 24px;
+            height: 24px;
+            transition: fill 0.3s ease;
+        }
+
+        .internet-badge-top.online svg {
+            fill: #4caf50;
+        }
+
+        .internet-badge-top.offline svg {
+            fill: #f44336;
+        }
+
+        .internet-badge-top.online {
+            border-color: #4caf50;
+        }
+
+        .internet-badge-top.offline {
+            border-color: #f44336;
+        }
+
+        /* ===== SCROLLING NOTICE ===== */
+        .scrolling-notice {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            border-top: 2px solid #d4af37;
+            overflow: hidden;
+            height: 36px;
+            display: none;
+            align-items: center;
+        }
+
+        .scrolling-notice.visible {
+            display: flex;
+        }
+
+        .scrolling-notice .ticker {
+            display: inline-block;
+            white-space: nowrap;
+            animation: scrollNotice 20s linear infinite;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            padding-left: 100%;
+        }
+
+        @keyframes scrollNotice {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .footer-section {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: calc(1.8rem * var(--font-scale, 1));
+            font-weight: bold;
+            color: #b71c1c;
+            padding: 0 20px 10px 20px;
+            z-index: 10;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .footer-section span {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 8px 25px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            border: 2px solid #d4af37;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .footer-section .nepali-date-display {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 25px;
+            border-radius: 10px;
+            border: 2px solid #d4af37;
+            font-size: calc(var(--date-size, 1.6rem) * var(--font-scale, 1));
+        }
+
+        .footer-section .time-display {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 25px;
+            border-radius: 10px;
+            border: 2px solid #d4af37;
+            font-size: calc(var(--time-size, 1.6rem) * var(--font-scale, 1));
+        }
+
+        .footer-left-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .anthem-play-btn {
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            background: rgba(0, 0, 0, 0.3);
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(3px);
+            transition: all 0.25s ease;
+            box-shadow: none;
+            padding: 0;
+        }
+
+        .anthem-play-btn:hover {
+            background: rgba(0, 0, 0, 0.5);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .anthem-play-btn.playing {
+            color: rgba(255, 255, 255, 0.85);
+            border-color: rgba(212, 175, 55, 0.6);
+        }
+
+        .open-link-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            color: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(3px);
+            letter-spacing: 0.5px;
+            text-decoration: none;
+            display: none;
+        }
+
+        .open-link-btn.visible {
+            display: inline-block;
+        }
+
+        .open-link-btn:hover {
+            background: rgba(0, 0, 0, 0.5);
+            color: rgba(255, 255, 255, 0.95);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .presentation-buttons-wrap {
+            position: absolute;
+            top: 62px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .presentation-buttons-wrap .open-link-btn {
+            position: static;
+            display: inline-block;
+        }
+
+        .iframe-overlay {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            height: calc(var(--vh, 1vh) * 100);
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 6000;
+            display: none;
+            flex-direction: column;
+        }
+
+        .iframe-overlay.visible {
+            display: flex;
+        }
+
+        .iframe-overlay-header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .iframe-overlay-close {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1a1a2e;
+            border: none;
+            padding: 8px 18px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+        }
+
+        .iframe-overlay-close:hover {
+            background: #fff;
+        }
+
+        .iframe-overlay-body {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .iframe-overlay-frame {
+            border: none;
+            background: #fff;
+            width: 100%;
+            height: 100%;
+        }
+
+        .fullscreen-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            color: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 6px 12px;
+            font-size: 0.7rem;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(3px);
+            letter-spacing: 0.5px;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(0, 0, 0, 0.5);
+            color: rgba(255, 255, 255, 0.9);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .status-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.8rem;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 12px;
+            border-radius: 20px;
+            z-index: 1000;
+            backdrop-filter: blur(3px);
+        }
+
+        .status-indicator .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #4caf50;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        @media (max-width: 1024px) {
+            .meeting-title {
+                font-size: calc(var(--meeting-title-size, 4.5rem) * var(--font-scale, 1) * 0.78);
+            }
+            .sub-meeting-title {
+                font-size: calc(var(--sub-meeting-title-size, 2.5rem) * var(--font-scale, 1) * 0.8);
+            }
+            .organized-by {
+                font-size: calc(var(--organized-by-size, 2.8rem) * var(--font-scale, 1) * 0.79);
+            }
+            .footer-section {
+                font-size: calc(1.4rem * var(--font-scale, 1));
+            }
+            .footer-section span {
+                font-size: calc(1.2rem * var(--font-scale, 1));
+                padding: 6px 18px;
+            }
+            .footer-section .nepali-date-display {
+                font-size: calc(var(--date-size, 1.6rem) * var(--font-scale, 1) * 0.75);
+                padding: 6px 18px;
+            }
+            .footer-section .time-display {
+                font-size: calc(var(--time-size, 1.6rem) * var(--font-scale, 1) * 0.75);
+                padding: 6px 18px;
+            }
+            .live-clock {
+                font-size: 1.4rem;
+                padding: 8px 15px;
+            }
+            .center-logo-container img {
+                max-height: 50px;
+                max-width: 130px;
+            }
+            .internet-badge-top {
+                width: 38px;
+                height: 38px;
+            }
+            .internet-badge-top svg {
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .banner-container {
+                padding: 15px 15px;
+                border-width: 8px;
+            }
+            .meeting-title {
+                font-size: calc(var(--meeting-title-size, 4.5rem) * var(--font-scale, 1) * 0.56);
+            }
+            .sub-meeting-title {
+                font-size: calc(var(--sub-meeting-title-size, 2.5rem) * var(--font-scale, 1) * 0.6);
+            }
+            .organized-by {
+                font-size: calc(var(--organized-by-size, 2.8rem) * var(--font-scale, 1) * 0.57);
+            }
+            .content-section {
+                padding: 15px 20px;
+            }
+            .footer-section {
+                font-size: calc(1rem * var(--font-scale, 1));
+                justify-content: center;
+                gap: 8px;
+            }
+            .footer-section span {
+                font-size: calc(0.9rem * var(--font-scale, 1));
+                padding: 4px 12px;
+            }
+            .footer-section .nepali-date-display {
+                font-size: calc(var(--date-size, 1.6rem) * var(--font-scale, 1) * 0.56);
+                padding: 4px 12px;
+            }
+            .footer-section .time-display {
+                font-size: calc(var(--time-size, 1.6rem) * var(--font-scale, 1) * 0.56);
+                padding: 4px 12px;
+            }
+            .live-clock {
+                font-size: 1rem;
+                padding: 5px 12px;
+            }
+            .center-logo-container {
+                top: 10px;
+                padding: 5px 12px;
+            }
+            .center-logo-container img {
+                max-height: 40px;
+                max-width: 100px;
+            }
+            .header-section {
+                justify-content: center;
+            }
+            .fullscreen-btn {
+                padding: 4px 10px;
+                font-size: 0.6rem;
+                bottom: 10px;
+                right: 10px;
+            }
+            .status-indicator {
+                display: none;
+            }
+            .agenda-section {
+                max-width: 95%;
+                padding: 8px 12px;
+            }
+            .agenda-title {
+                font-size: 1rem;
+            }
+            .agenda-item {
+                font-size: 0.85rem;
+                padding: 3px 8px;
+            }
+            .countdown-timer {
+                font-size: 1.4rem;
+            }
+            .scrolling-notice {
+                height: 30px;
+            }
+            .scrolling-notice .ticker {
+                font-size: 0.9rem;
+            }
+            .internet-badge-top {
+                width: 30px;
+                height: 30px;
+            }
+            .internet-badge-top svg {
+                width: 16px;
+                height: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .meeting-title {
+                font-size: calc(var(--meeting-title-size, 4.5rem) * var(--font-scale, 1) * 0.4);
+            }
+            .sub-meeting-title {
+                font-size: calc(var(--sub-meeting-title-size, 2.5rem) * var(--font-scale, 1) * 0.48);
+            }
+            .organized-by {
+                font-size: calc(var(--organized-by-size, 2.8rem) * var(--font-scale, 1) * 0.43);
+            }
+            .footer-section span {
+                font-size: calc(0.7rem * var(--font-scale, 1));
+                padding: 3px 8px;
+            }
+            .footer-section .nepali-date-display,
+            .footer-section .time-display {
+                font-size: calc(var(--date-size, 1.6rem) * var(--font-scale, 1) * 0.44);
+                padding: 3px 8px;
+            }
+            .live-clock {
+                font-size: 0.8rem;
+                padding: 4px 10px;
+            }
+            .center-logo-container img {
+                max-height: 30px;
+                max-width: 80px;
+            }
+            .content-section {
+                padding: 10px 15px;
+            }
+            .fullscreen-btn {
+                padding: 3px 8px;
+                font-size: 0.5rem;
+                bottom: 8px;
+                right: 8px;
+            }
+            .agenda-item {
+                font-size: 0.7rem;
+            }
+            .countdown-timer {
+                font-size: 1rem;
+            }
+            .scrolling-notice {
+                height: 24px;
+            }
+            .scrolling-notice .ticker {
+                font-size: 0.7rem;
+                animation-duration: 15s;
+            }
+            .internet-badge-top {
+                width: 26px;
+                height: 26px;
+            }
+            .internet-badge-top svg {
+                width: 14px;
+                height: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="start-screen" id="startScreen">
+        <div class="curtain curtain-left" id="curtainLeft"></div>
+        <div class="curtain curtain-right" id="curtainRight"></div>
+        <div class="start-content" id="startContent">
+            <h1>प्रस्तुत गर्न तयार हुँदा तल क्लिक गर्नुहोस्</h1>
+            <button class="start-btn" id="startProgramBtn" onclick="startProgram()">🎬 कार्यक्रमको सुरुवात गर्नुहोस्</button>
+        </div>
+    </div>
+    <script>
+        // Apply last-known Chief Guest Mode immediately, before Supabase responds,
+        // so the curtain never flashes on screen when the mode is Off.
+        (function() {
+            try {
+                var raw = localStorage.getItem('chiefGuestModeCache');
+                if (raw !== null && JSON.parse(raw) === false) {
+                    document.getElementById('startScreen').classList.add('hidden');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
+    <div class="banner-container" id="bannerBg">
+        
+        <div class="center-logo-container" onclick="openInPageOverlay(event, 'centerLogo')" style="cursor:pointer;" title="Admin Panel">
+            <img id="centerLogo" src="" alt="Logo" data-url="https://nabinchalise.com.np/adminbanner" fetchpriority="high" decoding="async">
+        </div>
+
+        <div class="header-section">
+            <div class="internet-badge-top offline" id="internetBadge" title="Internet Status">
+                <svg id="internetDot" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 21a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2zM8.5 14.5a5 5 0 0 1 7 0 1 1 0 0 1-1.4 1.4 3 3 0 0 0-4.2 0 1 1 0 1 1-1.4-1.4zM5 11a10 10 0 0 1 14 0 1 1 0 0 1-1.4 1.4 8 8 0 0 0-11.2 0A1 1 0 1 1 5 11zM1.5 7.5a15 15 0 0 1 21 0 1 1 0 1 1-1.4 1.4 13 13 0 0 0-18.2 0 1 1 0 0 1-1.4-1.4z"/>
+                </svg>
+            </div>
+            <div class="live-clock" id="liveClock">
+                <span id="clockTime">--:--:--</span>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h1 class="meeting-title" id="meetingName">Loading...</h1>
+            <h2 class="sub-meeting-title" id="subMeetingName"></h2>
+            <h2 class="organized-by" id="organizedBy">Loading...</h2>
+        </div>
+
+        <!-- Agenda Section -->
+        <div class="agenda-section" id="agendaSection">
+            <div class="agenda-title">📋 कार्यसूची</div>
+            <div class="agenda-list" id="agendaList"></div>
+        </div>
+
+        <!-- Countdown Section -->
+        <div class="countdown-section" id="countdownSection">
+            <div class="countdown-label">⏱ Program Starts In</div>
+            <div class="countdown-timer" id="countdownTimer">-- : -- : --</div>
+        </div>
+
+        <!-- Scrolling Notice -->
+        <div class="scrolling-notice" id="scrollingNotice">
+            <div class="ticker" id="noticeTicker">कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।</div>
+        </div>
+
+        <div class="footer-section">
+            <span class="footer-left-group">
+                <button class="anthem-play-btn" id="anthemPlayBtn" onclick="toggleNationalAnthem()" title="राष्ट्रिय गान" aria-label="राष्ट्रिय गान">▶</button>
+                <span class="nepali-date-display" id="dateDisplay">
+                    <span id="dateText">मिति: --</span>
+                </span>
+            </span>
+            <span class="footer-left-group">
+                <span class="time-display" id="timeDisplay">
+                    <span id="timeText">समय: --</span>
+                </span>
+            </span>
+        </div>
+
+        <div class="status-indicator">
+            <span class="dot"></span>
+            <span id="statusText">लाइभ</span>
+        </div>
+    </div>
+
+    <a href="#" class="open-link-btn" id="openLinkBtn" onclick="return openInPageOverlay(event, 'openLinkBtn')">🔗 Open Link</a>
+
+    <div class="presentation-buttons-wrap" id="presentationButtonsWrap"></div>
+
+    <button class="fullscreen-btn" onclick="toggleFullScreen()">⛶ Fullscreen</button>
+
+    <div class="iframe-overlay" id="iframeOverlay">
+        <div class="iframe-overlay-header">
+            <button class="iframe-overlay-close" onclick="closeInPageOverlay()">✕ Close</button>
+        </div>
+        <div class="iframe-overlay-body" id="iframeOverlayBody">
+            <iframe class="iframe-overlay-frame" id="iframeOverlayFrame" src="" title="Content"></iframe>
+        </div>
+    </div>
+
+    <audio id="nationalAnthemAudio" src="/r/national_anthem.mp3" preload="none"></audio>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+
+    <script>
+        // ============================================================
+        // ===== SUPABASE CONFIGURATION =====
+        // ============================================================
+        const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ============================================================
+        // ===== STATE =====
+        // ============================================================
+        let __fullscreenRequested = false;
+        let __firstInteractionArmed = false;
+        let __overlayIsPresentation = false;
+        let __typewriterRunning = false;
+        let __lastTypewriterTrigger = 0;
+        let __lastProgramTrigger = 0;
+        let __currentMeetingName = '';
+        let __liveBannerId = null;
+        let __programStartTime = null;
+        let __celebrationTimer = null;
+
+        // ============================================================
+        // ===== IMAGE LOADING (preload critical images) =====
+        // ============================================================
+        let __lastPreloadedUrl = '';
+        function preloadImage(url) {
+            if (!url || url === __lastPreloadedUrl) return; // avoid duplicate <link> tags on every 30s poll
+            __lastPreloadedUrl = url;
+            const link = document.createElement('link');
+            link.rel = 'preload';
+            link.as = 'image';
+            link.href = url;
+            link.fetchPriority = 'high';
+            document.head.appendChild(link);
+        }
+
+        // ============================================================
+        // ===== NEPALI DATE SYSTEM =====
+        // ============================================================
+        const NepaliDate = {
+            months: ['बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कात्तिक', 'मंसिर', 'पुष', 'माघ', 'फागुन', 'चैत'],
+            weekdays: ['आइतबार', 'सोमबार', 'मंगलबार', 'बुधबार', 'बिहिबार', 'शुक्रबार', 'शनिबार'],
+            monthDays: {
+                2070: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2071: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2072: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2073: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2074: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2075: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2076: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2077: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2078: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2079: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2080: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2081: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2082: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2083: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2084: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2085: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2086: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2087: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2088: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2089: [31,32,31,32,31,30,30,30,29,30,29,30],
+                2090: [31,32,31,32,31,30,30,30,29,30,29,30]
+            },
+            referenceYear: 2070,
+            referenceMonth: 0,
+            referenceDay: 1,
+            referenceEnglishDate: new Date(2013, 3, 14)
+        };
+
+        function toNepaliDigits(input) {
+            const nepaliDigits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+            return String(input).replace(/[0-9]/g, d => nepaliDigits[d]);
+        }
+
+        function getCurrentNepaliDate() {
+            const now = new Date();
+            const refDate = NepaliDate.referenceEnglishDate;
+            const diffDays = Math.floor((now - refDate) / (1000 * 60 * 60 * 24));
+            
+            let remainingDays = diffDays;
+            let year = NepaliDate.referenceYear;
+            let month = NepaliDate.referenceMonth;
+            
+            while (remainingDays > 0) {
+                const daysInYear = NepaliDate.monthDays[year];
+                if (!daysInYear) break;
+                
+                const totalDaysInYear = daysInYear.reduce((a, b) => a + b, 0);
+                if (remainingDays >= totalDaysInYear) {
+                    remainingDays -= totalDaysInYear;
+                    year++;
+                } else {
+                    for (let m = 0; m < daysInYear.length; m++) {
+                        if (remainingDays >= daysInYear[m]) {
+                            remainingDays -= daysInYear[m];
+                            month = m + 1;
+                        } else {
+                            month = m;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            
+            const day = remainingDays + 1;
+            const weekdayIndex = (1 + diffDays) % 7;
+            
+            return {
+                year: year,
+                month: month,
+                day: day,
+                weekday: NepaliDate.weekdays[weekdayIndex],
+                monthName: NepaliDate.months[month]
+            };
+        }
+
+        function getCurrentNepaliTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            const periodNepali = hours >= 12 ? 'बेलुका' : 'बिहान';
+            const period = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+
+            const digitsFormatted = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            return {
+                hours: hours,
+                minutes: minutes,
+                seconds: seconds,
+                period: period,
+                periodNepali: periodNepali,
+                formatted: `${digitsFormatted} ${period}`,
+                formattedNepali: `${toNepaliDigits(digitsFormatted)} ${periodNepali}`
+            };
+        }
+
+        // ============================================================
+        // ===== CACHE =====
+        // ============================================================
+        const BANNER_CACHE_KEY = 'bannerSettingsCache';
+        const CHIEF_GUEST_CACHE_KEY = 'chiefGuestModeCache';
+
+        function saveBannerCache(data) {
+            try {
+                localStorage.setItem(BANNER_CACHE_KEY, JSON.stringify(data));
+            } catch (e) {}
+        }
+
+        function loadBannerCache() {
+            try {
+                const raw = localStorage.getItem(BANNER_CACHE_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function saveChiefGuestModeCache(enabled) {
+            try {
+                localStorage.setItem(CHIEF_GUEST_CACHE_KEY, JSON.stringify(!!enabled));
+            } catch (e) {}
+        }
+
+        function loadChiefGuestModeCache() {
+            try {
+                const raw = localStorage.getItem(CHIEF_GUEST_CACHE_KEY);
+                return raw === null ? null : JSON.parse(raw);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // ============================================================
+        // ===== APPLY BANNER DATA =====
+        // ============================================================
+        function applyBannerData(data) {
+            if (!data) return;
+
+            __liveBannerId = data.id;
+            __currentMeetingName = data.meeting_name || '';
+            document.getElementById('meetingName').innerText = data.meeting_name || 'Loading...';
+            document.getElementById('subMeetingName').innerText = data.sub_meeting_name || '';
+            document.getElementById('organizedBy').innerText = data.organized_by || 'Loading...';
+
+            if (!data.sub_meeting_name || data.sub_meeting_name.trim() === '') {
+                document.getElementById('subMeetingName').style.display = 'none';
+            } else {
+                document.getElementById('subMeetingName').style.display = 'block';
+            }
+
+            if (data.date_text) {
+                document.getElementById('dateText').innerHTML = data.date_text;
+            }
+            if (data.time_text) {
+                document.getElementById('timeText').innerHTML = data.time_text;
+            }
+
+            if (data.background_url && data.background_url !== '') {
+                preloadImage(data.background_url);
+                document.getElementById('bannerBg').style.backgroundImage = `url('${data.background_url}')`;
+            } else {
+                document.getElementById('bannerBg').style.backgroundImage = '';
+            }
+            if (data.logo_url && data.logo_url !== '') {
+                document.getElementById('centerLogo').src = data.logo_url;
+                document.getElementById('centerLogo').style.display = 'block';
+            } else {
+                document.getElementById('centerLogo').style.display = 'none';
+            }
+
+            const openLinkBtn = document.getElementById('openLinkBtn');
+            if (data.open_link_url && data.open_link_url.trim() !== '') {
+                openLinkBtn.dataset.url = data.open_link_url.trim();
+                openLinkBtn.classList.add('visible');
+            } else {
+                delete openLinkBtn.dataset.url;
+                openLinkBtn.classList.remove('visible');
+            }
+
+            let presentationItems = [];
+            if (Array.isArray(data.presentation_urls) && data.presentation_urls.length) {
+                presentationItems = data.presentation_urls
+                    .map(it => (typeof it === 'string') ? { name: '', url: it.trim() } : { name: (it && it.name || '').trim(), url: (it && it.url || '').trim() })
+                    .filter(it => it.url !== '');
+            } else if (data.presentation_url && data.presentation_url.trim() !== '') {
+                presentationItems = [{ name: '', url: data.presentation_url.trim() }];
+            }
+            renderPresentationButtons(presentationItems);
+
+            const fontScale = data.font_scale || 100;
+            document.documentElement.style.setProperty('--font-scale', fontScale / 100);
+
+            document.documentElement.style.setProperty('--meeting-title-size', (data.meeting_name_font_size || 4.5) + 'rem');
+            document.documentElement.style.setProperty('--sub-meeting-title-size', (data.sub_meeting_font_size || 2.5) + 'rem');
+            document.documentElement.style.setProperty('--organized-by-size', (data.organized_by_font_size || 2.8) + 'rem');
+            document.documentElement.style.setProperty('--date-size', (data.date_font_size || 1.6) + 'rem');
+            document.documentElement.style.setProperty('--time-size', (data.time_font_size || 1.6) + 'rem');
+
+            if (data.typewriter_trigger && data.typewriter_trigger !== __lastTypewriterTrigger) {
+                __lastTypewriterTrigger = data.typewriter_trigger;
+                playTypewriter(data.meeting_name || '', 3);
+            }
+
+            if (data.program_start_trigger && data.program_start_trigger !== __lastProgramTrigger) {
+                __lastProgramTrigger = data.program_start_trigger;
+                const startScreen = document.getElementById('startScreen');
+                const startBtn = document.getElementById('startProgramBtn');
+                if (startScreen && startBtn && !startBtn.disabled &&
+                    !startScreen.classList.contains('hidden') && !startScreen.classList.contains('opening')) {
+                    startBtn.click();
+                }
+            }
+
+            // ===== SCROLLING NOTICE =====
+            const noticeEnabled = data.scrolling_notice_enabled !== false;
+            const noticeText = data.scrolling_notice || 'कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।';
+            const noticeEl = document.getElementById('scrollingNotice');
+            const tickerEl = document.getElementById('noticeTicker');
+            if (noticeEnabled && noticeText.trim()) {
+                tickerEl.textContent = noticeText;
+                noticeEl.classList.add('visible');
+            } else {
+                noticeEl.classList.remove('visible');
+            }
+
+            // ===== AGENDA =====
+            const agendaData = data.agenda || [];
+            renderAgenda(agendaData);
+
+            // ===== COUNTDOWN =====
+            const startTime = data.program_start_time || null;
+            if (startTime) {
+                __programStartTime = startTime;
+                CountdownModule.start(startTime);
+            } else {
+                document.getElementById('countdownSection').classList.remove('visible');
+                CountdownModule.stop();
+            }
+
+            // ===== CELEBRATION TRIGGER =====
+            if (data.celebration_trigger && data.celebration_type) {
+                triggerCelebration(data.celebration_type);
+                supabaseClient
+                    .from('banner_settings')
+                    .update({ celebration_trigger: null, celebration_type: null })
+                    .eq('id', data.id)
+                    .then(() => {});
+            }
+        }
+
+        // ============================================================
+        // ===== RENDER AGENDA =====
+        // ============================================================
+        function renderAgenda(agendaItems) {
+            const section = document.getElementById('agendaSection');
+            const list = document.getElementById('agendaList');
+            
+            if (!agendaItems || agendaItems.length === 0) {
+                section.classList.remove('visible');
+                list.innerHTML = '';
+                return;
+            }
+
+            section.classList.add('visible');
+            list.innerHTML = agendaItems.map((item, idx) => {
+                const text = typeof item === 'string' ? item : (item.text || item.title || '');
+                return `<div class="agenda-item"><span class="agenda-num">${idx + 1}.</span> ${text}</div>`;
+            }).join('');
+        }
+
+        // ============================================================
+        // ===== COUNTDOWN MODULE (self-contained: owns its own interval) =====
+        // ============================================================
+        const CountdownModule = (function () {
+            let intervalId = null;
+
+            function stop() {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+            }
+
+            function start(startTimeStr) {
+                const section = document.getElementById('countdownSection');
+                const timer = document.getElementById('countdownTimer');
+
+                stop();
+
+                // Support both 24-hour "HH:MM" (native <input type="time"> format)
+                // and legacy 12-hour "H:MM AM/PM" strings.
+                let hours, minutes;
+                const parts24 = startTimeStr.match(/^(\d{1,2}):(\d{2})$/);
+                const parts12 = startTimeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+
+                if (parts24) {
+                    hours = parseInt(parts24[1]);
+                    minutes = parseInt(parts24[2]);
+                } else if (parts12) {
+                    hours = parseInt(parts12[1]);
+                    minutes = parseInt(parts12[2]);
+                    const period = parts12[3].toUpperCase();
+                    if (period === 'PM' && hours !== 12) hours += 12;
+                    if (period === 'AM' && hours === 12) hours = 0;
+                } else {
+                    section.classList.remove('visible');
+                    return;
+                }
+
+                const now = new Date();
+                let target = new Date(now);
+                target.setHours(hours, minutes, 0, 0);
+
+                if (target < now) {
+                    target.setDate(target.getDate() + 1);
+                }
+
+                section.classList.add('visible');
+
+                function tick() {
+                    const now = new Date();
+                    const diff = target - now;
+
+                    if (diff <= 0) {
+                        timer.textContent = '🎉 Program Started';
+                        timer.className = 'countdown-timer started';
+                        stop();
+                        return;
+                    }
+
+                    const h = Math.floor(diff / (1000 * 60 * 60));
+                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+                    timer.textContent = `${String(h).padStart(2, '0')} : ${String(m).padStart(2, '0')} : ${String(s).padStart(2, '0')}`;
+                    timer.className = 'countdown-timer';
+                }
+
+                tick();
+                intervalId = setInterval(tick, 1000);
+            }
+
+            return { start, stop };
+        })();
+
+        // ============================================================
+        // ===== CELEBRATION EFFECTS =====
+        // ============================================================
+        function triggerCelebration(type) {
+            if (__celebrationTimer) {
+                clearTimeout(__celebrationTimer);
+                __celebrationTimer = null;
+                confetti.reset();
+            }
+
+            const duration = 4000;
+
+            switch (type) {
+                case 'colorful':
+                    confetti({
+                        particleCount: 150,
+                        spread: 80,
+                        origin: { y: 0.6 },
+                        colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ff8800', '#88ff00']
+                    });
+                    setTimeout(() => {
+                        confetti({
+                            particleCount: 100,
+                            spread: 70,
+                            origin: { y: 0.4 }
+                        });
+                    }, 500);
+                    setTimeout(() => {
+                        confetti({
+                            particleCount: 120,
+                            spread: 90,
+                            origin: { y: 0.7 }
+                        });
+                    }, 1000);
+                    break;
+
+                case 'golden':
+                    confetti({
+                        particleCount: 180,
+                        spread: 70,
+                        origin: { y: 0.6 },
+                        colors: ['#ffd700', '#ffc107', '#ffb300', '#ffa000', '#ff8f00']
+                    });
+                    setTimeout(() => {
+                        confetti({
+                            particleCount: 120,
+                            spread: 60,
+                            origin: { y: 0.4 },
+                            colors: ['#ffd700', '#ffc107', '#ffb300']
+                        });
+                    }, 600);
+                    break;
+
+                case 'balloon':
+                    confetti({
+                        particleCount: 200,
+                        spread: 100,
+                        origin: { y: 0.3 },
+                        startVelocity: 15,
+                        colors: ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6bff']
+                    });
+                    break;
+
+                case 'fireworks':
+                    const fireworksInterval = setInterval(() => {
+                        const x = Math.random();
+                        const y = Math.random() * 0.5 + 0.1;
+                        confetti({
+                            particleCount: 80,
+                            spread: 60,
+                            origin: { x, y },
+                            colors: ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#ff00ff']
+                        });
+                    }, 300);
+                    setTimeout(() => clearInterval(fireworksInterval), duration);
+                    break;
+
+                case 'petals':
+                    confetti({
+                        particleCount: 120,
+                        spread: 50,
+                        origin: { y: 0.8 },
+                        colors: ['#ffb7c5', '#ff69b4', '#ff1493', '#ff6b9d', '#ff8da1'],
+                        shapes: ['circle']
+                    });
+                    setTimeout(() => {
+                        confetti({
+                            particleCount: 80,
+                            spread: 40,
+                            origin: { y: 0.7 },
+                            colors: ['#ffb7c5', '#ff69b4', '#ff1493'],
+                            shapes: ['circle']
+                        });
+                    }, 400);
+                    break;
+
+                default:
+                    return;
+            }
+
+            __celebrationTimer = setTimeout(() => {
+                confetti.reset();
+                __celebrationTimer = null;
+            }, duration + 500);
+        }
+
+        // ============================================================
+        // ===== TYPEWRITER =====
+        // ============================================================
+        async function playTypewriter(text, times = 3) {
+            if (!text || __typewriterRunning) return;
+            __typewriterRunning = true;
+            const el = document.getElementById('meetingName');
+            const typeDelay = 55;
+            const eraseDelay = 30;
+            const pauseDelay = 450;
+
+            for (let round = 0; round < times; round++) {
+                el.innerText = '';
+                for (let i = 0; i <= text.length; i++) {
+                    el.innerText = text.slice(0, i);
+                    await new Promise(r => setTimeout(r, typeDelay));
+                }
+                await new Promise(r => setTimeout(r, pauseDelay));
+                if (round < times - 1) {
+                    for (let i = text.length; i >= 0; i--) {
+                        el.innerText = text.slice(0, i);
+                        await new Promise(r => setTimeout(r, eraseDelay));
+                    }
+                }
+            }
+            el.innerText = text;
+            __typewriterRunning = false;
+        }
+
+        // ============================================================
+        // ===== FETCH BANNER DATA =====
+        // ============================================================
+        async function fetchBannerData() {
+            try {
+                let { data, error } = await supabaseClient
+                    .from('banner_settings')
+                    .select('*')
+                    .eq('is_active', true)
+                    .limit(1)
+                    .maybeSingle();
+
+                if (!error && !data) {
+                    const fallback = await supabaseClient
+                        .from('banner_settings')
+                        .select('*')
+                        .order('id', { ascending: true })
+                        .limit(1)
+                        .maybeSingle();
+                    data = fallback.data;
+                    error = fallback.error;
+                }
+
+                if (error) {
+                    console.error('Error fetching data:', error);
+                    document.getElementById('statusText').textContent = 'पुन: जडान हुँदै...';
+                    return;
+                }
+
+                if (!data) {
+                    if (!loadBannerCache()) {
+                        document.getElementById('meetingName').innerText = 'बैनर डाटा उपलब्ध छैन';
+                        document.getElementById('organizedBy').innerText = 'कृपया एडमिन प्यानलबाट सेट अप गर्नुहोस्';
+                    }
+                    document.getElementById('statusText').textContent = 'डाटा छैन';
+                    return;
+                }
+
+                applyBannerData(data);
+                saveBannerCache(data);
+                document.getElementById('statusText').textContent = 'लाइभ';
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('statusText').textContent = 'पुन: जडान हुँदै...';
+            }
+        }
+
+        // ============================================================
+        // ===== CHIEF GUEST MODE =====
+        // ============================================================
+        let currentChiefGuestMode = true;
+
+        function revealBannerDirectly() {
+            const startScreen = document.getElementById('startScreen');
+            const startBtn = document.getElementById('startProgramBtn');
+            if (!startScreen) return;
+
+            if (startScreen.classList.contains('hidden') || startScreen.classList.contains('opening')) {
+                return;
+            }
+
+            if (startBtn) startBtn.disabled = true;
+            startScreen.classList.add('hidden');
+
+            const nameEl = document.getElementById('meetingName');
+            const nameText = __currentMeetingName || (nameEl ? nameEl.innerText : '') || '';
+            playTypewriter(nameText, 3);
+        }
+
+        function showCurtainAgain() {
+            const startScreen = document.getElementById('startScreen');
+            const startBtn = document.getElementById('startProgramBtn');
+            if (!startScreen) return;
+
+            if (startScreen.classList.contains('opening')) return;
+
+            startScreen.classList.remove('hidden');
+            if (startBtn) startBtn.disabled = false;
+        }
+
+        function applyChiefGuestModeUI() {
+            if (!currentChiefGuestMode) {
+                revealBannerDirectly();
+            } else {
+                showCurtainAgain();
+            }
+        }
+
+        async function loadChiefGuestMode() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('app_settings')
+                    .select('setting_value')
+                    .eq('setting_key', 'chief_guest_mode')
+                    .maybeSingle();
+
+                if (error) {
+                    console.error('❌ Chief Guest Mode read failed (check RLS/select policy on app_settings for anon role):', error.message);
+                    currentChiefGuestMode = true;
+                } else if (!data) {
+                    currentChiefGuestMode = true;
+                } else {
+                    currentChiefGuestMode = data.setting_value === 'true' || data.setting_value === true;
+                }
+            } catch (err) {
+                console.error('Error loading chief guest mode:', err);
+                currentChiefGuestMode = true;
+            }
+            saveChiefGuestModeCache(currentChiefGuestMode);
+            applyChiefGuestModeUI();
+        }
+
+        // ============================================================
+        // ===== START PROGRAM (with Confetti) =====
+        // ============================================================
+        function startProgram() {
+            const startScreen = document.getElementById('startScreen');
+            const startProgramBtn = document.getElementById('startProgramBtn');
+            if (startProgramBtn) startProgramBtn.disabled = true;
+
+            const el = document.documentElement;
+            const request = el.requestFullscreen
+                ? el.requestFullscreen()
+                : el.webkitRequestFullscreen
+                    ? el.webkitRequestFullscreen()
+                    : null;
+            if (request && request.catch) {
+                request.catch(err => console.log('Fullscreen error:', err));
+            }
+
+            startScreen.classList.add('opening');
+
+            setTimeout(() => {
+                confetti({
+                    particleCount: 200,
+                    spread: 100,
+                    origin: { y: 0.5 },
+                    colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ff8800']
+                });
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 150,
+                        spread: 80,
+                        origin: { y: 0.3 }
+                    });
+                }, 400);
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 120,
+                        spread: 90,
+                        origin: { y: 0.7 }
+                    });
+                }, 800);
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 100,
+                        spread: 70,
+                        origin: { y: 0.5 },
+                        colors: ['#ffd700', '#ffc107', '#ffb300']
+                    });
+                }, 1200);
+            }, 300);
+
+            setTimeout(() => {
+                startScreen.classList.add('hidden');
+                const nameEl = document.getElementById('meetingName');
+                const nameText = __currentMeetingName || (nameEl ? nameEl.innerText : '') || '';
+                playTypewriter(nameText, 3);
+            }, 3500);
+
+            setTimeout(() => {
+                confetti.reset();
+            }, 5500);
+        }
+
+        // ============================================================
+        // ===== PRESENTATION BUTTONS =====
+        // ============================================================
+        function transformPresentationUrl(url) {
+            try {
+                const publishedMatch = url.match(/^https:\/\/docs\.google\.com\/presentation\/d\/e\/([a-zA-Z0-9_-]+)/);
+                if (publishedMatch) {
+                    const pubId = publishedMatch[1];
+                    return `https://docs.google.com/presentation/d/e/${pubId}/embed`;
+                }
+
+                const slidesMatch = url.match(/^https:\/\/docs\.google\.com\/presentation\/d\/([a-zA-Z0-9_-]+)/);
+                if (slidesMatch) {
+                    const docId = slidesMatch[1];
+                    return `https://docs.google.com/presentation/d/${docId}/embed`;
+                }
+            } catch (e) {
+                console.log('Presentation URL transform skipped:', e);
+            }
+            return url;
+        }
+
+        function renderPresentationButtons(items) {
+            const wrap = document.getElementById('presentationButtonsWrap');
+            wrap.innerHTML = '';
+            if (!items || items.length === 0) return;
+
+            items.forEach((item, idx) => {
+                const a = document.createElement('a');
+                a.href = '#';
+                a.className = 'open-link-btn visible';
+                a.dataset.url = item.url;
+                const isPdf = /\.pdf(\?|$)/i.test(item.url || '');
+                const icon = isPdf ? '📄' : '🎞️';
+                const fallback = isPdf
+                    ? (items.length > 1 ? `PDF ${idx + 1}` : 'Open PDF')
+                    : (items.length > 1 ? `प्रस्तुति ${idx + 1}` : 'Open Presentation');
+                const label = item.name && item.name !== '' ? item.name : fallback;
+                a.textContent = icon + ' ' + label;
+                a.onclick = (event) => openInPageOverlay(event, null, item.url);
+                wrap.appendChild(a);
+            });
+        }
+
+        // ============================================================
+        // ===== OVERLAY =====
+        // ============================================================
+        function openInPageOverlay(event, btnId, directUrl) {
+            if (event) event.preventDefault();
+            let url = directUrl;
+            let isPresentation = !!directUrl;
+
+            if (!url) {
+                const btn = document.getElementById(btnId);
+                url = btn && btn.dataset.url;
+                isPresentation = btnId === 'openPresentationBtn';
+            }
+            if (!url) return false;
+
+            const isPdf = isPresentation && /\.pdf(\?|$)/i.test(url);
+
+            if (isPresentation) {
+                url = transformPresentationUrl(url);
+            }
+
+            if (isPdf) {
+                url = 'https://docs.google.com/viewer?url=' + encodeURIComponent(url) + '&embedded=true';
+            }
+
+            __overlayIsPresentation = isPresentation && !isPdf;
+
+            document.getElementById('iframeOverlayFrame').src = url;
+            document.getElementById('iframeOverlay').classList.add('visible');
+
+            if (__overlayIsPresentation) {
+                requestAnimationFrame(() => requestAnimationFrame(fitPresentationFrame));
+                setTimeout(fitPresentationFrame, 300);
+                setTimeout(fitPresentationFrame, 1000);
+            } else {
+                resetOverlayFrameSize();
+            }
+            return false;
+        }
+
+        function closeInPageOverlay() {
+            document.getElementById('iframeOverlay').classList.remove('visible');
+            document.getElementById('iframeOverlayFrame').src = '';
+            __overlayIsPresentation = false;
+        }
+
+        function fitPresentationFrame() {
+            const body = document.getElementById('iframeOverlayBody');
+            const frame = document.getElementById('iframeOverlayFrame');
+            if (!body || !frame) return;
+
+            const targetRatio = 16 / 9;
+            const cw = body.clientWidth;
+            const ch = body.clientHeight;
+            if (!cw || !ch) return;
+
+            let w, h;
+            if (cw / ch > targetRatio) {
+                h = ch;
+                w = h * targetRatio;
+            } else {
+                w = cw;
+                h = w / targetRatio;
+            }
+
+            frame.style.width = Math.floor(w) + 'px';
+            frame.style.height = Math.floor(h) + 'px';
+        }
+
+        function resetOverlayFrameSize() {
+            const frame = document.getElementById('iframeOverlayFrame');
+            if (!frame) return;
+            frame.style.width = '100%';
+            frame.style.height = '100%';
+        }
+
+        function refitOverlayIfVisible() {
+            if (!document.getElementById('iframeOverlay').classList.contains('visible')) return;
+            if (__overlayIsPresentation) {
+                fitPresentationFrame();
+            }
+        }
+
+        window.addEventListener('resize', refitOverlayIfVisible);
+        window.addEventListener('orientationchange', refitOverlayIfVisible);
+        document.addEventListener('fullscreenchange', refitOverlayIfVisible);
+        document.addEventListener('webkitfullscreenchange', refitOverlayIfVisible);
+
+        // ============================================================
+        // ===== ANTHEM =====
+        // ============================================================
+        function toggleNationalAnthem() {
+            const audio = document.getElementById('nationalAnthemAudio');
+            const btn = document.getElementById('anthemPlayBtn');
+
+            if (audio.paused) {
+                audio.play().catch(err => console.log('Anthem play error:', err));
+            } else {
+                audio.pause();
+            }
+        }
+
+        (function setupAnthemButtonState() {
+            const audio = document.getElementById('nationalAnthemAudio');
+            const btn = document.getElementById('anthemPlayBtn');
+            audio.addEventListener('play', () => {
+                btn.textContent = '⏸';
+                btn.classList.add('playing');
+            });
+            audio.addEventListener('pause', () => {
+                btn.textContent = '▶';
+                btn.classList.remove('playing');
+            });
+            audio.addEventListener('ended', () => {
+                btn.textContent = '▶';
+                btn.classList.remove('playing');
+            });
+        })();
+
+        // ============================================================
+        // ===== INTERNET STATUS =====
+        // ============================================================
+        function updateInternetStatus() {
+            const badge = document.getElementById('internetBadge');
+            if (navigator.onLine) {
+                badge.classList.remove('offline');
+                badge.classList.add('online');
+                badge.title = 'Internet Connected';
+            } else {
+                badge.classList.remove('online');
+                badge.classList.add('offline');
+                badge.title = 'Internet Offline';
+            }
+        }
+
+        window.addEventListener('online', updateInternetStatus);
+        window.addEventListener('offline', updateInternetStatus);
+
+        // ============================================================
+        // ===== CLOCK MODULE (self-contained: owns its own interval) =====
+        // ============================================================
+        const ClockModule = (function () {
+            let intervalId = null;
+
+            function tick() {
+                const time = getCurrentNepaliTime();
+                const el = document.getElementById('clockTime');
+                if (el) el.textContent = time.formattedNepali;
+            }
+
+            function start() {
+                if (intervalId) return; // already running
+                tick();
+                intervalId = setInterval(tick, 1000);
+            }
+
+            function stop() {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+            }
+
+            return { start, stop };
+        })();
+
+        // ============================================================
+        // ===== VIEWPORT HEIGHT =====
+        // ============================================================
+        function setViewportHeight() {
+            document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+        }
+        setViewportHeight();
+        window.addEventListener('resize', setViewportHeight);
+        window.addEventListener('orientationchange', setViewportHeight);
+
+        // ============================================================
+        // ===== FULLSCREEN =====
+        // ============================================================
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                const el = document.documentElement;
+                const request = el.requestFullscreen
+                    ? el.requestFullscreen()
+                    : el.webkitRequestFullscreen
+                        ? el.webkitRequestFullscreen()
+                        : null;
+                if (request && request.catch) {
+                    request.catch(err => console.log('Fullscreen error:', err));
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+
+        function updateFullscreenBorder() {
+            const container = document.getElementById('bannerBg');
+            if (document.fullscreenElement) {
+                container.classList.add('is-fullscreen');
+            } else {
+                container.classList.remove('is-fullscreen');
+            }
+            setViewportHeight();
+            setTimeout(setViewportHeight, 150);
+            setTimeout(setViewportHeight, 400);
+            requestAnimationFrame(() => {
+                container.style.display = 'none';
+                void container.offsetHeight;
+                container.style.display = '';
+            });
+        }
+        document.addEventListener('fullscreenchange', updateFullscreenBorder);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenBorder);
+
+        // ============================================================
+        // ===== AUTO FULLSCREEN =====
+        // ============================================================
+        function requestAutoFullscreen() {
+            if (document.fullscreenElement || __fullscreenRequested) return;
+            __fullscreenRequested = true;
+
+            const el = document.documentElement;
+            const request = el.requestFullscreen
+                ? el.requestFullscreen()
+                : el.webkitRequestFullscreen
+                    ? el.webkitRequestFullscreen()
+                    : null;
+
+            if (request && request.catch) {
+                request.catch(() => {
+                    __fullscreenRequested = false;
+                    armFirstInteractionFullscreen();
+                });
+            } else if (!request) {
+                armFirstInteractionFullscreen();
+            }
+        }
+
+        function armFirstInteractionFullscreen() {
+            if (__firstInteractionArmed) return;
+            __firstInteractionArmed = true;
+
+            const grabFullscreen = () => {
+                if (document.fullscreenElement) return;
+                const el = document.documentElement;
+                const request = el.requestFullscreen
+                    ? el.requestFullscreen()
+                    : el.webkitRequestFullscreen
+                        ? el.webkitRequestFullscreen()
+                        : null;
+                if (request && request.catch) {
+                    request.catch(err => console.log('Fullscreen error:', err));
+                }
+            };
+
+            ['click', 'touchend', 'keydown'].forEach(evt => {
+                document.addEventListener(evt, grabFullscreen, { once: true });
+            });
+        }
+
+        // ============================================================
+        // ===== REALTIME SETUP =====
+        // ============================================================
+        let realtimeChannel = null;
+        let chiefGuestChannel = null;
+        let celebrationChannel = null;
+
+        function setupRealtime() {
+            if (realtimeChannel) {
+                supabaseClient.removeChannel(realtimeChannel);
+            }
+
+            realtimeChannel = supabaseClient
+                .channel('public:banner_settings')
+                .on('postgres_changes',
+                    { event: '*', schema: 'public', table: 'banner_settings' },
+                    payload => {
+                        console.log('🔄 Realtime event received:', payload.eventType);
+                        fetchBannerData();
+                        document.getElementById('statusText').textContent = 'अपडेट भयो!';
+                        setTimeout(() => {
+                            document.getElementById('statusText').textContent = 'लाइभ';
+                        }, 2000);
+                    }
+                )
+                .subscribe((status) => {
+                    console.log('Realtime channel status:', status);
+                    if (status === 'SUBSCRIBED') {
+                        document.getElementById('statusText').textContent = 'लाइभ';
+                    } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+                        document.getElementById('statusText').textContent = 'पुन: जडान हुँदै...';
+                        setTimeout(() => {
+                            fetchBannerData();
+                            setupRealtime();
+                        }, 3000);
+                    }
+                });
+
+            if (chiefGuestChannel) {
+                supabaseClient.removeChannel(chiefGuestChannel);
+            }
+            chiefGuestChannel = supabaseClient
+                .channel('public:app_settings:chief_guest_mode')
+                .on('postgres_changes',
+                    { event: '*', schema: 'public', table: 'app_settings', filter: 'setting_key=eq.chief_guest_mode' },
+                    () => {
+                        console.log('🔄 Chief Guest Mode changed, updating start screen...');
+                        loadChiefGuestMode();
+                    }
+                )
+                .subscribe();
+
+            if (celebrationChannel) {
+                supabaseClient.removeChannel(celebrationChannel);
+            }
+            celebrationChannel = supabaseClient
+                .channel('public:banner_settings:celebration')
+                .on('postgres_changes',
+                    { event: 'UPDATE', schema: 'public', table: 'banner_settings' },
+                    (payload) => {
+                        const newData = payload.new;
+                        if (newData && newData.celebration_trigger && newData.celebration_type) {
+                            console.log('🎉 Celebration triggered:', newData.celebration_type);
+                            triggerCelebration(newData.celebration_type);
+                            supabaseClient
+                                .from('banner_settings')
+                                .update({ celebration_trigger: null, celebration_type: null })
+                                .eq('id', newData.id)
+                                .then(() => {});
+                        }
+                    }
+                )
+                .subscribe();
+        }
+
+        // ============================================================
+        // ===== INIT =====
+        // ============================================================
+        window.onload = async () => {
+            const cached = loadBannerCache();
+            if (cached) {
+                applyBannerData(cached);
+            }
+            await fetchBannerData();
+            setupRealtime();
+            await loadChiefGuestMode();
+            ClockModule.start();
+            setInterval(fetchBannerData, 30000);
+            setInterval(loadChiefGuestMode, 5000); // fallback poll in case Realtime isn't delivering app_settings changes
+            updateInternetStatus();
+            setInterval(updateInternetStatus, 5000);
+            console.log('✅ Banner initialized successfully!');
+
+            requestAutoFullscreen();
+        };
+    </script>
+</body>
+</html>
