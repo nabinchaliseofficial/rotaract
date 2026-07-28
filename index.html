@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Rotaract Club of Galkot Baglung</title>
+    <meta name="description" content="Official dashboard for Rotaract Club of Galkot Baglung, RI District 3292. Tracking our milestones, strategic goals, and community updates.">
+
+    <!-- Tailwind CSS CDN + Google Fonts -->
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+
+    <style>
+        :root {
+            --primary-color: #D91A5C;
+            --primary-dark: #A61042;
+            --secondary-color: #1D2A44;
+            --accent-gold: #D4AF37;
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px 10px;
+            min-height: 100vh;
+        }
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--primary-color);
+            color: white;
+            padding: 8px;
+            z-index: 100;
+            transition: top 0.2s;
+        }
+        .skip-link:focus {
+            top: 0;
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #111827 100%);
+            color: #ffffff;
+            padding: 40px 30px;
+            border-radius: var(--radius-lg);
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(217, 26, 92, 0.15) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            margin-bottom: 8px;
+            background: linear-gradient(to right, #fff, #f0f4f8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        header p {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: var(--card-bg);
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .status-item strong {
+            color: var(--text-main);
+            margin-left: 6px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #10B981;
+            border-radius: 50%;
+            margin-right: 8px;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+            }
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+            }
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+
+        .nav-tabs-container {
+            margin-bottom: 40px;
+        }
+        .nav-tabs {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+        .nav-tabs a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            background: var(--card-bg);
+            text-decoration: none;
+            color: var(--text-main);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(226, 232, 240, 0.7);
+            transition: var(--transition);
+            text-align: center;
+        }
+        .nav-tabs a:hover,
+        .nav-tabs a:focus {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        .nav-tabs .icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            transition: var(--transition);
+        }
+        .nav-tabs a:hover .icon {
+            transform: scale(1.15);
+        }
+        .nav-tabs .tab-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--secondary-color);
+        }
+
+        .about-section {
+            background: var(--card-bg);
+            padding: 40px 35px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            margin-bottom: 40px;
+        }
+        .about-section h2 {
+            font-size: 1.75rem;
+            color: var(--secondary-color);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 12px;
+        }
+        .about-text p {
+            margin-bottom: 20px;
+            color: #4a5568;
+            font-size: 1.05rem;
+        }
+        .highlight-box {
+            background: linear-gradient(to right, #fff5f7, #fff);
+            border-left: 4px solid var(--primary-color);
+            padding: 24px;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            margin: 28px 0;
+            font-style: italic;
+            color: #319795;
+            font-size: 1.05rem;
+            box-shadow: inset 0 0 8px rgba(219, 26, 92, 0.02);
+        }
+
+        .jay-rotaract-wrapper {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .jay-rotaract {
+            display: inline-block;
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #f9f3e7;
+            background: linear-gradient(145deg, #0b1a2e 0%, #1a2f44 100%);
+            padding: 0.8rem 2.2rem;
+            border-radius: 4rem 2rem 4rem 2rem;
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 215, 0, 0.15);
+            text-decoration: none;
+            transition: box-shadow 0.3s, transform 0.3s;
+            cursor: pointer;
+            border: none;
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+            position: relative;
+            overflow: hidden;
+            min-width: 220px;
+            text-align: center;
+        }
+        .jay-rotaract:hover {
+            box-shadow: 0 28px 56px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(255, 215, 0, 0.25);
+            transform: scale(1.02);
+        }
+        .jay-rotaract .cta-text-inner {
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+        .jay-rotaract .cursor-cta {
+            display: inline-block;
+            width: 0.08em;
+            height: 1.05em;
+            background-color: #f9d77e;
+            margin-left: 0.04em;
+            vertical-align: text-bottom;
+            border-radius: 2px;
+            box-shadow: 0 0 12px #f9d77e88;
+            transition: opacity 0.1s, width 0.2s, margin 0.2s;
+            opacity: 1;
+        }
+        .jay-rotaract .cursor-cta.hidden-cursor {
+            opacity: 0;
+            width: 0;
+            margin: 0;
+        }
+        @media (max-width: 480px) {
+            .jay-rotaract {
+                font-size: 1.4rem;
+                padding: 0.6rem 1.2rem;
+                min-width: 160px;
+            }
+        }
+
+        .home-btn-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 99;
+        }
+        .home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--secondary-color);
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .home-btn:hover,
+        .home-btn:focus {
+            background: #111827;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.2);
+            outline: none;
+        }
+        .ripple {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple-animation 0.5s linear;
+            pointer-events: none;
+        }
+        @keyframes ripple-animation {
+            to {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+        .clicked-exit {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+
+        footer {
+            background: #111827;
+            color: #f9fafb;
+            padding: 50px 20px 30px;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            margin-top: 60px;
+        }
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .footer-club-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+        .footer-desc {
+            color: #9ca3af;
+            font-size: 0.95rem;
+            max-width: 500px;
+            margin: 0 auto 28px;
+        }
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 35px;
+        }
+        .social-icon-link {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #1f2937;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            color: #fff;
+            text-decoration: none;
+        }
+        .social-icon-link svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+        .social-icon-link:hover,
+        .social-icon-link:focus {
+            transform: translateY(-4px);
+            outline: none;
+        }
+        .social-icon-link.fb:hover {
+            background-color: #1877F2;
+        }
+        .social-icon-link.ig:hover {
+            background-color: #E1306C;
+        }
+        .social-icon-link.li:hover {
+            background-color: #0077B5;
+        }
+        .social-icon-link.mail:hover {
+            background-color: var(--primary-color);
+        }
+        .footer-copyright {
+            font-size: 0.85rem;
+            color: #6b7280;
+            border-top: 1px solid #1f2937;
+            padding-top: 24px;
+        }
+
+        .cinzel-font {
+            font-family: 'Cinzel', serif;
+        }
+        .interactive-title-bar {
+            background: linear-gradient(-45deg, #1e293b, #0f172a, #2d121c, #111827);
+            background-size: 400% 400%;
+            animation: gradientShift 12s ease infinite;
+            transition: all 0.5s ease;
+        }
+        .interactive-title-bar:hover {
+            background-size: 200% 200%;
+            box-shadow: inset 0 0 20px rgba(219, 26, 92, 0.2);
+        }
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        .dynamic-frame-container {
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .dynamic-frame-container::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border: 2px solid #baa697;
+            opacity: 0.4;
+            clip-path: polygon(18px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 18px);
+            transition: all 0.4s ease;
+            z-index: 0;
+        }
+        .dynamic-cut-frame {
+            clip-path: polygon(16px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 16px);
+            border: 2px solid #a38a75;
+            background-color: #c4b2a4;
+            position: relative;
+            z-index: 10;
+        }
+        .dynamic-frame-container:hover {
+            transform: translateY(-6px) scale(1.03);
+        }
+        .dynamic-frame-container:hover::before {
+            inset: -8px;
+            opacity: 0.8;
+            border-color: #D91A5C;
+        }
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .member-slider-wrapper {
+            background: #f8fafc;
+            border-radius: 1.5rem;
+            padding: 2rem 1rem;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+        .slider-track {
+            display: flex;
+            gap: 1.5rem;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            will-change: transform;
+        }
+        .member-card {
+            flex: 0 0 160px;
+            background: white;
+            border-radius: 1.2rem;
+            box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.08);
+            padding: 1rem 0.5rem 1rem 0.5rem;
+            text-align: center;
+            border: 1px solid rgba(226, 232, 240, 0.6);
+            transition: all 0.2s;
+        }
+        .member-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 28px -10px rgba(0, 0, 0, 0.12);
+            border-color: #D91A5C40;
+        }
+        .member-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 8px;
+            background: #e2e8f0;
+            border: 2px solid #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+        }
+        .member-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+        .member-designation {
+            font-size: 0.7rem;
+            color: #64748b;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            margin-top: 2px;
+        }
+        .slider-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            width: 44px;
+            height: 44px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            font-weight: 300;
+            color: #1e293b;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .slider-btn:hover {
+            background: #1e293b;
+            color: white;
+            border-color: #1e293b;
+            box-shadow: 0 8px 16px -6px rgba(0, 0, 0, 0.1);
+        }
+        .slider-btn:disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        @media (max-width: 640px) {
+            .member-card {
+                flex: 0 0 130px;
+            }
+            .member-avatar {
+                width: 64px;
+                height: 64px;
+            }
+            .member-name {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* ====== WELCOME POPUP ====== */
+        .welcome-popup-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.35s ease, visibility 0.35s ease;
+        }
+        .welcome-popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .welcome-popup-card {
+            background: #ffffff;
+            border-radius: var(--radius-lg);
+            padding: 40px 32px;
+            max-width: 560px;
+            width: 100%;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.35);
+            transform: scale(0.92) translateY(20px);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: center;
+            position: relative;
+        }
+        .welcome-popup-overlay.active .welcome-popup-card {
+            transform: scale(1) translateY(0);
+        }
+        .welcome-popup-close {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.6rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+        .welcome-popup-close:hover {
+            color: var(--text-main);
+            background: #f1f5f9;
+        }
+        .welcome-popup-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--secondary-color);
+            margin-bottom: 6px;
+        }
+        .welcome-popup-sub {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+        }
+        .welcome-popup-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .welcome-popup-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 18px 12px;
+            background: #f8fafc;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: var(--text-main);
+            transition: var(--transition);
+        }
+        .welcome-popup-item:hover,
+        .welcome-popup-item:focus {
+            transform: translateY(-3px);
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-sm);
+            outline: none;
+        }
+        .welcome-popup-item .icon {
+            font-size: 1.6rem;
+        }
+        .welcome-popup-item .label {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .welcome-popup-continue {
+            display: inline-block;
+            background: #f1f5f9;
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            padding: 10px 30px;
+            border-radius: 60px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: 0.25s;
+        }
+        .welcome-popup-continue:hover {
+            background: #e2e8f0;
+            color: var(--text-main);
+        }
+        @media (max-width: 480px) {
+            .welcome-popup-card { padding: 32px 20px; }
+            .welcome-popup-title { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- ====== WELCOME / QUICK NAV POPUP ====== -->
+    <div class="welcome-popup-overlay" id="welcomePopup" role="dialog" aria-modal="true" aria-labelledby="welcomePopupTitle" aria-hidden="true">
+        <div class="welcome-popup-card">
+            <button class="welcome-popup-close" id="welcomePopupClose" aria-label="Close popup">&times;</button>
+            <div class="welcome-popup-title" id="welcomePopupTitle">Welcome 👋</div>
+            <div class="welcome-popup-sub">Jump straight to what you're looking for</div>
+            <div class="welcome-popup-grid">
+                <a href="activemembers.html" class="welcome-popup-item">
+                    <span class="icon">📅</span>
+                    <span class="label">Active Members</span>
+                </a>
+                <a href="strategic-planning.html" class="welcome-popup-item">
+                    <span class="icon">🎯</span>
+                    <span class="label">Vision & Goals</span>
+                </a>
+                <a href="upcomming-projects.html" class="welcome-popup-item">
+                    <span class="icon">🚀</span>
+                    <span class="label">Upcoming Projects</span>
+                </a>
+                <a href="loginminutes.html" class="welcome-popup-item">
+                    <span class="icon">🔐</span>
+                    <span class="label">Rotaract Login</span>
+                </a>
+            </div>
+            <a href="#" class="welcome-popup-continue" id="welcomePopupContinue">Continue to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <header role="banner">
+            <h1>Rotaract Club of Galkot Baglung</h1>
+            <p>RI District 3292 | Rota Year 2026-27</p>
+        </header>
+
+        <div class="status-bar" aria-label="System Status">
+            <div class="status-item"><span>📅 Today:</span> <strong id="live-date">Loading...</strong></div>
+            <div class="status-item"><span class="status-indicator" aria-hidden="true"></span><span>⚡ Portal Status:</span> <strong>Operational (R.Y. Active)</strong></div>
+        </div>
+
+        <main id="main-content">
+            <nav class="nav-tabs-container" aria-label="Dashboard Navigation">
+                <ul class="nav-tabs">
+                    <li><a href="activemembers.html"><span class="icon" aria-hidden="true">📅</span><span class="tab-title">Active Members</span></a></li>
+                    <!-- Changed from e-Minutes to Rotaract Login -->
+                    <li><a href="strategic-planning.html"><span class="icon" aria-hidden="true">🎯</span><span class="tab-title">Vision & Goals</span></a></li>
+                    <li><a href="upcomming-projects.html"><span class="icon" aria-hidden="true">🚀</span><span class="tab-title">Upcoming Projects</span></a></li>
+                    <li><a href="past-projects.html"><span class="icon" aria-hidden="true">⏳</span><span class="tab-title">Past Projects</span></a></li>
+                    <li><a href="anthem.html"><span class="icon" aria-hidden="true">🎵</span><span class="tab-title">Club Anthem</span></a></li>
+                    <li><a href="loginminutes.html"><span class="icon" aria-hidden="true">🔐</span><span class="tab-title">Rotaract Login</span></a></li>
+
+                </ul>
+            </nav>
+
+            <!-- BOARD OF DIRECTORS -->
+            <section class="w-full bg-white shadow-xl border border-slate-200 rounded-2xl overflow-hidden flex flex-col justify-between mb-6" aria-label="Club Board of Directors">
+                <div class="interactive-title-bar py-5 px-4 text-center border-b border-slate-800 shadow-lg relative group overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_ease-in-out] pointer-events-none"></div>
+                    <h2 class="cinzel-font text-2xl sm:text-4xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 drop-shadow-sm transition-transform duration-300 group-hover:scale-[1.01]">BOARD OF DIRECTORS</h2>
+                    <div class="mt-1 flex items-center justify-center gap-3">
+                        <span class="h-[1px] w-8 bg-gradient-to-r from-transparent to-rose-500"></span>
+                        <p class="text-xs sm:text-sm font-extrabold text-rose-400 tracking-widest uppercase font-mono">R.Y. 2026/27</p>
+                        <span class="h-[1px] w-8 bg-gradient-to-l from-transparent to-rose-500"></span>
+                    </div>
+                </div>
+                <div class="p-6 sm:p-12 flex-grow flex flex-col justify-center gap-12 bg-gradient-to-b from-white via-slate-50/50 to-white">
+                    <!-- TIER 1: CORE EXECUTIVE -->
+                    <div>
+                        <div class="grid grid-cols-3 gap-6 max-w-3xl mx-auto w-full items-end">
+                            <div class="flex flex-col items-center">
+                                <div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-md"><div class="w-full h-full bg-[#baa697] overflow-hidden flex items-center justify-center relative"><img src="images/madansharma.jpg" alt="Rtr. Madan Sharma" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Madan+Sharma&background=D91A5C&color=fff&size=200';"><div class="absolute bottom-0 left-0 right-0 bg-black/90 backdrop-blur-xs text-white text-[8px] sm:text-xs font-bold py-1 px-1.5 truncate text-center">Rtr. Madan Sharma</div></div></div></div>
+                                <span class="text-[10px] sm:text-xs font-black text-slate-800 mt-3 text-center uppercase tracking-wide">Secretary</span>
+                            </div>
+                            <div class="flex flex-col items-center transform scale-105 z-10">
+                                <div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1.5 w-full h-full shadow-xl border-2 border-rose-700/60"><div class="w-full h-full bg-[#baa697] overflow-hidden flex items-center justify-center relative"><img src="images/nabinchalise.jpg" alt="Rtr. Nabin Chalise" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Nabin+Chalise&background=D91A5C&color=fff&size=200';"><div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-rose-950 to-rose-900 text-white text-[10px] sm:text-sm font-black py-1 px-1.5 truncate text-center">Rtr. Nabin Chalise</div></div></div></div>
+                                <span class="text-xs sm:text-sm font-black text-rose-700 mt-3 text-center uppercase tracking-wider">President</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-md"><div class="w-full h-full bg-[#baa697] overflow-hidden flex items-center justify-center relative"><img src="images/manishkandel.jpg" alt="Rtr. Manish Kandel" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Manish+Kandel&background=D91A5C&color=fff&size=200';"><div class="absolute bottom-0 left-0 right-0 bg-black/90 backdrop-blur-xs text-white text-[8px] sm:text-xs font-bold py-1 px-1.5 truncate text-center">Rtr. Manish Kandel</div></div></div></div>
+                                <span class="text-[10px] sm:text-xs font-black text-slate-800 mt-3 text-center uppercase tracking-wide">Treasurer</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- TIER 2: VICE-PRESIDENTS -->
+                    <div>
+                        <div class="grid grid-cols-4 gap-6 max-w-4xl mx-auto w-full">
+                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/nabinsubedi.jpg" alt="Rtr. Nabin Subedi" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Nabin+Subedi&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[10px] font-bold py-0.5 px-1 truncate text-center">Rtr. Nabin Subedi</div></div></div></div><span class="text-[9px] sm:text-[11px] font-bold text-slate-700 mt-2 text-center leading-tight">IPP / Mentor</span></div>
+                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/tikaramgautam.jpg" alt="Rtr. Tika Ram Gautam" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Tika+Ram+Gautam&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[10px] font-bold py-0.5 px-1 truncate text-center">Rtr. Tika Ram Gautam</div></div></div></div><span class="text-[9px] sm:text-[11px] font-bold text-slate-700 mt-2 text-center leading-tight">President Elect</span></div>
+                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/vikashsubedi.jpg" alt="Rtr. Vikash Subedi" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Vikash+Subedi&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[10px] font-bold py-0.5 px-1 truncate text-center">Rtr. Vikash Subedi</div></div></div></div><span class="text-[9px] sm:text-[11px] font-bold text-slate-700 mt-2 text-center leading-tight">Vice President</span></div>
+                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/sagarchalise.jpg" alt="Rtr. Sagar Chalise" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Sagar+Chalise&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[10px] font-bold py-0.5 px-1 truncate text-center">Rtr. Sagar Chalise</div></div></div></div><span class="text-[9px] sm:text-[11px] font-bold text-slate-700 mt-2 text-center leading-tight">Joint Secretary</span></div>
+                        </div>
+                    </div>
+                    <!-- TIER 3: ACTION CHAIRS -->
+                    <div>
+                        <div class="grid grid-cols-5 gap-4 w-full">
+                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/bipinchalise.jpg" alt="Rtr. Bipin Chalise" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Bipin+Chalise&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[9px] font-bold py-0.5 px-1 truncate text-center">Rtr. Bipin Chalise</div></div></div></div><span class="text-[8px] sm:text-[10px] font-bold text-slate-600 mt-2 text-center leading-tight">Membership Chair</span></div>
+                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/manishgurung.jpg" alt="Rtr. Manish Gurung" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Manish+Gurung&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[9px] font-bold py-0.5 px-1 truncate text-center">Rtr. Manish Gurung</div></div></div></div><span class="text-[8px] sm:text-[10px] font-bold text-slate-600 mt-2 text-center leading-tight">Public Image Chair</span></div>
+                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/smritibudhathoki.jpg" alt="Rtr. Smriti Budhathoki" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Smriti+Budhathoki&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[9px] font-bold py-0.5 px-1 truncate text-center">Rtr. Smriti Budhathoki</div></div></div></div><span class="text-[8px] sm:text-[10px] font-bold text-slate-600 mt-2 text-center leading-tight">Service Projects Chair</span></div>
+                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/manojkarki.jpg" alt="Rtr. Dr Manoj Karki" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Dr+Manoj+Karki&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[9px] font-bold py-0.5 px-1 truncate text-center">Rtr. Dr. Manoj Karki</div></div></div></div><span class="text-[8px] sm:text-[10px] font-bold text-slate-600 mt-2 text-center leading-tight">Health Program Chair</span></div>
+                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/manjeelashrestha.jpg" alt="Rtr. Manjeela Shrestha" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Manjeela+Shrestha&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[9px] font-bold py-0.5 px-1 truncate text-center">Rtr. Manjeela Shrestha</div></div></div></div><span class="text-[8px] sm:text-[10px] font-bold text-slate-600 mt-2 text-center leading-tight">Rotary Foundation Chair</span></div>
+                        </div>
+                    </div>
+                    <!-- TIER 4: OFFICERS -->
+                    <div>
+                        <div class="grid grid-cols-6 gap-3 w-full">
+                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-0.5 w-full h-full shadow-xs"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/lokendragaire.jpg" alt="Rtr. Lokendra Gaire" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Lokendra+Gaire&background=D91A5C&color=fff&size=120'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[7px] sm:text-[9px] font-bold py-0.5 px-0.5 truncate text-center">Rtr. Lokendra Gaire</div></div></div></div><span class="text-[7px] sm:text-[9px] font-bold text-slate-500 mt-1.5 text-center leading-none">Sergeant At Arms</span></div>
+                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-0.5 w-full h-full shadow-xs"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/rajusahani.jpg" alt="Rtr. Raju Sahani" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Raju+Sahani&background=D91A5C&color=fff&size=120'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[7px] sm:text-[9px] font-bold py-0.5 px-0.5 truncate text-center">Rtr. Raju Sahani (RJ)</div></div></div></div><span class="text-[7px] sm:text-[9px] font-bold text-slate-500 mt-1.5 text-center leading-none">IT Officer</span></div>
+                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-0.5 w-full h-full shadow-xs"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/melinakharel.jpg" alt="Rtr. Melina Kharel" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Melina+Kharel&background=D91A5C&color=fff&size=120'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[7px] sm:text-[9px] font-bold py-0.5 px-0.5 truncate text-center">Rtr. Melina Kharel</div></div></div></div><span class="text-[7px] sm:text-[9px] font-bold text-slate-500 mt-1.5 text-center leading-none">Young Leaders Contact</span></div>
+                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-0.5 w-full h-full shadow-xs"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/laxmipun.jpg" alt="Rtr. Laxmi Pun" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Laxmi+Pun&background=D91A5C&color=fff&size=120'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[7px] sm:text-[9px] font-bold py-0.5 px-0.5 truncate text-center">Rtr. Laxmi Pun</div></div></div></div><span class="text-[7px] sm:text-[9px] font-bold text-slate-500 mt-1.5 text-center leading-none">PP/Learning Facilitator</span></div>
+                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-0.5 w-full h-full shadow-xs"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/anilshrestha.jpg" alt="Rtr. Anil Shrestha" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Anil+Shrestha&background=D91A5C&color=fff&size=120'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[7px] sm:text-[9px] font-bold py-0.5 px-0.5 truncate text-center">Rtr. Anil Shrestha</div></div></div></div><span class="text-[7px] sm:text-[9px] font-bold text-slate-500 mt-1.5 text-center leading-none">PP/ISD/Advisor</span></div>
+                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-0.5 w-full h-full shadow-xs"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/kamalkharel.jpg" alt="Rtr. Kamal Kharel" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Kamal+Kharel&background=D91A5C&color=fff&size=120'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[7px] sm:text-[9px] font-bold py-0.5 px-0.5 truncate text-center">Rtr. Kamal Kharel</div></div></div></div><span class="text-[7px] sm:text-[9px] font-bold text-slate-500 mt-1.5 text-center leading-none">PP/Club Advisor</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ====== MEMBER SLIDER (active members from Supabase) ====== -->
+            <section class="member-slider-wrapper w-full bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6 mb-8" aria-label="Club Members">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl sm:text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <span>👥</span> Active Members <span class="text-sm font-normal text-slate-400 ml-1">(excluding board)</span>
+                    </h3>
+                    <div class="flex gap-2">
+                        <button id="sliderPrev" class="slider-btn" aria-label="Previous members"><span aria-hidden="true">‹</span></button>
+                        <button id="sliderNext" class="slider-btn" aria-label="Next members"><span aria-hidden="true">›</span></button>
+                    </div>
+                </div>
+                <div class="overflow-hidden relative">
+                    <div id="sliderTrack" class="slider-track">
+                        <!-- cards injected by JS -->
+                    </div>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-3" id="sliderCounter">Loading members...</div>
+            </section>
+
+            <!-- About Rotaract Narrative -->
+            <section class="about-section">
+                <h2><span>✨</span> About Rotaract Club of Galkot Baglung</h2>
+                <div class="about-text">
+                    <p>Embark on the dynamic journey of the Rotaract Club of Galkot Baglung, where visionary leaders have continuously inspired positive change. From our Chartered President, the visionary Rtr. Neetu Khadka, to the trailblazing leadership of Rtr. Anil Shrestha (President, RY 2020-21), the dynamic stewardship of Rtr. Ishor Gautam (President, RY 2022-23), the torch bearing dedication of Rtr. Kamal Kharel (President, RY 2023-24), the compassionate leadership of Rtr. Laxmi Pun (President, RY 2024-25), the progressive guidance of Rtr. Nabin Subedi (President, RY 2025-26), and the inspirational leadership of Rtr. Nabin Chalise (President, RY 2026-27), our club continues to thrive through the commitment and passion of its leaders.</p>
+                    <p>Together, we are a diverse group of young leaders, professionals, and change-makers aged 16 years and above, passionately dedicated to creating meaningful impact by spreading kindness through service. Join us on this exciting journey of positive change and vibrant community engagement with the Rotaract Club of Galkot Baglung!</p>
+                    <div class="highlight-box">Established on April 23, 2020, under the leadership of our Chartered President, Rtr. Neetu Khadka, the Rotaract Club of Galkot Baglung is a vibrant team committed to placing service above self in a world often driven by material pursuits. As the heart and soul of the organization, we, as Rotaractors, regularly come together to discuss, plan, and implement projects that positively transform our community.</div>
+                    <p>We envision ourselves as seeds of hope, leadership, and collaboration, committed to changing lives locally and globally, regardless of our numbers. Through fellowship, service, and professional development, we strive to inspire others and build a better world.</p>
+                    <div class="jay-rotaract-wrapper">
+                        <a href="membership.html" class="jay-rotaract" id="ctaButton" role="button" aria-label="Join Rotaract">
+                            <span class="cta-text-inner" id="ctaDisplay">Join Rotaract! 🤝</span>
+                            <span class="cursor-cta" aria-hidden="true" id="cursorCta">|</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="home-btn-container">
+        <a href="/index.html" class="home-btn" id="interactiveHomeBtn"><span aria-hidden="true">🏠</span> HOME</a>
+    </div>
+
+    <footer role="contentinfo">
+        <div class="footer-content">
+            <p class="footer-club-name">Rotaract Club of Galkot Baglung</p>
+            <p class="footer-desc">Follow us on social media to stay updated with our community service projects, events, and club activities.</p>
+            <div class="social-icons">
+                <a href="https://www.facebook.com/rotaract.galkot/" class="social-icon-link fb" target="_blank" rel="noopener noreferrer" title="Facebook Page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/></svg></a>
+                <a href="https://www.instagram.com/rotaract.galkot/" class="social-icon-link ig" target="_blank" rel="noopener noreferrer" title="Instagram Profile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>
+                <a href="https://www.linkedin.com/in/rotaract/" class="social-icon-link li" target="_blank" rel="noopener noreferrer" title="LinkedIn Page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg></a>
+                <a href="mailto:galkot@rotaract3292.org" class="social-icon-link mail" title="Email Club Administration"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
+            </div>
+            <p class="footer-copyright">&copy; 2026 Rotaract Club of Galkot Baglung. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // ---------- WELCOME POPUP ----------
+            const welcomePopup = document.getElementById('welcomePopup');
+            const welcomePopupClose = document.getElementById('welcomePopupClose');
+            const welcomePopupContinue = document.getElementById('welcomePopupContinue');
+            let lastFocusedEl = null;
+
+            function openWelcomePopup() {
+                lastFocusedEl = document.activeElement;
+                welcomePopup.classList.add('active');
+                welcomePopup.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+                welcomePopupClose.focus();
+            }
+            function closeWelcomePopup() {
+                welcomePopup.classList.remove('active');
+                welcomePopup.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+                sessionStorage.setItem('welcomePopupSeen', '1');
+                if (lastFocusedEl) lastFocusedEl.focus();
+            }
+            if (welcomePopup && !sessionStorage.getItem('welcomePopupSeen')) {
+                setTimeout(openWelcomePopup, 500);
+            }
+            welcomePopupClose?.addEventListener('click', closeWelcomePopup);
+            welcomePopupContinue?.addEventListener('click', (e) => { e.preventDefault(); closeWelcomePopup(); });
+            welcomePopup?.addEventListener('click', (e) => { if (e.target === welcomePopup) closeWelcomePopup(); });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && welcomePopup?.classList.contains('active')) closeWelcomePopup();
+            });
+
+            // Live date
+            const dateEl = document.getElementById("live-date");
+            if (dateEl) dateEl.innerText = new Date().toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long',
+                    day: 'numeric' });
+
+            // Home button ripple
+            const homeBtn = document.getElementById('interactiveHomeBtn');
+            if (homeBtn) {
+                homeBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = this.getAttribute('href');
+                    const ripple = document.createElement('span');
+                    ripple.classList.add('ripple');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    ripple.style.width = ripple.style.height = `${size}px`;
+                    ripple.style.left = `${e.clientX - rect.left - size/2}px`;
+                    ripple.style.top = `${e.clientY - rect.top - size/2}px`;
+                    this.appendChild(ripple);
+                    this.classList.add('clicked-exit');
+                    setTimeout(() => window.location.href = target, 400);
+                });
+            }
+
+            // ---------- SUPABASE SETUP ----------
+            const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+            const SUPABASE_KEY =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            // ---------- MEMBER SLIDER ----------
+            const track = document.getElementById('sliderTrack');
+            const prevBtn = document.getElementById('sliderPrev');
+            const nextBtn = document.getElementById('sliderNext');
+            const counter = document.getElementById('sliderCounter');
+
+            let members = [];
+            let currentIndex = 0;
+            let cardsPerView = 5;
+
+            // Board positions to exclude (based on BOARD OF DIRECTORS R.Y. 2026/27)
+            const boardPositions = [
+                // Core Executive
+                'president', 'secretary', 'treasurer',
+                // Vice Presidents / Mentors
+                'vice president', 'joint secretary',
+                'ipp', 'mentor', 'president elect',
+                // Action Chairs
+                'membership chair', 'public image chair',
+                'service projects chair', 'health program chair',
+                'rotary foundation chair',
+                // Officers
+                'sergeant at arms', 'it officer', 'young leaders contact',
+                // Past Presidents / Advisors
+                'pp/learning facilitator',
+                'pp/rotaract learning facilitator', // ✅ ADD THIS for Laxmi Pun
+                'pp/isd/advisor',
+                'pp/club advisor'
+            ];
+
+            function renderSlider() {
+                if (!members.length) {
+                    track.innerHTML =
+                    `<div class="text-center w-full text-slate-400 py-8">No active members found in database.</div>`;
+                    counter.textContent = '0 / 0';
+                    return;
+                }
+                const total = members.length;
+                const cPerView = updateCardsPerView();
+                const maxIndex = Math.max(0, Math.ceil(total / cPerView) - 1);
+                if (currentIndex > maxIndex) currentIndex = maxIndex;
+
+                track.innerHTML = members.map(m => {
+                    const photoUrl = m.photo_url || m.photo || m.profile_image || '';
+                    const name = m.name || 'Member';
+                    const designation = m.designation || m.position || 'Member';
+                    return `
+                        <div class="member-card">
+                            <img src="${photoUrl || 'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=D91A5C&color=fff&size=80'}" 
+                                 alt="${name}" class="member-avatar" loading="lazy"
+                                 onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=D91A5C&color=fff&size=80'">
+                            <div class="member-name">${name}</div>
+                            <div class="member-designation">${designation}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                const start = currentIndex * cPerView + 1;
+                const end = Math.min((currentIndex + 1) * cPerView, total);
+                counter.textContent = `${start} – ${end} of ${total}`;
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex >= maxIndex;
+                const cardWidth = 160 + 24;
+                const shift = currentIndex * cPerView * cardWidth;
+                track.style.transform = `translateX(-${shift}px)`;
+            }
+
+            function updateCardsPerView() {
+                const w = window.innerWidth;
+                if (w < 480) return 2;
+                if (w < 768) return 3;
+                if (w < 1024) return 4;
+                return 5;
+            }
+
+            async function fetchMembers() {
+                try {
+                    counter.textContent = 'Loading members...';
+
+                    // Fetch all active members from Supabase
+                    const { data, error } = await supabase
+                        .from('members')
+                        .select('*')
+                        .eq('status', 'active')
+                        .order('name');
+
+                    if (error) {
+                        console.error('Supabase error:', error);
+                        throw error;
+                    }
+
+                    if (!data || data.length === 0) {
+                        console.log('No active members found in database');
+                        members = [];
+                        renderSlider();
+                        return;
+                    }
+
+                    // Filter out board members
+                    const filtered = data.filter(m => {
+                        const pos = (m.designation || m.position || '').toLowerCase().trim();
+                        const isBoard = boardPositions.some(bp => pos.includes(bp));
+                        return !isBoard;
+                    });
+
+                    members = filtered;
+                    currentIndex = 0;
+                    renderSlider();
+
+                    console.log(`✅ Loaded ${members.length} active members from Supabase`);
+                } catch (err) {
+                    console.error('❌ Failed to fetch members:', err);
+                    counter.textContent = 'Error loading members';
+                    track.innerHTML =
+                        `<div class="text-center w-full text-red-500 py-8">Failed to load members. Please check console.</div>`;
+                }
+            }
+
+            // Slider controls
+            prevBtn.addEventListener('click', () => {
+                if (currentIndex > 0) { currentIndex--;
+                    renderSlider(); }
+            });
+            nextBtn.addEventListener('click', () => {
+                const total = members.length;
+                const cPerView = updateCardsPerView();
+                const maxIndex = Math.max(0, Math.ceil(total / cPerView) - 1);
+                if (currentIndex < maxIndex) { currentIndex++;
+                    renderSlider(); }
+            });
+
+            // Responsive
+            window.addEventListener('resize', () => {
+                cardsPerView = updateCardsPerView();
+                renderSlider();
+            });
+
+            // Fetch members from Supabase
+            fetchMembers();
+
+            // ---------- TYPEWRITER / ZOOM ----------
+            (function() {
+                const CONFIG = { textContent: 'Join Rotaract! 🤝', zoomDuration: 500, zoomScale: 1.18,
+                    zoomRepetitions: 5, typingSpeed: 70, backspaceSpeed: 40, pauseAfterTyping: 2000,
+                    typewriterRepetitions: 3, cursorBlinkSpeed: 480 };
+                const ctaWrapper = document.getElementById('ctaButton');
+                const displayEl = document.getElementById('ctaDisplay');
+                const cursorEl = document.getElementById('cursorCta');
+                if (!ctaWrapper || !displayEl || !cursorEl) return;
+                let currentCycle = 0,
+                    typeTimer = null,
+                    backspaceTimer = null,
+                    pauseTimer = null,
+                    cursorInterval = null;
+                let currentText = '',
+                    targetText = CONFIG.textContent,
+                    charIndex = 0;
+
+                function clearAllTimers() {
+                    if (typeTimer) { clearTimeout(typeTimer);
+                        typeTimer = null; }
+                    if (backspaceTimer) { clearTimeout(backspaceTimer);
+                        backspaceTimer = null; }
+                    if (pauseTimer) { clearTimeout(pauseTimer);
+                        pauseTimer = null; }
+                    if (cursorInterval) { clearInterval(cursorInterval);
+                        cursorInterval = null; }
+                }
+
+                function startCursorBlink() {
+                    if (cursorInterval) clearInterval(cursorInterval);
+                    cursorEl.style.opacity = '1';
+                    cursorInterval = setInterval(() => { cursorEl.style.opacity = (cursorEl.style.opacity === '0' ? '1' :
+                            '0'); }, CONFIG.cursorBlinkSpeed);
+                }
+
+                function stopCursorAndHide() {
+                    if (cursorInterval) { clearInterval(cursorInterval);
+                        cursorInterval = null; }
+                    cursorEl.classList.add('hidden-cursor');
+                    cursorEl.style.opacity = '0';
+                }
+
+                function renderText() { displayEl.textContent = currentText; }
+
+                function typeChar() {
+                    if (charIndex < targetText.length) { currentText += targetText.charAt(charIndex);
+                        charIndex++;
+                        renderText();
+                        typeTimer = setTimeout(typeChar, CONFIG.typingSpeed); } else { startCursorBlink();
+                        pauseTimer = setTimeout(startBackspace, CONFIG.pauseAfterTyping); }
+                }
+
+                function backspaceChar() {
+                    if (currentText.length > 0) { currentText = currentText.slice(0, -1);
+                        charIndex = currentText.length;
+                        renderText();
+                        backspaceTimer = setTimeout(backspaceChar, CONFIG.backspaceSpeed); } else { currentCycle++;
+                        if (currentCycle < CONFIG.typewriterRepetitions) { charIndex = 0;
+                            currentText = '';
+                            renderText();
+                            startCursorBlink();
+                            typeTimer = setTimeout(typeChar, CONFIG.typingSpeed); } else { currentText = targetText;
+                            charIndex = targetText.length;
+                            renderText();
+                            stopCursorAndHide();
+                            displayEl.textContent = currentText;
+                            clearAllTimers(); } }
+                }
+
+                function startBackspace() { pauseTimer = null; if (currentText.length > 0) { if (cursorInterval) { clearInterval(
+                            cursorInterval);
+                        cursorInterval = null; }
+                        cursorEl.style.opacity = '1';
+                        backspaceTimer = setTimeout(backspaceChar, CONFIG.backspaceSpeed); } else { currentCycle++;
+                        if (currentCycle < CONFIG.typewriterRepetitions) { charIndex = 0;
+                            currentText = '';
+                            renderText();
+                            startCursorBlink();
+                            typeTimer = setTimeout(typeChar, CONFIG.typingSpeed); } else { currentText = targetText;
+                            charIndex = targetText.length;
+                            renderText();
+                            stopCursorAndHide();
+                            displayEl.textContent = currentText;
+                            clearAllTimers(); } } }
+
+                function runZoomSequence() {
+                    let count = 0;
+                    const totalZoom = CONFIG.zoomRepetitions,
+                        scale = CONFIG.zoomScale,
+                        duration = CONFIG.zoomDuration;
+                    displayEl.style.transition = `transform ${duration/2}ms ease-in-out`;
+
+                    function doZoom() {
+                        if (count >= totalZoom) { displayEl.style.transition = 'none';
+                            displayEl.style.transform = 'scale(1)';
+                            startTypewriter(); return; }
+                        displayEl.style.transform = `scale(${scale})`;
+                        setTimeout(() => { displayEl.style.transform = 'scale(1)';
+                            setTimeout(() => { count++;
+                                doZoom(); }, duration / 2); }, duration / 2);
+                    }
+                    displayEl.style.transform = 'scale(1)';
+                    doZoom();
+                }
+
+                function startTypewriter() {
+                    currentCycle = 0;
+                    charIndex = 0;
+                    currentText = '';
+                    targetText = CONFIG.textContent;
+                    cursorEl.classList.remove('hidden-cursor');
+                    cursorEl.style.opacity = '1';
+                    displayEl.textContent = '';
+                    startCursorBlink();
+                    typeTimer = setTimeout(typeChar, CONFIG.typingSpeed);
+                }
+
+                function init() { currentText = '';
+                    displayEl.textContent = '';
+                    displayEl.style.transform = 'scale(1)';
+                    displayEl.style.transition = `transform ${CONFIG.zoomDuration/2}ms ease-in-out`;
+                    runZoomSequence(); }
+                window.addEventListener('beforeunload', () => { clearAllTimers(); if (cursorInterval) clearInterval(
+                        cursorInterval); });
+                init();
+            })();
+        });
+    </script>
+</body>
+</html>

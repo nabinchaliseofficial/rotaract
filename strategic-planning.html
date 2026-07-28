@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategic Planning | Rotaract Club of Galkot Baglung</title>
+    <!-- Font Links -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Icon Library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- Color Palette & Variable Definitions --- */
+        :root {
+            --primary: #003366;       /* Deep Navy Blue */
+            --secondary: #D4AF37;     /* Rotary Gold */
+            --accent: #008080;        /* Teal for Success/Actions */
+            --dark: #1E293B;          /* Charcoal text */
+            --light-bg: #F8FAFC;      /* Soft light background */
+            --card-bg: #FFFFFF;       /* Pure white for cards */
+            --border-color: #E2E8F0;  /* Subtle lines */
+            --text-muted: #64748B;    /* Lighter text for secondary data */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 25px -5px rgba(0, 33, 102, 0.08);
+        }
+
+        /* --- Reset & Global Typography --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+
+        /* --- Navigation Bar --- */
+        .navbar {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 1.1rem;
+        }
+
+        .nav-logo i {
+            color: var(--secondary);
+            font-size: 1.4rem;
+        }
+
+        .home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--primary);
+            color: var(--card-bg);
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: none;
+            cursor: pointer;
+        }
+
+        .home-btn:hover {
+            background-color: #002244;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 51, 102, 0.2);
+        }
+
+        /* Ripple effect styles */
+        .ripple {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple-animation 0.5s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* --- Modern Hero Section --- */
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, #001F4D 100%);
+            color: var(--card-bg);
+            padding: 5rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: var(--light-bg);
+            clip-path: polygon(0 100%, 100% 100%, 100% 0);
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .hero h1 span {
+            color: var(--secondary);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* --- Main Layout Wrapper --- */
+        .main-container {
+            max-width: 1200px;
+            margin: -2rem auto 5rem auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- Vision & Mission Cards --- */
+        .vision-mission-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .vm-card {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border-top: 5px solid var(--primary);
+            transition: var(--transition);
+        }
+
+        .vm-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .vm-card.mission {
+            border-top-color: var(--secondary);
+        }
+
+        .vm-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1.2rem;
+        }
+
+        .vm-header i {
+            font-size: 1.6rem;
+            color: var(--primary);
+        }
+
+        .vm-card.mission .vm-header i {
+            color: var(--secondary);
+        }
+
+        .vm-header h3 {
+            font-size: 1.4rem;
+            color: var(--dark);
+        }
+
+        .vm-card p {
+            color: var(--text-muted);
+            font-style: italic;
+            font-size: 1.05rem;
+        }
+
+        /* --- Section Titles --- */
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            color: var(--primary);
+            margin: 4rem 0 2rem 0;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 4px;
+            background-color: var(--secondary);
+            margin: 0.5rem auto 0 auto;
+            border-radius: 2px;
+        }
+
+        /* --- Strategic Pillars (Tabs UI) --- */
+        .tabs-wrapper {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            padding: 0.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            max-width: 700px;
+            margin: 0 auto 2rem auto;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            flex: 1;
+            text-align: center;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+            background-color: #F1F5F9;
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary);
+            color: var(--card-bg);
+        }
+
+        .tab-content {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-content h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .tab-content p {
+            color: var(--dark);
+            font-size: 1.1rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Club Goals Cards Grid --- */
+        .goals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .goal-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--secondary);
+            transition: var(--transition);
+        }
+
+        .goal-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: scale(1.02);
+        }
+
+        .goal-card .goal-stat {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .goal-card .goal-stat i {
+            color: var(--secondary);
+            font-size: 1.4rem;
+        }
+
+        .goal-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* --- Plan of Action Dynamic Matrix --- */
+        .matrix-intro {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-size: 1.05rem;
+        }
+
+        .poa-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .poa-item {
+            background: var(--card-bg);
+            padding: 1.2rem 1.5rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1.5rem;
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .task-left {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            flex: 1;
+        }
+
+        .quarter-badge {
+            background-color: #E2E8F0;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .task-text {
+            font-weight: 500;
+            color: var(--dark);
+            transition: var(--transition);
+        }
+
+        .btn-complete {
+            background: none;
+            border: 2px solid var(--accent);
+            color: var(--accent);
+            padding: 0.5rem 1.2rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-complete:hover {
+            background-color: var(--accent);
+            color: var(--card-bg);
+        }
+
+        /* Action Checked / Completed Visual States */
+        .poa-item.completed {
+            background-color: #F8FAFC;
+            border-color: #CBD5E1;
+            opacity: 0.85;
+        }
+
+        .poa-item.completed .task-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .poa-item.completed .btn-complete {
+            background-color: var(--accent);
+            color: var(--card-bg);
+        }
+
+        /* --- Footer Section --- */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            margin-top: 5rem;
+            background-color: var(--primary);
+            color: var(--card-bg);
+            font-size: 0.95rem;
+            opacity: 0.95;
+        }
+
+        /* --- Responsive Queries --- */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.2rem; }
+            .hero p { font-size: 1rem; }
+            .tabs-wrapper { flex-direction: column; padding: 0.5rem; }
+            .tab-btn { padding: 0.8rem; }
+            .poa-item { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .btn-complete { width: 100%; justify-content: center; }
+            .nav-container { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Professional Top Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">
+                <i class="fa-solid fa-circle-nodes"></i> Rotaract Galkot Baglung
+            </a>
+            <a href="index.html" class="home-btn" id="interactiveHomeBtn">
+                <i class="fa-solid fa-house"></i> HOME
+            </a>
+        </div>
+    </nav>
+
+    <!-- Modern Animated Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Rotaract Club of <span>Galkot Baglung</span></h1>
+            <p>Strategic Blueprint & Plan of Action | Rota Year 2026-27</p>
+        </div>
+    </header>
+
+    <!-- Core Page Metrics Layout Wrapper -->
+    <main class="main-container">
+
+        <!-- Vision and Mission Grid -->
+        <section class="vision-mission-grid">
+            <div class="vm-card">
+                <div class="vm-header">
+                    <i class="fa-solid fa-eye"></i>
+                    <h3>Our Vision</h3>
+                </div>
+                <p>"To be a strong, community-driven Rotaract Club that empowers youth and brings sustainable development to Galkot."</p>
+            </div>
+            <div class="vm-card mission">
+                <div class="vm-header">
+                    <i class="fa-solid fa-bolt"></i>
+                    <h3>Our Mission</h3>
+                </div>
+                <p>"To inspire young leaders through service, fellowship, and innovation while creating lasting positive impact in our community."</p>
+            </div>
+        </section>
+
+        <!-- Strategic Pillars Container Section -->
+        <section>
+            <h2 class="section-title">Our Strategic Pillars</h2>
+            <div class="tabs-wrapper">
+                <button class="tab-btn active" onclick="openPillar(event, 'growth')">Club Growth & Retention</button>
+                <button class="tab-btn" onclick="openPillar(event, 'impact')">Sustainable Impact</button>
+                <button class="tab-btn" onclick="openPillar(event, 'publicity')">Public Image & Bonding</button>
+            </div>
+
+            <div id="growth" class="tab-content active">
+                <h3>Membership Fellowship & Engagement</h3>
+                <p>Focusing heavily on shifting from mere numbers to active youth engagement across Galkot. Ensuring every new member finds value, professional mentorship, and leadership pathways inside the club structure.</p>
+            </div>
+
+            <div id="impact" class="tab-content">
+                <h3>Community-First Initiatives</h3>
+                <p>Developing long-term, high-impact regional initiatives in healthcare literacy, digital education integration in public schools, and climate resilience specialized for the hilly typography of Baglung District.</p>
+            </div>
+
+            <div id="publicity" class="tab-content">
+                <h3>Digital Footprint & Rotary Synergy</h3>
+                <p>Enhancing our grassroots communication channel networks, maintaining an active local press presence, and organizing deep joint fellowships with our parent Rotary Club of Baglung.</p>
+            </div>
+        </section>
+
+        <!-- Club Goals Area Grid -->
+        <section>
+            <h2 class="section-title">Club Goals (RY 2026-27)</h2>
+            <div class="goals-grid">
+                <div class="goal-card">
+                    <div class="goal-stat"><i class="fa-solid fa-user-check"></i> 85%</div>
+                    <h3>Retention Rate</h3>
+                    <p>Retain existing members through customized leadership progression tracks and interactive professional development circles.</p>
+                </div>
+                <div class="goal-card">
+                    <div class="goal-stat"><i class="fa-solid fa-hands-holding-child"></i> 2</div>
+                    <h3>Signature Projects</h3>
+                    <p>Launch two long-term, sustainable signature projects within Galkot targeted at literacy and primary community healthcare infrastructure.</p>
+                </div>
+                <div class="goal-card">
+                    <div class="goal-stat"><i class="fa-solid fa-award"></i> Platinum</div>
+                    <h3>Rotary Citation Excellence</h3>
+                    <p>Fulfill all mandatory criteria laid down by Rotary International to achieve the Platinum level Rotary Citation.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Plan of Action Interactive Matrix Segment -->
+        <section>
+            <h2 class="section-title">Plan of Action Execution Matrix</h2>
+            <p class="matrix-intro">Track the operational progress of planned projects dynamically below:</p>
+            
+            <ul class="poa-list">
+                <li class="poa-item">
+                    <div class="task-left">
+                        <span class="quarter-badge">Q1</span>
+                        <span class="task-text">Conduct Club Officers Orientation & Leadership Training Seminar</span>
+                    </div>
+                    <button class="btn-complete" onclick="toggleTask(this)">
+                        <i class="fa-regular fa-circle-check"></i> <span>Done</span>
+                    </button>
+                </li>
+                <li class="poa-item">
+                    <div class="task-left">
+                        <span class="quarter-badge">Q1</span>
+                        <span class="task-text">Massive Emergency Blood Grouping & Donation Camp at Galkot Bazaar</span>
+                    </div>
+                    <button class="btn-complete" onclick="toggleTask(this)">
+                        <i class="fa-regular fa-circle-check"></i> <span>Done</span>
+                    </button>
+                </li>
+                <li class="poa-item">
+                    <div class="task-left">
+                        <span class="quarter-badge">Q2</span>
+                        <span class="task-text">Establish Digital E-Library corner in a remote public school of Baglung</span>
+                    </div>
+                    <button class="btn-complete" onclick="toggleTask(this)">
+                        <i class="fa-regular fa-circle-check"></i> <span>Done</span>
+                    </button>
+                </li>
+                <li class="poa-item">
+                    <div class="task-left">
+                        <span class="quarter-badge">Q3</span>
+                        <span class="task-text">Joint Professional Networking Conclave with Rotary Club of Baglung</span>
+                    </div>
+                    <button class="btn-complete" onclick="toggleTask(this)">
+                        <i class="fa-regular fa-circle-check"></i> <span>Done</span>
+                    </button>
+                </li>
+                <li class="poa-item">
+                    <div class="task-left">
+                        <span class="quarter-badge">Q4</span>
+                        <span class="task-text">Execute 6th Annual Galkot Community Cleanliness & Sanitation Run</span>
+                    </div>
+                    <button class="btn-complete" onclick="toggleTask(this)">
+                        <i class="fa-regular fa-circle-check"></i> <span>Done</span>
+                    </button>
+                </li>
+            </ul>
+        </section>
+
+    </main>
+
+    <!-- Professional Footer Summary -->
+    <footer>
+        <p>&copy; 2026 Rotaract Club of Galkot Baglung. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Interactive UI Control Elements Scripting -->
+    <script>
+        // Professional Material Ripple Button Navigation Sequence
+        document.getElementById('interactiveHomeBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetUrl = this.getAttribute('href');
+            const button = this;
+
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+            ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+            
+            button.appendChild(ripple);
+
+            setTimeout(() => {
+                window.location.href = targetUrl;
+            }, 300);
+        });
+
+        // Modular Tab Switching Controls for Strategic Pillars
+        function openPillar(evt, pillarName) {
+            const tabcontent = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+
+            const tablinks = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+
+            document.getElementById(pillarName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        // Action Matrix Toggle State Logic
+        function toggleTask(button) {
+            const listItem = button.parentElement;
+            const labelText = button.querySelector('span');
+            const iconElement = button.querySelector('i');
+            
+            listItem.classList.toggle('completed');
+             
+            if (listItem.classList.contains('completed')) {
+                labelText.innerText = "Completed";
+                iconElement.className = "fa-solid fa-circle-check";
+            } else {
+                labelText.innerText = "Done";
+                iconElement.className = "fa-regular fa-circle-check";
+            }
+        }
+    </script>
+</body>
+</html>

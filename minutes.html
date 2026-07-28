@@ -1,0 +1,3118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minutes Builder · RAC Galkot</title>
+    <meta name="description" content="Meeting Minutes Writer with versioned save, Supabase, autocomplete, and print preview." />
+    <meta name="author" content="Rotaract Club of Galkot Baglung" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com/" />
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" />
+
+    <!-- ✅ FIXED: Supabase CDN - Use correct CDN URL -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js">
+    </script>
+
+    <style>
+        /* ========== ALL EXISTING STYLES REMAIN THE SAME ========== */
+        :root {
+            --primary: #D70060;
+            --primary-hover: #B50051;
+            --secondary: #015491;
+            --secondary-hover: #003F6E;
+            --dark: #1E293B;
+            --text-muted: #64748B;
+            --light-bg: #F8FAFC;
+            --border: #E2E8F0;
+            --success: #10B981;
+            --white: #FFFFFF;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(215, 0, 96, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: var(--light-bg);
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+            color: var(--dark);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            line-height: 1.6;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 15px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--dark);
+        }
+        .nav-logo-marker {
+            width: 8px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 4px;
+        }
+        .nav-brand-text {
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: -0.5px;
+        }
+        .nav-brand-text span {
+            color: var(--primary);
+        }
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--secondary);
+            color: var(--white);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        .home-btn:hover {
+            background-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(215, 0, 96, 0.3);
+        }
+        .user-info-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .user-email-display {
+            font-size: 0.85rem;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .role-badge.admin {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .role-badge.secretary {
+            background: #fce7f3;
+            color: #9d174d;
+        }
+        .role-badge.president {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .role-badge.editor {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* ===== AUTH OVERLAY ===== */
+        .auth-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .auth-overlay.active {
+            display: flex;
+        }
+        .auth-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 40px 35px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .auth-card .icon-big {
+            font-size: 3rem;
+            text-align: center;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .auth-card h2 {
+            text-align: center;
+            color: var(--dark);
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .auth-card .sub {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+        .auth-card .form-group {
+            margin-bottom: 16px;
+        }
+        .auth-card .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+        .auth-card .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            font-family: inherit;
+            outline: none;
+            background: #f8fafc;
+            transition: var(--transition);
+        }
+        .auth-card .form-control:focus {
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(215, 0, 96, 0.08);
+        }
+        .auth-card .btn-auth {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary) 0%, #b50051 100%);
+            color: var(--white);
+            border: none;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 8px;
+        }
+        .auth-card .btn-auth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(215, 0, 96, 0.3);
+        }
+        .auth-card .btn-auth:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .auth-status {
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: none;
+            text-align: center;
+        }
+        .auth-status.error {
+            display: block;
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .auth-status.success {
+            display: block;
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .auth-status.loading {
+            display: block;
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+        .auth-status .spinner-small {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fde68a;
+            border-top-color: #92400e;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        /* ===== LOGIN BUTTON IN NAV ===== */
+        .login-nav-btn {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 8px 20px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        .login-nav-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(215, 0, 96, 0.3);
+        }
+        .login-nav-btn.logged-in {
+            background: var(--success);
+        }
+        .login-nav-btn.logged-in:hover {
+            background: #059669;
+        }
+
+        /* ===== ACCESS DENIED OVERLAY ===== */
+        .access-denied-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 9998;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .access-denied-overlay.active {
+            display: flex;
+        }
+        .access-denied-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 50px 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .access-denied-card .icon-big {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            display: block;
+        }
+        .access-denied-card h2 {
+            color: #dc2626;
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+        .access-denied-card p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+        .access-denied-card .btn-redirect {
+            display: inline-block;
+            background: var(--secondary);
+            color: var(--white);
+            padding: 14px 40px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.05rem;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+        .access-denied-card .btn-redirect:hover {
+            background: var(--secondary-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(1, 84, 145, 0.3);
+        }
+
+        /* ===== TOAST ===== */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 380px;
+            width: 100%;
+        }
+        .toast {
+            background: var(--white);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+            border-left: 4px solid var(--success);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .toast.error {
+            border-left-color: #EF4444;
+        }
+        .toast.loading {
+            border-left-color: #F59E0B;
+        }
+        .toast-icon {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .toast.success .toast-icon {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .toast.error .toast-icon {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        .toast.loading .toast-icon {
+            background: #FEF3C7;
+            color: #92400E;
+            animation: spin 1s linear infinite;
+        }
+        .toast-content {
+            flex: 1;
+        }
+        .toast-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .toast-message {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0 4px;
+        }
+        .toast-close:hover {
+            color: var(--dark);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--white);
+            padding: 60px 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 40px;
+            border-bottom: 4px solid var(--primary);
+        }
+        .mode-status-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: var(--radius-lg);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-top: 12px;
+        }
+        .mode-status-badge.enabled {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .mode-status-badge.disabled {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .hero-tag {
+            background: rgba(215, 0, 96, 0.15);
+            color: #f472b6;
+            border: 1px solid rgba(215, 0, 96, 0.3);
+            padding: 6px 16px;
+            border-radius: var(--radius-lg);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+        .hero p {
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.05rem;
+        }
+
+        /* ===== REST OF THE STYLES ===== */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 24px 80px 24px;
+        }
+        .form-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        .form-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: #cbd5e1;
+        }
+        .card-header-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .card-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .card-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: #eff6ff;
+            color: var(--secondary);
+            border-radius: var(--radius-sm);
+            flex-shrink: 0;
+        }
+        .form-card:nth-of-type(2) .card-icon {
+            background: #fdf2f8;
+            color: var(--primary);
+        }
+        .form-card:nth-of-type(3) .card-icon {
+            background: #ecfdf5;
+            color: var(--success);
+        }
+        .form-card:nth-of-type(4) .card-icon {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        .form-card:nth-of-type(5) .card-icon {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+        .form-card:nth-of-type(6) .card-icon {
+            background: #fce4ec;
+            color: var(--primary);
+        }
+        .form-card h2 {
+            color: var(--dark);
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        /* Search / Autocomplete */
+        .search-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .search-bar input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            font-family: inherit;
+            outline: none;
+            background-color: #f8fafc;
+            transition: var(--transition);
+        }
+        .search-bar input:focus {
+            border-color: var(--primary);
+            background-color: var(--white);
+            box-shadow: 0 0 0 4px rgba(215, 0, 96, 0.08);
+        }
+        .search-bar .btn-search {
+            background: var(--secondary);
+            color: var(--white);
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        .search-bar .btn-search:hover {
+            background: var(--secondary-hover);
+            transform: translateY(-2px);
+        }
+        .search-result-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: var(--radius-lg);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .search-result-badge.found {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .search-result-badge.not-found {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: var(--shadow-md);
+            margin-top: 4px;
+        }
+        .autocomplete-dropdown.active {
+            display: block;
+        }
+        .autocomplete-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .autocomplete-item:hover,
+        .autocomplete-item:focus-visible {
+            background: #f8fafc;
+            border-color: var(--primary);
+            outline: none;
+        }
+        .autocomplete-item .meeting-title {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        .autocomplete-item .meeting-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .autocomplete-empty {
+            padding: 16px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* Inputs */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.88rem;
+            color: #475569;
+        }
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: var(--dark);
+            outline: none;
+            background-color: #f8fafc;
+            transition: var(--transition);
+        }
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--primary);
+            background-color: var(--white);
+            box-shadow: 0 0 0 4px rgba(215, 0, 96, 0.08);
+        }
+        .readonly-input {
+            background-color: #e2e8f0;
+            font-weight: 700;
+            color: #475569;
+            cursor: not-allowed;
+            border-color: var(--border);
+        }
+        .dynamic-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: flex-start;
+            animation: fadeIn 0.3s ease;
+            flex-wrap: wrap;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .agenda-width-title {
+            width: 35%;
+        }
+        .agenda-width-desc {
+            width: calc(65% - 46px);
+            resize: vertical;
+        }
+        .btn-ai-resolution {
+            width: 38px;
+            height: 38px;
+            flex-shrink: 0;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--primary) 0%, #b50051 100%);
+            color: var(--white);
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            align-self: flex-start;
+        }
+        .btn-ai-resolution:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+        .btn-ai-resolution:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+        .btn-ai-resolution .spinner-small {
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            display: inline-block;
+            animation: spin 0.7s linear infinite;
+        }
+
+        /* Checklist */
+        .checklist-search {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .checklist-search input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+        }
+        .checklist-container {
+            max-height: 320px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            padding: 8px;
+            background: #f8fafc;
+            border-radius: var(--radius-sm);
+            margin-bottom: 20px;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: var(--transition);
+            background: var(--white);
+            border: 1px solid transparent;
+        }
+        .checklist-item:hover {
+            background: #fff1f2;
+            border-color: rgba(215, 0, 96, 0.15);
+        }
+        .checklist-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 14px;
+            transform: scale(1.25);
+            accent-color: var(--primary);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .checklist-item label {
+            margin-bottom: 0;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        .member-role {
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            background: #f1f5f9;
+            padding: 3px 10px;
+            border-radius: 12px;
+            letter-spacing: 0.2px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+        .checklist-item.hidden {
+            display: none;
+        }
+
+        /* Buttons */
+        .btn-add {
+            background: var(--secondary);
+            color: var(--white);
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        .btn-add:hover {
+            background: var(--secondary-hover);
+            transform: translateY(-1px);
+        }
+        .action-buttons-group {
+            margin-top: 40px;
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary) 0%, #b50051 100%);
+            color: var(--white);
+            border: none;
+            padding: 18px 32px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: var(--radius-md);
+            flex: 1 1 260px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            letter-spacing: -0.2px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        .btn-submit.btn-print {
+            background: linear-gradient(135deg, var(--secondary) 0%, #003f6e 100%);
+            box-shadow: 0 20px 25px -5px rgba(1, 84, 145, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .btn-submit.btn-print:hover {
+            background: linear-gradient(135deg, #013f6b 0%, #002b4a 100%);
+            box-shadow: 0 12px 28px rgba(1, 84, 145, 0.25);
+        }
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #be0055 0%, #910040 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(215, 0, 96, 0.25);
+        }
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-submit .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: var(--white);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .btn-submit.loading .spinner {
+            display: inline-block;
+        }
+        .btn-submit.loading .btn-text {
+            opacity: 0.7;
+        }
+
+        .additional-members-margin {
+            margin-bottom: 24px;
+        }
+        .guest-header-margin {
+            margin-top: 32px;
+        }
+        .guest-count-margin {
+            margin-top: 24px;
+        }
+
+        /* Mode Off Overlay */
+        .mode-off-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .mode-off-overlay.active {
+            display: flex;
+        }
+        .mode-off-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 50px 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .mode-off-card .icon-big {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            display: block;
+        }
+        .mode-off-card h2 {
+            color: var(--dark);
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+        .mode-off-card p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+        .mode-off-card .btn-redirect {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary) 0%, #b50051 100%);
+            color: var(--white);
+            padding: 14px 40px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.05rem;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+        .mode-off-card .btn-redirect:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(215, 0, 96, 0.3);
+        }
+        .countdown-timer {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 16px;
+        }
+        .countdown-timer span {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        /* Action Items */
+        .action-item-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+            align-items: center;
+        }
+        .action-item-row .ai-task {
+            flex: 2;
+            min-width: 140px;
+        }
+        .action-item-row .ai-person {
+            flex: 1;
+            min-width: 100px;
+            max-width: 100%;
+            transition: width 0.15s ease;
+        }
+        .action-item-row .ai-deadline {
+            flex: 0.8;
+            min-width: 100px;
+        }
+        .action-item-row .ai-status {
+            flex: 0.8;
+            min-width: 100px;
+        }
+        .action-item-row .ai-remove {
+            background: #fee2e2;
+            color: #991b1b;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .action-item-row .ai-remove:hover {
+            background: #fecaca;
+        }
+
+        /* Signatures */
+        .signature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 12px;
+        }
+        .signature-field {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+        .signature-field label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        .signature-field input[type="text"] {
+            background: var(--white);
+            margin-bottom: 10px;
+        }
+        .auto-signature-preview {
+            margin-top: 8px;
+            padding: 10px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .auto-signature-preview .label {
+            font-size: 0.75rem;
+            color: #166534;
+            font-weight: 600;
+        }
+        .auto-signature-preview img {
+            max-height: 50px;
+            width: auto;
+            border: 1px solid #86efac;
+            border-radius: 4px;
+            padding: 2px;
+            background: white;
+        }
+        .auto-signature-preview .status {
+            font-size: 0.7rem;
+            color: #166534;
+        }
+
+        /* Print Preview */
+        #print-preview {
+            display: none;
+            position: relative;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 40px 50px;
+            background: white;
+        }
+        @media print {
+            body {
+                background: #fff !important;
+                color: #000 !important;
+                padding: 0;
+                margin: 0;
+            }
+            .navbar,
+            .hero,
+            .container,
+            .form-card,
+            .action-buttons-group,
+            .toast-container,
+            .mode-off-overlay,
+            .auth-overlay,
+            .access-denied-overlay,
+            #toastContainer {
+                display: none !important;
+            }
+            #print-preview {
+                display: block !important;
+                position: relative;
+                min-height: 100vh;
+                padding: 40px 50px;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                background: #fff;
+                color: #000;
+                max-width: 1000px;
+                margin: 0 auto;
+            }
+            #print-preview::before {
+                content: "";
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 480px;
+                height: 480px;
+                background-image: url('rotaract.jpg');
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: contain;
+                opacity: 0.06;
+                pointer-events: none;
+                z-index: -1;
+            }
+            .letterhead {
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-bottom: 3px double var(--primary);
+                padding-bottom: 15px;
+                margin-bottom: 25px;
+            }
+            .letterhead-logo {
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                height: 75px;
+                width: auto;
+            }
+            .letterhead-text {
+                text-align: center;
+                width: 100%;
+            }
+            .letterhead h1 {
+                color: var(--primary);
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 2px;
+            }
+            .letterhead h2 {
+                color: var(--secondary);
+                font-size: 15px;
+                display: block !important;
+                margin-bottom: 2px;
+            }
+            .letterhead-subtext {
+                font-size: 12px;
+                color: #444;
+            }
+            #outTitle {
+                text-align: center;
+                text-transform: uppercase;
+                margin-bottom: 20px;
+                letter-spacing: 1px;
+                font-size: 18px;
+                font-weight: bold;
+                color: var(--dark);
+            }
+            .meta-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 25px;
+            }
+            .meta-table td {
+                padding: 8px 12px;
+                border: 1px solid #cbd5e1;
+                font-size: 13px;
+            }
+            .meta-title {
+                font-weight: bold;
+                background: #f8fafc;
+                width: 22%;
+            }
+            .width-30 {
+                width: 28%;
+            }
+            .content-section {
+                margin-bottom: 24px;
+                text-align: justify;
+            }
+            .content-section h4 {
+                color: var(--secondary);
+                border-bottom: 1px solid #cbd5e1;
+                padding-bottom: 5px;
+                margin-bottom: 12px;
+                font-size: 14px;
+                text-align: center;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            .agenda-item {
+                margin-bottom: 14px;
+                font-size: 13.5px;
+                page-break-inside: avoid;
+                text-align: justify;
+            }
+            .agenda-item strong {
+                color: #1e293b;
+                font-weight: 700;
+            }
+            .agenda-item p {
+                margin: 3px 0 0 15px;
+                color: #334155;
+                font-size: 12.5px;
+                text-align: justify;
+            }
+            .print-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 8px;
+            }
+            .print-table th,
+            .print-table td {
+                border: 1px solid #cbd5e1;
+                padding: 6px 12px;
+                font-size: 12.5px;
+                text-align: left;
+            }
+            .print-table th {
+                background-color: #f8fafc;
+                font-weight: bold;
+            }
+            .col-sn {
+                width: 8%;
+                text-align: center;
+            }
+            .col-name {
+                width: 52%;
+            }
+            .col-role {
+                width: 40%;
+            }
+            .footer-sign {
+                margin-top: 40px;
+                display: flex;
+                justify-content: space-between;
+                page-break-inside: avoid;
+                padding-top: 20px;
+                border-top: 1px solid #e2e8f0;
+            }
+            .sign-line {
+                text-align: center;
+                min-width: 200px;
+            }
+            .footer-sign-img {
+                display: block;
+                max-width: 150px;
+                max-height: 55px;
+                margin: 0 auto 6px auto;
+            }
+            .sign-line p {
+                margin: 0;
+                font-size: 13px;
+                color: #1e293b;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .sign-line p:first-child {
+                font-weight: 700;
+                font-size: 14px;
+                margin-bottom: 4px;
+            }
+            .sign-line .sign-role {
+                font-size: 11px;
+                color: #64748b;
+                font-weight: 500;
+            }
+            .page-break {
+                page-break-before: always;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .form-card {
+                padding: 20px;
+            }
+            .hero h1 {
+                font-size: 1.85rem;
+            }
+            .dynamic-row {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .agenda-width-title,
+            .agenda-width-desc {
+                width: 100%;
+            }
+            .btn-ai-resolution {
+                width: 100%;
+                height: 40px;
+            }
+            .checklist-item label {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+            .navbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-actions {
+                justify-content: stretch;
+            }
+            .home-btn {
+                justify-content: center;
+            }
+            .toast-container {
+                left: 16px;
+                right: 16px;
+                max-width: 100%;
+                bottom: 16px;
+            }
+            .mode-off-card {
+                padding: 30px 20px;
+            }
+            .mode-off-card h2 {
+                font-size: 1.4rem;
+            }
+            .signature-grid {
+                grid-template-columns: 1fr;
+            }
+            .action-item-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-bar {
+                flex-direction: column;
+            }
+            .search-bar input {
+                width: 100%;
+            }
+            .search-bar .btn-search {
+                width: 100%;
+                justify-content: center;
+            }
+            .auth-card {
+                padding: 30px 20px;
+            }
+            .access-denied-card {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== ACCESS DENIED OVERLAY ===== -->
+    <div class="access-denied-overlay" id="accessDeniedOverlay">
+        <div class="access-denied-card">
+            <span class="icon-big">⛔</span>
+            <h2>Access Denied</h2>
+            <p>You don't have permission to access the minutes builder. Only <strong>Admin, President, Secretary, and Editor</strong> roles are allowed.</p>
+            <a href="index.html" class="btn-redirect">🏠 Go to Homepage</a>
+        </div>
+    </div>
+
+    <!-- ===== AUTH OVERLAY ===== -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-card">
+            <span class="icon-big">🔐</span>
+            <h2>Authentication Required</h2>
+            <p class="sub">Enter your credentials to access the minutes builder.</p>
+            <form id="authForm" novalidate>
+                <div class="form-group">
+                    <label for="authEmail">Email Address</label>
+                    <input type="email" id="authEmail" class="form-control" placeholder="your@email.com" required autocomplete="username" />
+                </div>
+                <div class="form-group">
+                    <label for="authPassword">Password</label>
+                    <input type="password" id="authPassword" class="form-control" placeholder="Enter your password" required autocomplete="current-password" />
+                </div>
+                <button type="submit" class="btn-auth" id="authBtn">🔑 Authenticate</button>
+                <div id="authStatus" class="auth-status"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== MODE OFF OVERLAY ===== -->
+    <div class="mode-off-overlay" id="modeOffOverlay">
+        <div class="mode-off-card">
+            <span class="icon-big">🔒</span>
+            <h2>Meeting Mode is Off</h2>
+            <p>The admin has disabled meeting mode. You cannot access the minutes builder at this time.</p>
+            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:20px;">Please contact the admin to enable meeting mode.</p>
+            <a href="index.html" class="btn-redirect" id="redirectBtn">🏠 Go to Homepage</a>
+            <div class="countdown-timer">Redirecting in <span id="countdownNum">5</span> seconds...</div>
+        </div>
+    </div>
+
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar">
+        <a href="index.html" class="nav-brand">
+            <div class="nav-logo-marker"></div>
+            <div class="nav-brand-text">Rotaract<span>Galkot</span></div>
+        </a>
+        <div class="nav-actions">
+            <a href="index.html" class="home-btn">🏠 HOME</a>
+            <button class="login-nav-btn" id="loginNavBtn">🔐 Login</button>
+            <div class="user-info-wrapper" id="userInfoWrapper">
+                <span class="user-email-display" id="userEmailDisplay">👤 Guest</span>
+                <span class="role-badge" id="userRoleBadge">—</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== HERO ===== -->
+    <header class="hero">
+        <div class="hero-tag">R.Y. 2026-27 Console</div>
+        <h1>Minutes Writer Engine</h1>
+        <p>Compile official records · versioned save with date/time · Supabase + autocomplete</p>
+        <div id="modeStatusBadge" class="mode-status-badge enabled">🟢 Meeting Mode: ON</div>
+    </header>
+
+    <!-- ===== MAIN CONTENT (Hidden until auth) ===== -->
+    <main class="container" id="mainContent" style="display:none;">
+
+        <!-- CARD 1: MEETING COORDINATES + SEARCH -->
+        <div class="form-card">
+            <div class="card-header-wrapper">
+                <div class="card-title-group">
+                    <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg></div>
+                    <h2>1. Meeting Coordinates</h2>
+                </div>
+            </div>
+
+            <!-- SEARCH + autocomplete -->
+            <div class="search-wrapper">
+                <div class="search-bar">
+                    <input type="text" id="searchMeetingNo" placeholder="🔍 Type to search meetings..." autocomplete="off" />
+                    <button class="btn-search" id="searchBtn" onclick="searchMeeting()">🔍 Search</button>
+                    <span id="searchResultBadge" class="search-result-badge" style="display:none;"></span>
+                </div>
+                <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+            </div>
+
+            <!-- Version info -->
+            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; background:#f1f5f9; padding:12px 16px; border-radius:var(--radius-sm);">
+                <span style="font-weight:600;">📌 Version:</span>
+                <span id="versionDisplay" style="color:var(--text-muted);">—</span>
+                <span style="font-weight:600; margin-left:auto;">🕒 Saved:</span>
+                <span id="savedAtDisplay" style="color:var(--text-muted);">—</span>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group"><label for="meetNo">Meeting Number</label><input type="text" id="meetNo" placeholder="e.g., 125th Regular Meeting" /></div>
+                <div class="form-group"><label for="meetDate">Date &amp; Time</label><input type="datetime-local" id="meetDate" /></div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group"><label for="meetVenue">Venue Location</label><input type="text" id="meetVenue" value="Club Office, Galkot" /></div>
+                <div class="form-group"><label for="meetChair">Meeting Chairperson</label><select id="meetChair"><option value="Rtr. Nabin Chalise" selected>Rtr. Nabin Chalise</option></select></div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="meetType">Meeting Type</label>
+                    <select id="meetType">
+                        <option value="General Meeting" selected>General Meeting</option>
+                        <option value="Board Meeting">Board Meeting</option>
+                        <option value="Special Board Meeting">Special Board Meeting</option>
+                        <option value="Club Assembly">Club Assembly</option>
+                        <option value="Special General Meeting">Special General Meeting</option>
+                        <option value="Annual General Meeting (AGM)">Annual General Meeting (AGM)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <p style="font-size:0.82rem; color:var(--text-muted); margin:0; line-height:1.4;">
+                        ℹ️ Club Members are recognized/attendance-counted only for General Meeting, Club Assembly, Special General Meeting &amp; AGM. Board Meeting and Special Board Meeting count for board roster members only.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 2: ROSTER -->
+        <div class="form-card">
+            <div class="card-header-wrapper">
+                <div class="card-title-group">
+                    <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+                    <h2>2. Attendance Checklist</h2>
+                </div>
+                <button class="btn-add" onclick="addNewMemberRow()">➕ Add Rotaractor</button>
+            </div>
+            <div class="checklist-search">
+                <input type="text" id="memberSearch" placeholder="🔍 Search members..." oninput="filterMembers()" />
+            </div>
+            <div class="checklist-container" id="members-checklist"></div>
+            <div id="additional-members-container" class="additional-members-margin"></div>
+
+            <div class="card-header-wrapper guest-header-margin">
+                <div class="card-title-group">
+                    <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                    <h2>3. Special Guests</h2>
+                </div>
+                <button class="btn-add" onclick="addGuestRow()">➕ Add Guest</button>
+            </div>
+            <div id="guests-container"></div>
+
+            <div class="grid-2 guest-count-margin">
+                <div class="form-group"><label>Members Present (auto)</label><input type="number" id="countPresent" value="0" readonly class="readonly-input" /></div>
+                <div class="form-group"><label>Guests Count (auto)</label><input type="number" id="countGuests" value="0" readonly class="readonly-input" /></div>
+            </div>
+        </div>
+
+        <!-- CARD 3: DISCUSSIONS -->
+        <div class="form-card">
+            <div class="card-header-wrapper">
+                <div class="card-title-group">
+                    <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+                    <h2>4. Discussions &amp; Remarks</h2>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group"><label>Sergeant-at-Arms</label><textarea id="saaReport" rows="2" placeholder="Attendance, discipline..."></textarea></div>
+                <div class="form-group"><label>Happy Moments</label><textarea id="happyMoments" rows="2" placeholder="Good news, celebrations..."></textarea></div>
+                <div class="form-group"><label>Opening Remarks</label><textarea id="presidentRemarks" rows="2" placeholder="Opening remarks..."></textarea></div>
+                <div class="form-group"><label>Committee Updates</label><textarea id="committeeUpdates" rows="2" placeholder="Updates from committees..."></textarea></div>
+                <div class="form-group"><label>Announcements</label><textarea id="announcements" rows="2" placeholder="Upcoming events..."></textarea></div>
+                <div class="form-group"><label>Open Floor</label><textarea id="openFloor" rows="2" placeholder="General discussion..."></textarea></div>
+            </div>
+        </div>
+
+        <!-- CARD 4: AGENDAS -->
+        <div class="form-card">
+            <div class="card-header-wrapper">
+                <div class="card-title-group">
+                    <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
+                    <h2>5. Agendas &amp; Resolutions</h2>
+                </div>
+                <button class="btn-add" onclick="addAgendaRow()">➕ Add Agenda</button>
+            </div>
+            <div id="agenda-container">
+                <div class="dynamic-row agenda-group">
+                    <input type="text" class="agenda-title agenda-width-title" placeholder="Agenda Title" />
+                    <textarea class="agenda-desc agenda-width-desc" placeholder="Resolution / Action points..." rows="1"></textarea>
+                    <button type="button" class="btn-ai-resolution" title="Generate resolution with AI" onclick="generateResolutionAI(this)">✨</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 5: ACTION ITEMS -->
+        <div class="form-card">
+            <div class="card-header-wrapper">
+                <div class="card-title-group">
+                    <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+                    <h2>6. Action Items</h2>
+                </div>
+                <button class="btn-add" onclick="addActionItem()">➕ Add Action</button>
+            </div>
+            <div id="action-items-container">
+                <div class="action-item-row">
+                    <input class="ai-task" placeholder="Task" />
+                    <select class="ai-person"><option value="">-- Select member --</option></select>
+                    <input class="ai-deadline" type="date" />
+                    <select class="ai-status"><option value="Pending">Pending</option><option value="In Progress">In Progress</option><option value="Completed">Completed</option></select>
+                    <button class="ai-remove" onclick="this.parentElement.remove()">✕</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 6: CLOSING REMARKS -->
+        <div class="form-card">
+            <div class="card-header-wrapper">
+                <div class="card-title-group">
+                    <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+                    <h2>7. Closing Remarks</h2>
+                </div>
+            </div>
+            <div class="form-group">
+                <textarea id="closingRemarks" placeholder="Any closing remarks for this meeting..." rows="3" style="width:100%;"></textarea>
+            </div>
+        </div>
+
+        <!-- CARD 7: SIGNATURES -->
+        <div class="form-card">
+            <div class="card-header-wrapper">
+                <div class="card-title-group">
+                    <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+                    <h2>8. Digital Signatures</h2>
+                </div>
+            </div>
+            <div class="signature-grid">
+                <div class="signature-field">
+                    <label>Prepared By</label>
+                    <input type="text" id="sigPrepared" value="Rtr. Madan Subedi" />
+                </div>
+                <div class="signature-field">
+                    <label>Reviewed By</label>
+                    <input type="text" id="sigReviewed" value="Rtr. Anil Shrestha" />
+                </div>
+            </div>
+            <div style="margin-top:16px;">
+                <div class="signature-field">
+                    <label>Approved By</label>
+                    <input type="text" id="sigApproved" value="Rtr. Nabin Chalise" />
+                </div>
+            </div>
+        </div>
+
+        <!-- SUBMIT -->
+        <div class="action-buttons-group">
+            <button class="btn-submit" id="saveBtn" onclick="compileSaveAndEmail()">
+                <span class="spinner"></span>
+                <span class="btn-text">💾 Save to Dashboard</span>
+            </button>
+            <button type="button" class="btn-submit btn-print" id="printBtn" onclick="printMinutes()">
+                <span class="btn-text">🖨️ Print / Export PDF</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- ===== PRINT PREVIEW ===== -->
+    <div id="print-preview">
+        <div class="letterhead">
+            <img src="rotaract.jpg" alt="Rotaract Logo" class="letterhead-logo" />
+            <div class="letterhead-text">
+                <h1>ROTARACT CLUB OF GALKOT BAGLUNG</h1>
+                <h2>Rotary International District 3292 Nepal-Bhutan</h2>
+                <p class="letterhead-subtext">Club ID: 8823562 | Rota Year 2026-27</p>
+                <p class="letterhead-subtext">Charter Day: April 23<sup>rd</sup> 2021</p>
+            </div>
+        </div>
+        <h3 id="outTitle">MINUTES OF MEETING</h3>
+        <div class="no-print" style="display:flex; gap:20px; font-size:13px; background:#f8fafc; padding:8px 16px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom:20px;">
+            <span><strong>📌 Version:</strong> <span id="outVersion">v1.0</span></span>
+            <span><strong>🕒 Last Saved:</strong> <span id="outSavedAt">---</span></span>
+        </div>
+        <table class="meta-table">
+            <tr><td class="meta-title">Meeting Title</td><td id="outMeetNo" class="width-30"></td><td class="meta-title">Date / Time</td><td id="outDate"></td></tr>
+            <tr><td class="meta-title">Venue</td><td id="outVenue"></td><td class="meta-title">Chairperson</td><td id="outChair"></td></tr>
+            <tr><td class="meta-title">Meeting Type</td><td colspan="3" id="outMeetType"></td></tr>
+            <tr><td class="meta-title">Attendance</td><td colspan="3">Total Present Members: <span id="outPres"></span> | Guests: <span id="outGst"></span></td></tr>
+        </table>
+        <div class="content-section" id="print-section-members"><h4>Attended Members</h4><div id="outPresentMembersNames"></div></div>
+        <div class="content-section" id="print-section-guests" style="display:none;"><h4>Special Guests</h4><div id="outGuestsNames"></div></div>
+        <div class="content-section"><h4>Meeting Discussions</h4><div id="outDiscussions"></div></div>
+        <div class="content-section"><h4>Agendas &amp; Resolutions</h4><div id="outAgendas"></div></div>
+        <div class="content-section"><h4>Action Items</h4><div id="outActionItems"></div></div>
+        <div class="content-section" id="print-section-closing" style="display:none;"><h4>Closing Remarks</h4><div id="outClosingRemarks"></div></div>
+        <div class="content-section"><h4>Approval &amp; Signatures</h4>
+            <table class="print-table" style="width:100%;">
+                <tr><th>Prepared By</th><th>Reviewed By</th><th>Approved By</th></tr>
+                <tr>
+                    <td id="outSigPrepared" style="text-align:center;">Rtr. Madan Subedi</td>
+                    <td id="outSigReviewed" style="text-align:center;">Rtr. Anil Shrestha</td>
+                    <td id="outSigApproved" style="text-align:center;">Rtr. Nabin Chalise</td>
+                </tr>
+            </table>
+        </div>
+        <div class="footer-sign">
+            <div class="sign-line">
+                <img id="outSigApprovedImg" src="presidentsign.png" class="footer-sign-img" onerror="this.style.display='none'" />
+                <p id="outChairSign">Rtr. Nabin Chalise</p>
+                <p class="sign-role">Meeting Chairperson</p>
+            </div>
+            <div class="sign-line">
+                <img id="outSigPreparedImg" src="secretarysign.png" class="footer-sign-img" onerror="this.style.display='none'" />
+                <p id="outSecretarySign">Rtr. Madan Subedi</p>
+                <p class="sign-role">Club Secretary</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ============================================================ -->
+    <!-- ===== SCRIPT (FIXED) ===== -->
+    <!-- ============================================================ -->
+    <script>
+        // ============================================================
+        //  SUPABASE CONFIG
+        // ============================================================
+        const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+
+        // ============================================================
+        //  SUPABASE CLIENT - FIXED
+        // ============================================================
+        let supabaseClient = null;
+
+        function initSupabase() {
+            try {
+                // ✅ Check if supabase is available globally
+                if (typeof supabase === 'undefined') {
+                    console.error('❌ Supabase library not loaded. Check CDN URL.');
+                    return null;
+                }
+
+                if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+                    console.error('❌ Supabase credentials missing.');
+                    return null;
+                }
+
+                const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('✅ Supabase client initialized successfully.');
+                return client;
+            } catch (e) {
+                console.error('❌ Supabase init error:', e.message);
+                return null;
+            }
+        }
+
+        // ✅ Initialize client
+        supabaseClient = initSupabase();
+
+        // ✅ If client is null, show error on page
+        if (!supabaseClient) {
+            document.addEventListener('DOMContentLoaded', function() {
+                const status = document.getElementById('authStatus');
+                if (status) {
+                    status.className = 'auth-status error';
+                    status.textContent = '❌ Supabase connection failed. Please refresh the page.';
+                    status.style.display = 'block';
+                }
+                showToast('❌ Error', 'Supabase client not initialized. Please refresh the page.', 'error');
+            });
+        }
+
+        // ============================================================
+        //  AUTH STATE
+        // ============================================================
+        let currentUser = null;
+        let currentUserRole = null;
+        const ALLOWED_ROLES = ['admin', 'president', 'secretary', 'editor'];
+
+        // ============================================================
+        //  DOM ELEMENTS
+        // ============================================================
+        const authOverlay = document.getElementById('authOverlay');
+        const accessDeniedOverlay = document.getElementById('accessDeniedOverlay');
+        const mainContent = document.getElementById('mainContent');
+        const loginNavBtn = document.getElementById('loginNavBtn');
+        const userEmailDisplay = document.getElementById('userEmailDisplay');
+        const userRoleBadge = document.getElementById('userRoleBadge');
+
+        // ============================================================
+        //  TOAST SYSTEM
+        // ============================================================
+        function showToast(title, message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: '✓', error: '✕', loading: '⟳' };
+            toast.innerHTML = `
+                <div class="toast-icon">${icons[type] || '✓'}</div>
+                <div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+            `;
+            container.appendChild(toast);
+            if (type !== 'loading') setTimeout(() => { if (toast.parentElement) toast.remove(); }, 5000);
+            return toast;
+        }
+
+        function dismissAllToasts() {
+            const container = document.getElementById('toastContainer');
+            if (container) container.innerHTML = '';
+        }
+
+        // ============================================================
+        //  AUTH FUNCTIONS
+        // ============================================================
+        function showAuthOverlay() {
+            if (!authOverlay) return;
+            authOverlay.classList.add('active');
+            const emailInput = document.getElementById('authEmail');
+            const passwordInput = document.getElementById('authPassword');
+            const status = document.getElementById('authStatus');
+            if (emailInput) emailInput.value = '';
+            if (passwordInput) passwordInput.value = '';
+            if (status) {
+                status.className = 'auth-status';
+                status.textContent = '';
+            }
+            if (emailInput) emailInput.focus();
+        }
+
+        function hideAuthOverlay() {
+            if (authOverlay) authOverlay.classList.remove('active');
+        }
+
+        function showAccessDenied() {
+            if (accessDeniedOverlay) accessDeniedOverlay.classList.add('active');
+        }
+
+        function hideAccessDenied() {
+            if (accessDeniedOverlay) accessDeniedOverlay.classList.remove('active');
+        }
+
+        // ============================================================
+        //  ROLE-BASED EDIT PERMISSIONS
+        //  - Admin: can create new meetings AND edit existing ones.
+        //  - Secretary: can create/save a NEW meeting, but cannot edit
+        //    an existing (already-saved) meeting record.
+        //  - President / Editor: can search/view only, no saving.
+        // ============================================================
+        function canCreateNewMeeting() {
+            return currentUserRole === 'admin' || currentUserRole === 'secretary';
+        }
+
+        function canEditExistingMeeting() {
+            return currentUserRole === 'admin';
+        }
+
+        function applyRolePermissionsToUI() {
+            const saveBtn = document.getElementById('saveBtn');
+            const allowed = canCreateNewMeeting();
+
+            if (saveBtn) {
+                saveBtn.disabled = !allowed;
+                saveBtn.style.opacity = allowed ? '1' : '0.5';
+                saveBtn.style.cursor = allowed ? 'pointer' : 'not-allowed';
+                saveBtn.title = allowed ? '' : 'Only Admin/Secretary can save meeting minutes.';
+            }
+        }
+
+        function updateUIAfterAuth(user, role) {
+            currentUser = user;
+            currentUserRole = role;
+
+            if (userEmailDisplay) {
+                userEmailDisplay.textContent = `👤 ${user.email}`;
+                userEmailDisplay.style.color = '#475569';
+            }
+
+            if (userRoleBadge) {
+                userRoleBadge.textContent = role.toUpperCase();
+                userRoleBadge.className = `role-badge ${role}`;
+            }
+
+            if (loginNavBtn) {
+                loginNavBtn.textContent = '🚪 Logout';
+                loginNavBtn.classList.add('logged-in');
+                loginNavBtn.onclick = logout;
+            }
+
+            hideAuthOverlay();
+
+            if (mainContent) mainContent.style.display = 'block';
+
+            fetchAllMeetings();
+            calculateAttendanceCounts();
+            applyRolePermissionsToUI();
+
+            showToast('✅ Welcome', `Logged in as ${role.toUpperCase()}`, 'success');
+        }
+
+        // ============================================================
+        //  LOGIN - FIXED
+        // ============================================================
+        async function login(email, password) {
+            const statusEl = document.getElementById('authStatus');
+            const btn = document.getElementById('authBtn');
+
+            if (!statusEl) return;
+
+            statusEl.className = 'auth-status loading';
+            statusEl.innerHTML = `<span class="spinner-small"></span> Authenticating...`;
+            if (btn) btn.disabled = true;
+
+            try {
+                // ✅ Check if supabase client is available
+                if (!supabaseClient) {
+                    throw new Error('Supabase client not initialized. Please refresh the page.');
+                }
+
+                // Step 1: Sign in with Supabase Auth
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) throw new Error(error.message);
+
+                if (!data || !data.user) {
+                    throw new Error('No user data returned.');
+                }
+
+                const userId = data.user.id;
+                const userEmail = data.user.email;
+
+                // Step 2: Check role from user_roles table
+                const { data: roleData, error: roleError } = await supabaseClient
+                    .from('user_roles')
+                    .select('role')
+                    .eq('user_id', userId)
+                    .maybeSingle();
+
+                if (roleError) {
+                    console.error('Role check error:', roleError);
+                    throw new Error('Failed to verify user permissions');
+                }
+
+                // Step 3: Check if user has allowed role
+                if (!roleData || !ALLOWED_ROLES.includes(roleData.role)) {
+                    throw new Error('Access denied. Only Admin, President, Secretary, and Editor can access.');
+                }
+
+                // Step 4: Store session
+                sessionStorage.setItem('auth_user_id', userId);
+                sessionStorage.setItem('auth_email', userEmail);
+                sessionStorage.setItem('auth_role', roleData.role);
+                sessionStorage.setItem('auth_verified', 'true');
+
+                // Step 5: Update UI
+                updateUIAfterAuth({ id: userId, email: userEmail }, roleData.role);
+
+            } catch (err) {
+                statusEl.className = 'auth-status error';
+                statusEl.textContent = '❌ ' + (err.message || 'Invalid credentials.');
+                console.error('Login error:', err);
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        // ============================================================
+        //  LOGOUT
+        // ============================================================
+        async function logout() {
+            if (!confirm('Are you sure you want to logout?')) return;
+
+            try {
+                if (supabaseClient) {
+                    await supabaseClient.auth.signOut();
+                }
+            } catch (e) {
+                console.warn('Signout error:', e);
+            }
+
+            // Clear session
+            sessionStorage.removeItem('auth_user_id');
+            sessionStorage.removeItem('auth_email');
+            sessionStorage.removeItem('auth_role');
+            sessionStorage.removeItem('auth_verified');
+
+            // Reset UI
+            currentUser = null;
+            currentUserRole = null;
+            if (userEmailDisplay) {
+                userEmailDisplay.textContent = '👤 Guest';
+                userEmailDisplay.style.color = '#475569';
+            }
+            if (userRoleBadge) {
+                userRoleBadge.textContent = '—';
+                userRoleBadge.className = 'role-badge';
+            }
+            if (loginNavBtn) {
+                loginNavBtn.textContent = '🔐 Login';
+                loginNavBtn.classList.remove('logged-in');
+                loginNavBtn.onclick = showAuthOverlay;
+            }
+            if (mainContent) mainContent.style.display = 'none';
+
+            showToast('👋 Logged Out', 'You have been logged out successfully.', 'success');
+        }
+
+        // ============================================================
+        //  CHECK SESSION ON LOAD
+        // ============================================================
+        async function checkSession() {
+            const verified = sessionStorage.getItem('auth_verified') === 'true';
+            const userId = sessionStorage.getItem('auth_user_id');
+            const email = sessionStorage.getItem('auth_email');
+            const role = sessionStorage.getItem('auth_role');
+
+            if (verified && userId && email && role && ALLOWED_ROLES.includes(role)) {
+                updateUIAfterAuth({ id: userId, email: email }, role);
+                return true;
+            } else {
+                showAuthOverlay();
+                return false;
+            }
+        }
+
+        // ============================================================
+        //  AUTH FORM HANDLER
+        // ============================================================
+        const authForm = document.getElementById('authForm');
+        if (authForm) {
+            authForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const emailInput = document.getElementById('authEmail');
+                const passwordInput = document.getElementById('authPassword');
+                const email = emailInput ? emailInput.value.trim() : '';
+                const password = passwordInput ? passwordInput.value : '';
+                await login(email, password);
+            });
+        }
+
+        // ============================================================
+        //  LOGIN BUTTON HANDLER
+        // ============================================================
+        if (loginNavBtn) {
+            loginNavBtn.onclick = function() {
+                if (currentUser) {
+                    logout();
+                } else {
+                    showAuthOverlay();
+                }
+            };
+        }
+
+        // Close auth overlay on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && authOverlay && authOverlay.classList.contains('active')) {
+                hideAuthOverlay();
+            }
+        });
+
+        // ============================================================
+        //  ROSTER DATA
+        // ============================================================
+        const rosterData = [
+            { role: "CHARTERED PRESIDENT", name: "RTR. NEETU KHADKA" },
+            { role: "PRESIDENT", name: "RTR. NABIN CHALISE" },
+            { role: "SECRETARY", name: "RTR. MADAN SHARMA" },
+            { role: "TREASURER", name: "RTR. MANISH KANDEL" },
+            { role: "PP/ISD/ADVISOR", name: "RTR. ANIL SHRESTHA" },
+            { role: "IPP/MENTOR", name: "RTR. NABIN SUBEDI" },
+            { role: "PAST PRESIDENT/ADVISOR", name: "RTR. KAMAL KHAREL" },
+            { role: "PAST PRESIDENT/ADVISOR", name: "RTR. ISHOR GAUTAM" },
+            { role: "JOINT SECRETARY", name: "RTR. SAGAR CHALISE" },
+            { role: "PRESIDENT ELECT", name: "RTR. TIKA RAM GAUTAM" },
+            { role: "MEDICAL OFFICER", name: "RTR. DR. MANOJ KARKI" },
+            { role: "PP/ROTARACT LEARNING FACILITATOR", name: "RTR. LAXMI PUN" },
+            { role: "ROTARACT VICE PRESIDENT", name: "RTR. VIKASH SUBEDI" },
+            { role: "ROTARACT MEMBERSHIP CHAIR", name: "RTR. BIPIN CHALISE" },
+            { role: "IT OFFICER", name: "RTR. RAJU SAHANI (RJ)" },
+            { role: "SERGEANT AT ARMS", name: "RTR. LOKENDRA GAIRE" },
+            { role: "ROTARACT FOUNDATION CHAIR", name: "RTR. MANJEELA SHRESTHA" },
+            { role: "ROTARACT SERVICE PROJECTS CHAIR", name: "RTR. SMRITI BUDHATHOKI" },
+            { role: "ROTARACT YOUNG LEADERS CONTACT", name: "RTR. MELINA KHAREL" },
+            { role: "CLUB MEMBER", name: "RTR. AMRIT SUBEDI" },
+            { role: "CLUB MEMBER", name: "RTR. ANIL GANDARVA" },
+            { role: "CLUB MEMBER", name: "RTR. BALRAM ADHIKARI" },
+            { role: "CLUB MEMBER", name: "RTR. BIBEK KHAREL" },
+            { role: "CLUB MEMBER", name: "RTR. BIDUR KHAREL" },
+            { role: "CLUB MEMBER", name: "RTR. DEEPAK KHATTRI" },
+            { role: "CLUB MEMBER", name: "RTR. DURGA DARLAMI" },
+            { role: "CLUB MEMBER", name: "RTR. GANESH SAPKOTA" },
+            { role: "CLUB MEMBER", name: "RIT. JIT BAHADUR B.K." },
+            { role: "CLUB MEMBER", name: "RTR. KRIPA KANDEL" },
+            { role: "CLUB MEMBER", name: "RTR. MANISH GURUNG" },
+            { role: "CLUB MEMBER", name: "RTR. MIN THAPA" },
+            { role: "CLUB MEMBER", name: "RTR. NABIN GAIRE" },
+            { role: "CLUB MEMBER", name: "RTR. NABIN SHARMA POUDEL" },
+            { role: "CLUB MEMBER", name: "RTR. NETRA PRASAD LAMICHHANE" },
+            { role: "CLUB MEMBER", name: "RTR. PRAKASH KHADKA" },
+            { role: "CLUB MEMBER", name: "RTR. PRANSU RAM REGMI" },
+            { role: "CLUB MEMBER", name: "RTR. PRATAP SEN" },
+            { role: "CLUB MEMBER", name: "RTR. PRATIKSHYA DARJI" },
+            { role: "CLUB MEMBER", name: "RTR. RADHA GAUTAM" },
+            { role: "CLUB MEMBER", name: "RTR. ROMAN SUBEDI" },
+            { role: "CLUB MEMBER", name: "RTR. SANJU NEUPANE" },
+            { role: "CLUB MEMBER", name: "RTR. SANTOSH BOHORA CHETTRI" },
+            { role: "CLUB MEMBER", name: "RTR. SUNIL CHHETRI" },
+            { role: "CLUB MEMBER", name: "RTR. SUNIL GAUTAM" },
+            { role: "CLUB MEMBER", name: "RTR. SUNIL KHATIWAL" },
+            { role: "CLUB MEMBER", name: "RTR. SUNIL ROKA MAGAR" },
+            { role: "CLUB MEMBER", name: "TARA PRASAD SUNAR" },
+            { role: "CLUB MEMBER", name: "RTR. TUL BAHADUR B.K." }
+        ];
+
+        // ============================================================
+        //  LIVE MEMBER NAMES (pulled from the `members` table)
+        //  Every place on this form that needs a person's name now uses
+        //  a dropdown built from this list instead of a free-text field,
+        //  so the name saved always matches the `members` table exactly
+        //  (rosterData above is only a fallback for when Supabase is
+        //  unreachable/unconfigured) - this is what makes attendance and
+        //  the recognition/attendance-award feature match reliably.
+        // ============================================================
+        let liveMemberNames = rosterData.map(m => m.name);
+
+        function memberOptionsHTML(selected) {
+            let names = liveMemberNames;
+            if (selected && !names.includes(selected)) {
+                names = [selected, ...names];
+            }
+            const opts = ['<option value="">-- Select member --</option>'];
+            names.forEach(name => {
+                opts.push(`<option value="${escapeHtml(name)}" ${name === selected ? 'selected' : ''}>${escapeHtml(name)}</option>`);
+            });
+            return opts.join('');
+        }
+
+        function refreshAllPersonSelects() {
+            document.querySelectorAll('.ai-person').forEach(sel => {
+                const current = sel.value;
+                sel.innerHTML = memberOptionsHTML(current);
+            });
+            document.querySelectorAll('.add-member-name').forEach(sel => {
+                const current = sel.value;
+                sel.innerHTML = memberOptionsHTML(current);
+            });
+            const chairSel = document.getElementById('meetChair');
+            if (chairSel) {
+                const current = chairSel.value;
+                chairSel.innerHTML = memberOptionsHTML(current);
+            }
+        }
+
+        async function loadResponsibleNames() {
+            // Show something immediately, then upgrade to live DB data
+            refreshAllPersonSelects();
+
+            if (!supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('members')
+                    .select('name, status, position, designation')
+                    .order('name', { ascending: true });
+                if (error) throw error;
+                const activeMembers = (data || [])
+                    .filter(m => (m.status || '').toLowerCase() !== 'inactive' && m.name);
+                if (activeMembers.length) {
+                    liveMemberNames = [...new Set(activeMembers.map(m => m.name))].sort();
+                    refreshAllPersonSelects();
+
+                    // Rebuild the attendance checklist from the same live
+                    // roster the dropdowns use, so a name only ever has
+                    // to match itself.
+                    const liveRoster = activeMembers
+                        .map(m => ({ name: m.name, role: m.position || m.designation || 'CLUB MEMBER' }))
+                        .sort((a, b) => a.name.localeCompare(b.name));
+                    renderMembersChecklist(liveRoster);
+                }
+            } catch (err) {
+                console.error('❌ loadResponsibleNames error (using local roster as fallback):', err);
+            }
+        }
+
+        // ============================================================
+        //  MOUNT CHECKLIST
+        //  Renders from whichever roster list is passed in. Called once
+        //  immediately with the hardcoded `rosterData` fallback so the
+        //  form is usable right away, then re-called with the LIVE
+        //  `members` table roster once it loads (see loadResponsibleNames
+        //  below) - this keeps the checklist's name spelling/casing in
+        //  sync with the `members` table, which is what the person
+        //  dropdowns already do. Without this, a checklist entry whose
+        //  hardcoded name doesn't exactly match the `members` table row
+        //  (after normalization) would silently fail to count toward
+        //  attendance on the recognition page. Checked state is
+        //  preserved across re-renders by matching on a normalized key.
+        // ============================================================
+        const checklistContainer = document.getElementById('members-checklist');
+
+        function normalizeChecklistKey(str) {
+            return (str || '').toString().trim().toLowerCase()
+                .replace(/^rtr\.?\s+/, '')
+                .replace(/^dr\.?\s+/, '')
+                .replace(/\s+/g, ' ');
+        }
+
+        function renderMembersChecklist(list) {
+            if (!checklistContainer || !Array.isArray(list) || list.length === 0) return;
+
+            // Preserve any currently-checked members (by normalized name)
+            // across a re-render, so a live refresh never un-checks
+            // someone the user already selected.
+            const previouslyChecked = new Set();
+            checklistContainer.querySelectorAll('.member-checkbox:checked').forEach(cb => {
+                previouslyChecked.add(normalizeChecklistKey(cb.dataset.name));
+            });
+
+            checklistContainer.innerHTML = '';
+            list.forEach((member, i) => {
+                const key = normalizeChecklistKey(member.name);
+                const wasChecked = previouslyChecked.has(key);
+                const div = document.createElement('div');
+                div.className = 'checklist-item';
+                div.dataset.name = member.name.toLowerCase();
+                div.innerHTML = `
+                    <input type="checkbox" id="memb_${i}" class="member-checkbox" data-name="${escapeHtml(member.name)}" data-role="${escapeHtml(member.role)}" ${wasChecked ? 'checked' : ''} onchange="calculateAttendanceCounts()">
+                    <label for="memb_${i}">
+                        <span>${escapeHtml(member.name)}</span>
+                        <span class="member-role">${escapeHtml(member.role)}</span>
+                    </label>
+                `;
+                checklistContainer.appendChild(div);
+            });
+            calculateAttendanceCounts();
+        }
+
+        // Immediate render so the form is usable before Supabase responds
+        renderMembersChecklist(rosterData);
+
+        // ============================================================
+        //  DATE INIT
+        // ============================================================
+        const now = new Date();
+        const offset = now.getTimezoneOffset() * 60000;
+        const meetDateInput = document.getElementById('meetDate');
+        if (meetDateInput) {
+            meetDateInput.value = (new Date(now - offset)).toISOString().slice(0, 16);
+        }
+
+        // ============================================================
+        //  UTILITY FUNCTIONS
+        // ============================================================
+        function calculateAttendanceCounts() {
+            const checkedOfficial = document.querySelectorAll('.member-checkbox:checked').length;
+            const checkedAdditional = document.querySelectorAll('.add-member-checkbox:checked').length;
+            const countPresent = document.getElementById('countPresent');
+            const countGuests = document.getElementById('countGuests');
+            if (countPresent) countPresent.value = checkedOfficial + checkedAdditional;
+            if (countGuests) countGuests.value = document.querySelectorAll('.guest-input-name').length;
+        }
+
+        function filterMembers() {
+            const query = document.getElementById('memberSearch')?.value.toLowerCase().trim() || '';
+            document.querySelectorAll('#members-checklist .checklist-item').forEach(el => {
+                const name = el.dataset.name || '';
+                el.classList.toggle('hidden', !name.includes(query));
+            });
+        }
+
+        function addNewMemberRow() {
+            const container = document.getElementById('additional-members-container');
+            if (!container) return;
+            const row = document.createElement('div');
+            row.className = 'dynamic-row';
+            row.innerHTML = `
+                <input type="checkbox" class="add-member-checkbox" checked onchange="calculateAttendanceCounts()" style="width:auto; margin-top:14px; transform:scale(1.25); accent-color:var(--primary);">
+                <select class="add-member-name" style="flex:1;" onchange="calculateAttendanceCounts()">${memberOptionsHTML('')}</select>
+                <input type="text" class="add-member-role" value="CLUB MEMBER" placeholder="Designation" style="flex:1;">
+            `;
+            container.appendChild(row);
+            calculateAttendanceCounts();
+        }
+
+        function addGuestRow() {
+            const container = document.getElementById('guests-container');
+            if (!container) return;
+            const row = document.createElement('div');
+            row.className = 'dynamic-row';
+            row.innerHTML =
+                `<input type="text" class="guest-input-name" placeholder="Guest full name & club" style="width:100%;" oninput="calculateAttendanceCounts()">`;
+            container.appendChild(row);
+            calculateAttendanceCounts();
+        }
+
+        function addAgendaRow() {
+            const container = document.getElementById('agenda-container');
+            if (!container) return;
+            const row = document.createElement('div');
+            row.className = 'dynamic-row agenda-group';
+            row.innerHTML = `
+                <input type="text" class="agenda-title agenda-width-title" placeholder="Agenda Title">
+                <textarea class="agenda-desc agenda-width-desc" placeholder="Resolution / Action points..." rows="1"></textarea>
+                <button type="button" class="btn-ai-resolution" title="Generate resolution with AI" onclick="generateResolutionAI(this)">✨</button>
+            `;
+            container.appendChild(row);
+        }
+
+        // ============================================================
+        //  AI RESOLUTION GENERATOR (click-to-generate)
+        //  Calls a Postgres function (generate_resolution) via RPC.
+        //  The OpenRouter key lives in Supabase Vault, server-side only.
+        // ============================================================
+        async function generateResolutionAI(button) {
+            const row = button.closest('.agenda-group');
+            if (!row) return;
+            const titleEl = row.querySelector('.agenda-title');
+            const descEl = row.querySelector('.agenda-desc');
+            const agendaTitle = (titleEl?.value || '').trim();
+
+            if (!agendaTitle) {
+                showToast('⚠️ Agenda needed', 'Type the Agenda item first, then click ✨ to generate its resolution.', 'error');
+                return;
+            }
+
+            if (!supabaseClient) {
+                showToast('❌ Error', 'Supabase not configured. Please refresh the page.', 'error');
+                return;
+            }
+
+            const originalHTML = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-small"></span>';
+
+            try {
+                const agendaNotes = (descEl?.value || '').trim();
+
+                const { data, error } = await supabaseClient.rpc('generate_resolution', {
+                    agenda_title: agendaTitle,
+                    agenda_notes: agendaNotes
+                });
+
+                if (error) throw new Error(error.message || 'AI service request failed.');
+                if (!data) throw new Error('Empty response from AI service.');
+
+                if (descEl) descEl.value = data;
+                showToast('✅ Resolution generated', 'Review the wording before saving.', 'success');
+            } catch (err) {
+                console.error('AI resolution error:', err);
+                showToast('❌ AI generation failed', err.message || 'Please try again.', 'error');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = originalHTML;
+            }
+        }
+
+        function autoGrowPersonField(el) {
+            if (!el) return;
+            const len = el.value.length;
+            // Grows with content, stays within sensible min/max bounds
+            const chWidth = Math.min(60, Math.max(12, len + 2));
+            el.style.width = chWidth + 'ch';
+            el.style.flex = 'none';
+        }
+
+        function addActionItem() {
+            const container = document.getElementById('action-items-container');
+            if (!container) return;
+            const row = document.createElement('div');
+            row.className = 'action-item-row';
+            row.innerHTML = `
+                <input class="ai-task" placeholder="Task" />
+                <select class="ai-person">${memberOptionsHTML('')}</select>
+                <input class="ai-deadline" type="date" />
+                <select class="ai-status"><option value="Pending">Pending</option><option value="In Progress">In Progress</option><option value="Completed">Completed</option></select>
+                <button class="ai-remove" onclick="this.parentElement.remove()">✕</button>
+            `;
+            container.appendChild(row);
+        }
+
+        // ============================================================
+        //  MEETING MODE
+        // ============================================================
+        let meetingModeEnabled = true;
+
+        async function checkMeetingMode() {
+            try {
+                if (!supabaseClient) return true;
+                const { data, error } = await supabaseClient
+                    .from('app_settings')
+                    .select('setting_value')
+                    .eq('setting_key', 'meeting_mode')
+                    .maybeSingle();
+                if (error) return true;
+                if (data) {
+                    meetingModeEnabled = data.setting_value === 'true' || data.setting_value === 'TRUE' || data.setting_value ===
+                        '1' || data.setting_value === true;
+                    return meetingModeEnabled;
+                }
+                return true;
+            } catch (_) { return true; }
+        }
+
+        async function updateMeetingModeBadge() {
+            const badge = document.getElementById('modeStatusBadge');
+            if (!badge) return true;
+            const modeEnabled = await checkMeetingMode();
+            if (modeEnabled) {
+                badge.className = 'mode-status-badge enabled';
+                badge.textContent = '🟢 Meeting Mode: ON';
+            } else {
+                badge.className = 'mode-status-badge disabled';
+                badge.textContent = '🔴 Meeting Mode: OFF';
+            }
+            return modeEnabled;
+        }
+
+        function showModeOffOverlay() {
+            const overlay = document.getElementById('modeOffOverlay');
+            if (!overlay) return;
+            overlay.classList.add('active');
+            let countdown = 5;
+            const countdownEl = document.getElementById('countdownNum');
+            const timer = setInterval(() => {
+                countdown--;
+                if (countdownEl) countdownEl.textContent = countdown;
+                if (countdown <= 0) { clearInterval(timer);
+                    window.location.href = 'index.html'; }
+            }, 1000);
+        }
+
+        // ============================================================
+        //  SEARCH / AUTOCOMPLETE
+        // ============================================================
+        let allMeetings = [];
+        let searchTimeout = null;
+
+        async function fetchAllMeetings() {
+            if (!supabaseClient) return [];
+            try {
+                const { data, error } = await supabaseClient
+                    .from('meeting_minutes')
+                    .select('id, data, created_at')
+                    .order('created_at', { ascending: false });
+                if (error) {
+                    const { data: fallback, error: fallbackError } = await supabaseClient
+                        .from('meeting_minutes')
+                        .select('id, data');
+                    if (fallbackError) throw fallbackError;
+                    allMeetings = fallback || [];
+                    return allMeetings;
+                }
+                allMeetings = data || [];
+                return allMeetings;
+            } catch (err) {
+                console.error('❌ fetch meetings error:', err);
+                return [];
+            }
+        }
+
+        function showAutocomplete(searchTerm) {
+            const dropdown = document.getElementById('autocompleteDropdown');
+            if (!dropdown) return;
+            if (!searchTerm || searchTerm.length < 1) {
+                dropdown.classList.remove('active');
+                return;
+            }
+            const filtered = allMeetings.filter(item => {
+                const title = (item.data?.meeting_number || '').toLowerCase();
+                return title.includes(searchTerm.toLowerCase());
+            });
+            if (filtered.length === 0) {
+                dropdown.innerHTML =
+                    `<div class="autocomplete-empty">No meetings found matching "${escapeHtml(searchTerm)}"</div>`;
+                dropdown.classList.add('active');
+                return;
+            }
+            let html = '';
+            filtered.slice(0, 10).forEach(item => {
+                const meeting = item.data || {};
+                const title = meeting.meeting_number || 'Untitled';
+                const date = meeting.meeting_date ? new Date(meeting.meeting_date).toLocaleDateString() : 'No date';
+                const type = meeting.meeting_type || 'General Meeting';
+                html += `
+                    <div class="autocomplete-item" data-meeting-id="${escapeHtml(String(item.id))}" tabindex="0" role="option">
+                        <span class="meeting-title">${escapeHtml(title)}</span>
+                        <span class="meeting-date">${escapeHtml(date)} · ${escapeHtml(type)}</span>
+                    </div>
+                `;
+            });
+            dropdown.innerHTML = html;
+            dropdown.classList.add('active');
+        }
+
+        // Event delegation: works no matter what type the meeting id is
+        // (numeric, uuid, etc.) — avoids embedding raw ids inside onclick="".
+        function handleAutocompleteClick(e) {
+            const row = e.target.closest('.autocomplete-item');
+            if (!row) return;
+            const meetingId = row.dataset.meetingId;
+            if (meetingId) selectMeeting(meetingId);
+        }
+        document.getElementById('autocompleteDropdown')?.addEventListener('click', handleAutocompleteClick);
+        document.getElementById('autocompleteDropdown')?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAutocompleteClick(e); }
+        });
+
+        function selectMeeting(meetingId) {
+            const dropdown = document.getElementById('autocompleteDropdown');
+            if (dropdown) dropdown.classList.remove('active');
+            const item = allMeetings.find(m => String(m.id) === String(meetingId));
+            if (!item || !item.data) {
+                showToast('❌ Error', 'Meeting data not found.', 'error');
+                return;
+            }
+            const payload = item.data;
+
+            const searchInput = document.getElementById('searchMeetingNo');
+            const meetNoInput = document.getElementById('meetNo');
+            if (payload.meeting_number) {
+                if (searchInput) searchInput.value = payload.meeting_number;
+                if (meetNoInput) meetNoInput.value = payload.meeting_number;
+            }
+            // Leave the search box populated and ready — user can hit
+            // "Search" again immediately or start typing a new query.
+            if (searchInput) searchInput.focus();
+
+            populateFormFromData(payload);
+            const versionDisplay = document.getElementById('versionDisplay');
+            const savedAtDisplay = document.getElementById('savedAtDisplay');
+            if (payload._version) {
+                if (versionDisplay) versionDisplay.textContent = payload._version;
+            } else {
+                if (versionDisplay) versionDisplay.textContent = 'v1.0';
+            }
+            if (payload._savedAt) {
+                if (savedAtDisplay) savedAtDisplay.textContent = new Date(payload._savedAt).toLocaleString();
+            } else {
+                if (savedAtDisplay) savedAtDisplay.textContent = '—';
+            }
+            const badge = document.getElementById('searchResultBadge');
+            if (badge) {
+                badge.className = 'search-result-badge found';
+                badge.textContent = '✅ Loaded';
+                badge.style.display = 'inline-block';
+            }
+            showToast('✅ Loaded', 'Meeting data loaded successfully!', 'success');
+        }
+
+        async function searchMeeting() {
+            const searchInput = document.getElementById('searchMeetingNo');
+            const badge = document.getElementById('searchResultBadge');
+            if (!searchInput) return;
+            const meetingNo = searchInput.value.trim();
+            if (!meetingNo) { showToast('⚠️ Error', 'Enter a meeting number.', 'error'); return; }
+            if (!supabaseClient) { showToast('⚠️ Error', 'Supabase not configured.', 'error'); return; }
+            if (badge) badge.style.display = 'none';
+            if (allMeetings.length === 0) await fetchAllMeetings();
+            let found = allMeetings.find(item => {
+                const title = (item.data?.meeting_number || '').toLowerCase();
+                return title === meetingNo.toLowerCase();
+            });
+            if (!found) {
+                found = allMeetings.find(item => {
+                    const title = (item.data?.meeting_number || '').toLowerCase();
+                    return title.includes(meetingNo.toLowerCase());
+                });
+            }
+            if (found && found.data) {
+                const meetNoInput = document.getElementById('meetNo');
+                if (found.data.meeting_number && meetNoInput) {
+                    meetNoInput.value = found.data.meeting_number;
+                }
+                populateFormFromData(found.data);
+                const versionDisplay = document.getElementById('versionDisplay');
+                const savedAtDisplay = document.getElementById('savedAtDisplay');
+                if (found.data._version && versionDisplay) versionDisplay.textContent = found.data._version;
+                if (found.data._savedAt && savedAtDisplay) savedAtDisplay.textContent = new Date(found.data
+                    ._savedAt).toLocaleString();
+                if (badge) {
+                    badge.className = 'search-result-badge found';
+                    badge.textContent = '✅ Found!';
+                    badge.style.display = 'inline-block';
+                }
+                showToast('✅ Found', 'Meeting loaded.', 'success');
+            } else {
+                if (badge) {
+                    badge.className = 'search-result-badge not-found';
+                    badge.textContent = '❌ Not Found';
+                    badge.style.display = 'inline-block';
+                }
+                showToast('ℹ️ Not Found', 'No meeting with that number.', 'error');
+            }
+        }
+
+        // ============================================================
+        //  POPULATE FORM FROM DATA
+        // ============================================================
+        function populateFormFromData(payload) {
+            const meetNo = document.getElementById('meetNo');
+            const meetDate = document.getElementById('meetDate');
+            const meetVenue = document.getElementById('meetVenue');
+            const meetChair = document.getElementById('meetChair');
+            const meetType = document.getElementById('meetType');
+
+            if (meetNo) meetNo.value = payload.meeting_number || '';
+            if (payload.meeting_date && meetDate) {
+                const date = new Date(payload.meeting_date);
+                const off = date.getTimezoneOffset() * 60000;
+                meetDate.value = (new Date(date - off)).toISOString().slice(0, 16);
+            }
+            if (meetVenue) meetVenue.value = payload.venue || 'Club Office, Galkot';
+            if (meetType) meetType.value = payload.meeting_type || 'General Meeting';
+            if (meetChair) meetChair.innerHTML = memberOptionsHTML(payload.chairperson || 'Rtr. Nabin Chalise');
+
+            document.querySelectorAll('.member-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.add-member-checkbox').forEach(cb => {
+                const row = cb.parentElement;
+                if (row.querySelector('.add-member-name')) row.remove();
+            });
+
+            if (payload.members && payload.members.length) {
+                payload.members.forEach(member => {
+                    const found = document.querySelector(`.member-checkbox[data-name="${member.name}"]`);
+                    if (found) { found.checked = true; } else {
+                        const container = document.getElementById('additional-members-container');
+                        if (!container) return;
+                        const row = document.createElement('div');
+                        row.className = 'dynamic-row';
+                        row.innerHTML = `
+                            <input type="checkbox" class="add-member-checkbox" checked onchange="calculateAttendanceCounts()" style="width:auto; margin-top:14px; transform:scale(1.25); accent-color:var(--primary);">
+                            <select class="add-member-name" style="flex:1;" onchange="calculateAttendanceCounts()">${memberOptionsHTML(member.name)}</select>
+                            <input type="text" class="add-member-role" value="${escapeHtml(member.role || 'CLUB MEMBER')}" style="flex:1;">
+                        `;
+                        container.appendChild(row);
+                    }
+                });
+            }
+
+            const guestsContainer = document.getElementById('guests-container');
+            if (guestsContainer) guestsContainer.innerHTML = '';
+            if (payload.guests && payload.guests.length && guestsContainer) {
+                payload.guests.forEach(guest => {
+                    const row = document.createElement('div');
+                    row.className = 'dynamic-row';
+                    row.innerHTML =
+                        `<input type="text" class="guest-input-name" value="${guest}" style="width:100%;" oninput="calculateAttendanceCounts()">`;
+                    guestsContainer.appendChild(row);
+                });
+            }
+
+            const agendaContainer = document.getElementById('agenda-container');
+            if (agendaContainer) agendaContainer.innerHTML = '';
+            if (payload.agendas && payload.agendas.length && agendaContainer) {
+                payload.agendas.forEach(a => {
+                    const row = document.createElement('div');
+                    row.className = 'dynamic-row agenda-group';
+                    row.innerHTML = `
+                        <input type="text" class="agenda-title agenda-width-title" value="${a.title || ''}">
+                        <textarea class="agenda-desc agenda-width-desc" rows="1">${a.description || ''}</textarea>
+                        <button type="button" class="btn-ai-resolution" title="Generate resolution with AI" onclick="generateResolutionAI(this)">✨</button>
+                    `;
+                    agendaContainer.appendChild(row);
+                });
+            } else if (agendaContainer) {
+                const row = document.createElement('div');
+                row.className = 'dynamic-row agenda-group';
+                row.innerHTML = `
+                    <input type="text" class="agenda-title agenda-width-title" placeholder="Agenda Title">
+                    <textarea class="agenda-desc agenda-width-desc" placeholder="Resolution..." rows="1"></textarea>
+                    <button type="button" class="btn-ai-resolution" title="Generate resolution with AI" onclick="generateResolutionAI(this)">✨</button>
+                `;
+                agendaContainer.appendChild(row);
+            }
+
+            const d = payload.discussions || {};
+            const saaReport = document.getElementById('saaReport');
+            const happyMoments = document.getElementById('happyMoments');
+            const presidentRemarks = document.getElementById('presidentRemarks');
+            const committeeUpdates = document.getElementById('committeeUpdates');
+            const announcements = document.getElementById('announcements');
+            const openFloor = document.getElementById('openFloor');
+
+            if (saaReport) saaReport.value = d.saa || '';
+            if (happyMoments) happyMoments.value = d.happy || '';
+            if (presidentRemarks) presidentRemarks.value = d.president || '';
+            if (committeeUpdates) committeeUpdates.value = d.committee || '';
+            if (announcements) announcements.value = d.announcements || '';
+            if (openFloor) openFloor.value = d.openFloor || '';
+
+            const actionContainer = document.getElementById('action-items-container');
+            if (actionContainer) actionContainer.innerHTML = '';
+            if (payload.actionItems && payload.actionItems.length && actionContainer) {
+                payload.actionItems.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'action-item-row';
+                    row.innerHTML = `
+                        <input class="ai-task" value="${escapeHtml(item.task || '')}" placeholder="Task" />
+                        <select class="ai-person">${memberOptionsHTML(item.person || '')}</select>
+                        <input class="ai-deadline" type="date" value="${item.deadline || ''}" />
+                        <select class="ai-status"><option value="Pending" ${item.status === 'Pending' ? 'selected' : ''}>Pending</option><option value="In Progress" ${item.status === 'In Progress' ? 'selected' : ''}>In Progress</option><option value="Completed" ${item.status === 'Completed' ? 'selected' : ''}>Completed</option></select>
+                        <button class="ai-remove" onclick="this.parentElement.remove()">✕</button>
+                    `;
+                    actionContainer.appendChild(row);
+                });
+            } else if (actionContainer) {
+                const row = document.createElement('div');
+                row.className = 'action-item-row';
+                row.innerHTML = `
+                    <input class="ai-task" placeholder="Task" />
+                    <select class="ai-person">${memberOptionsHTML('')}</select>
+                    <input class="ai-deadline" type="date" />
+                    <select class="ai-status"><option value="Pending">Pending</option><option value="In Progress">In Progress</option><option value="Completed">Completed</option></select>
+                    <button class="ai-remove" onclick="this.parentElement.remove()">✕</button>
+                `;
+                actionContainer.appendChild(row);
+            }
+
+            const sig = payload.signatures || {};
+            const sigPrepared = document.getElementById('sigPrepared');
+            const sigReviewed = document.getElementById('sigReviewed');
+            const sigApproved = document.getElementById('sigApproved');
+
+            if (sigPrepared) sigPrepared.value = sig.prepared || 'Rtr. Madan Subedi';
+            if (sigReviewed) sigReviewed.value = sig.reviewed || 'Rtr. Anil Shrestha';
+            if (sigApproved) sigApproved.value = sig.approved || 'Rtr. Nabin Chalise';
+
+            const closingRemarks = document.getElementById('closingRemarks');
+            if (closingRemarks) closingRemarks.value = payload.closing_remarks || '';
+
+            calculateAttendanceCounts();
+        }
+
+        // ============================================================
+        //  HELPERS: ESCAPE + COLLECT FORM DATA
+        // ============================================================
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str == null ? '' : String(str);
+            return div.innerHTML;
+        }
+
+        function collectFormPayload() {
+            const meetNo = document.getElementById('meetNo')?.value.trim() || '';
+            const meetDateRaw = document.getElementById('meetDate')?.value || '';
+            const meetVenue = document.getElementById('meetVenue')?.value.trim() || '';
+            const meetChair = document.getElementById('meetChair')?.value.trim() || '';
+            const meetType = document.getElementById('meetType')?.value.trim() || 'General Meeting';
+
+            const members = [];
+            document.querySelectorAll('.member-checkbox:checked').forEach(cb => {
+                members.push({ name: cb.dataset.name, role: cb.dataset.role });
+            });
+            document.querySelectorAll('.add-member-checkbox:checked').forEach(cb => {
+                const row = cb.parentElement;
+                const name = row.querySelector('.add-member-name')?.value.trim();
+                const role = row.querySelector('.add-member-role')?.value.trim() || 'CLUB MEMBER';
+                if (name) members.push({ name, role });
+            });
+
+            const guests = [];
+            document.querySelectorAll('.guest-input-name').forEach(input => {
+                const v = input.value.trim();
+                if (v) guests.push(v);
+            });
+
+            const agendas = [];
+            document.querySelectorAll('#agenda-container .agenda-group').forEach(row => {
+                const title = row.querySelector('.agenda-title')?.value.trim() || '';
+                const description = row.querySelector('.agenda-desc')?.value.trim() || '';
+                if (title || description) agendas.push({ title, description });
+            });
+
+            const discussions = {
+                saa: document.getElementById('saaReport')?.value.trim() || '',
+                happy: document.getElementById('happyMoments')?.value.trim() || '',
+                president: document.getElementById('presidentRemarks')?.value.trim() || '',
+                committee: document.getElementById('committeeUpdates')?.value.trim() || '',
+                announcements: document.getElementById('announcements')?.value.trim() || '',
+                openFloor: document.getElementById('openFloor')?.value.trim() || ''
+            };
+
+            const actionItems = [];
+            document.querySelectorAll('#action-items-container .action-item-row').forEach(row => {
+                const task = row.querySelector('.ai-task')?.value.trim() || '';
+                const person = row.querySelector('.ai-person')?.value.trim() || '';
+                const deadline = row.querySelector('.ai-deadline')?.value || '';
+                const status = row.querySelector('.ai-status')?.value || 'Pending';
+                if (task || person) actionItems.push({ task, person, deadline, status });
+            });
+
+            const signatures = {
+                prepared: document.getElementById('sigPrepared')?.value.trim() || '',
+                reviewed: document.getElementById('sigReviewed')?.value.trim() || '',
+                approved: document.getElementById('sigApproved')?.value.trim() || ''
+            };
+
+            const closingRemarks = document.getElementById('closingRemarks')?.value.trim() || '';
+
+            return {
+                meeting_number: meetNo,
+                meeting_date: meetDateRaw ? new Date(meetDateRaw).toISOString() : null,
+                venue: meetVenue,
+                chairperson: meetChair,
+                meeting_type: meetType,
+                members,
+                guests,
+                agendas,
+                discussions,
+                actionItems,
+                signatures,
+                closing_remarks: closingRemarks
+            };
+        }
+
+        // ============================================================
+        //  POPULATE PRINT PREVIEW
+        // ============================================================
+        function populatePrintPreview(payload) {
+            const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+
+            setText('outVersion', payload._version || 'v1.0');
+            setText('outSavedAt', payload._savedAt ? new Date(payload._savedAt).toLocaleString() : '---');
+
+            setText('outMeetNo', payload.meeting_number || '—');
+            setText('outDate', payload.meeting_date ? new Date(payload.meeting_date).toLocaleString() : '—');
+            setText('outVenue', payload.venue || '—');
+            setText('outChair', payload.chairperson || '—');
+            setText('outMeetType', payload.meeting_type || 'General Meeting');
+            setText('outChairSign', payload.chairperson || '—');
+            setText('outPres', payload.members.length);
+            setText('outGst', payload.guests.length);
+
+            const membersEl = document.getElementById('outPresentMembersNames');
+            if (membersEl) {
+                membersEl.innerHTML = payload.members.length
+                    ? `<table class="print-table"><tr><th class="col-sn">S.N.</th><th class="col-name">Name</th><th class="col-role">Designation</th></tr>` +
+                      payload.members.map((m, i) => `<tr><td class="col-sn">${i + 1}</td><td class="col-name">${escapeHtml(m.name)}</td><td class="col-role">${escapeHtml(m.role || '')}</td></tr>`).join('') +
+                      `</table>`
+                    : '<p>No members marked present.</p>';
+            }
+
+            const guestsSection = document.getElementById('print-section-guests');
+            const guestsEl = document.getElementById('outGuestsNames');
+            if (payload.guests.length && guestsSection && guestsEl) {
+                guestsSection.style.display = 'block';
+                guestsEl.innerHTML = '<ul>' + payload.guests.map(g => `<li>${escapeHtml(g)}</li>`).join('') + '</ul>';
+            } else if (guestsSection) {
+                guestsSection.style.display = 'none';
+            }
+
+            const discussionLabels = {
+                saa: 'Sergeant-at-Arms', happy: 'Happy Moments', president: "Opening Remarks",
+                committee: 'Committee Updates', announcements: 'Announcements', openFloor: 'Open Floor'
+            };
+            const discussionsEl = document.getElementById('outDiscussions');
+            if (discussionsEl) {
+                const parts = Object.entries(discussionLabels)
+                    .filter(([key]) => payload.discussions[key])
+                    .map(([key, label]) => `<div class="agenda-item"><strong>${label}:</strong> ${escapeHtml(payload.discussions[key])}</div>`);
+                discussionsEl.innerHTML = parts.length ? parts.join('') : '<p>No discussion notes recorded.</p>';
+            }
+
+            const agendasEl = document.getElementById('outAgendas');
+            if (agendasEl) {
+                agendasEl.innerHTML = payload.agendas.length
+                    ? payload.agendas.map((a, i) => `<div class="agenda-item"><strong>${i + 1}. ${escapeHtml(a.title || 'Untitled')}</strong><br>${escapeHtml(a.description || '')}</div>`).join('')
+                    : '<p>No agenda items recorded.</p>';
+            }
+
+            const actionsEl = document.getElementById('outActionItems');
+            if (actionsEl) {
+                actionsEl.innerHTML = payload.actionItems.length
+                    ? `<table class="print-table"><tr><th>Task</th><th>Responsible</th><th>Deadline</th><th>Status</th></tr>` +
+                      payload.actionItems.map(a => `<tr><td>${escapeHtml(a.task)}</td><td>${escapeHtml(a.person)}</td><td>${a.deadline ? new Date(a.deadline).toLocaleDateString() : '—'}</td><td>${escapeHtml(a.status)}</td></tr>`).join('') +
+                      `</table>`
+                    : '<p>No action items recorded.</p>';
+            }
+
+            setText('outSigPrepared', payload.signatures.prepared || '—');
+            setText('outSigReviewed', payload.signatures.reviewed || '—');
+            setText('outSigApproved', payload.signatures.approved || '—');
+
+            const closingSection = document.getElementById('print-section-closing');
+            const closingEl = document.getElementById('outClosingRemarks');
+            if (payload.closing_remarks && closingSection && closingEl) {
+                closingSection.style.display = 'block';
+                closingEl.innerHTML = `<p>${escapeHtml(payload.closing_remarks)}</p>`;
+            } else if (closingSection) {
+                closingSection.style.display = 'none';
+            }
+        }
+
+        // ============================================================
+        //  PRINT / EXPORT
+        // ============================================================
+        function printMinutes() {
+            const payload = collectFormPayload();
+            if (!payload.meeting_number) {
+                showToast('⚠️ Missing Info', 'Please enter a Meeting Number before printing.', 'error');
+                document.getElementById('meetNo')?.focus();
+                return;
+            }
+            const existing = allMeetings.find(item =>
+                (item.data?.meeting_number || '').toLowerCase() === payload.meeting_number.toLowerCase()
+            );
+            payload._version = existing?.data?._version || 'v1.0 (unsaved)';
+            payload._savedAt = existing?.data?._savedAt || null;
+            populatePrintPreview(payload);
+            setTimeout(() => window.print(), 100);
+        }
+
+        // ============================================================
+        //  CORE: COMPILE, SAVE
+        // ============================================================
+        async function compileSaveAndEmail() {
+            const btn = document.getElementById('saveBtn');
+            if (!btn || btn.classList.contains('loading')) return;
+
+            if (!canCreateNewMeeting()) {
+                showToast('🔒 Not Allowed', 'Only Admin/Secretary can save meeting minutes.', 'error');
+                return;
+            }
+
+            const modeEnabled = await checkMeetingMode();
+            if (!modeEnabled) { showModeOffOverlay(); return; }
+
+            const payload = collectFormPayload();
+
+            if (!payload.meeting_number) {
+                showToast('⚠️ Missing Info', 'Please enter a Meeting Number before saving.', 'error');
+                document.getElementById('meetNo')?.focus();
+                return;
+            }
+            if (!payload.meeting_date) {
+                showToast('⚠️ Missing Info', 'Please set the meeting Date & Time.', 'error');
+                return;
+            }
+            if (!supabaseClient) {
+                showToast('❌ Error', 'Supabase not configured. Please refresh the page.', 'error');
+                return;
+            }
+
+            // Match against an existing meeting with the same meeting number (update in place)
+            const existing = allMeetings.find(item =>
+                (item.data?.meeting_number || '').toLowerCase() === payload.meeting_number.toLowerCase()
+            );
+
+            if (existing && !canEditExistingMeeting()) {
+                showToast('🔒 Not Allowed', 'This meeting already exists — only Admin can edit an existing meeting record.', 'error');
+                return;
+            }
+
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            try {
+                let versionNum = 1;
+                if (existing && existing.data?._version) {
+                    const match = /v(\d+)/i.exec(existing.data._version);
+                    versionNum = match ? parseInt(match[1], 10) + 1 : 2;
+                }
+                payload._version = `v${versionNum}.0`;
+                payload._savedAt = new Date().toISOString();
+                payload._savedBy = currentUser?.email || 'unknown';
+
+                let error;
+                if (existing) {
+                    ({ error } = await supabaseClient
+                        .from('meeting_minutes')
+                        .update({ data: payload, closing_remarks: payload.closing_remarks, updated_at: payload._savedAt, meeting_type: payload.meeting_type })
+                        .eq('id', existing.id));
+                } else {
+                    ({ error } = await supabaseClient
+                        .from('meeting_minutes')
+                        .insert([{ data: payload, closing_remarks: payload.closing_remarks, meeting_type: payload.meeting_type }]));
+                }
+                if (error) throw error;
+
+                populatePrintPreview(payload);
+
+                const versionDisplay = document.getElementById('versionDisplay');
+                const savedAtDisplay = document.getElementById('savedAtDisplay');
+                if (versionDisplay) versionDisplay.textContent = payload._version;
+                if (savedAtDisplay) savedAtDisplay.textContent = new Date(payload._savedAt).toLocaleString();
+
+                await fetchAllMeetings();
+
+                showToast('✅ Saved', `Minutes ${existing ? 'updated' : 'saved'} successfully (${payload._version})!`, 'success');
+            } catch (err) {
+                console.error('Save error:', err);
+                showToast('❌ Error', err.message || 'Failed to save minutes.', 'error');
+            } finally {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+
+        // ============================================================
+        //  EXPOSE GLOBALS
+        // ============================================================
+        window.calculateAttendanceCounts = calculateAttendanceCounts;
+        window.filterMembers = filterMembers;
+        window.addNewMemberRow = addNewMemberRow;
+        window.addGuestRow = addGuestRow;
+        window.addAgendaRow = addAgendaRow;
+        window.addActionItem = addActionItem;
+        window.autoGrowPersonField = autoGrowPersonField;
+        window.compileSaveAndEmail = compileSaveAndEmail;
+        window.printMinutes = printMinutes;
+        window.searchMeeting = searchMeeting;
+        window.selectMeeting = selectMeeting;
+        window.showToast = showToast;
+        window.dismissAllToasts = dismissAllToasts;
+        window.fetchAllMeetings = fetchAllMeetings;
+        window.checkMeetingMode = checkMeetingMode;
+        window.showModeOffOverlay = showModeOffOverlay;
+        window.updateMeetingModeBadge = updateMeetingModeBadge;
+        window.logout = logout;
+
+        // ============================================================
+        //  INIT
+        // ============================================================
+        async function init() {
+            // Check session first
+            const hasSession = await checkSession();
+
+            if (hasSession) {
+                await fetchAllMeetings();
+                await loadResponsibleNames();
+                calculateAttendanceCounts();
+
+                const searchInput = document.getElementById('searchMeetingNo');
+                if (searchInput) {
+                    searchInput.addEventListener('input', function(e) {
+                        const searchTerm = this.value;
+                        if (searchTimeout) clearTimeout(searchTimeout);
+                        searchTimeout = setTimeout(() => { showAutocomplete(searchTerm); }, 300);
+                    });
+
+                    searchInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const dropdown = document.getElementById('autocompleteDropdown');
+                            if (dropdown) dropdown.classList.remove('active');
+                            searchMeeting();
+                        }
+                    });
+                }
+
+                document.addEventListener('click', function(e) {
+                    const wrapper = document.querySelector('.search-wrapper');
+                    const dropdown = document.getElementById('autocompleteDropdown');
+                    if (wrapper && !wrapper.contains(e.target) && dropdown) {
+                        dropdown.classList.remove('active');
+                    }
+                });
+            }
+
+            const modeEnabled = await updateMeetingModeBadge();
+            if (!modeEnabled && hasSession) showModeOffOverlay();
+
+            console.log('✅ Minutes Builder ready (authenticated access only).');
+        }
+
+        // Check meeting mode periodically
+        setInterval(async () => {
+            const modeEnabled = await updateMeetingModeBadge();
+            if (!modeEnabled && currentUser) showModeOffOverlay();
+        }, 30000);
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', init);
+
+        console.log('✅ Minutes Builder with role-based access (admin, president, secretary, editor)');
+    </script>
+</body>
+</html>

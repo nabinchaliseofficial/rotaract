@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Past Projects Archive | Rotaract Club of Galkot Baglung</title>
+    <!-- Google Fonts for Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for High Quality Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Modern Design Framework Tokens */
+        :root {
+            --primary-color: #e91e63; /* Rotaract Vibrant Pink */
+            --primary-hover: #c2185b;
+            --secondary-color: #005da4; /* Rotary Deep Blue */
+            --bg-gradient: linear-gradient(135deg, #f8fafd 0%, #edf2f9 100%);
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Reset & Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        h1, h2, h3 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+
+        /* Professional Navigation Bar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+            text-decoration: none;
+        }
+        .nav-logo i {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+        }
+        .home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--primary-color), #f06292);
+            color: #ffffff;
+            padding: 10px 22px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: none;
+            cursor: pointer;
+        }
+        .home-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(233, 30, 99, 0.45);
+        }
+        /* Ripple & Transition Animation Classes */
+        .home-btn .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: rippleEffect 0.5s ease-out;
+            background: rgba(255, 255, 255, 0.4);
+            pointer-events: none;
+        }
+        @keyframes rippleEffect {
+            to { transform: scale(4); opacity: 0; }
+        }
+        .clicked-exit {
+            transform: scale(0.9) !important;
+            opacity: 0.5;
+        }
+
+        /* Modern Hero Section */
+        .hero {
+            background: linear-gradient(135deg, rgba(0, 93, 164, 0.9) 0%, rgba(233, 30, 99, 0.85) 100%), 
+                        url('https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=1200') no-repeat center/cover;
+            color: #ffffff;
+            padding: 80px 5% 70px;
+            text-align: center;
+            border-bottom-left-radius: var(--radius-lg);
+            border-bottom-right-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 40px;
+        }
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+        .hero p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 300;
+        }
+
+        /* Main Container Layout */
+        .container {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+
+        /* Section Headings */
+        .section-title {
+            font-size: 1.6rem;
+            color: var(--secondary-color);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .section-title i {
+            color: var(--primary-color);
+        }
+
+        /* Cumulative Analytics Dashboard Dashboard Component */
+        .stats-section {
+            margin-bottom: 45px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 25px;
+        }
+        @media (max-width: 992px) {
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            padding: 30px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+        .total-box {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #f4f7fc 100%);
+            position: relative;
+            overflow: hidden;
+            border-left: 5px solid var(--primary-color);
+        }
+        .total-box i {
+            font-size: 2.5rem;
+            color: rgba(233, 30, 99, 0.15);
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .total-num {
+            font-size: 4.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            line-height: 1;
+            margin-bottom: 10px;
+            font-family: 'Poppins', sans-serif;
+        }
+        .total-label {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .breakdown-box h3 {
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--bg-gradient);
+            padding-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sub-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+        }
+        .avenue-grid {
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        }
+        .stat-item {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+        }
+        .stat-item:hover {
+            background: #edf2f9;
+            border-color: #cbd5e1;
+        }
+        .stat-item .label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 8px;
+        }
+        .stat-item .count {
+            background: var(--secondary-color);
+            color: #ffffff;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .breakdown-box .avenue-grid .count {
+            background: var(--primary-color);
+        }
+
+        /* Search Controls & Filter Dashboard Wrapper */
+        .filter-section {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+        .filter-wrapper {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+            align-items: center;
+        }
+        @media (max-width: 768px) {
+            .filter-wrapper { grid-template-columns: 1fr; }
+        }
+        .search-input-wrapper {
+            position: relative;
+        }
+        .search-input-wrapper i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+        .search-box {
+            width: 100%;
+            padding: 12px 16px 12px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            transition: var(--transition);
+        }
+        .search-box:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(0, 93, 164, 0.15);
+        }
+        .filter-control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .filter-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .filter-select {
+            width: 100%;
+            padding: 11px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background-color: #ffffff;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            outline: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .filter-select:focus {
+            border-color: var(--secondary-color);
+        }
+
+        /* Modern Data Ledger Table Structure */
+        .table-responsive {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+        thead {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #004073 100%);
+            color: #ffffff;
+        }
+        th {
+            padding: 18px 24px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+        tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+        tbody tr:hover {
+            background-color: #f8fafc;
+        }
+        td {
+            padding: 18px 24px;
+            color: var(--text-dark);
+            vertical-align: middle;
+        }
+
+        /* Custom Status Badge System Elements */
+        .ry-badge {
+            display: inline-block;
+            background: rgba(0, 93, 164, 0.1);
+            color: var(--secondary-color);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .avenue-badge {
+            display: inline-block;
+            background: rgba(233, 30, 99, 0.08);
+            color: var(--primary-color);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            border: 1px solid rgba(233, 30, 99, 0.15);
+        }
+        .location-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .location-cell i {
+            color: #ef4444;
+        }
+        .cost-text {
+            font-weight: 600;
+        }
+        .cost-premium {
+            color: #10b981; /* High Quality Cost Text */
+        }
+        .cost-neutral {
+            color: #64748b; /* Collaborated / Volunteered text colors */
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        /* Adaptive Responsive Cards alternative layout for smaller Mobile Views */
+        @media (max-width: 768px) {
+            table, thead, tbody, th, td, tr { 
+                display: block; 
+            }
+            thead { display: none; }
+            tbody tr {
+                padding: 20px;
+                border-bottom: 2px solid var(--border-color);
+                position: relative;
+            }
+            td {
+                padding: 6px 0;
+                border: none;
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                text-align: right;
+            }
+            td::before {
+                content: attr(data-label);
+                float: left;
+                font-weight: 600;
+                color: var(--text-muted);
+                font-size: 0.85rem;
+                font-family: 'Poppins', sans-serif;
+                text-transform: uppercase;
+            }
+            td:first-child {
+                font-size: 1.1rem;
+                padding-bottom: 10px;
+                border-bottom: 1px dashed var(--border-color);
+                margin-bottom: 10px;
+                text-align: left;
+                display: block;
+            }
+            td:first-child::before { display: none; }
+            .location-cell { justify-content: flex-end; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Professional Navigation Bar -->
+    <nav class="navbar">
+        <a href="index.html" class="nav-logo">
+            <i class="fa-solid fa-circle-nodes"></i>
+            Rotaract Galkot Baglung
+        </a>
+        <a href="index.html" class="home-btn" id="interactiveHomeBtn">
+            <i class="fa-solid fa-house"></i> Home
+        </a>
+    </nav>
+
+    <!-- Modern Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Past Projects Repository</h1>
+            <p>Explore the complete archive of structural impacts, local service actions, and global citizenship milestones driven by the Rotaract Club of Galkot Baglung.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <!-- Dynamic Metrics Dashboard Component -->
+        <section class="stats-section">
+            <h2 class="section-title"><i class="fa-solid fa-chart-pie"></i> Cumulative Project Analytics Dashboard</h2>
+            <div class="stats-grid">
+                <div class="stat-card total-box">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <div class="total-num" id="stat-total-count">0</div>
+                    <div class="total-label">Total Projects Logged</div>
+                </div>
+                <div class="stat-card breakdown-box">
+                    <h3><i class="fa-solid fa-calendar-days"></i> Timeline Distribution (Year Wise)</h3>
+                    <div class="sub-grid" id="stat-years-grid">
+                        <!-- Loaded dynamically via JavaScript -->
+                    </div>
+                    
+                    <h3 style="margin-top: 25px;"><i class="fa-solid fa-arrows-to-eye"></i> Scope of Impact (Avenues Wise)</h3>
+                    <div class="sub-grid avenue-grid" id="stat-avenues-grid">
+                        <!-- Loaded dynamically via JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Selection Filter & Search Menus -->
+        <section class="filter-section">
+            <div class="filter-wrapper">
+                <div class="filter-control-group">
+                    <label class="filter-label" for="search-box">Search Ledger</label>
+                    <div class="search-input-wrapper">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="search-box" class="search-box" placeholder="Type project name or location..." oninput="filterEngine()">
+                    </div>
+                </div>
+
+                <div class="filter-control-group">
+                    <label class="filter-label" for="year-select">Rotary Year</label>
+                    <select id="year-select" class="filter-select" onchange="filterEngine()">
+                        <option value="all">All Years</option>
+                        <option value="2026-27">R.Y. 2026-27</option>
+                        <option value="2025-26">R.Y. 2025-26</option>
+                        <option value="2024-25">R.Y. 2024-25</option>
+                        <option value="2023-24">R.Y. 2023-24</option>
+                        <option value="2022-23">R.Y. 2022-23</option>
+                        <option value="2021-22">R.Y. 2021-22</option>
+                        <option value="2020-21">R.Y. 2020-21</option>
+                        <option value="2019-20">R.Y. 2019-20</option>
+                        <option value="2018-19">R.Y. 2018-19</option>
+                        <option value="2017-18">R.Y. 2017-18</option>
+                        <option value="2016-17">R.Y. 2016-17</option>
+                        <option value="2015-16">R.Y. 2015-16</option>
+                        <option value="2014-15">R.Y. 2014-15</option>
+                        <option value="2013-14">R.Y. 2013-14</option>
+                        <option value="2012-13">R.Y. 2012-13</option>
+                        <option value="2011-12">R.Y. 2011-12</option>
+                        <option value="2010-11">R.Y. 2010-11</option>
+                    </select>
+                </div>
+
+                <div class="filter-control-group">
+                    <label class="filter-label" for="avenue-select">Avenue of Service</label>
+                    <select id="avenue-select" class="filter-select" onchange="filterEngine()">
+                        <option value="all">All Avenues</option>
+                        <option value="Membership Development">Membership Development</option>
+                        <option value="Club Administration">Club Administration</option>
+                        <option value="Service Project">Service Project</option>
+                        <option value="International Service">International Service</option>
+                        <option value="Professional Development">Professional Development</option>
+                        <option value="Finance">Finance</option>
+                        <option value="The Rotary Foundation">The Rotary Foundation</option>
+                        <option value="Public Image">Public Image</option>
+                        <option value="Young Leaders Contact">Young Leaders Contact</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Responsive Project Ledger Table -->
+        <section class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Project Name</th>
+                        <th>Rotary Year</th>
+                        <th>Avenue of Service</th>
+                        <th>Location</th>
+                        <th>Total Cost</th>
+                    </tr>
+                </thead>
+                <tbody id="projects-table-body">
+                    <!-- Data populated dynamically via JavaScript -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script>
+        // Comprehensive Dataset covering historical project history logs
+        const pastProjects = [
+            // R.Y. 2026-27
+            { name: "Strategic Plan Formulation & Board Retreat", ry: "2026-27", avenue: "Club Administration", location: "Hatiya, Galkot", cost: "NPR 12,000" },
+            
+            // R.Y. 2025-26
+            { name: "FUTURE FORGE: Session on Goal Setting & Career Planning", ry: "2025-26", avenue: "Professional Development", location: "Galkot Hall", cost: "Collaborated" },
+            { name: "Healthy Lifestyles: A Healthy Outside Starts From The Inside", ry: "2025-26", avenue: "Service Project", location: "Community Venue", cost: "Collaborated" },
+            { name: "Debunking Myths & Highlighting Facts", ry: "2025-26", avenue: "International Service", location: "Online (Global)", cost: "Collaborated" },
+            { name: "Women Rise Network", ry: "2025-26", avenue: "Professional Development", location: "Virtual Session", cost: "Collaborated" },
+            
+            // R.Y. 2024-25
+            { name: "Rewiring Perceptions: ADHD, Autism and the Future of Inclusion", ry: "2024-25", avenue: "International Service", location: "Online (Global)", cost: "Collaborated" },
+            { name: "Exclusive Webinar on Yoga For Digital Detox.", ry: "2024-25", avenue: "Professional Development", location: "Virtual Session", cost: "Collaborated" },
+            { name: "Thought Management", ry: "2024-25", avenue: "Professional Development", location: "Webinar", cost: "Internal/Gov" },
+            { name: "Participation in 14th Installation Ceremony of Rotaract Club of Baglung", ry: "2024-25", avenue: "Membership Development", location: "Baglung", cost: "Internal/Gov" },
+            { name: "Participation in PS Meet - 1st PS", ry: "2024-25", avenue: "Professional Development", location: "District Venue", cost: "Internal/Gov" },
+            { name: "Picnic Program", ry: "2024-25", avenue: "Service Project", location: "Galkot Spot", cost: "Collaborated" },
+            { name: "Participation in Rotaract 3292 Presidents' Night", ry: "2024-25", avenue: "Membership Development", location: "Kathmandu", cost: "Internal/Gov" },
+            { name: "Participation in Rotary Club of Dhorpatan Burtibang", ry: "2024-25", avenue: "Membership Development", location: "Burtibang", cost: "Internal/Gov" },
+            { name: "11th Late Sachin Memorial Blood Donation", ry: "2024-25", avenue: "Service Project", location: "Hatiya Bazaar", cost: "NPR 18,000" },
+            { name: "Participation in the 17th Rotaract District Conference", ry: "2024-25", avenue: "Membership Development", location: "Conference Hall", cost: "Internal/Gov" },
+            { name: "Proudly Listed in SEARIC MDIO Directory!", ry: "2024-25", avenue: "International Service", location: "Directory Portal", cost: "Hosted" },
+            { name: "Momo Manic", ry: "2024-25", avenue: "Membership Development", location: "Club Hall", cost: "NPR 5,500" },
+            { name: "Leveraging LinkedIn", ry: "2024-25", avenue: "Professional Development", location: "Online", cost: "Collaborated" },
+            { name: "Building World-Class Tech Talent", ry: "2024-25", avenue: "Membership Development", location: "Virtual Session", cost: "Collaborated" },
+            { name: "Decluttering the Mind: A Path to Clarity and Focus", ry: "2024-25", avenue: "Membership Development", location: "Webinar", cost: "Collaborated" },
+            { name: "Leadership and Unity in Rotaract", ry: "2024-25", avenue: "Membership Development", location: "Joint Hall", cost: "Collaborated" },
+            { name: "Debractor 5", ry: "2024-25", avenue: "Public Image", location: "Event Zone", cost: "Internal/Gov" },
+            { name: "The Magic of Ecosystem Services", ry: "2024-25", avenue: "Membership Development", location: "Online", cost: "Collaborated" },
+            { name: "The Magic of Financial Literacy", ry: "2024-25", avenue: "Membership Development", location: "Online", cost: "Collaborated" },
+            { name: "SOFT SKILLS", ry: "2024-25", avenue: "Membership Development", location: "Workshop Hall", cost: "Collaborated" },
+            { name: "Stress & Emotional Management", ry: "2024-25", avenue: "Membership Development", location: "Virtual Room", cost: "Collaborated" },
+            { name: "Digital Privacy Security!", ry: "2024-25", avenue: "Professional Development", location: "Galkot", cost: "Internal/Gov" },
+            { name: "Just 4 Things", ry: "2024-25", avenue: "Professional Development", location: "Webinar", cost: "Collaborated" },
+            { name: "Make Better Choices, Create a Brighter Future!", ry: "2024-25", avenue: "Membership Development", location: "Online Session", cost: "Collaborated" },
+            { name: "Cracking the Code: AI in Problem Solving and Debugging", ry: "2024-25", avenue: "Membership Development", location: "Tech Hall", cost: "Collaborated" },
+            { name: "Public Speaking and Stage Presence Session", ry: "2024-25", avenue: "Membership Development", location: "Galkot Tech", cost: "Collaborated" },
+            { name: "Healthy Skin, Happy You!", ry: "2024-25", avenue: "Membership Development", location: "Online", cost: "Collaborated" },
+            { name: "Thalassemia Awareness Unveiled", ry: "2024-25", avenue: "Membership Development", location: "Webinar", cost: "Collaborated" },
+            { name: "Career Growth in 2025: Build Your Future with AI & Tech", ry: "2024-25", avenue: "Professional Development", location: "Galkot Hall", cost: "Collaborated" },
+            { name: "Decode Sugar: From Knowledge to Action", ry: "2024-25", avenue: "Membership Development", location: "Virtual Session", cost: "Collaborated" },
+            { name: "Online Session on the Negative Impact of Social Media", ry: "2024-25", avenue: "Membership Development", location: "Internet", cost: "Collaborated" },
+            { name: "Webinar on Healthy Diet and Lifestyle", ry: "2024-25", avenue: "Membership Development", location: "Online", cost: "Collaborated" },
+            { name: "SEARIC SUMMIT KASHI 2024", ry: "2024-25", avenue: "International Service", location: "Kashi, India", cost: "Internal/Gov" },
+            { name: "Financial Literacy Program", ry: "2024-25", avenue: "Finance", location: "Hatiya", cost: "NPR 12,500" },
+            { name: "Teej Celebration", ry: "2024-25", avenue: "Membership Development", location: "Club Office", cost: "NPR 8,000" },
+            { name: "Webinar on Tech Project", ry: "2024-25", avenue: "Finance", location: "Online", cost: "Internal/Gov" },
+            { name: "Scholarship Program to Support Education in Memory of Late Grandfather Padma Narayan Shrestha", ry: "2024-25", avenue: "Finance", location: "Municipal School", cost: "NPR 30,000" },
+            { name: "5th Installation Program", ry: "2024-25", avenue: "Club Administration", location: "Galkot Hall", cost: "NPR 42,000" },
+
+            // R.Y. 2023-24
+            { name: "Letter Head Exchange with Chittagong South, Bangladesh", ry: "2023-24", avenue: "International Service", location: "Chittagong (Virtual)", cost: "Internal/Gov" },
+            { name: "ZONAL FELLOWSHIP", ry: "2023-24", avenue: "Membership Development", location: "Zone Venue", cost: "NPR 18,000" },
+            { name: "HOLI CELEBRATION", ry: "2023-24", avenue: "Professional Development", location: "Galkot", cost: "NPR 8,500" },
+            { name: "Hiking for \"SAHARSHA DHARA\"", ry: "2023-24", avenue: "Service Project", location: "Saharsha Dhara Trail", cost: "NPR 14,000" },
+            { name: "SHARE MARKET TRAINING", ry: "2023-24", avenue: "Finance", location: "Hatiya Hall", cost: "NPR 10,500" },
+            { name: "Cyber Awareness Program", ry: "2023-24", avenue: "Public Image", location: "Local School", cost: "NPR 11,000" },
+            { name: "Teuwa Clean UP Campaign", ry: "2023-24", avenue: "Service Project", location: "Teuwa Area", cost: "NPR 6,000" },
+            { name: "Late Nabin Bhandari Memorial Slow Bike Race", ry: "2023-24", avenue: "The Rotary Foundation", location: "Galkot Ground", cost: "NPR 25,000" },
+            { name: "DONATION & VOLUNTEERING IN DHAN DHANNANCHYAL", ry: "2023-24", avenue: "Finance", location: "Baglung", cost: "Volunteered" },
+            { name: "Participation in PS Meet", ry: "2023-24", avenue: "Professional Development", location: "District Venue", cost: "NPR 12,000" },
+            { name: "4'th Installation Ceremony", ry: "2023-24", avenue: "Club Administration", location: "Galkot City Hall", cost: "NPR 45,000" },
+            { name: "Free Health Camp 2.0", ry: "2023-24", avenue: "Service Project", location: "Galkot Community Clinic", cost: "NPR 55,000" },
+            { name: "3'rd Blood Donation Program", ry: "2023-24", avenue: "Service Project", location: "Hatiya Bazaar", cost: "NPR 16,500" },
+            { name: "Letter head exchange with Butwal Downtown", ry: "2023-24", avenue: "Public Image", location: "Butwal (Joint)", cost: "Internal/Gov" },
+            { name: "Club Officer Training Session (COTS)", ry: "2023-24", avenue: "Membership Development", location: "Club Office", cost: "NPR 9,000" }
+        ];
+
+        // Engine to compile metrics dynamically out of pastProjects data array
+        function calculateStatistics() {
+            const totalCount = pastProjects.length;
+            const yearMetrics = {};
+            const avenueMetrics = {};
+
+            pastProjects.forEach(project => {
+                yearMetrics[project.ry] = (yearMetrics[project.ry] || 0) + 1;
+                avenueMetrics[project.avenue] = (avenueMetrics[project.avenue] || 0) + 1;
+            });
+
+            document.getElementById('stat-total-count').innerText = totalCount;
+
+            // Render Year Grid UI
+            const yearsGrid = document.getElementById('stat-years-grid');
+            yearsGrid.innerHTML = '';
+            Object.keys(yearMetrics).sort((a,b) => b.localeCompare(a)).forEach(year => {
+                yearsGrid.innerHTML += `
+                    <div class="stat-item">
+                        <span class="label">R.Y. ${year}</span>
+                        <span class="count">${yearMetrics[year]}</span>
+                    </div>
+                `;
+            });
+
+            // Render Avenues Grid UI
+            const avenuesGrid = document.getElementById('stat-avenues-grid');
+            avenuesGrid.innerHTML = '';
+            Object.keys(avenueMetrics).sort((a,b) => avenueMetrics[b] - avenueMetrics[a]).forEach(ave => {
+                avenuesGrid.innerHTML += `
+                    <div class="stat-item">
+                        <span class="label" title="${ave}">${ave}</span>
+                        <span class="count">${avenueMetrics[ave]}</span>
+                    </div>
+                `;
+            });
+        }
+
+        // Render data rows out to UI table elements (including data labels for responsive support)
+        function renderTable(dataset) {
+            const tableBody = document.getElementById('projects-table-body');
+            tableBody.innerHTML = '';
+
+            if(dataset.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 40px; font-weight: 500;">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.5rem; margin-bottom: 8px; display:block; color: var(--primary-color);"></i>
+                    No matching structural ledger history logs match your filter criteria.
+                </td></tr>`;
+                return;
+            }
+
+            dataset.forEach(project => {
+                const row = document.createElement('tr');
+                
+                // Styling categorization based on cost types
+                const isNprCost = project.cost.startsWith('NPR');
+                const costClass = isNprCost ? 'cost-text cost-premium' : 'cost-text cost-neutral';
+
+                row.innerHTML = `
+                    <td style="font-weight: 600; color: var(--text-dark);">${project.name}</td>
+                    <td data-label="Rotary Year"><span class="ry-badge">R.Y. ${project.ry}</span></td>
+                    <td data-label="Avenue"><span class="avenue-badge">${project.avenue}</span></td>
+                    <td data-label="Location" class="location-cell"><i class="fa-solid fa-location-dot"></i> ${project.location}</td>
+                    <td data-label="Total Cost" class="${costClass}">${project.cost}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Dual Engine to run full text searching together with drop-down value arrays
+        function filterEngine() {
+            const searchQuery = document.getElementById('search-box').value.toLowerCase().trim();
+            const selectedYear = document.getElementById('year-select').value;
+            const selectedAvenue = document.getElementById('avenue-select').value;
+
+            let filteredData = pastProjects;
+
+            if (selectedYear !== 'all') {
+                filteredData = filteredData.filter(p => p.ry === selectedYear);
+            }
+
+            if (selectedAvenue !== 'all') {
+                filteredData = filteredData.filter(p => p.avenue === selectedAvenue);
+            }
+
+            if (searchQuery !== '') {
+                filteredData = filteredData.filter(p => 
+                    p.name.toLowerCase().includes(searchQuery) || 
+                    p.location.toLowerCase().includes(searchQuery)
+                );
+            }
+
+            renderTable(filteredData);
+        }
+
+        window.onload = () => {
+            calculateStatistics();
+            renderTable(pastProjects);
+        };
+
+        // Material Ripple Click Interaction Sequence on Navigation Elements
+        document.getElementById('interactiveHomeBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetUrl = this.getAttribute('href');
+            const button = this;
+
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+            ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+            
+            button.appendChild(ripple);
+            button.classList.add('clicked-exit');
+
+            setTimeout(() => {
+                window.location.href = targetUrl;
+            }, 450);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anthem Tab Player - National Anthem & Songs</title>
+    <meta name="description" content="Stream the National Anthem, Rotary, Rotaract, and Club songs with synchronous interactive lyrics display.">
+    
+    <!-- Google Fonts for Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Modern Reset and Design Tokens */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-primary: #6366f1;
+            --accent-secondary: #ec4899;
+            --font-main: 'Inter', sans-serif;
+            --font-heading: 'Poppins', sans-serif;
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Professional Navigation Bar */
+        .navbar {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--card-border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 1.25rem;
+            background: linear-gradient(to right, #a5b4fc, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            color: var(--text-primary);
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .home-btn:hover {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* Modern Hero Section */
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Main App Container */
+        .app-container {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .player-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        /* Playlist Track styling */
+        .track-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .track-item {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .track-item:hover {
+            transform: translateY(-2px);
+            border-color: rgba(99, 102, 241, 0.4);
+            background: rgba(30, 41, 59, 0.9);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .track-item.active {
+            border-color: var(--accent-primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .track-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .track-title {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+
+        .track-filename {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .btn-play {
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            border-radius: 50%;
+            width: 46px;
+            height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            color: var(--text-primary);
+        }
+
+        .track-item:hover .btn-play, .track-item.active .btn-play {
+            background: var(--accent-primary);
+            color: #fff;
+        }
+
+        .icon-control {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            transition: var(--transition-smooth);
+        }
+
+        /* Wave Audio Animation Indicator */
+        .wave-container {
+            display: none;
+            align-items: flex-end;
+            gap: 3px;
+            width: 20px;
+            height: 18px;
+        }
+
+        .wave-bar {
+            width: 3px;
+            height: 100%;
+            background-color: #fff;
+            border-radius: 3px;
+            animation: bounce 0.8s ease-in-out infinite alternate;
+        }
+        .wave-bar:nth-child(2) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.4s; }
+
+        .track-item.playing .icon-control { display: none; }
+        .track-item.playing .wave-container { display: flex; }
+
+        @keyframes bounce {
+            0% { height: 30%; }
+            100% { height: 100%; }
+        }
+
+        /* Lyrics Panel with Elegant Scrollbars */
+        .lyrics-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            min-height: 400px;
+            max-height: 520px;
+            overflow-y: auto;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            scroll-behavior: smooth;
+        }
+
+        .lyrics-container {
+            margin: auto 0;
+            width: 100%;
+        }
+
+        .no-track-placeholder {
+            color: var(--text-secondary);
+            text-align: center;
+            font-style: italic;
+            font-size: 1.05rem;
+        }
+
+        .lyric-line {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+            text-align: center;
+            transition: var(--transition-smooth);
+            opacity: 0.4;
+            transform: scale(0.96);
+        }
+
+        .lyric-line.active {
+            color: #ffffff;
+            opacity: 1;
+            transform: scale(1.04);
+            font-weight: 500;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+        }
+
+        /* Custom Modern Scrollbar */
+        .lyrics-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+        .lyrics-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .lyrics-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .lyrics-panel::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Footer Layer */
+        footer {
+            background: rgba(15, 23, 42, 0.8);
+            border-top: 1px solid var(--card-border);
+            padding: 2rem;
+            margin-top: auto;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .social-icon {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .social-icon:hover {
+            color: var(--accent-secondary);
+        }
+
+        .copyright {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Ripple Effect Classes */
+        .ripple {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: rippleEffect 0.5s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes rippleEffect {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 968px) {
+            .player-layout {
+                grid-template-columns: 1fr;
+            }
+            .hero h1 {
+                font-size: 2rem;
+            }
+            .lyrics-panel {
+                min-height: 320px;
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 1rem;
+            }
+            .app-container {
+                padding: 1rem;
+            }
+            .hero {
+                padding: 2rem 1rem 1rem;
+            }
+            .hero h1 {
+                font-size: 1.6rem;
+            }
+            .lyric-line {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Professional Navigation Bar -->
+    <nav class="navbar">
+        <a href="#" class="nav-logo">AnthemPlayer</a>
+        <a href="index.html" class="home-btn" id="interactiveHomeBtn">
+            <span>🏠</span> HOME
+        </a>
+    </nav>
+
+    <!-- Beautiful Modern Hero Header -->
+    <header class="hero">
+        <h1>National Anthem & Songs Portal</h1>
+        <p>Select an audio track below to seamlessly stream pristine playback with active lyrical guidance syncs.</p>
+    </header>
+
+    <!-- Core App Interface -->
+    <main class="app-container">
+        <div class="player-layout">
+            
+            <!-- Cards Playlist Container -->
+            <section class="track-list" id="playlist" aria-label="Song Tracks">
+                
+                <!-- Track 1: National Anthem -->
+                <div class="track-item" data-index="0" tabindex="0">
+                    <div class="track-info">
+                        <div class="track-title">National Anthem</div>
+                        <div class="track-filename">national_anthem.mp3</div>
+                    </div>
+                    <button class="btn-play" aria-label="Play National Anthem">
+                        <svg viewBox="0 0 24 24" class="icon-control"><path d="M8 5v14l11-7z"/></svg>
+                        <div class="wave-container">
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Track 2: Rotary Song (moved up) -->
+                <div class="track-item" data-index="1" tabindex="0">
+                    <div class="track-info">
+                        <div class="track-title">Rotary Song</div>
+                        <div class="track-filename">rotary_song.mp3</div>
+                    </div>
+                    <button class="btn-play" aria-label="Play Rotary Song">
+                        <svg viewBox="0 0 24 24" class="icon-control"><path d="M8 5v14l11-7z"/></svg>
+                        <div class="wave-container">
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Track 3: Rotaract Song (moved down) -->
+                <div class="track-item" data-index="2" tabindex="0">
+                    <div class="track-info">
+                        <div class="track-title">Rotaract Song</div>
+                        <div class="track-filename">rotaract_song.mp3</div>
+                    </div>
+                    <button class="btn-play" aria-label="Play Rotaract Song">
+                        <svg viewBox="0 0 24 24" class="icon-control"><path d="M8 5v14l11-7z"/></svg>
+                        <div class="wave-container">
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Track 4: Club Song -->
+                <div class="track-item" data-index="3" tabindex="0">
+                    <div class="track-info">
+                        <div class="track-title">Club Song</div>
+                        <div class="track-filename">club_song.mp3</div>
+                    </div>
+                    <button class="btn-play" aria-label="Play Club Song">
+                        <svg viewBox="0 0 24 24" class="icon-control"><path d="M8 5v14l11-7z"/></svg>
+                        <div class="wave-container">
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                        </div>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Responsive Dynamic Lyrics Viewer Box -->
+            <section class="lyrics-panel" aria-label="Lyrics Display Layer">
+                <div class="lyrics-container" id="lyricsContainer">
+                    <p class="no-track-placeholder">Select an item to stream audio & display text lines</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Hidden Native Audio Processor -->
+    <audio id="mainAudio"></audio>
+
+    <!-- Playback error feedback -->
+    <div id="audioToast" role="status" aria-live="polite" style="position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%); background:#ef4444; color:#fff; padding:0.7rem 1.4rem; border-radius:50px; font-size:0.9rem; font-weight:500; opacity:0; pointer-events:none; transition:opacity 0.3s; z-index:999;"></div>
+
+    <!-- Footer Segment Component -->
+    <footer>
+        <div class="footer-content">
+            <div class="social-links">
+                <a href="#" class="social-icon">🌐 Web</a>
+                <a href="#" class="social-icon">🔵 Facebook</a>
+                <a href="#" class="social-icon">📸 Instagram</a>
+            </div>
+            <p class="copyright">&copy; 2026 Anthem Tab Player Ecosystem. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Optimized JavaScript Functional Pipeline -->
+    <script>
+        const trackData = [
+            {
+                title: "National Anthem",
+                file: "national_anthem.mp3",
+                lyrics: [
+                    { time: 0, text: "🎵 (राष्ट्रिय धुन सुरु...) 🎵" },
+                    { time: 15, text: "सयौं थूंगा फूलका हामी, एउटै माला नेपाली\nसार्वभौम भई फैलिएका, मेची–महाकाली।" },
+                    { time: 25, text: "सयौं थूंगा फूलका हामी, एउटै माला नेपाली\nसार्वभौम भई फैलिएका, मेची–महाकाली।" },
+                    { time: 36, text: "प्रकृतिका कोटी–कोटी सम्पदाको आँचल\nवीरहरूका रगतले, स्वतन्त्र र अटल।" },
+                    { time: 46, text: "ज्ञानभूमि, शान्तिभूमि, तराई, पहाड, हिमाल\nअखण्ड यो प्यारो हाम्रो मातृभूमि नेपाल।" },
+                    { time: 57, text: "बहुल जाति, भाषा, धर्म, संस्कृति छन् विशाल\nअग्रगामी राष्ट्र हाम्रो, जय जय नेपाल।" }
+                ]
+            },
+            {
+                title: "Rotary Song",
+                file: "rotary_song.mp3",
+                lyrics: [
+                    { time: 0, text: "निस्वार्थ सेवा गर्नु पहिचान हो रोटरी\nसबैलाई माया गर्नु अभियान हो रोटरी" },
+                    { time: 9, text: "निस्वार्थ सेवा गर्नु पहिचान हो रोटरी\nसबैलाई माया गर्नु अभियान हो रोटरी" },
+                    { time: 18, text: "स्वास्थ्य, शिक्षा, विश्व शान्ति" },
+                    { time: 23, text: "रोटरीका चाहना\nमित्रता, विविधता र नेतृत्व" },
+                    { time: 28, text: "रोटरीकै साधन" },
+                    { time: 32, text: "मानवीय सेवा गर्न जुटिरहोस् रोटरी" },
+                    { time: 36, text: "राम्रो गर्न युगौँ युग बाँचिरहोस् रोटरी" },
+                    { time: 41, text: "पल ह्यारिसले जन्माएको" },
+                    { time: 46, text: "आवर CLUBले प्राण भरेको" },
+                    { time: 50, text: "फोर-वे हो पहिचान रोटरी" },
+                    { time: 55, text: "फोर-वे टेस्टको अनुशासन" },
+                    { time: 59, text: "स्वाभिमान हो रोटरी... रोटरी" }
+                ]
+            },
+            {
+                title: "Rotaract Song",
+                file: "rotaract_song.mp3",
+                lyrics: [
+                    { time: 0, text: "🎵 (रोट्रयाक्ट गीत धुन...) 🎵" },
+                    { time: 9, text: "फर्किएका ती हातहरू, उदाएका ती साथहरू\nरमाइला ती पलहरू, रमाएका ती यादहरू" },
+                    { time: 19, text: "एउटै धर्म हाम्रो हो, एउटै बाटो हाम्रो हो\n१८ पुगेका युवाहरूको सञ्जाल यो" },
+                    { time: 28, text: "रोट्रयाक्ट... रोट्रयाक्ट..." },
+                    { time: 38, text: "समाजका कुरीति पन्छाउँदै, समाजकै लागि लड्दै\nलक्ष्य हाम्रो धेरै टाढा छ, जोसका साथ अघि बढ्दै" },
+                    { time: 48, text: "रोटरीसँग हिँड्छौँ हामी एउटै पाइला बनाउँदै\nफोर-वे टेस्ट मान्दै हामी नाच्दै गाउँदै रमाउँदै" },
+                    { time: 57, text: "कलिला ओठहरूमा हामीले हाँसो छर्नु छ\nसमाज रूपान्तरण गर्न नेतृत्व नि गर्नु छ" },
+                    { time: 67, text: "फेलोसिप थ्रु सर्भिस भन्दै... जोड्छौँ सबैलाई\nत्यसैले त हामी हौँ रोट्रयाक्टर साथीभाइ\nत्यसैले हामी हौँ डिस्ट्रिक्ट ३२९२" }
+                ]
+            },
+            {
+                title: "Club Song",
+                file: "club_song.mp3",
+                lyrics: [
+                    { time: 0, text: "🎵 (म्युजिक) 🎵" },
+                    { time: 5, text: "गलकोटको काखमा गौरवको गान छ" },
+                    { time: 10, text: "रोट्र्याक्ट बागलुङ हाम्रो पहिचान छ" },
+                    { time: 16, text: "निस्वार्थ सेवाको संकल्प बोकेर" },
+                    { time: 21, text: "देश बनाउने युवाको यो अभियान छ" },
+                    { time: 26, text: "जय रोट्र्याक्ट, जय गलकोट, हाम्रो गौरव वर्ष" },
+                    { time: 32, text: "🎵 (म्युजिक) 🎵" }
+                ]
+            }
+        ];
+
+        const audio = document.getElementById('mainAudio');
+        const trackItems = document.querySelectorAll('.track-item');
+        const lyricsContainer = document.getElementById('lyricsContainer');
+        const audioToast = document.getElementById('audioToast');
+
+        let currentTrackIndex = null;
+
+        function showAudioError(msg) {
+            audioToast.textContent = msg;
+            audioToast.style.opacity = '1';
+            clearTimeout(audioToast._t);
+            audioToast._t = setTimeout(() => { audioToast.style.opacity = '0'; }, 4000);
+        }
+
+        // Reset a track's play/pause icon back to "play"
+        function resetTrackIcon(item) {
+            item.classList.remove('playing');
+            item.querySelector('.icon-control path').setAttribute('d', 'M8 5v14l11-7z');
+        }
+
+        audio.addEventListener('error', () => {
+            if (currentTrackIndex === null) return;
+            showAudioError(`⚠️ Couldn't load "${trackData[currentTrackIndex].title}". The audio file may be missing.`);
+            resetTrackIcon(trackItems[currentTrackIndex]);
+        });
+
+        // Custom Exit Animation & Material Ripple Context Effect on Navigation Button
+        document.getElementById('interactiveHomeBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetUrl = this.getAttribute('href');
+            const button = this;
+
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+            ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+            
+            button.appendChild(ripple);
+
+            setTimeout(() => {
+                window.location.href = targetUrl;
+            }, 350);
+        });
+
+        // Initialize and Render Lyrics DOM Tree Elements
+        function loadLyrics(index) {
+            lyricsContainer.innerHTML = '';
+            trackData[index].lyrics.forEach((line, i) => {
+                const p = document.createElement('p');
+                p.classList.add('lyric-line');
+                p.id = `line-${index}-${i}`;
+                p.innerHTML = line.text.replace(/\n/g, '<br>');
+                lyricsContainer.appendChild(p);
+            });
+        }
+
+        // Track Selector & Core Player Engine Action Router
+        function selectTrack(index) {
+            const item = trackItems[index];
+            
+            if (currentTrackIndex !== index) {
+                trackItems.forEach(el => {
+                    el.classList.remove('active', 'playing');
+                    el.querySelector('.icon-control path').setAttribute('d', 'M8 5v14l11-7z'); 
+                });
+
+                currentTrackIndex = index;
+                item.classList.add('active');
+                
+                audio.src = trackData[index].file;
+                loadLyrics(index);
+            }
+
+            if (audio.paused) {
+                audio.play().then(() => {
+                    item.classList.add('playing');
+                    item.querySelector('.icon-control path').setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z');
+                }).catch(err => {
+                    console.log("Audio pipeline failed to engage: ", err);
+                    showAudioError(`⚠️ Couldn't play "${trackData[index].title}". The audio file may be missing.`);
+                    resetTrackIcon(item);
+                });
+            } else {
+                audio.pause();
+                resetTrackIcon(item);
+            }
+        }
+
+        // Event Attachment Handlers
+        trackItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const index = parseInt(item.getAttribute('data-index'));
+                selectTrack(index);
+            });
+            
+            // Keypress Enter for Accessibility Support
+            item.addEventListener('keydown', (e) => {
+                if(e.key === 'Enter') {
+                    const index = parseInt(item.getAttribute('data-index'));
+                    selectTrack(index);
+                }
+            });
+        });
+
+        // Synchronous Scrolling Lyrics Matcher Frame Loop Engine
+        audio.addEventListener('timeupdate', () => {
+            if (currentTrackIndex === null) return;
+
+            const currentTime = audio.currentTime;
+            const lyricsLines = trackData[currentTrackIndex].lyrics;
+            let activeLineIndex = -1;
+
+            for (let i = 0; i < lyricsLines.length; i++) {
+                if (currentTime >= lyricsLines[i].time) {
+                    activeLineIndex = i;
+                } else {
+                    break;
+                }
+            }
+
+            if (activeLineIndex !== -1) {
+                const linesElements = lyricsContainer.querySelectorAll('.lyric-line');
+                linesElements.forEach((lineEl, idx) => {
+                    if (idx === activeLineIndex) {
+                        if (!lineEl.classList.contains('active')) {
+                            lineEl.classList.add('active');
+                            lineEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    } else {
+                        lineEl.classList.remove('active');
+                    }
+                });
+            }
+        });
+
+        // Reset Track State UI Upon Media Lifecycle Terminus
+        audio.addEventListener('ended', () => {
+            if (currentTrackIndex !== null) {
+                const activeItem = trackItems[currentTrackIndex];
+                activeItem.classList.remove('playing');
+                activeItem.querySelector('.icon-control path').setAttribute('d', 'M8 5v14l11-7z');
+            }
+        });
+    </script>
+</body>
+</html>

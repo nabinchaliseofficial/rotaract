@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>COTS Sessions · Rotaract Club of Galkot Baglung</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        :root {
+            --ink: #0f1c2e;
+            --ink-soft: #1c3049;
+            --paper: #f7f2e7;
+            --paper-dim: #efe7d6;
+            --magenta: #c2187e;
+            --magenta-deep: #8f1160;
+            --gold: #e0a038;
+            --slate: #52627a;
+            --line: #d9cdb2;
+            --radius: 18px;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+        }
+        h1,
+        h2,
+        h3 {
+            font-family: 'Fraunces', serif;
+        }
+        .eyebrow {
+            font-family: 'Space Mono', monospace;
+            font-size: .72rem;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: var(--magenta-deep);
+        }
+
+        /* ---------- HERO ---------- */
+        .hero {
+            position: relative;
+            min-height: 38vh;
+            display: flex;
+            align-items: flex-end;
+            background: linear-gradient(160deg, var(--ink) 0%, var(--ink-soft) 60%, var(--magenta-deep) 130%);
+            overflow: hidden;
+            border-bottom: 6px solid var(--gold);
+        }
+        .hero-banner {
+            position: absolute;
+            inset: 0;
+            background-image: url('/r/clubheading.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: .42;
+        }
+        .hero-veil {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(0deg, var(--ink) 4%, rgba(15, 28, 46, .35) 55%, rgba(15, 28, 46, .1) 100%);
+        }
+        .hero-inner {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem 2.4rem;
+            color: #fdf9f0;
+        }
+        .hero-inner .eyebrow {
+            color: var(--gold);
+        }
+        .hero-inner h1 {
+            font-size: clamp(2.2rem, 5vw, 3.6rem);
+            font-weight: 700;
+            line-height: 1.05;
+            margin: .5rem 0 .7rem;
+        }
+        .hero-inner p {
+            font-size: 1.05rem;
+            color: #e7dfd0;
+            max-width: 520px;
+        }
+        .hero-nav {
+            display: flex;
+            gap: .6rem;
+            margin-bottom: 1.2rem;
+        }
+        .hero-nav-btn {
+            padding: .45rem 1rem;
+            font-size: .82rem;
+        }
+        .event-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            margin-top: 1rem;
+            font-family: 'Space Mono', monospace;
+            font-size: .82rem;
+            color: #fdf9f0;
+        }
+        .event-info i {
+            color: var(--gold);
+            margin-right: .4rem;
+        }
+        .hashtags {
+            margin-top: .6rem;
+            font-size: .78rem;
+            color: var(--gold);
+            font-family: 'Space Mono', monospace;
+            letter-spacing: .02em;
+        }
+        .hero-seal {
+            position: absolute;
+            top: 2.4rem;
+            right: 2rem;
+            z-index: 2;
+            width: 92px;
+            height: 92px;
+            border-radius: 50%;
+            border: 2px dashed var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--gold);
+            font-family: 'Space Mono', monospace;
+            font-size: .62rem;
+            letter-spacing: .08em;
+            line-height: 1.3;
+            text-transform: uppercase;
+            background: rgba(15, 28, 46, .55);
+        }
+
+        /* ---------- LAYOUT ---------- */
+        .wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        .section {
+            position: relative;
+            padding: 3.2rem 0 .6rem;
+        }
+        .sessions-section {
+            padding-left: 1px;
+            padding-right: 1px;
+        }
+        .sessions-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('/r/cots/cots.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: .12;
+            z-index: -1;
+        }
+        .section-head {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            flex-wrap: wrap;
+            border-bottom: 2px solid var(--line);
+            padding-bottom: .9rem;
+            margin-bottom: 1.8rem;
+        }
+        .section-head h2 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--ink);
+        }
+        .section-head .count {
+            font-family: 'Space Mono', monospace;
+            font-size: .75rem;
+            color: var(--slate);
+            background: var(--paper-dim);
+            border: 1px solid var(--line);
+            padding: .25rem .6rem;
+            border-radius: 20px;
+        }
+        .section-head .hint {
+            margin-left: auto;
+            font-size: .85rem;
+            color: var(--slate);
+        }
+
+        /* ---------- SESSION TICKET CARDS ---------- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.4rem;
+        }
+        .ticket {
+            position: relative;
+            background: #fffdf7;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 1.5rem 1.3rem 1.3rem;
+            display: flex;
+            flex-direction: column;
+            gap: .6rem;
+            box-shadow: 0 10px 22px -14px rgba(15, 28, 46, .35);
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+        .ticket:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 28px -14px rgba(15, 28, 46, .45);
+        }
+        .ticket::after {
+            content: "";
+            position: absolute;
+            right: -1px;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background-image: linear-gradient(var(--line) 60%, transparent 0%);
+            background-size: 1px 10px;
+            background-repeat: repeat-y;
+        }
+        .ticket-tag {
+            align-self: flex-start;
+            font-family: 'Space Mono', monospace;
+            font-size: .68rem;
+            letter-spacing: .08em;
+            color: #fff;
+            background: var(--magenta);
+            padding: .22rem .55rem;
+            border-radius: 5px;
+        }
+        .ticket h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--ink);
+        }
+        .ticket .facilitator {
+            font-size: .85rem;
+            color: var(--slate);
+        }
+        .facilitator-link {
+            font-size: .85rem;
+            color: var(--slate);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            transition: color .15s ease;
+        }
+        .facilitator-link i {
+            color: #1877f2;
+        }
+        .facilitator-link:hover {
+            color: var(--magenta);
+        }
+        .coordinator-card {
+            display: flex;
+            align-items: center;
+            gap: 1.4rem;
+            background: #fffdf7;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 1.4rem 1.6rem;
+            box-shadow: 0 10px 22px -14px rgba(15, 28, 46, .35);
+            max-width: 480px;
+        }
+        .coordinator-img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--gold);
+            flex-shrink: 0;
+        }
+        .coordinator-info h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--ink);
+        }
+        .coordinator-role {
+            font-size: .85rem;
+            color: var(--slate);
+        }
+        .ticket .filename {
+            font-family: 'Space Mono', monospace;
+            font-size: .72rem;
+            color: var(--slate);
+            word-break: break-all;
+        }
+        .ticket-actions {
+            margin-top: .4rem;
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        /* ---------- BUTTONS ---------- */
+        .btn {
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: .82rem;
+            padding: .55rem 1rem;
+            border-radius: 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: .15s;
+        }
+        .btn-solid {
+            background: var(--magenta);
+            color: #fff;
+        }
+        .btn-solid:hover {
+            background: var(--magenta-deep);
+        }
+        .btn-line {
+            background: transparent;
+            border: 1px solid var(--line);
+            color: var(--ink);
+        }
+        .btn-line:hover {
+            background: var(--paper-dim);
+        }
+
+        .empty {
+            grid-column: 1/-1;
+            padding: 1.6rem;
+            text-align: center;
+            color: var(--slate);
+            background: var(--paper-dim);
+            border: 1px dashed var(--line);
+            border-radius: 14px;
+            font-size: .9rem;
+        }
+
+        /* ---------- FULLSCREEN MODAL ---------- */
+        .present-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #0a0f18;
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .present-modal.active {
+            display: flex;
+        }
+        .present-modal .modal-close {
+            position: absolute;
+            top: 18px;
+            right: 24px;
+            z-index: 10000;
+            color: #fff;
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .25);
+            padding: 8px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            letter-spacing: .02em;
+            backdrop-filter: blur(4px);
+            transition: background .2s;
+        }
+        .present-modal .modal-close:hover {
+            background: rgba(255, 255, 255, .18);
+        }
+        .present-modal .modal-close i {
+            margin-right: 6px;
+        }
+        .present-modal .modal-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+        }
+        .present-modal .modal-fallback {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            color: #aaa;
+            font-size: .82rem;
+            background: rgba(0, 0, 0, .6);
+            padding: 6px 16px;
+            border-radius: 30px;
+            backdrop-filter: blur(4px);
+            display: none;
+            gap: 8px;
+            align-items: center;
+        }
+        .present-modal .modal-fallback a {
+            color: var(--gold);
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        .present-modal .modal-fallback a:hover {
+            color: #fff;
+        }
+
+        /* ---------- FOOTER ---------- */
+        footer {
+            margin-top: 3.5rem;
+            padding: 2rem;
+            text-align: center;
+            background: var(--ink);
+            color: #c8b98d;
+            font-size: .85rem;
+            letter-spacing: .02em;
+        }
+        footer i {
+            color: var(--gold);
+            margin-right: .4rem;
+        }
+        .footer-img {
+            max-width: 220px;
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto 1.2rem;
+        }
+
+        @media (prefers-reduced-motion:reduce) {
+            .ticket {
+                transition: none;
+            }
+        }
+        @media (max-width:600px) {
+            .hero-seal {
+                display: none;
+            }
+            .section-head .hint {
+                margin-left: 0;
+            }
+            .present-modal .modal-close {
+                top: 12px;
+                right: 14px;
+                padding: 6px 14px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========== HERO ========== -->
+    <div class="hero">
+        <div class="hero-banner"></div>
+        <div class="hero-veil"></div>
+        <div class="hero-seal">Est. Rotaract<br />Galkot Baglung</div>
+        <div class="hero-inner">
+            <div class="hero-nav">
+                <a href="/r/index.html" class="btn btn-line hero-nav-btn"><i class="fas fa-house"></i> Home</a>
+                <a href="https://nabinchalise.com.np/r/upcomming-projects.html" class="btn btn-solid hero-nav-btn" target="_blank"><i class="fas fa-pen"></i> Register</a>
+            </div>
+            <span class="eyebrow">Club Officers Training Seminar (COTS)</span>
+            <h1>COTS Sessions</h1>
+            <p>Facilitator slide decks from the COTS program &mdash; present each session.</p>
+            <div class="event-info">
+                <span><i class="fas fa-location-dot"></i> CHAKATI KITCHEN</span>
+                <span><i class="fas fa-calendar-days"></i> July 25, 2026 (Saturday)</span>
+                <span><i class="fas fa-clock"></i> 11:00 A.M.</span>
+            </div>
+            <div class="hashtags">#RotaractCOTS2026 #FutureRotaractLeaders</div>
+        </div>
+    </div>
+
+    <!-- ========== MAIN ========== -->
+    <div class="wrap">
+
+        <!-- ===== SESSIONS ===== -->
+        <div class="section sessions-section">
+            <div class="sessions-bg"></div>
+            <div class="section-head">
+                <h2><i class="fas fa-person-chalkboard" style="color:var(--magenta);margin-right:.5rem;"></i>Sessions</h2>
+                <span class="count" id="session-count">0</span>
+                <span class="hint">facilitator slide decks</span>
+            </div>
+            <div class="grid" id="session-grid"></div>
+        </div>
+
+        <!-- ===== PROGRAM COORDINATOR ===== -->
+        <div class="section">
+            <div class="section-head">
+                <h2><i class="fas fa-user-tie" style="color:var(--magenta);margin-right:.5rem;"></i>Program Coordinator</h2>
+            </div>
+            <div class="coordinator-card">
+                <img src="/r/images/balaramadhikari.jpg" alt="Rtr. Balaram Adhikari" class="coordinator-img" />
+                <div class="coordinator-info">
+                    <h3>Rtr. Balaram Adhikari</h3>
+                    <span class="coordinator-role">Program Co-Ordinator &middot; Club Member</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========== FULLSCREEN MODAL ========== -->
+    <div class="present-modal" id="presentModal">
+        <button class="modal-close" id="modalClose"><i class="fas fa-times"></i> Close</button>
+        <iframe class="modal-frame" id="modalFrame" src="" allowfullscreen></iframe>
+        <div class="modal-fallback" id="modalFallback">
+            <i class="fas fa-info-circle"></i>
+            Having trouble loading? Please close and try again.
+        </div>
+    </div>
+
+    <!-- ========== FOOTER ========== -->
+    <footer>
+        <img src="/r/footer.jpg" alt="Rotaract Club of Galkot Baglung" class="footer-img" />
+        <div><i class="fas fa-gear"></i>Rotaract Club of Galkot Baglung &middot; COTS Archive</div>
+    </footer>
+
+    <script>
+        (function() {
+
+            // ---- SESSION DATA ----
+            // driveId = the ID from the Google Slides share URL
+            // (https://docs.google.com/presentation/d/**THIS_PART**/edit...)
+            const sessions = [
+                { facilitator: 'Anil', driveId: '10HdBypxEqEGnFTqsRKqZaaMVHiX2Jv9x', tag: 'Session 01' },
+                { facilitator: 'Laxmi', driveId: '1DPLvvDv5CXxe6oWztFU4v9kSNLsCz2Ry', tag: 'Session 02' },
+                { facilitator: 'Nabin', driveId: '1sh8eokZOQpCQ37iiAxFCELb__AE1eNUx', tag: 'Session 03' },
+            ];
+
+            // facilitator Facebook profile links
+            const socials = {
+                Anil: 'https://www.facebook.com/shoutatthedevils',
+                Laxmi: 'https://www.facebook.com/laxmi.magar.409860',
+                Nabin: 'https://www.facebook.com/nabincs3/',
+            };
+
+            // ---- DOM REFS ----
+            const grid = document.getElementById('session-grid');
+            const countEl = document.getElementById('session-count');
+            const modal = document.getElementById('presentModal');
+            const modalFrame = document.getElementById('modalFrame');
+            const modalClose = document.getElementById('modalClose');
+            const fallback = document.getElementById('modalFallback');
+
+            // ---- RENDER SESSIONS ----
+            function renderSessions() {
+                countEl.textContent = sessions.length;
+                if (!sessions.length) {
+                    grid.innerHTML = '<div class="empty">No session slides yet.</div>';
+                    return;
+                }
+                grid.innerHTML = sessions.map((s, idx) => {
+                    const embedUrl = `https://docs.google.com/presentation/d/${s.driveId}/embed?start=false&loop=false&delayms=3000`;
+                    const fbUrl = socials[s.facilitator] || '#';
+                    return `
+                    <div class="ticket">
+                        <span class="ticket-tag">${s.tag}</span>
+                        <h3>COTS &middot; ${s.facilitator}</h3>
+                        <a class="facilitator-link" href="${fbUrl}" target="_blank"><i class="fab fa-facebook"></i> Facilitated by ${s.facilitator}</a>
+                        <div class="ticket-actions">
+                            <button class="btn btn-solid present-btn" data-embed="${embedUrl}" data-facilitator="${s.facilitator}">
+                                <i class="fas fa-play"></i> Present
+                            </button>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+
+                // Attach present events
+                document.querySelectorAll('.present-btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        const embedUrl = this.dataset.embed;
+                        const facilitator = this.dataset.facilitator;
+                        openPresentation(embedUrl, facilitator);
+                    });
+                });
+            }
+
+            // ---- OPEN PRESENTATION (fullscreen modal) ----
+            function openPresentation(embedUrl, facilitator) {
+                // Google Slides serves its own embeddable player at this URL
+                // shape, so the iframe can load it straight away — no need
+                // to route through a third-party viewer.
+                modalFrame.src = embedUrl;
+
+                // Show modal
+                modal.classList.add('active');
+
+                // Request fullscreen on the modal container
+                if (modal.requestFullscreen) {
+                    modal.requestFullscreen().catch(() => {});
+                } else if (modal.webkitRequestFullscreen) {
+                    modal.webkitRequestFullscreen();
+                }
+
+                // The embed is cross-origin, so we can't inspect its contents
+                // to confirm it loaded. Slides that are still "Restricted"
+                // (not shared as "Anyone with the link") will render Google's
+                // own "you need permission" screen inside the iframe rather
+                // than failing outright — we surface a plain message rather
+                // than a link out, so the slide can only ever be viewed here.
+                fallback.style.display = 'none';
+
+                if (modal._fallbackTimer) clearTimeout(modal._fallbackTimer);
+                modal._fallbackTimer = setTimeout(() => {
+                    fallback.style.display = 'flex';
+                }, 3000);
+            }
+
+            // ---- CLOSE MODAL ----
+            function closeModal() {
+                if (modal._fallbackTimer) {
+                    clearTimeout(modal._fallbackTimer);
+                }
+                // Exit fullscreen
+                if (document.fullscreenElement) {
+                    document.exitFullscreen().catch(() => {});
+                } else if (document.webkitFullscreenElement) {
+                    document.webkitExitFullscreen();
+                }
+                modal.classList.remove('active');
+                // Unload iframe to stop any media
+                modalFrame.src = '';
+                fallback.style.display = 'none';
+            }
+
+            modalClose.addEventListener('click', closeModal);
+
+            // Close on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+
+            // Close if user clicks on the backdrop (outside the iframe)
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            // Also close if fullscreen change event
+            document.addEventListener('fullscreenchange', function() {
+                if (!document.fullscreenElement && modal.classList.contains('active')) {
+                    // User exited fullscreen via browser UI, but keep modal open
+                }
+            });
+
+            // ---- INIT ----
+            renderSessions();
+
+        })();
+    </script>
+</body>
+</html>

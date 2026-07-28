@@ -1,0 +1,2281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rotaract · Member Dashboard</title>
+    <meta name="description" content="Active member directory for Rotaract Club of Galkot Baglung — search members, view contact details, and upcoming birthdays." />
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%232563eb'/></svg>">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnXOs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <!-- html2pdf library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #f0f4fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 1rem 1rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* ===== HEADER - Fully Responsive ===== */
+        .club-header {
+            width: 100%;
+            margin-bottom: 1.5rem;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            background: #ffffff;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .club-header img {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+            object-fit: cover;
+        }
+
+        /* Responsive header image sizes */
+        .club-header img {
+            max-height: 220px;
+        }
+
+        @media (max-width: 1024px) {
+            .club-header img {
+                max-height: 180px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .club-header {
+                border-radius: 14px;
+                margin-bottom: 1rem;
+            }
+            .club-header img {
+                max-height: 140px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .club-header {
+                border-radius: 10px;
+                margin-bottom: 0.8rem;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            }
+            .club-header img {
+                max-height: 100px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .club-header img {
+                max-height: 70px;
+            }
+        }
+
+        .club-header-placeholder {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: white;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .club-header-placeholder h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .club-header-placeholder p {
+            opacity: 0.8;
+            margin-top: 0.3rem;
+        }
+
+        @media (max-width: 768px) {
+            .club-header-placeholder {
+                padding: 1.5rem 1rem;
+                min-height: 80px;
+            }
+            .club-header-placeholder h2 {
+                font-size: 1.5rem;
+            }
+            .club-header-placeholder p {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .club-header-placeholder {
+                padding: 1rem 0.8rem;
+                min-height: 60px;
+            }
+            .club-header-placeholder h2 {
+                font-size: 1.2rem;
+            }
+            .club-header-placeholder p {
+                font-size: 0.7rem;
+            }
+        }
+
+        /* ===== MAIN HEADER ===== */
+        .main-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+
+        .main-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .main-header h1 i {
+            color: #2563eb;
+        }
+
+        .header-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 40px;
+            padding: 0.3rem 0.3rem 0.3rem 1.2rem;
+            border: 1px solid #dce2eb;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+            transition: 0.15s;
+        }
+
+        .search-box:focus-within {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            padding: 0.5rem 0;
+            font-size: 0.95rem;
+            min-width: 150px;
+            background: transparent;
+        }
+
+        .search-box button {
+            background: #1e293b;
+            border: none;
+            color: white;
+            padding: 0.45rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: 0.15s;
+            white-space: nowrap;
+        }
+
+        .search-box button:hover {
+            background: #0f172a;
+        }
+
+        .refresh-btn {
+            background: #1e293b;
+            border: none;
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: 0.15s;
+            border: 1px solid #334155;
+            white-space: nowrap;
+        }
+
+        .refresh-btn:hover {
+            background: #0f172a;
+            transform: scale(1.02);
+        }
+
+        .refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Auto-refresh indicator */
+        .auto-refresh-indicator {
+            font-size: 0.7rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: rgba(255,255,255,0.5);
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            border: 1px solid #e9edf2;
+        }
+        .auto-refresh-indicator i {
+            color: #22c55e;
+            font-size: 0.6rem;
+        }
+
+        /* ===== STATS ===== */
+        .stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 0.7rem 1.2rem;
+            border: 1px solid #e9edf2;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            flex: 1 1 auto;
+            min-width: 100px;
+        }
+
+        .stat-card i {
+            font-size: 1.3rem;
+            color: #2563eb;
+            width: 28px;
+            text-align: center;
+        }
+
+        .stat-card .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-card .stat-number {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .blood-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem 0.6rem;
+            margin-left: 0.1rem;
+        }
+
+        .blood-pill {
+            background: #f1f5f9;
+            padding: 0.05rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #1e293b;
+            white-space: nowrap;
+        }
+
+        .blood-pill span {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* ===== BIRTHDAY BANNER ===== */
+        .birthday-banner {
+            background: linear-gradient(135deg, #fef9c3, #fde047);
+            border-radius: 16px;
+            padding: 0.8rem 1.5rem;
+            margin-bottom: 1.8rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #facc15;
+            box-shadow: 0 4px 12px rgba(234, 179, 8, 0.1);
+            gap: 0.5rem;
+        }
+
+        .birthday-banner .title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #78350f;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .birthday-banner .title i {
+            font-size: 1.2rem;
+            color: #b45309;
+        }
+
+        .birthday-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem 0.8rem;
+            align-items: center;
+        }
+
+        .birthday-chip {
+            background: white;
+            padding: 0.15rem 0.8rem 0.15rem 0.6rem;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #1e293b;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            border: 1px solid #fbbf24;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        .birthday-chip i {
+            color: #dc2626;
+            font-size: 0.8rem;
+        }
+
+        .no-birthday {
+            color: #92400e;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 0.1rem 1rem;
+            border-radius: 40px;
+            font-size: 0.9rem;
+        }
+
+        /* ===== PROFILE GRID ===== */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+            padding: 1.2rem 1.2rem 1.3rem;
+            border: 1px solid #e9edf2;
+            transition: 0.15s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .profile-card:hover {
+            border-color: #c8d3e0;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-top {
+            display: flex;
+            gap: 0.8rem;
+            align-items: flex-start;
+            margin-bottom: 0.7rem;
+        }
+
+        .profile-photo {
+            width: 64px;
+            height: 64px;
+            border-radius: 40px;
+            object-fit: cover;
+            background: #dbeafe;
+            flex-shrink: 0;
+            border: 3px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #2563eb;
+            font-weight: 600;
+            overflow: hidden;
+        }
+
+        .profile-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .name-title {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .name-title h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+
+        .name-title .position {
+            font-size: 0.75rem;
+            color: #2563eb;
+            font-weight: 600;
+            background: #eef4ff;
+            display: inline-block;
+            padding: 0.05rem 0.7rem;
+            border-radius: 40px;
+            margin-top: 0.1rem;
+        }
+
+        .birthday-tag {
+            margin-top: 0.2rem;
+            display: inline-block;
+            background: #fef2f2;
+            color: #b91c1c;
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.05rem 0.7rem;
+            border-radius: 40px;
+            border: 1px solid #fecaca;
+        }
+
+        .birthday-tag i {
+            margin-right: 3px;
+        }
+
+        .card-details {
+            margin-top: 0.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            font-size: 0.85rem;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: #1e293b;
+            padding: 0.05rem 0;
+        }
+
+        .detail-item i {
+            width: 1rem;
+            color: #64748b;
+            font-size: 0.75rem;
+            text-align: center;
+        }
+
+        .detail-item .label {
+            color: #64748b;
+            font-weight: 450;
+            min-width: 55px;
+            font-size: 0.75rem;
+        }
+
+        .detail-item .value {
+            font-weight: 500;
+            color: #0f172a;
+            font-size: 0.85rem;
+        }
+
+        .card-footer {
+            margin-top: 0.8rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid #edf2f7;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.2rem 0.8rem;
+            font-size: 0.75rem;
+            color: #475569;
+        }
+
+        .card-footer span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .card-footer i {
+            color: #94a3b8;
+            font-size: 0.7rem;
+        }
+
+        .loading-grid {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem 0;
+            color: #64748b;
+        }
+
+        .loading-grid i {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .error-msg {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2rem 0;
+            color: #b91c1c;
+            background: #fef2f2;
+            border-radius: 18px;
+        }
+
+        .fa-spinner {
+            animation: spin 0.9s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .position-badge {
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 0.05rem 0.6rem;
+            border-radius: 40px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-president { background: #fef3c7; color: #92400e; }
+        .badge-secretary { background: #dbeafe; color: #1e40af; }
+        .badge-treasurer { background: #d1fae5; color: #065f46; }
+        .badge-executive { background: #fce4ec; color: #9a1f3c; }
+        .badge-member { background: #f1f5f9; color: #475569; }
+
+        /* ===== FOOTER - Fully Responsive ===== */
+        .club-footer {
+            margin-top: 2.5rem;
+            width: 100%;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04);
+            background: #ffffff;
+            transition: all 0.3s ease;
+        }
+
+        .club-footer img {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+            object-fit: cover;
+        }
+
+        /* Responsive footer image sizes */
+        .club-footer img {
+            max-height: 140px;
+        }
+
+        @media (max-width: 1024px) {
+            .club-footer img {
+                max-height: 120px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .club-footer {
+                border-radius: 14px;
+                margin-top: 1.8rem;
+            }
+            .club-footer img {
+                max-height: 90px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .club-footer {
+                border-radius: 10px;
+                margin-top: 1.5rem;
+                box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+            }
+            .club-footer img {
+                max-height: 60px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .club-footer img {
+                max-height: 45px;
+            }
+        }
+
+        .club-footer-placeholder {
+            padding: 1.2rem;
+            text-align: center;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: #94a3b8;
+            font-size: 0.85rem;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 0.3rem;
+            transition: all 0.3s ease;
+        }
+
+        .club-footer-placeholder i {
+            color: #2563eb;
+            margin: 0 0.3rem;
+        }
+
+        @media (max-width: 768px) {
+            .club-footer-placeholder {
+                padding: 0.8rem;
+                min-height: 60px;
+                font-size: 0.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .club-footer-placeholder {
+                padding: 0.6rem;
+                min-height: 50px;
+                font-size: 0.65rem;
+                gap: 0.1rem;
+            }
+        }
+
+        /* ===== BIRTHDAY POPUP ===== */
+        .birthday-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 1rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .birthday-popup-overlay.active {
+            display: flex;
+        }
+
+        .birthday-popup {
+            background: linear-gradient(135deg, #fef9c3, #fde047);
+            border-radius: 30px;
+            padding: 2.5rem 2rem;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+            animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 2px solid #fbbf24;
+            position: relative;
+        }
+
+        .birthday-popup .confetti {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .birthday-popup h2 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #78350f;
+            margin: 0.5rem 0;
+        }
+
+        .birthday-popup .name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #92400e;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 0.3rem 1.5rem;
+            border-radius: 60px;
+            display: inline-block;
+            margin: 0.5rem 0;
+        }
+
+        .birthday-popup .message {
+            font-size: 1.1rem;
+            color: #78350f;
+            margin: 0.8rem 0;
+            font-weight: 500;
+        }
+
+        .birthday-popup .close-btn {
+            margin-top: 1rem;
+            background: #78350f;
+            border: none;
+            color: white;
+            padding: 0.7rem 2.5rem;
+            border-radius: 60px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .birthday-popup .close-btn:hover {
+            background: #5a280b;
+            transform: scale(1.05);
+        }
+
+        /* Popup logo */
+        .popup-logo {
+            margin-bottom: 0.5rem;
+        }
+        .popup-logo img {
+            border-radius: 50%;
+            border: 3px solid #fbbf24;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Download button row - only Card remains */
+        .popup-download-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            justify-content: center;
+            margin-top: 0.8rem;
+        }
+        .popup-download-row .close-btn {
+            margin-top: 0;
+            padding: 0.6rem 1.8rem;
+            font-size: 0.9rem;
+            background: #1e293b;
+            border: 1px solid #334155;
+        }
+        .popup-download-row .close-btn:hover {
+            background: #0f172a;
+        }
+
+        /* Club name line */
+        .club-name-line {
+            margin-top: 0.8rem;
+            font-weight: 600;
+            color: #78350f;
+            font-size: 0.9rem;
+            background: rgba(255,255,255,0.3);
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            display: inline-block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5) rotate(-5deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .container { padding: 0 0.8rem 0.8rem; }
+            .main-header { flex-direction: column; align-items: stretch; gap: 0.8rem; }
+            .main-header h1 { font-size: 1.5rem; }
+            .header-controls { flex-wrap: wrap; }
+            .search-box { flex: 1; }
+            .search-box input { min-width: 100px; width: 100%; }
+            .search-box button { padding: 0.4rem 1rem; font-size: 0.85rem; }
+            .refresh-btn { padding: 0.4rem 1rem; font-size: 0.85rem; }
+            .profile-grid { grid-template-columns: 1fr; }
+            .stats-row { gap: 0.5rem; }
+            .stat-card { padding: 0.5rem 0.8rem; min-width: 80px; }
+            .stat-card i { font-size: 1rem; width: 22px; }
+            .stat-card .stat-number { font-size: 1rem; }
+            .birthday-banner { padding: 0.6rem 1rem; flex-direction: column; align-items: flex-start; }
+            .birthday-banner .title { font-size: 0.85rem; }
+            .birthday-popup { padding: 1.8rem 1.2rem; }
+            .birthday-popup h2 { font-size: 1.8rem; }
+            .birthday-popup .name { font-size: 1.4rem; }
+            .profile-photo { width: 54px; height: 54px; font-size: 1.2rem; }
+            .name-title h3 { font-size: 0.95rem; }
+            .auto-refresh-indicator { font-size: 0.6rem; padding: 0.15rem 0.6rem; }
+        }
+
+        @media (max-width: 480px) {
+            .main-header h1 { font-size: 1.2rem; }
+            .search-box input { min-width: 80px; font-size: 0.85rem; }
+            .search-box button { padding: 0.3rem 0.8rem; font-size: 0.8rem; }
+            .refresh-btn { padding: 0.3rem 0.8rem; font-size: 0.8rem; }
+            .stat-card { min-width: 60px; padding: 0.4rem 0.6rem; }
+            .stat-card .stat-number { font-size: 0.9rem; }
+            .stat-card .stat-label { font-size: 0.6rem; }
+            .birthday-chip { font-size: 0.75rem; padding: 0.1rem 0.6rem; }
+        }
+
+        /* ===== RECOGNITION POPUP ===== */
+        .recognition-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            padding: 1rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .recognition-popup-overlay.active {
+            display: flex;
+        }
+
+        .recognition-popup {
+            background: linear-gradient(160deg, #ffffff, #f8fafc);
+            border-radius: 28px;
+            padding: 2rem 1.8rem;
+            max-width: 560px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+            animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 2px solid #1e293b;
+            position: relative;
+        }
+
+        .recognition-popup .rp-header {
+            text-align: center;
+            margin-bottom: 1.2rem;
+        }
+
+        .recognition-popup .rp-header .rp-icon {
+            font-size: 2.6rem;
+            color: #b45309;
+        }
+
+        .recognition-popup .rp-header h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-top: 0.3rem;
+        }
+
+        .recognition-popup .rp-header p {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-top: 0.2rem;
+        }
+
+        .rp-award-block {
+            background: #fafcff;
+            border: 1px solid #eef2f6;
+            border-radius: 20px;
+            padding: 1rem 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .rp-award-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #78350f;
+            margin-bottom: 0.7rem;
+        }
+
+        .rp-award-title i { color: #b45309; }
+
+        .rp-award-title .rp-sub {
+            margin-left: auto;
+            background: #f1f5f9;
+            padding: 0.15rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #334155;
+            text-transform: uppercase;
+        }
+
+        .rp-winner-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: white;
+            padding: 0.6rem 0.9rem;
+            border-radius: 50px;
+            border: 1px solid #eef2f6;
+            margin-bottom: 0.5rem;
+        }
+
+        .rp-winner-item:last-child { margin-bottom: 0; }
+
+        .rp-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 40px;
+            background: #d9e2ef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #1e293b;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .rp-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .rp-winner-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .rp-winner-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #0f172a;
+            display: block;
+        }
+
+        .rp-winner-designation {
+            font-size: 0.7rem;
+            color: #64748b;
+        }
+
+        .rp-winner-score {
+            background: #b45309;
+            color: white;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.7rem;
+            border-radius: 40px;
+            flex-shrink: 0;
+        }
+
+        .rp-no-winner {
+            color: #64748b;
+            font-size: 0.85rem;
+            font-style: italic;
+            padding: 0.4rem 0.2rem;
+        }
+
+        .rp-loading, .rp-error {
+            text-align: center;
+            color: #64748b;
+            padding: 1.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .rp-error { color: #b91c1c; }
+
+        .recognition-popup .rp-actions {
+            display: flex;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-top: 1.2rem;
+            flex-wrap: wrap;
+        }
+
+        .recognition-popup .rp-actions .close-btn {
+            margin-top: 0;
+        }
+
+        /* Floating trigger button to reopen recognition popup */
+        .recognition-btn-container {
+            position: fixed;
+            bottom: 24px;
+            right: 150px;
+            z-index: 900;
+        }
+        .recognition-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #b45309;
+            color: #fff;
+            padding: 0.7rem 1.2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+            transition: 0.2s;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .recognition-btn:hover, .recognition-btn:focus {
+            background: #92400e;
+            transform: translateY(-3px);
+            outline: none;
+        }
+        @media (max-width: 480px) {
+            .recognition-btn { padding: 0.55rem 1rem; font-size: 0.8rem; }
+            .recognition-btn-container { bottom: 76px; right: 16px; }
+            .recognition-popup { padding: 1.4rem 1.1rem; }
+            .recognition-popup .rp-header h2 { font-size: 1.2rem; }
+        }
+
+        /* ===== BACK TO DASHBOARD BUTTON ===== */
+        .home-btn-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 900;
+        }
+        .home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #1e293b;
+            color: #fff;
+            padding: 0.7rem 1.3rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+            transition: 0.2s;
+            border: 2px solid transparent;
+        }
+        .home-btn:hover, .home-btn:focus {
+            background: #0f172a;
+            transform: translateY(-3px);
+            outline: none;
+        }
+        @media (max-width: 480px) {
+            .home-btn { padding: 0.55rem 1rem; font-size: 0.8rem; }
+            .home-btn-container { bottom: 16px; right: 16px; }
+        }
+
+        /* ===== EXPORT TO PDF SECTION ===== */
+        .print-export-section {
+            width: 100%;
+            margin-top: 2rem;
+        }
+        .print-export-inner {
+            max-width: 1440px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 18px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            padding: 1.4rem 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .print-export-text h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+        .print-export-text h3 i { color: #dc2626; }
+        .print-export-text p {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin: 0;
+        }
+        .btn-export-pdf {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: #dc2626;
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.6rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(220, 38, 38, 0.25);
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+        .btn-export-pdf:hover:not(:disabled) { background: #b91c1c; transform: translateY(-2px); }
+        .btn-export-pdf:disabled { background: #94a3b8; box-shadow: none; cursor: not-allowed; }
+        @media (max-width: 640px) {
+            .print-export-inner { flex-direction: column; align-items: stretch; text-align: center; padding: 1.2rem; }
+            .btn-export-pdf { justify-content: center; }
+        }
+
+        /* ===== LAST SYNCED INDICATOR ===== */
+        .last-synced {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-top: 0.2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <div class="club-header">
+        <img src="clubheading.jpg" alt="Club Header" 
+             onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'club-header-placeholder\'><h2>🏛️ Rotaract Club</h2><p>Member Directory · 2026</p></div>'" />
+    </div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="container">
+
+        <!-- Main Header -->
+        <div class="main-header">
+            <h1><i class="fas fa-users"></i> Members</h1>
+            <div class="header-controls">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search by name..." />
+                    <button id="searchBtn"><i class="fas fa-search"></i> Find</button>
+                </div>
+                <button class="refresh-btn" id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+                <span class="auto-refresh-indicator"><i class="fas fa-circle"></i> Auto-sync</span>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row" id="statsRow" aria-live="polite">
+            <div class="stat-card"><i class="fas fa-users"></i><div class="stat-info"><span class="stat-number" id="totalMembers">0</span><span class="stat-label">Total</span></div></div>
+            <div class="stat-card"><i class="fas fa-mars"></i><div class="stat-info"><span class="stat-number" id="maleCount">0</span><span class="stat-label">Male</span></div></div>
+            <div class="stat-card"><i class="fas fa-venus"></i><div class="stat-info"><span class="stat-number" id="femaleCount">0</span><span class="stat-label">Female</span></div></div>
+            <div class="stat-card" style="flex:2;">
+                <i class="fas fa-tint"></i>
+                <div class="stat-info">
+                    <span class="stat-label">Blood Groups</span>
+                    <div class="blood-stats" id="bloodStats"></div>
+                </div>
+            </div>
+        </div>
+        <div class="last-synced" id="lastSynced"></div>
+
+        <!-- Birthday Banner -->
+        <div id="birthdayBanner" class="birthday-banner">
+            <div class="title"><i class="fas fa-birthday-cake"></i> 🎂 Upcoming Birthdays (next 10 days)</div>
+            <div id="birthdayChips" class="birthday-chips" aria-live="polite">
+                <span class="no-birthday">loading ...</span>
+            </div>
+        </div>
+
+        <!-- Profile Grid -->
+        <div id="profileGrid" class="profile-grid" aria-live="polite">
+            <div class="loading-grid"><i class="fas fa-spinner fa-spin"></i><div>Loading members...</div></div>
+        </div>
+
+    </div>
+
+    <!-- ===== BACK TO DASHBOARD ===== -->
+    <div class="home-btn-container">
+        <a href="index.html" class="home-btn"><span aria-hidden="true">🏠</span> Dashboard</a>
+    </div>
+
+    <!-- ===== EXPORT TO PDF (member directory, print-ready A4) ===== -->
+    <div class="print-export-section">
+        <div class="print-export-inner">
+            <div class="print-export-text">
+                <h3><i class="fas fa-file-pdf" aria-hidden="true"></i> Export Member Directory</h3>
+                <p>Download a printable roster (Name, Position, Phone, Email, Blood Group, Address) formatted to fit A4 paper.</p>
+            </div>
+            <button type="button" id="exportPdfBtn" class="btn-export-pdf" onclick="exportMembersToPdf()" disabled>
+                <i class="fas fa-print" aria-hidden="true"></i> Export to PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <div class="club-footer">
+        <img src="footer.jpg" alt="Club Footer" 
+             onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'club-footer-placeholder\'><i class=\'fas fa-heart\'></i> Rotaract Club · All Rights Reserved <i class=\'fas fa-heart\'></i><span style=\'font-size:0.7rem;opacity:0.6;\'>Powered by Supabase</span></div>'" />
+    </div>
+
+    <!-- ===== BIRTHDAY POPUP ===== -->
+    <div id="birthdayPopup" class="birthday-popup-overlay" role="dialog" aria-modal="true" aria-labelledby="popupName" aria-hidden="true">
+        <div class="birthday-popup" id="popupContent">
+            <!-- Club Logo -->
+            <div class="popup-logo">
+                <img src="rotaract logo.jpg" alt="Rotaract Club Logo" width="80" height="80" id="popupLogoImg">
+            </div>
+            <div class="confetti">🎉🎂🎉</div>
+            <h2>Happy Birthday!!!</h2>
+
+            <div class="name" id="popupName">Rtr. Member</div>
+            <div class="message">🎊 Wishing you a wonderful day! 🎊</div>
+
+            <!-- Only Card download button -->
+            <div class="popup-download-row">
+                <button class="close-btn" id="downloadCardBtn"><i class="fas fa-download"></i> Card</button>
+            </div>
+
+            <!-- Club name line -->
+            <div class="club-name-line">
+                <i class="fas fa-heart" style="color:#b45309;"></i> ROTARACT CLUB OF GALKOT BAGLUNG <i class="fas fa-heart" style="color:#b45309;"></i>
+            </div>
+
+            <button class="close-btn" onclick="closePopup()"><i class="fas fa-heart"></i> Thank You!</button>
+        </div>
+    </div>
+
+    <!-- ===== RECOGNITION POPUP ===== -->
+    <div id="recognitionPopup" class="recognition-popup-overlay" role="dialog" aria-modal="true" aria-labelledby="rpHeaderTitle" aria-hidden="true">
+        <div class="recognition-popup" id="recognitionPopupContent">
+            <div class="rp-header">
+                <div class="rp-icon"><i class="fas fa-trophy"></i></div>
+                <h2 id="rpHeaderTitle">Recognition · Rotary Year 2026-27</h2>
+                <p>Outstanding Club Leader &amp; Rising Star</p>
+            </div>
+
+            <div id="rpBody">
+                <div class="rp-loading"><i class="fas fa-spinner fa-spin"></i> Loading recognition data...</div>
+            </div>
+
+            <div class="rp-actions">
+                <a class="close-btn" href="recognition.html"><i class="fas fa-arrow-up-right-from-square"></i> Full Page</a>
+                <button class="close-btn" onclick="closeRecognitionPopup()"><i class="fas fa-check"></i> Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RECOGNITION TRIGGER BUTTON ===== -->
+    <div class="recognition-btn-container">
+        <button class="recognition-btn" id="recognitionBtn"><i class="fas fa-trophy"></i> Recognition</button>
+    </div>
+
+    <script>
+        (function() {
+            "use strict";
+
+            // ===== SUPABASE CONFIG =====
+            const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+            const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
+            
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            const TABLE_NAME = "members";
+
+            // ===== STORAGE BUCKET =====
+            const STORAGE_BUCKET = "members-profile";
+
+            // DOM refs
+            const grid = document.getElementById('profileGrid');
+            const birthdayChips = document.getElementById('birthdayChips');
+            const totalMembers = document.getElementById('totalMembers');
+            const maleCount = document.getElementById('maleCount');
+            const femaleCount = document.getElementById('femaleCount');
+            const bloodStats = document.getElementById('bloodStats');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const popup = document.getElementById('birthdayPopup');
+            const popupName = document.getElementById('popupName');
+            const popupContent = document.getElementById('popupContent');
+            const lastSynced = document.getElementById('lastSynced');
+
+            let allMembers = [];
+            let activeMembers = [];
+            let popupTimeout = null;
+            let popupShownForToday = false;
+            let autoRefreshInterval = null;
+            let searchDebounce = null;
+
+            // ===== HELPERS =====
+            function formatDate(dateStr) {
+                if (!dateStr) return null;
+                try {
+                    const d = new Date(dateStr);
+                    if (isNaN(d.getTime())) return null;
+                    return d;
+                } catch (_) { return null; }
+            }
+
+            function isBirthdayInRange(dateStr, days = 10) {
+                const d = formatDate(dateStr);
+                if (!d) return false;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const dMonth = d.getMonth(),
+                    dDay = d.getDate();
+                for (let i = 0; i <= days; i++) {
+                    const check = new Date(today);
+                    check.setDate(check.getDate() + i);
+                    if (check.getMonth() === dMonth && check.getDate() === dDay) return true;
+                }
+                return false;
+            }
+
+            function isBirthdayToday(dateStr) {
+                const d = formatDate(dateStr);
+                if (!d) return false;
+                const today = new Date();
+                return d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+            }
+
+            // ===== GET IMAGE FROM SUPABASE STORAGE =====
+            function getProfileImageUrl(member) {
+                // Check if profile_image exists and has a value
+                if (member.profile_image && member.profile_image.trim() !== '') {
+                    return member.profile_image.trim();
+                }
+                if (member.photo && member.photo.trim() !== '') {
+                    return member.photo.trim();
+                }
+                if (member.photo_url && member.photo_url.trim() !== '') {
+                    return member.photo_url.trim();
+                }
+                return null;
+            }
+
+            // ===== GET PHOTO SRC =====
+            function getPhotoSrc(member) {
+                const imageUrl = getProfileImageUrl(member);
+                if (imageUrl) return imageUrl;
+                
+                // Fallback: try to generate from name
+                const name = member.name || member.full_name || '';
+                if (!name) return null;
+                const slug = name.toLowerCase().replace(/\s+/g, '');
+                return `images/${slug}.jpg`;
+            }
+
+            function getInitials(name) {
+                if (!name) return '?';
+                const parts = name.split(' ').filter(p => p.length > 0);
+                if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+                if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+                return name.substring(0, 2).toUpperCase();
+            }
+
+            function getPositionBadge(position) {
+                const p = (position || '').toLowerCase().trim();
+                if (p.includes('president') || p.includes('president elect') || p.includes('past president') || p.includes('chartered president')) return 'badge-president';
+                if (p.includes('secretary') || p.includes('joint secretary')) return 'badge-secretary';
+                if (p.includes('treasurer') || p.includes('treasure')) return 'badge-treasurer';
+                if (p.includes('executive') || p.includes('exec')) return 'badge-executive';
+                return 'badge-member';
+            }
+
+            function getFullNameWithPrefix(member) {
+                const raw = (member.name || member.full_name || '').toString().trim();
+                if (!raw) return '—';
+                // Case-insensitively strip any existing Rtr/RTR/rtr prefix
+                // (with or without a period, with or without a space) so we
+                // never end up stacking a second one on top of a name that's
+                // already prefixed in different casing - that's what caused
+                // names to show up as "Rtr. RTR. NABIN CHALISE" while others
+                // showed "RTR. NABIN CHALISE" or just "NABIN CHALISE".
+                const withoutRtr = raw.replace(/^rtr(?:\.\s*|\s+)/i, '').trim();
+                if (withoutRtr !== raw) return `RTR. ${withoutRtr}`;
+                // A different honorific (Dr./Mr./Ms./Mrs./Rit.) - leave as-is.
+                if (/^(dr|mr|ms|mrs|rit)(?:\.\s*|\s+)/i.test(raw)) return raw;
+                // No title at all - add the standard one.
+                return `RTR. ${raw}`;
+            }
+
+            // ===== SHOW BIRTHDAY POPUP =====
+            let lastFocusedEl = null;
+            function showBirthdayPopup(name) {
+                if (popupShownForToday) return;
+                popupName.textContent = name;
+                lastFocusedEl = document.activeElement;
+                popup.classList.add('active');
+                popup.setAttribute('aria-hidden', 'false');
+                popupShownForToday = true;
+
+                if (popupTimeout) clearTimeout(popupTimeout);
+                popupTimeout = setTimeout(() => {
+                    closePopup();
+                }, 15000);
+            }
+
+            window.closePopup = function() {
+                popup.classList.remove('active');
+                popup.setAttribute('aria-hidden', 'true');
+                if (popupTimeout) {
+                    clearTimeout(popupTimeout);
+                    popupTimeout = null;
+                }
+                if (lastFocusedEl) lastFocusedEl.focus();
+            };
+
+            popup.addEventListener('click', function(e) {
+                if (e.target === this) closePopup();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && popup.classList.contains('active')) closePopup();
+            });
+
+            // ===== RECOGNITION POPUP (Outstanding Club Leader / Rising Star) =====
+            // Same scoring logic as recognition.html: fixed board roster for the
+            // Leader award (President excluded), everyone else is the Rising Star
+            // pool. Score = attendance% (from published meeting_minutes) + bonus
+            // (+1 per completed action item).
+            const recognitionPopup = document.getElementById('recognitionPopup');
+            const rpBody = document.getElementById('rpBody');
+            const recognitionBtn = document.getElementById('recognitionBtn');
+            let recognitionLastFocusedEl = null;
+            let recognitionDataCache = null;
+            let recognitionShownAutomatically = false;
+
+            // Board classification is driven by each member's free-text
+            // `designation` column (not `position` - the admin dropdown
+            // often lags behind what's actually written in designation).
+            // Same fix as recognition.html: normalize away Rotaract/Rotary/
+            // PP prefixes and slashes, then match against
+            // BOARD_DESIGNATIONS. `position` is only a fallback when
+            // designation is empty.
+            const BOARD_DESIGNATIONS = [
+                'President',
+                'President Elect',
+                'Secretary',
+                'Joint Secretary',
+                'Treasurer',
+                'Vice President',
+                'IPP / Mentor',
+                'Membership Chair',
+                'Public Image Chair',
+                'Service Projects Chair',
+                'Health Program Chair',
+                'Rotary Foundation Chair',
+                'Sergeant At Arms',
+                'IT Officer',
+                'Young Leaders Contact',
+                'Learning Facilitator',
+                'Club Advisor',
+                'ISD Advisor'
+            ];
+
+            function rpNormalizeKey(str) {
+                return (str || '').toString().trim().toLowerCase()
+                    .replace(/^rtr(?:\.\s*|\s+)/, '')
+                    .replace(/^dr(?:\.\s*|\s+)/, '')
+                    .replace(/\s+/g, ' ');
+            }
+
+            function rpNormalizeDesignationText(str) {
+                return (str || '').toString().toLowerCase()
+                    .replace(/\brotaract\b/g, ' ')
+                    .replace(/\brotary\b/g, ' ')
+                    .replace(/\bpp\b/g, ' ')
+                    .replace(/\//g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            }
+
+            const NORMALIZED_BOARD_DESIGNATIONS = BOARD_DESIGNATIONS.map(rpNormalizeDesignationText);
+
+            function rpClassifyMember(m) {
+                const rawDesignation = (m.designation || m.position || '').toString().trim();
+                const normalized = rpNormalizeDesignationText(rawDesignation);
+                const matchIndex = NORMALIZED_BOARD_DESIGNATIONS.indexOf(normalized);
+                const isBoard = matchIndex !== -1;
+                const displayDesignation = isBoard ? BOARD_DESIGNATIONS[matchIndex] : (rawDesignation || 'Club Member');
+                return {
+                    designation: displayDesignation,
+                    isPresident: isBoard && displayDesignation === 'President',
+                    isBoard
+                };
+            }
+
+            function rpAvatarHtml(name, photoUrl) {
+                if (photoUrl) return `<img src="${photoUrl}" alt="${name}">`;
+                const withoutTitle = (name || '').replace(/^(rtr|dr|mr|ms|mrs|rit)(?:\.\s*|\s+)/i, '');
+                const initials = withoutTitle.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+                return initials || 'M';
+            }
+
+            function rpWinnerItemHtml(member) {
+                const name = getFullNameWithPrefix({ name: member.fullName });
+                return `
+                    <div class="rp-winner-item">
+                        <div class="rp-avatar">${rpAvatarHtml(name, member.photoUrl)}</div>
+                        <div class="rp-winner-info">
+                            <span class="rp-winner-name">${name}</span>
+                            <span class="rp-winner-designation">${member.designation || 'Member'}</span>
+                        </div>
+                        <div class="rp-winner-score"><i class="fas fa-star"></i> ${member.finalScore.toFixed(1)}</div>
+                    </div>
+                `;
+            }
+
+            function rpWinnerListHtml(winners) {
+                if (!winners || winners.length === 0) {
+                    return `<div class="rp-no-winner"><i class="fas fa-circle-exclamation"></i> No eligible winner</div>`;
+                }
+                return winners.map(rpWinnerItemHtml).join('');
+            }
+
+            async function fetchRecognitionWinners() {
+                const { data: minutes, error: mError } = await supabase
+                    .from('meeting_minutes')
+                    .select('*');
+                if (mError) throw new Error('Minutes fetch failed: ' + mError.message);
+
+                if (!minutes || minutes.length === 0) {
+                    return { noData: 'No meetings found in meeting_minutes.' };
+                }
+
+                const { data: members, error: memError } = await supabase
+                    .from('members')
+                    .select('id, name, designation, position, status, mentor, photo_url, photo, profile_image');
+                if (memError) throw new Error('Members fetch failed: ' + memError.message);
+
+                const publishedMinutes = (minutes || []).filter(m => (m.status || '').toLowerCase() === 'published');
+                if (publishedMinutes.length === 0) {
+                    return { noData: 'No Published meetings found (only Draft minutes exist so far).' };
+                }
+
+                // Same meeting-type scoping as recognition.html: Club Members only
+                // count General Meeting / Club Assembly / Special General Meeting /
+                // AGM. Board Meeting & Special Board Meeting count for the board
+                // roster only. Missing meeting_type (older minutes) is treated as
+                // non-board so it still counts for Club Members.
+                function rpGetMeetingType(meeting) {
+                    return (meeting.meeting_type || (meeting.data || {}).meeting_type || '').toString().trim().toLowerCase();
+                }
+                function rpIsBoardOnlyMeetingType(meeting) {
+                    const t = rpGetMeetingType(meeting);
+                    return t === 'board meeting' || t === 'special board meeting';
+                }
+
+                const totalMeetingsAll = publishedMinutes.length;
+                const clubMemberMinutes = publishedMinutes.filter(m => !rpIsBoardOnlyMeetingType(m));
+                const totalMeetingsClub = clubMemberMinutes.length;
+
+                const presentSetsAll = publishedMinutes.map(meeting => {
+                    const list = Array.isArray((meeting.data || {}).members) ? meeting.data.members : [];
+                    return new Set(list.map(p => rpNormalizeKey(p && (p.name || p.full_name || p))));
+                });
+                const presentSetsClub = clubMemberMinutes.map(meeting => {
+                    const list = Array.isArray((meeting.data || {}).members) ? meeting.data.members : [];
+                    return new Set(list.map(p => rpNormalizeKey(p && (p.name || p.full_name || p))));
+                });
+
+                const bonusMap = {};
+                publishedMinutes.forEach(meeting => {
+                    const items = Array.isArray((meeting.data || {}).actionItems) ? meeting.data.actionItems : [];
+                    items.forEach(item => {
+                        const isCompleted = (item.status || '').toString().toLowerCase() === 'completed' || item.completed === true;
+                        if (!isCompleted) return;
+                        const personRaw = item.person || item.responsible_person || item.assignee || item.assigned_to || item.responsible;
+                        const personName = typeof personRaw === 'string' ? personRaw : (personRaw && (personRaw.name || personRaw.full_name));
+                        if (!personName) return;
+                        const key = rpNormalizeKey(personName);
+                        bonusMap[key] = (bonusMap[key] || 0) + 1;
+                    });
+                });
+
+                const memberScores = (members || []).map(m => {
+                    const key = rpNormalizeKey(m.name);
+                    const classification = rpClassifyMember(m);
+                    const presentSets = classification.isBoard ? presentSetsAll : presentSetsClub;
+                    const totalMeetings = classification.isBoard ? totalMeetingsAll : totalMeetingsClub;
+                    const attended = presentSets.filter(s => s.has(key)).length;
+                    const attendancePct = totalMeetings > 0 ? Math.round((attended / totalMeetings) * 1000) / 10 : 0;
+                    const bonus = bonusMap[key] || 0;
+                    const photoUrl = m.photo_url || m.photo || m.profile_image || null;
+                    const finalScore = attendancePct + bonus;
+                    return {
+                        id: m.id,
+                        fullName: m.name,
+                        designation: classification.designation,
+                        photoUrl,
+                        attendancePct,
+                        bonus,
+                        finalScore,
+                        isBoard: classification.isBoard,
+                        isPresident: classification.isPresident
+                    };
+                });
+
+                const leaders = memberScores
+                    .filter(m => m.isBoard === true && !m.isPresident)
+                    .sort((a, b) => b.finalScore - a.finalScore);
+                const topLeaderScore = leaders.length > 0 ? leaders[0].finalScore : -Infinity;
+                const leaderWinners = leaders.filter(m => m.finalScore === topLeaderScore);
+
+                const rising = memberScores
+                    .filter(m => m.isBoard === false)
+                    .sort((a, b) => b.finalScore - a.finalScore);
+                const topRisingScore = rising.length > 0 ? rising[0].finalScore : -Infinity;
+                const risingWinners = rising.filter(m => m.finalScore === topRisingScore);
+
+                return { leaderWinners, risingWinners };
+            }
+
+            async function renderRecognitionPopup() {
+                rpBody.innerHTML = `<div class="rp-loading"><i class="fas fa-spinner fa-spin"></i> Loading recognition data...</div>`;
+                try {
+                    if (!recognitionDataCache) {
+                        recognitionDataCache = await fetchRecognitionWinners();
+                    }
+                    const result = recognitionDataCache;
+                    if (result.noData) {
+                        rpBody.innerHTML = `<div class="rp-error"><i class="fas fa-info-circle"></i> ${result.noData}</div>`;
+                        return;
+                    }
+                    rpBody.innerHTML = `
+                        <div class="rp-award-block">
+                            <div class="rp-award-title"><i class="fas fa-crown"></i> Outstanding Club Leader <span class="rp-sub">Board</span></div>
+                            ${rpWinnerListHtml(result.leaderWinners)}
+                        </div>
+                        <div class="rp-award-block">
+                            <div class="rp-award-title"><i class="fas fa-star"></i> Rising Star <span class="rp-sub">Member</span></div>
+                            ${rpWinnerListHtml(result.risingWinners)}
+                        </div>
+                    `;
+                } catch (err) {
+                    console.error('Recognition popup error:', err);
+                    rpBody.innerHTML = `<div class="rp-error"><i class="fas fa-triangle-exclamation"></i> Failed to load: ${err.message}</div>`;
+                }
+            }
+
+            window.showRecognitionPopup = function() {
+                recognitionLastFocusedEl = document.activeElement;
+                recognitionPopup.classList.add('active');
+                recognitionPopup.setAttribute('aria-hidden', 'false');
+                renderRecognitionPopup();
+            };
+
+            window.closeRecognitionPopup = function() {
+                recognitionPopup.classList.remove('active');
+                recognitionPopup.setAttribute('aria-hidden', 'true');
+                if (recognitionLastFocusedEl) recognitionLastFocusedEl.focus();
+            };
+
+            recognitionPopup.addEventListener('click', function(e) {
+                if (e.target === this) closeRecognitionPopup();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && recognitionPopup.classList.contains('active')) closeRecognitionPopup();
+            });
+
+            recognitionBtn.addEventListener('click', showRecognitionPopup);
+
+            // Auto-show the recognition popup once, shortly after the member
+            // list has finished its first load (so it doesn't collide with the
+            // birthday popup, which takes priority if both fire on load).
+            setTimeout(() => {
+                if (!recognitionShownAutomatically && !popup.classList.contains('active')) {
+                    recognitionShownAutomatically = true;
+                    showRecognitionPopup();
+                }
+            }, 2500);
+
+            // ===== PDF DOWNLOAD for the popup card =====
+            document.getElementById('downloadCardBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+
+                const clone = popupContent.cloneNode(true);
+                const downloadRow = clone.querySelector('.popup-download-row');
+                if (downloadRow) downloadRow.remove();
+                const thankBtn = clone.querySelector('.close-btn:last-child');
+                if (thankBtn) thankBtn.remove();
+                
+                clone.style.width = '100%';
+                clone.style.maxWidth = '500px';
+                clone.style.margin = '0 auto';
+                clone.style.padding = '2rem';
+                clone.style.borderRadius = '30px';
+                clone.style.background = 'linear-gradient(135deg, #fef9c3, #fde047)';
+                clone.style.border = '2px solid #fbbf24';
+                clone.style.boxShadow = '0 25px 60px rgba(0,0,0,0.3)';
+                clone.style.textAlign = 'center';
+                clone.style.fontFamily = 'system-ui, -apple-system, sans-serif';
+                
+                const logoImg = clone.querySelector('#popupLogoImg');
+                if (logoImg) {
+                    logoImg.style.width = '80px';
+                    logoImg.style.height = '80px';
+                    logoImg.style.borderRadius = '50%';
+                    logoImg.style.border = '3px solid #fbbf24';
+                    logoImg.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                    logoImg.style.display = 'inline-block';
+                }
+                
+                const confetti = clone.querySelector('.confetti');
+                if (confetti) confetti.style.fontSize = '4rem';
+                const h2 = clone.querySelector('h2');
+                if (h2) {
+                    h2.style.fontSize = '2.2rem';
+                    h2.style.fontWeight = '800';
+                    h2.style.color = '#78350f';
+                    h2.style.margin = '0.5rem 0';
+                }
+                const nameEl = clone.querySelector('.name');
+                if (nameEl) {
+                    nameEl.style.fontSize = '1.8rem';
+                    nameEl.style.fontWeight = '700';
+                    nameEl.style.color = '#92400e';
+                    nameEl.style.background = 'rgba(255,255,255,0.5)';
+                    nameEl.style.padding = '0.3rem 1.5rem';
+                    nameEl.style.borderRadius = '60px';
+                    nameEl.style.display = 'inline-block';
+                    nameEl.style.margin = '0.5rem 0';
+                }
+                const message = clone.querySelector('.message');
+                if (message) {
+                    message.style.fontSize = '1.1rem';
+                    message.style.color = '#78350f';
+                    message.style.margin = '0.8rem 0';
+                    message.style.fontWeight = '500';
+                }
+                const clubLine = clone.querySelector('.club-name-line');
+                if (clubLine) {
+                    clubLine.style.marginTop = '0.8rem';
+                    clubLine.style.fontWeight = '600';
+                    clubLine.style.color = '#78350f';
+                    clubLine.style.fontSize = '0.9rem';
+                    clubLine.style.background = 'rgba(255,255,255,0.3)';
+                    clubLine.style.padding = '0.3rem 1rem';
+                    clubLine.style.borderRadius = '40px';
+                    clubLine.style.display = 'inline-block';
+                }
+
+                // NOTE: html2canvas has a well-known bug capturing elements
+                // positioned with position:fixed/absolute or placed off-screen
+                // (left:-9999px) - it can end up screenshotting the wrong
+                // region and producing a blank page. The reliable fix is to
+                // let the card sit in NORMAL document flow (just appended at
+                // the end of <body>, no special positioning) and hide it with
+                // a full-screen overlay instead.
+                const cardOverlay = document.createElement('div');
+                cardOverlay.style.cssText = 'position:fixed; inset:0; background:#ffffff; z-index:99999; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; font-family:inherit; color:#1e293b;';
+                cardOverlay.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:2rem;color:#dc2626;"></i><div>Generating PDF...</div>';
+                document.body.appendChild(cardOverlay);
+
+                const prevBodyOverflowCard = document.body.style.overflow;
+                document.body.style.overflow = 'hidden';
+
+                const container = document.createElement('div');
+                container.style.width = '500px';
+                container.style.padding = '20px';
+                container.style.background = 'transparent';
+                // body is "display:flex; flex-direction:column" for the
+                // app's own layout, which would stretch/shrink this div as
+                // a flex item. Take it out of that flex layout entirely.
+                container.style.flex = 'none';
+                container.style.alignSelf = 'flex-start';
+                container.appendChild(clone);
+                document.body.appendChild(container);
+
+                const opt = {
+                    margin:        [0.5, 0.5, 0.5, 0.5],
+                    filename:     'birthday_card.pdf',
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2, letterRendering: true, useCORS: true, logging: false },
+                    jsPDF:        { unit: 'in', format: 'a5', orientation: 'portrait' }
+                };
+
+                function cardCleanup() {
+                    if (container.parentNode) document.body.removeChild(container);
+                    if (cardOverlay.parentNode) document.body.removeChild(cardOverlay);
+                    document.body.style.overflow = prevBodyOverflowCard;
+                }
+
+                setTimeout(() => {
+                    html2pdf().set(opt).from(clone).save().then(cardCleanup).catch(function(err) {
+                        console.error('PDF generation error:', err);
+                        cardCleanup();
+                    });
+                }, 80);
+            });
+
+            // ===== EXPORT MEMBER DIRECTORY TO PDF (A4, landscape) =====
+            window.exportMembersToPdf = function() {
+                const list = (currentDisplayedMembers && currentDisplayedMembers.length)
+                    ? currentDisplayedMembers
+                    : activeMembers;
+                if (!list || list.length === 0) return;
+
+                const btn = document.getElementById('exportPdfBtn');
+                const originalBtnHtml = btn ? btn.innerHTML : '';
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...';
+                }
+
+                const rows = list.map((member, idx) => {
+                    const name = getFullNameWithPrefix(member);
+                    const position = member.position || member.role || '—';
+                    const phone = member.phone || member.phone_number || '—';
+                    const email = member.email || '—';
+                    const blood = member.blood_group || member.blood || '—';
+                    const address = member.address || '—';
+                    return `
+                        <tr>
+                            <td style="text-align:center;">${idx + 1}</td>
+                            <td>${escapeHtmlPdf(name)}</td>
+                            <td>${escapeHtmlPdf(position)}</td>
+                            <td>${escapeHtmlPdf(phone)}</td>
+                            <td>${escapeHtmlPdf(email)}</td>
+                            <td style="text-align:center;">${escapeHtmlPdf(blood)}</td>
+                            <td>${escapeHtmlPdf(address)}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                const generatedOn = new Date().toLocaleString();
+                const printHtml = `
+                    <div style="font-family: 'Segoe UI', Arial, sans-serif; color:#0f172a; padding:16px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #1e293b; padding-bottom:10px; margin-bottom:14px;">
+                            <div>
+                                <div style="font-size:18px; font-weight:800;">Rotaract Club of Galkot Baglung</div>
+                                <div style="font-size:12px; color:#64748b;">Active Member Directory</div>
+                            </div>
+                            <div style="text-align:right; font-size:11px; color:#64748b;">
+                                <div>Generated: ${escapeHtmlPdf(generatedOn)}</div>
+                                <div>Total Members: ${list.length}</div>
+                            </div>
+                        </div>
+                        <table style="width:100%; border-collapse:collapse; font-size:11px;">
+                            <thead>
+                                <tr style="background:#1e293b; color:#fff;">
+                                    <th style="padding:6px 8px; text-align:center; width:34px;">S.N.</th>
+                                    <th style="padding:6px 8px; text-align:left;">Name</th>
+                                    <th style="padding:6px 8px; text-align:left;">Position</th>
+                                    <th style="padding:6px 8px; text-align:left;">Phone</th>
+                                    <th style="padding:6px 8px; text-align:left;">Email</th>
+                                    <th style="padding:6px 8px; text-align:center;">Blood Group</th>
+                                    <th style="padding:6px 8px; text-align:left;">Address</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                `;
+
+                const style = document.createElement('style');
+                style.textContent = `
+                    .pdf-roster-table table tr { page-break-inside: avoid; }
+                    .pdf-roster-table table tbody tr:nth-child(even) { background: #f8fafc; }
+                    .pdf-roster-table table td { padding: 5px 8px; border-bottom: 1px solid #e2e8f0; }
+                `;
+                document.head.appendChild(style);
+
+                // NOTE: html2canvas has a well-known bug capturing elements
+                // that use position:fixed/absolute - when it clones the page
+                // internally to render it, fixed/absolute elements can end up
+                // outside the region it screenshots, producing a blank page.
+                // The reliable fix is to let the table sit in NORMAL document
+                // flow (just appended at the end of <body>, no special
+                // positioning) and hide it from view with a full-screen
+                // overlay instead of relying on offsets/z-index tricks.
+                const overlay = document.createElement('div');
+                overlay.style.cssText = 'position:fixed; inset:0; background:#ffffff; z-index:99999; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; font-family:inherit; color:#1e293b;';
+                overlay.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:2rem;color:#dc2626;"></i><div>Generating PDF...</div>';
+                document.body.appendChild(overlay);
+
+                const prevBodyOverflow = document.body.style.overflow;
+                document.body.style.overflow = 'hidden';
+
+                const container = document.createElement('div');
+                container.className = 'pdf-roster-table';
+                container.style.width = '1050px';
+                container.style.background = '#ffffff';
+                // body is "display:flex; flex-direction:column" for the
+                // app's own layout, which made this div a flex item and
+                // stretched/shrank it (clipping the left side of the table).
+                // Take it out of that flex layout entirely.
+                container.style.flex = 'none';
+                container.style.alignSelf = 'flex-start';
+                container.innerHTML = printHtml;
+                document.body.appendChild(container);
+
+                const opt = {
+                    margin:       [0.4, 0.3, 0.4, 0.3],
+                    filename:     `Member_Directory_${new Date().toISOString().slice(0, 10)}.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2, letterRendering: true, useCORS: true, logging: false },
+                    jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' },
+                    pagebreak:    { mode: ['css', 'legacy'] }
+                };
+
+                function cleanup() {
+                    if (container.parentNode) document.body.removeChild(container);
+                    if (overlay.parentNode) document.body.removeChild(overlay);
+                    if (style.parentNode) document.head.removeChild(style);
+                    document.body.style.overflow = prevBodyOverflow;
+                    if (btn) { btn.disabled = false; btn.innerHTML = originalBtnHtml; }
+                }
+
+                // Pin the page to the top before capturing, and give the
+                // browser a moment to commit layout for the new elements
+                // before html2canvas reads them.
+                window.scrollTo(0, 0);
+                setTimeout(() => {
+                    html2pdf().set(opt).from(container).save().then(cleanup).catch(function(err) {
+                        console.error('Member directory PDF error:', err);
+                        cleanup();
+                    });
+                }, 80);
+            };
+
+            function escapeHtmlPdf(str) {
+                const div = document.createElement('div');
+                div.textContent = str == null ? '' : String(str);
+                return div.innerHTML;
+            }
+
+            // ===== RENDER =====
+            function renderProfiles(members, searchActive = false) {
+                grid.innerHTML = '';
+                if (!members || members.length === 0) {
+                    grid.innerHTML = searchActive
+                        ? `<div class="loading-grid" style="padding:2rem;">🔍 No members match your search</div>`
+                        : `<div class="loading-grid" style="padding:2rem;">📭 No active members found</div>`;
+                    return;
+                }
+
+                const todayBirthdays = members.filter(m => isBirthdayToday(m.birthday || m.dob));
+                if (todayBirthdays.length > 0 && !popupShownForToday) {
+                    const firstBirthday = todayBirthdays[0];
+                    const name = getFullNameWithPrefix(firstBirthday);
+                    showBirthdayPopup(name);
+                }
+
+                members.forEach(member => {
+                    const card = document.createElement('div');
+                    card.className = 'profile-card';
+
+                    const displayName = getFullNameWithPrefix(member);
+                    const email = member.email || '—';
+                    const phone = member.phone || member.phone_number || '—';
+                    const address = member.address || '—';
+                    const profession = member.profession || member.occupation || '—';
+                    const gender = member.gender || '—';
+                    const blood = member.blood_group || member.blood || '—';
+                    const position = member.position || member.role || '—';
+                    const birthdayRaw = member.birthday || member.dob || null;
+                    const isBirthday = birthdayRaw ? isBirthdayToday(birthdayRaw) : false;
+                    const photoSrc = getPhotoSrc(member);
+
+                    const topDiv = document.createElement('div');
+                    topDiv.className = 'card-top';
+
+                    const photoDiv = document.createElement('div');
+                    photoDiv.className = 'profile-photo';
+                    if (photoSrc) {
+                        const img = document.createElement('img');
+                        img.src = photoSrc;
+                        img.alt = displayName;
+                        img.loading = 'lazy';
+                        img.onerror = function() {
+                            this.style.display = 'none';
+                            const parent = this.parentNode;
+                            parent.textContent = getInitials(displayName);
+                            parent.style.background = '#dbeafe';
+                            parent.style.color = '#2563eb';
+                            parent.style.display = 'flex';
+                            parent.style.alignItems = 'center';
+                            parent.style.justifyContent = 'center';
+                        };
+                        photoDiv.appendChild(img);
+                    } else {
+                        photoDiv.textContent = getInitials(displayName);
+                        photoDiv.style.background = '#dbeafe';
+                        photoDiv.style.color = '#2563eb';
+                    }
+
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'name-title';
+                    const h3 = document.createElement('h3');
+                    h3.textContent = displayName;
+                    nameDiv.appendChild(h3);
+
+                    if (position && position !== '—') {
+                        const posSpan = document.createElement('span');
+                        posSpan.className = `position ${getPositionBadge(position)}`;
+                        posSpan.textContent = position;
+                        nameDiv.appendChild(posSpan);
+                    }
+
+                    if (isBirthday) {
+                        const tag = document.createElement('div');
+                        tag.className = 'birthday-tag';
+                        tag.innerHTML = '<i class="fas fa-birthday-cake"></i> 🎂 Today!';
+                        nameDiv.appendChild(tag);
+                    }
+
+                    topDiv.appendChild(photoDiv);
+                    topDiv.appendChild(nameDiv);
+                    card.appendChild(topDiv);
+
+                    const details = document.createElement('div');
+                    details.className = 'card-details';
+                    const fields = [
+                        { icon: 'fa-envelope', label: 'Email', value: email },
+                        { icon: 'fa-phone', label: 'Phone', value: phone },
+                        { icon: 'fa-location-dot', label: 'Address', value: address },
+                        { icon: 'fa-briefcase', label: 'Profession', value: profession },
+                        { icon: 'fa-venus-mars', label: 'Gender', value: gender },
+                        { icon: 'fa-droplet', label: 'Blood', value: blood },
+                        { icon: 'fa-calendar', label: 'Birthday', value: birthdayRaw ? new Date(birthdayRaw)
+                                .toLocaleDateString() : '—' },
+                    ];
+                    fields.forEach(f => {
+                        if (f.value && f.value !== '—') {
+                            const div = document.createElement('div');
+                            div.className = 'detail-item';
+                            div.innerHTML =
+                                `<i class="fas ${f.icon}"></i><span class="label">${f.label}</span><span class="value">${f.value}</span>`;
+                            details.appendChild(div);
+                        }
+                    });
+                    card.appendChild(details);
+
+                    const footer = document.createElement('div');
+                    footer.className = 'card-footer';
+                    if (member.id) {
+                        const idSpan = document.createElement('span');
+                        idSpan.innerHTML = `<i class="fas fa-hashtag"></i> ${member.id}`;
+                        footer.appendChild(idSpan);
+                    }
+                    if (member.created_at) {
+                        const created = new Date(member.created_at);
+                        if (!isNaN(created.getTime())) {
+                            const dateSpan = document.createElement('span');
+                            dateSpan.innerHTML = `<i class="fas fa-clock"></i> ${created.toLocaleDateString()}`;
+                            footer.appendChild(dateSpan);
+                        }
+                    }
+                    if (footer.children.length > 0) card.appendChild(footer);
+                    grid.appendChild(card);
+                });
+            }
+
+            // ===== STATS =====
+            function updateStats(members) {
+                const total = members.length;
+                totalMembers.textContent = total;
+                const males = members.filter(m => (m.gender || '').toLowerCase() === 'male').length;
+                const females = members.filter(m => (m.gender || '').toLowerCase() === 'female').length;
+                maleCount.textContent = males;
+                femaleCount.textContent = females;
+
+                const bloodMap = {};
+                members.forEach(m => {
+                    const bg = m.blood_group || m.blood || 'Unknown';
+                    bloodMap[bg] = (bloodMap[bg] || 0) + 1;
+                });
+                bloodStats.innerHTML = Object.entries(bloodMap)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([group, count]) => `<span class="blood-pill">${group} <span>${count}</span></span>`)
+                    .join('');
+            }
+
+            // ===== BIRTHDAY BANNER =====
+            function updateBirthdayBanner(members) {
+                const upcoming = members.filter(m => isBirthdayInRange(m.birthday || m.dob, 10));
+                if (upcoming.length > 0) {
+                    birthdayChips.innerHTML = upcoming.map(m => {
+                        const name = getFullNameWithPrefix(m);
+                        const bday = m.birthday || m.dob;
+                        const dateStr = bday ? new Date(bday).toLocaleDateString() : '';
+                        return `<span class="birthday-chip"><i class="fas fa-birthday-cake"></i> ${name} ${dateStr ? '📅 '+dateStr : ''}</span>`;
+                    }).join('');
+                } else {
+                    birthdayChips.innerHTML = `<span class="no-birthday">✨ No birthdays in next 10 days</span>`;
+                }
+            }
+
+            // ===== SORT & FILTER =====
+            function sortMembers(members) {
+                const priority = { 
+                    'president': 1, 
+                    'president elect': 1,
+                    'chartered president': 1,
+                    'past president': 2,
+                    'secretary': 3,
+                    'joint secretary': 3,
+                    'treasurer': 4,
+                    'treasure': 4,
+                    'vice president': 5,
+                    'executive': 6,
+                    'exec': 6
+                };
+                return [...members].sort((a, b) => {
+                    const pa = (a.position || '').toLowerCase().trim();
+                    const pb = (b.position || '').toLowerCase().trim();
+                    
+                    let rankA = 99, rankB = 99;
+                    for (const [key, value] of Object.entries(priority)) {
+                        if (pa.includes(key)) rankA = Math.min(rankA, value);
+                        if (pb.includes(key)) rankB = Math.min(rankB, value);
+                    }
+                    
+                    if (rankA !== rankB) return rankA - rankB;
+                    return (a.name || '').localeCompare(b.name || '');
+                });
+            }
+
+            function filterMembers(searchTerm) {
+                if (!searchTerm) return activeMembers;
+                const term = searchTerm.toLowerCase().trim();
+                return activeMembers.filter(m => {
+                    const name = (m.name || m.full_name || '').toLowerCase();
+                    return name.includes(term);
+                });
+            }
+
+            let currentDisplayedMembers = [];
+
+            function applyFiltersAndRender(searchTerm = '') {
+                const filtered = filterMembers(searchTerm);
+                const sorted = sortMembers(filtered);
+                currentDisplayedMembers = sorted;
+                renderProfiles(sorted, !!searchTerm.trim());
+                updateStats(sorted);
+                updateBirthdayBanner(sorted);
+                const exportBtn = document.getElementById('exportPdfBtn');
+                if (exportBtn) exportBtn.disabled = sorted.length === 0;
+            }
+
+            // ===== FETCH (only active members) =====
+            async function fetchMembers() {
+                grid.innerHTML =
+                    `<div class="loading-grid"><i class="fas fa-spinner fa-spin"></i><div>Loading members...</div></div>`;
+                birthdayChips.innerHTML = `<span class="no-birthday">⏳ loading ...</span>`;
+
+                try {
+                    // Fetch only members with status = 'active'
+                    const { data, error } = await supabase
+                        .from(TABLE_NAME)
+                        .select('*')
+                        .eq('status', 'active')
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+
+                    if (!data || !Array.isArray(data)) {
+                        throw new Error('No data received');
+                    }
+
+                    allMembers = data;
+                    activeMembers = data;
+                    applyFiltersAndRender(searchInput.value);
+                    if (lastSynced) {
+                        lastSynced.textContent = `Last synced: ${new Date().toLocaleTimeString()}`;
+                    }
+                } catch (err) {
+                    console.error('Supabase error:', err);
+                    grid.innerHTML =
+                        `<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> Failed to load: ${err.message}</div>`;
+                    birthdayChips.innerHTML = `<span class="no-birthday" style="color:#b91c1c;">⚠️ error</span>`;
+                }
+            }
+
+            // ===== SETUP AUTO-REFRESH =====
+            function setupAutoRefresh() {
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                }
+                // Auto-refresh every 30 seconds
+                autoRefreshInterval = setInterval(() => {
+                    console.log('🔄 Auto-refreshing members...');
+                    fetchMembers();
+                }, 30000);
+            }
+
+            // ===== INIT =====
+            fetchMembers();
+            setupAutoRefresh();
+
+            // ===== REALTIME SUBSCRIPTION =====
+            function setupRealtime() {
+                supabase.channel('members-active-changes')
+                    .on('postgres_changes', {
+                        event: '*',
+                        schema: 'public',
+                        table: 'members'
+                    }, (payload) => {
+                        console.log('🔄 Realtime update detected:', payload);
+                        // Refresh only if it affects active members
+                        fetchMembers();
+                    })
+                    .subscribe((status) => {
+                        console.log('📡 Realtime subscription status:', status);
+                    });
+            }
+
+            // Start realtime subscription
+            setTimeout(setupRealtime, 1000);
+
+            // ===== EVENT LISTENERS =====
+            refreshBtn.addEventListener('click', async () => {
+                refreshBtn.disabled = true;
+                refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading';
+                popupShownForToday = false;
+                await fetchMembers();
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+                refreshBtn.disabled = false;
+            });
+
+            searchBtn.addEventListener('click', () => {
+                applyFiltersAndRender(searchInput.value);
+            });
+
+            searchInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') { applyFiltersAndRender(searchInput.value); return; }
+                clearTimeout(searchDebounce);
+                searchDebounce = setTimeout(() => applyFiltersAndRender(searchInput.value), 350);
+            });
+
+            // ===== CLEANUP ON PAGE UNLOAD =====
+            window.addEventListener('beforeunload', () => {
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                }
+            });
+
+        })();
+    </script>
+</body>
+</html>

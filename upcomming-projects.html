@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rotaract · Upcoming Projects</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f6f9fc;
+      color: #0b1e33;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    .app { max-width: 1440px; margin: 0 auto; padding: 0 2rem 2rem; }
+    .glass-card {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.6);
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.02);
+    }
+    .navbar {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      padding: 1rem 0 0.5rem; gap: 0.75rem 1rem;
+    }
+    .brand { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.3rem; color: #0b1e33; }
+    .brand i { color: #C2185B; font-size: 1.6rem; }
+    .nav-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .nav-btn {
+      background: transparent; border: none; padding: 0.5rem 1rem; border-radius: 40px;
+      font-weight: 500; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem;
+      transition: 0.2s; cursor: pointer; color: #1e293b; text-decoration: none;
+    }
+    .nav-btn:hover { background: #eef2f6; }
+    .badge-verify { background: #10B981; color: white; border-radius: 40px; padding: 0.2rem 0.6rem; font-size: 0.7rem; font-weight: 600; }
+    .avatar { width: 36px; height: 36px; border-radius: 40px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+    .hero { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; margin: 2rem 0 2.5rem; }
+    .hero h1 { font-size: 2.4rem; font-weight: 700; letter-spacing: -0.02em; display: flex; align-items: center; gap: 0.5rem; }
+    .hero h1 i { color: #C2185B; }
+    .hero-sub { color: #475569; max-width: 480px; font-size: 1.05rem; }
+    .hero-stats { display: flex; gap: 1.5rem; background: white; padding: 0.8rem 1.8rem; border-radius: 60px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+    .live-dot { width: 8px; height: 8px; background: #10B981; border-radius: 20px; display: inline-block; animation: pulse-dot 1.8s infinite; }
+    @keyframes pulse-dot { 0%{ opacity:0.5; } 50%{ opacity:1; } 100%{ opacity:0.5; } }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 1rem; margin: 2rem 0 2.5rem; }
+    .stat-card { background: white; border-radius: 20px; padding: 1.2rem 1rem; border: 1px solid #eef2f6; transition: 0.2s; }
+    .stat-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px -8px rgba(0,0,0,0.04); }
+    .stat-label { font-size: 0.8rem; font-weight: 500; color: #64748b; display: flex; align-items: center; gap: 0.3rem; }
+    .stat-number { font-size: 1.8rem; font-weight: 700; margin: 0.2rem 0; }
+    .stat-trend { font-size: 0.75rem; background: #e6f7ec; color: #0b6e4f; padding: 0.1rem 0.5rem; border-radius: 40px; display: inline-block; }
+    .filter-bar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.2rem;
+      background: white; padding: 0.6rem 1.2rem; border-radius: 60px; border: 1px solid #e9edf2;
+      margin: 1.5rem 0 1.8rem;
+    }
+    .filter-bar input, .filter-bar select {
+      border: none; background: transparent; padding: 0.4rem 0; font-family: 'Inter'; font-size: 0.9rem;
+      outline: none; border-bottom: 1.5px solid transparent; min-width: 120px;
+    }
+    .filter-bar input:focus, .filter-bar select:focus { border-color: #2563EB; }
+    .view-toggle { display: flex; gap: 0.2rem; margin-left: auto; }
+    .view-toggle button { background: transparent; border: none; padding: 0.3rem 0.6rem; border-radius: 20px; cursor: pointer; color: #94a3b8; }
+    .view-toggle button.active { background: #eef2f6; color: #0b1e33; }
+    .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px,1fr)); gap: 1.8rem; }
+    .project-card {
+      background: white; border-radius: 28px; padding: 1.8rem 1.6rem 1.6rem;
+      border: 1px solid #f0f3f7; transition: 0.25s cubic-bezier(0.16,1,0.3,1);
+      display: flex; flex-direction: column; gap: 0.6rem;
+    }
+    .project-card:hover { transform: translateY(-6px); box-shadow: 0 24px 48px -12px rgba(0,0,0,0.06); border-color: #cdd8e6; }
+    .badge { font-size: 0.65rem; font-weight: 600; padding: 0.2rem 0.8rem; border-radius: 40px; background: #eef2f6; }
+    .badge-open { background: #dbeafe; color: #1d4ed8; }
+    .badge-closing { background: #fee2e2; color: #b91c1c; }
+    .badge-expired { background: #e5e7eb; color: #4b5563; }
+    .project-title { font-size: 1.3rem; font-weight: 700; }
+    .project-meta { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; font-size: 0.85rem; color: #475569; }
+    .project-meta i { width: 16px; color: #64748b; }
+    .description-box { background: #f8fafc; padding: 0.8rem 1rem; border-radius: 16px; border-left: 3px solid #2563EB; font-size: 0.9rem; }
+    .progress-section { display: flex; align-items: center; gap: 0.8rem; margin: 0.3rem 0; }
+    .progress-bar { flex:1; height: 6px; background: #e9edf2; border-radius: 20px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #2563EB; border-radius: 20px; transition: width 0.5s; }
+    .seats-text { font-size: 0.75rem; color: #475569; font-weight: 500; }
+    .card-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem; }
+    .btn-register { background: #C2185B; color: white; border: none; padding: 0.5rem 1.2rem; border-radius: 40px; font-weight: 600; font-size: 0.9rem; transition: 0.2s; cursor: pointer; flex:1; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; }
+    .btn-register:hover:not(:disabled) { background: #a0154a; transform: scale(1.01); }
+    .btn-register:disabled { opacity: 0.5; cursor: not-allowed; background: #94a3b8; }
+    .btn-outline { background: transparent; border: 1px solid #d0d9e6; padding: 0.5rem 1.2rem; border-radius: 40px; font-weight: 500; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 0.4rem; }
+    .btn-outline:hover { background: #f1f4f9; }
+    .organizer { display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: #334155; }
+    .organizer-avatar { width: 28px; height: 28px; border-radius: 40px; background: #dbeafe; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #1d4ed8; }
+    .pagination { display: flex; justify-content: space-between; align-items: center; margin: 2.5rem 0 1rem; font-size: 0.9rem; color: #475569; flex-wrap: wrap; gap: 0.5rem; }
+    .pagination button { background: white; border: 1px solid #e2e8f0; padding: 0.3rem 0.8rem; border-radius: 20px; cursor: pointer; }
+    .pagination button:hover { background: #f1f4f9; }
+    .modal-overlay {
+      display: none; position: fixed; inset:0; background: rgba(0,0,0,0.3); backdrop-filter: blur(8px);
+      z-index: 999; justify-content: center; align-items: center; padding: 1rem;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+      background: white; max-width: 480px; width: 100%; border-radius: 32px; padding: 2rem 2rem 1.8rem;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.1); animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1);
+      position: relative;
+    }
+    @keyframes slideUp { from { opacity:0; transform: translateY(20px) scale(0.96); } to { opacity:1; transform: translateY(0) scale(1); } }
+    .modal-close { position: absolute; top: 1rem; right: 1.2rem; background: none; border: none; font-size: 1.6rem; color: #94a3b8; cursor: pointer; }
+    .modal-box h2 { font-size: 1.4rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem; }
+    .modal-box .project-name-display { color: #475569; font-size: 0.9rem; border-bottom: 1px solid #e9edf2; padding-bottom: 0.75rem; margin-bottom: 1.2rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 0.25rem; }
+    .form-group label .required { color: #ef4444; }
+    .form-group input, .form-group textarea {
+      width: 100%; padding: 0.7rem 1rem; border-radius: 14px; border: 1.5px solid #e2e8f0;
+      font-family: 'Inter'; font-size: 0.95rem; transition: 0.2s; background: #fafcff;
+    }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #C2185B; box-shadow: 0 0 0 3px rgba(194,24,91,0.08); }
+    .form-group textarea { min-height: 70px; resize: vertical; }
+    .form-actions { display: flex; gap: 0.8rem; margin-top: 1.2rem; flex-wrap: wrap; }
+    .btn-submit { background: #C2185B; color: white; border: none; padding: 0.7rem 2rem; border-radius: 40px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: 0.2s; flex:1; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .btn-submit:hover:not(:disabled) { background: #a0154a; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(194,24,91,0.25); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-cancel { background: #e9edf2; color: #334155; border: none; padding: 0.7rem 1.8rem; border-radius: 40px; font-weight: 500; cursor: pointer; }
+    .btn-cancel:hover { background: #d1d9e6; }
+    .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: 0.6rem 1.8rem; border-radius: 60px; font-weight: 500; opacity: 0; transition: 0.3s; z-index: 9999; pointer-events: none; }
+    .toast.show { opacity:1; }
+    .skeleton { background: linear-gradient(90deg, #eef2f6 25%, #f8fafc 50%, #eef2f6 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 12px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    @media (max-width:720px) {
+      .app { padding: 0 1rem; }
+      .hero { flex-direction: column; align-items: start; gap: 0.8rem; }
+      .hero-stats { padding: 0.6rem 1.2rem; flex-wrap: wrap; }
+      .filter-bar { border-radius: 24px; flex-direction: column; align-items: stretch; }
+      .filter-bar .view-toggle { margin-left: 0; }
+      .project-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2,1fr); }
+    }
+    .expired-notice {
+      background: #fef2f2;
+      color: #991b1b;
+      border-radius: 16px;
+      padding: 0.9rem 1.2rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid #dc2626;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    .expired-notice i { font-size: 1.2rem; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="brand"><i class="fas fa-rotate-right"></i> Rotaract · Projects</div>
+    <div class="nav-actions">
+      <a href="index.html" class="nav-btn"><i class="fas fa-home"></i> Home</a>
+      <a href="project-verified-list.html" class="nav-btn" style="background:#e6f7ec; border-radius:40px; padding:0.4rem 1.2rem;"><i class="fas fa-check-circle" style="color:#10B981;"></i> Approved Applications
+ <span class="badge-verify">✔</span></a>
+      <button class="nav-btn"><i class="fas fa-bell"></i></button>
+      <button class="nav-btn"><i class="fas fa-moon"></i></button>
+      <div class="avatar"><i class="fas fa-user"></i></div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div>
+      <h1><i class="fas fa-calendar-check"></i> Upcoming Projects</h1>
+      <div class="hero-sub">Explore ongoing community service projects and register your interest in just one click.</div>
+    </div>
+    <div class="hero-stats glass-card">
+      <span><span class="live-dot"></span> Live</span>
+      <span><i class="fas fa-folder-open"></i> <span id="totalCount">0</span> active</span>
+      <span><i class="fas fa-clock"></i> <span id="lastUpdate">just now</span></span>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card"><span class="stat-label"><i class="fas fa-folder" style="color:#2563EB;"></i> Total</span><span class="stat-number" id="statTotal">0</span></div>
+    <div class="stat-card"><span class="stat-label"><i class="fas fa-door-open" style="color:#10B981;"></i> Open</span><span class="stat-number" id="statOpen">0</span></div>
+    <div class="stat-card"><span class="stat-label"><i class="fas fa-users" style="color:#C2185B;"></i> Registrations</span><span class="stat-number" id="statVol">0</span></div>
+    <div class="stat-card"><span class="stat-label"><i class="fas fa-hourglass-end" style="color:#eab308;"></i> Closing</span><span class="stat-number" id="statClosing">0</span></div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-bar">
+    <input type="text" placeholder="🔍 Search projects..." id="searchInput" />
+    <select id="categoryFilter">
+      <option value="">All statuses</option>
+      <option value="open">Open</option>
+      <option value="closing">Closing</option>
+    </select>
+    <select id="locationFilter"><option value="">All locations</option></select>
+    <select id="sortSelect"><option value="latest">Latest</option><option value="closing">Closing</option></select>
+    <div class="view-toggle"><button class="active" id="gridView"><i class="fas fa-th"></i></button><button id="listView"><i class="fas fa-list"></i></button></div>
+  </div>
+
+  <!-- Project Grid -->
+  <div class="project-grid" id="projectGrid"></div>
+
+  <!-- Pagination -->
+  <div class="pagination">
+    <span>Showing <span id="showStart">0</span>–<span id="showEnd">0</span> of <span id="showTotal">0</span></span>
+    <div><button id="prevPage"><i class="fas fa-chevron-left"></i></button><button id="nextPage"><i class="fas fa-chevron-right"></i></button></div>
+  </div>
+</div>
+
+<!-- Registration Modal -->
+<div class="modal-overlay" id="registerModal">
+  <div class="modal-box">
+    <button class="modal-close" id="modalCloseBtn"><i class="fas fa-xmark"></i></button>
+    <h2><i class="fas fa-hand-peace" style="color:#C2185B;"></i> Register Interest</h2>
+    <div class="project-name-display">Project: <span id="modalProjectName">—</span></div>
+    <!-- Expired notice (hidden by default) -->
+    <div id="expiredNotice" class="expired-notice" style="display:none;">
+      <i class="fas fa-calendar-xmark"></i> This project has already passed its date. Registration is closed.
+    </div>
+    <form id="registerForm">
+      <div class="form-group">
+        <label>Full Name <span class="required">*</span></label>
+        <input type="text" id="regName" placeholder="Rtr. Nabin Chalise" required />
+      </div>
+      <div class="form-group">
+        <label>Email Address <span class="required">*</span></label>
+        <input type="email" id="regEmail" placeholder="you@example.com" required />
+      </div>
+      <div class="form-group">
+        <label>Phone Number <span class="required">*</span></label>
+        <input type="tel" id="regPhone" placeholder="984-1234567" required />
+      </div>
+      <div class="form-group">
+        <label>Message (optional)</label>
+        <textarea id="regMessage" placeholder="Why are you interested?"></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-submit" id="submitBtn"><i class="fas fa-paper-plane"></i> Submit</button>
+        <button type="button" class="btn-cancel" id="modalCancelBtn">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  (function() {
+    // Supabase configuration
+    const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // DOM elements
+    const grid = document.getElementById('projectGrid');
+    const toast = document.getElementById('toast');
+    const modal = document.getElementById('registerModal');
+    const modalClose = document.getElementById('modalCloseBtn');
+    const modalCancel = document.getElementById('modalCancelBtn');
+    const modalProjectName = document.getElementById('modalProjectName');
+    const expiredNotice = document.getElementById('expiredNotice');
+    const regName = document.getElementById('regName');
+    const regEmail = document.getElementById('regEmail');
+    const regPhone = document.getElementById('regPhone');
+    const regMessage = document.getElementById('regMessage');
+    const registerForm = document.getElementById('registerForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    let projects = [];
+    let filtered = [];
+    let currentPage = 1;
+    const perPage = 6;
+    let currentProjectName = '';
+    let currentProjectDate = ''; // store date for expiry check
+
+    // Toast notification
+    function showToast(msg, isError = false) {
+      toast.textContent = msg;
+      toast.style.background = isError ? '#b91c1c' : '#0f172a';
+      toast.classList.add('show');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => toast.classList.remove('show'), 4000);
+    }
+
+    // Render skeleton loaders
+    function renderSkeletons(count = 3) {
+      let html = '';
+      for (let i = 0; i < count; i++) {
+        html += `<div class="project-card">
+          <div class="skeleton" style="height:20px;width:60%;"></div>
+          <div class="skeleton" style="height:14px;width:90%;"></div>
+          <div class="skeleton" style="height:60px;width:100%;"></div>
+          <div class="skeleton" style="height:30px;width:100%;"></div>
+        </div>`;
+      }
+      grid.innerHTML = html;
+    }
+
+    // Helper: escape text before injecting into HTML (prevents broken layout / injection from stored data)
+    function escapeHTML(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Helper: check if date is past (expired)
+    function isDateExpired(dateStr) {
+      if (!dateStr) return false;
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const projDate = new Date(dateStr);
+      projDate.setHours(0,0,0,0);
+      return projDate < today;
+    }
+
+    // Render projects
+    function renderProjects(list) {
+      if (!list || list.length === 0) {
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:4rem 1rem; color:#64748b;">
+          <i class="fas fa-inbox" style="font-size:2rem; opacity:0.3;"></i>
+          <p>No projects found</p>
+        </div>`;
+        return;
+      }
+
+      let html = '';
+      list.forEach(p => {
+        let status = p.status || 'open';
+        const isExpired = isDateExpired(p.date);
+        if (isExpired) status = 'expired';
+        const badgeClass = status === 'open' ? 'badge-open' : status === 'closing' ? 'badge-closing' : 'badge-expired';
+        const isDisabled = (status === 'expired');
+
+        html += `<div class="project-card">
+          <div class="project-badge-row" style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+            <span class="badge ${badgeClass}">${escapeHTML(status.toUpperCase())}</span>
+            ${isExpired ? '<span class="badge badge-expired"><i class="fas fa-clock"></i> Expired</span>' : ''}
+          </div>
+          <div class="project-title">${escapeHTML(p.name || 'Untitled')}</div>
+          <div class="project-meta">
+            <span><i class="fas fa-calendar"></i> ${escapeHTML(p.date || 'TBD')}</span>
+            <span><i class="fas fa-map-pin"></i> ${escapeHTML(p.location || '—')}</span>
+            <span><i class="fas fa-users"></i> ${escapeHTML(p.target_audience || 'All')}</span>
+          </div>
+          <div class="description-box">${escapeHTML(p.description || 'No description')}</div>
+          <div class="organizer">
+            <span class="organizer-avatar"><i class="fas fa-user"></i></span>
+            Rotaract Club of Galkot Baglung
+          </div>
+          <div class="card-actions">
+            <button class="btn-register register-btn" data-id="${escapeHTML(p.id)}" data-name="${escapeHTML(p.name || 'Project')}" data-date="${escapeHTML(p.date || '')}" ${isDisabled ? 'disabled' : ''}>
+              <i class="fas fa-hand-peace"></i> ${isDisabled ? 'Expired' : 'Register'}
+            </button>
+            <button class="btn-outline view-detail" data-id="${escapeHTML(p.id)}"><i class="fas fa-eye"></i></button>
+            <button class="btn-outline"><i class="fas fa-share-alt"></i></button>
+          </div>
+        </div>`;
+      });
+
+      grid.innerHTML = html;
+
+      // Register button listeners
+      document.querySelectorAll('.register-btn').forEach(b => {
+        b.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (this.disabled) {
+            showToast('⛔ This project has expired. Registration is closed.', true);
+            return;
+          }
+          const id = this.dataset.id;
+          const name = this.dataset.name;
+          const date = this.dataset.date || '';
+          openRegisterModal(id, name, date);
+        });
+      });
+
+      // View detail listeners
+      document.querySelectorAll('.view-detail').forEach(b => {
+        b.addEventListener('click', function() {
+          const id = this.dataset.id;
+          const proj = projects.find(p => p.id == id);
+          if (proj) showToast(`📄 ${proj.name} details (demo)`);
+        });
+      });
+
+      updatePagination(list.length);
+    }
+
+    function updatePagination(total) {
+      document.getElementById('showTotal').textContent = total;
+      const start = (currentPage - 1) * perPage + 1;
+      const end = Math.min(currentPage * perPage, total);
+      document.getElementById('showStart').textContent = total ? start : 0;
+      document.getElementById('showEnd').textContent = total ? end : 0;
+    }
+
+    // Filter and paginate
+    function filterAndPaginate() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const cat = document.getElementById('categoryFilter').value;
+      const loc = document.getElementById('locationFilter').value;
+      const sort = document.getElementById('sortSelect').value;
+
+      let list = projects.filter(p => {
+        const matchName = (p.name || '').toLowerCase().includes(search);
+        const matchStatus = cat ? (p.status || '').toLowerCase() === cat.toLowerCase() : true;
+        const matchLoc = loc ? (p.location || '').includes(loc) : true;
+        return matchName && matchStatus && matchLoc;
+      });
+
+      if (sort === 'closing') list.sort((a, b) => (a.status === 'closing' ? -1 : 1));
+
+      filtered = list;
+      const start = (currentPage - 1) * perPage;
+      const end = start + perPage;
+      renderProjects(list.slice(start, end));
+      document.getElementById('showTotal').textContent = list.length;
+    }
+
+    // Open registration modal
+    function openRegisterModal(projectId, projectName, projectDate) {
+      currentProjectName = projectName;
+      currentProjectDate = projectDate || '';
+      modalProjectName.textContent = projectName;
+
+      // Check if expired and show/hide notice
+      const expired = isDateExpired(projectDate);
+      if (expired) {
+        expiredNotice.style.display = 'flex';
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-ban"></i> Registration Closed';
+      } else {
+        expiredNotice.style.display = 'none';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit';
+      }
+
+      registerForm.reset();
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => regName.focus(), 100);
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+      // reset submit button state
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit';
+    }
+
+    // Register form submission - matches your exact table schema
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Double-check expiry
+      if (isDateExpired(currentProjectDate)) {
+        showToast('⛔ This project has expired. Registration is closed.', true);
+        closeModal();
+        return;
+      }
+
+      const name = regName.value.trim();
+      const email = regEmail.value.trim();
+      const phone = regPhone.value.trim();
+      const message = regMessage.value.trim();
+
+      if (!name || !email || !phone) {
+        showToast('Please fill all required fields.', true);
+        return;
+      }
+
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+      submitBtn.disabled = true;
+
+      try {
+        const payload = {
+          project_name: currentProjectName,
+          applicant_name: name,
+          email: email,
+          phone_number: phone,
+          message: message || '',
+          status: 'pending'
+        };
+
+        console.log('📤 Submitting registration:', payload);
+
+        const { data, error } = await supabase
+          .from('project_applications')
+          .insert([payload])
+          .select();
+
+        if (error) {
+          console.error('❌ Supabase error:', error);
+          throw error;
+        }
+
+        console.log('✅ Registration successful:', data);
+        showToast('✅ Registration submitted successfully!');
+        closeModal();
+        registerForm.reset();
+
+      } catch (err) {
+        console.error('❌ Submission error:', err);
+        showToast('❌ Submission failed: ' + err.message, true);
+      } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+
+    // Modal controls
+    modalClose.addEventListener('click', closeModal);
+    modalCancel.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+    });
+
+    // Fetch projects from Supabase
+    async function fetchProjects() {
+      renderSkeletons(4);
+      try {
+        const { data, error } = await supabase
+          .from('upcoming_projects')
+          .select('*')
+          .order('id', { ascending: false });
+
+        if (error) throw error;
+
+        projects = data || [];
+        document.getElementById('totalCount').textContent = projects.length;
+        document.getElementById('statTotal').textContent = projects.length;
+        document.getElementById('statOpen').textContent = projects.filter(p => p.status === 'open' && !isDateExpired(p.date)).length;
+        document.getElementById('statClosing').textContent = projects.filter(p => p.status === 'closing' && !isDateExpired(p.date)).length;
+
+        // Real registration count from project_applications (instead of a random placeholder)
+        const { count: appCount, error: countError } = await supabase
+          .from('project_applications')
+          .select('*', { count: 'exact', head: true });
+        document.getElementById('statVol').textContent = countError ? '—' : (appCount || 0);
+
+        // Populate the location filter from the locations that actually exist in the data
+        const locationFilter = document.getElementById('locationFilter');
+        const existingValue = locationFilter.value;
+        const uniqueLocations = [...new Set(projects.map(p => p.location).filter(Boolean))].sort();
+        locationFilter.innerHTML = '<option value="">All locations</option>' +
+          uniqueLocations.map(loc => `<option value="${escapeHTML(loc)}">${escapeHTML(loc)}</option>`).join('');
+        locationFilter.value = existingValue;
+
+        currentPage = 1;
+        filterAndPaginate();
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+
+      } catch (e) {
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#b91c1c;">
+          <i class="fas fa-exclamation-circle"></i> ${e.message}
+        </div>`;
+      }
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', fetchProjects);
+    document.getElementById('searchInput').addEventListener('input', filterAndPaginate);
+    document.getElementById('categoryFilter').addEventListener('change', filterAndPaginate);
+    document.getElementById('locationFilter').addEventListener('change', filterAndPaginate);
+    document.getElementById('sortSelect').addEventListener('change', filterAndPaginate);
+
+    document.getElementById('prevPage').addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        filterAndPaginate();
+      }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', () => {
+      const total = filtered.length;
+      if (currentPage * perPage < total) {
+        currentPage++;
+        filterAndPaginate();
+      }
+    });
+
+    document.getElementById('gridView').addEventListener('click', function() {
+      this.classList.add('active');
+      document.getElementById('listView').classList.remove('active');
+      document.querySelector('.project-grid').style.gridTemplateColumns = 'repeat(auto-fill, minmax(340px,1fr))';
+    });
+
+    document.getElementById('listView').addEventListener('click', function() {
+      this.classList.add('active');
+      document.getElementById('gridView').classList.remove('active');
+      document.querySelector('.project-grid').style.gridTemplateColumns = '1fr';
+    });
+
+    // Auto-refresh every 30 seconds
+    setInterval(fetchProjects, 30000);
+  })();
+</script>
+</body>
+</html>

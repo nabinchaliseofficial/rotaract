@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login · RAC Galkot Minutes Builder</title>
+    
+    <meta name="description" content="Secure login for Rotaract Club of Galkot Baglung Minutes Builder." />
+    <meta name="author" content="Rotaract Club of Galkot Baglung" />
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js">
+    </script>
+
+    <style>
+        :root {
+            --primary: #D70060;
+            --primary-hover: #B50051;
+            --secondary: #015491;
+            --dark: #1E293B;
+            --text-muted: #64748B;
+            --light-bg: #F8FAFC;
+            --border: #E2E8F0;
+            --success: #10B981;
+            --white: #FFFFFF;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            max-width: 440px;
+            width: 100%;
+            animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 48px 40px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            background: var(--light-bg);
+            border: 1px solid var(--border);
+        }
+
+        .home-link:hover {
+            color: var(--primary);
+            background: #fff;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .login-logo-marker {
+            width: 8px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        .login-logo-text {
+            font-weight: 800;
+            font-size: 1.4rem;
+            letter-spacing: -0.5px;
+            color: var(--dark);
+        }
+
+        .login-logo-text span {
+            color: var(--primary);
+        }
+
+        .login-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .login-header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: var(--dark);
+            outline: none;
+            background-color: #f8fafc;
+            transition: var(--transition);
+        }
+
+        .input-with-icon input:focus {
+            border-color: var(--primary);
+            background-color: var(--white);
+            box-shadow: 0 0 0 4px rgba(215, 0, 96, 0.08);
+        }
+
+        .input-with-icon .icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .input-with-icon .toggle-password {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0;
+        }
+
+        .input-with-icon .toggle-password:hover {
+            color: var(--dark);
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .form-options label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            margin-bottom: 0;
+        }
+
+        .form-options label input[type="checkbox"] {
+            width: auto;
+            accent-color: var(--primary);
+            transform: scale(1.1);
+            cursor: pointer;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, var(--primary) 0%, #b50051 100%);
+            color: var(--white);
+            border: none;
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: var(--radius-sm);
+            width: 100%;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        .btn-login:hover {
+            background: linear-gradient(135deg, #be0055 0%, #910040 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(215, 0, 96, 0.25);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-login .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: var(--white);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .btn-login.loading .spinner {
+            display: inline-block;
+        }
+
+        .btn-login.loading .btn-text {
+            opacity: 0.7;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+            display: none;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .error-message.show {
+            display: flex;
+        }
+
+        .error-message .error-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+            display: none;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .success-message.show {
+            display: flex;
+        }
+
+        .success-message .success-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 32px 24px;
+            }
+
+            .login-header h1 {
+                font-size: 1.25rem;
+            }
+
+            .input-with-icon input {
+                padding: 12px 16px 12px 40px;
+                font-size: 0.9rem;
+            }
+
+            .home-link {
+                top: 12px;
+                right: 14px;
+                font-size: 0.75rem;
+                padding: 4px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Home Link -->
+            <a href="index.html" class="home-link">🏠 Home</a>
+
+            <!-- Logo -->
+            <div class="login-header">
+                <div class="login-logo">
+                    <div class="login-logo-marker"></div>
+                    <div class="login-logo-text">Rotaract<span>Galkot</span></div>
+                </div>
+                <h1>Minutes Builder</h1>
+                <p>Secure access for authorized personnel</p>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-message" id="errorMessage">
+                <span class="error-icon">⚠️</span>
+                <span id="errorText">Invalid credentials. Please try again.</span>
+            </div>
+
+            <!-- Success Message -->
+            <div class="success-message" id="successMessage">
+                <span class="success-icon">✅</span>
+                <span id="successText">Login successful! Redirecting...</span>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" autocomplete="on">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <div class="input-with-icon">
+                        <span class="icon">📧</span>
+                        <input type="email" id="email" placeholder="your@email.com" required autofocus />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-with-icon">
+                        <span class="icon">🔒</span>
+                        <input type="password" id="password" placeholder="Enter your password" required />
+                        <button type="button" class="toggle-password" onclick="togglePassword()" aria-label="Toggle password visibility">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label>
+                        <input type="checkbox" id="rememberMe" />
+                        Remember me
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-login" id="loginBtn">
+                    <span class="spinner"></span>
+                    <span class="btn-text">🔑 Sign In</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  SUPABASE CONFIG - CORRECT ANON KEY
+        // ============================================================
+        const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU';
+        
+        const REDIRECT_URL = "minutes.html";
+
+        // ============================================================
+        //  INIT SUPABASE
+        // ============================================================
+        let supabaseClient = null;
+
+        try {
+            if (typeof supabase !== 'undefined' && supabase.createClient) {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('✅ Supabase client initialized.');
+            } else {
+                console.warn('⚠️ Supabase library not loaded.');
+            }
+        } catch (e) {
+            console.warn('⚠️ Supabase init error:', e.message);
+        }
+
+        // ============================================================
+        //  DOM ELEMENTS
+        // ============================================================
+        const form = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const successMessage = document.getElementById('successMessage');
+        const successText = document.getElementById('successText');
+        const rememberMe = document.getElementById('rememberMe');
+
+        // ============================================================
+        //  TOGGLE PASSWORD VISIBILITY
+        // ============================================================
+        function togglePassword() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            const btn = document.querySelector('.toggle-password');
+            btn.textContent = type === 'password' ? '👁️' : '👁️‍🗨️';
+        }
+
+        // ============================================================
+        //  SHOW / HIDE MESSAGES
+        // ============================================================
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.classList.add('show');
+            successMessage.classList.remove('show');
+        }
+
+        function showSuccess(message) {
+            successText.textContent = message;
+            successMessage.classList.add('show');
+            errorMessage.classList.remove('show');
+        }
+
+        function hideMessages() {
+            errorMessage.classList.remove('show');
+            successMessage.classList.remove('show');
+        }
+
+        // ============================================================
+        //  ✅ FIXED: CHECK USER ROLE - Search by user_id AND email
+        // ============================================================
+        async function checkUserRole(userId, email) {
+            if (!supabaseClient) return null;
+
+            try {
+                // Try by user_id first
+                let { data, error } = await supabaseClient
+                    .from('user_roles')
+                    .select('role, status')
+                    .eq('user_id', userId)
+                    .maybeSingle();
+
+                // If not found by user_id, try by email
+                if (!data && email) {
+                    console.log('🔍 Searching by email:', email);
+                    const { data: emailData, error: emailError } = await supabaseClient
+                        .from('user_roles')
+                        .select('role, status')
+                        .eq('email', email)
+                        .maybeSingle();
+                    
+                    if (!emailError && emailData) {
+                        data = emailData;
+                        console.log('✅ Found by email:', emailData);
+                    }
+                }
+
+                if (error) {
+                    console.error('Error fetching role:', error);
+                    return null;
+                }
+
+                return data || null;
+            } catch (err) {
+                console.error('Role check error:', err);
+                return null;
+            }
+        }
+
+        // ============================================================
+        //  CHECK IF USER HAS MEETING ACCESS
+        // ============================================================
+        async function hasMeetingAccess(userId, email) {
+            const userData = await checkUserRole(userId, email);
+            if (!userData) {
+                console.log('❌ No user data found for:', userId, email);
+                return false;
+            }
+            
+            console.log('📊 User data:', userData);
+            
+            const hasAllowedRole = ['admin', 'editor', 'president', 'secretary'].includes(userData.role);
+            const isActive = userData.status === 'active';
+            
+            console.log('✅ Role allowed:', hasAllowedRole, 'Status active:', isActive);
+            
+            return hasAllowedRole && isActive;
+        }
+
+        // ============================================================
+        //  GET ROLE DISPLAY NAME
+        // ============================================================
+        function getRoleDisplayName(role) {
+            const roleMap = {
+                'admin': 'Administrator',
+                'editor': 'Editor',
+                'president': 'President',
+                'secretary': 'Secretary',
+                'viewer': 'Viewer'
+            };
+            return roleMap[role] || role;
+        }
+
+        // ============================================================
+        //  LOGIN HANDLER
+        // ============================================================
+        async function handleLogin(email, password) {
+            if (!supabaseClient) {
+                showError('❌ Authentication service is unavailable. Please contact admin.');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
+
+                if (error) {
+                    console.error('Login error:', error);
+                    showError('❌ ' + (error.message || 'Invalid email or password.'));
+                    return;
+                }
+
+                const user = data.user;
+                if (!user) {
+                    showError('❌ Login failed. Please try again.');
+                    return;
+                }
+
+                console.log('✅ User authenticated:', user.id, user.email);
+
+                // ✅ Pass both userId AND email
+                const userData = await checkUserRole(user.id, user.email);
+
+                if (!userData) {
+                    showError('⚠️ Your account is not yet approved. Please contact the admin.');
+                    await supabaseClient.auth.signOut();
+                    return;
+                }
+
+                if (userData.status !== 'active') {
+                    showError(`⚠️ Your account is inactive (${userData.status}). Please contact the admin.`);
+                    await supabaseClient.auth.signOut();
+                    return;
+                }
+
+                const allowedRoles = ['admin', 'editor', 'president', 'secretary'];
+                if (!allowedRoles.includes(userData.role)) {
+                    showError(`⚠️ Your role (${userData.role}) does not have permission to access the Minutes Builder.`);
+                    await supabaseClient.auth.signOut();
+                    return;
+                }
+
+                // ✅ Store session
+                localStorage.setItem('user_email', user.email);
+                localStorage.setItem('user_role', userData.role);
+                localStorage.setItem('user_id', user.id);
+                localStorage.setItem('user_status', userData.status);
+                localStorage.setItem('is_authenticated', 'true');
+
+                if (rememberMe.checked) {
+                    localStorage.setItem('remember_me', 'true');
+                }
+
+                const roleDisplay = getRoleDisplayName(userData.role);
+                showSuccess(`✅ Welcome, ${roleDisplay}! Redirecting to Minutes Builder...`);
+
+                setTimeout(() => {
+                    window.location.href = REDIRECT_URL;
+                }, 1200);
+
+            } catch (err) {
+                console.error('Login error:', err);
+                showError('❌ An unexpected error occurred. Please try again.');
+            }
+        }
+
+        // ============================================================
+        //  FORM SUBMISSION
+        // ============================================================
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!email || !password) {
+                showError('⚠️ Please enter both email and password.');
+                return;
+            }
+
+            hideMessages();
+            loginBtn.classList.add('loading');
+            loginBtn.disabled = true;
+            loginBtn.querySelector('.btn-text').textContent = 'Signing in...';
+
+            try {
+                await handleLogin(email, password);
+            } catch (err) {
+                console.error('Login handler error:', err);
+                showError('❌ Something went wrong. Please try again.');
+            } finally {
+                setTimeout(() => {
+                    if (!loginBtn.disabled) return;
+                    loginBtn.classList.remove('loading');
+                    loginBtn.disabled = false;
+                    loginBtn.querySelector('.btn-text').textContent = '🔑 Sign In';
+                }, 3000);
+            }
+        });
+
+        // ============================================================
+        //  ENTER KEY SUPPORT
+        // ============================================================
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // ============================================================
+        //  CHECK EXISTING SESSION
+        // ============================================================
+        async function checkExistingSession() {
+            const isAuthenticated = localStorage.getItem('is_authenticated') === 'true';
+            const userEmail = localStorage.getItem('user_email');
+            const userRole = localStorage.getItem('user_role');
+            const userStatus = localStorage.getItem('user_status');
+
+            if (isAuthenticated && userEmail && 
+                ['admin', 'editor', 'president', 'secretary'].includes(userRole) &&
+                userStatus === 'active') {
+                if (supabaseClient) {
+                    try {
+                        const { data: { session } } = await supabaseClient.auth.getSession();
+                        if (session) {
+                            window.location.href = REDIRECT_URL;
+                            return;
+                        }
+                    } catch (err) {
+                        console.warn('Session check failed:', err);
+                    }
+                }
+                localStorage.removeItem('is_authenticated');
+                localStorage.removeItem('user_email');
+                localStorage.removeItem('user_role');
+                localStorage.removeItem('user_id');
+                localStorage.removeItem('user_status');
+            }
+        }
+
+        // ============================================================
+        //  AUTO-FILL FROM REMEMBER ME
+        // ============================================================
+        function loadRememberedEmail() {
+            const remembered = localStorage.getItem('remember_me');
+            if (remembered === 'true') {
+                const email = localStorage.getItem('user_email');
+                if (email) {
+                    emailInput.value = email;
+                    rememberMe.checked = true;
+                    passwordInput.focus();
+                }
+            }
+        }
+
+        // ============================================================
+        //  INIT
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            checkExistingSession();
+            loadRememberedEmail();
+
+            if (!emailInput.value) {
+                emailInput.focus(); 
+            }
+
+            console.log('✅ Login page ready (Secure, Role-Based Access)');
+        });
+
+        // Expose functions globally
+        window.togglePassword = togglePassword;
+    </script>
+
+</body>
+</html>
