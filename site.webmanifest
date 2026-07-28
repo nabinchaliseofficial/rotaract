@@ -1,0 +1,11 @@
+{
+  "name": "Rotaract Club of Galkot Baglung",
+  "short_name": "RC Galkot",
+  "icons": [
+    { "src": "images/favicon-32x32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "images/favicon-16x16.png", "sizes": "16x16", "type": "image/png" }
+  ],
+  "theme_color": "#1D2A44",
+  "background_color": "#1D2A44",
+  "display": "standalone"
+}

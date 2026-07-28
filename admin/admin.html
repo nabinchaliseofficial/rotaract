@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Central Hub · Admin Console</title> 
+<meta name="description" content="Unified operations console for members, projects, meeting minutes, and inquiries." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ============================================================
+   TOKENS — "Ops Desk" console theme
+   ============================================================ */
+:root{
+    --bg:#0a0d13;
+    --surface:#12161f;
+    --surface-2:#171c28;
+    --surface-hover:#1c2230;
+    --border:rgba(255,255,255,0.08);
+    --border-strong:rgba(255,255,255,0.16);
+    --text:#f2efe9;
+    --text-muted:#8b93a3;
+    --text-faint:#5b6272;
+    --accent:#e2823f;
+    --accent-dim:rgba(226,130,63,0.14);
+    --accent-2:#33d6c0;
+    --accent-2-dim:rgba(51,214,192,0.14);
+    --danger:#f0555f;
+    --danger-dim:rgba(240,85,95,0.14);
+    --success:#43c98a;
+    --success-dim:rgba(67,201,138,0.14);
+    --purple:#9b8cf0;
+    --font-display:'Space Grotesk',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+    --ease:cubic-bezier(0.16,1,0.3,1);
+    --radius:14px;
+    --sidebar-w:260px;
+}
+@media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html{ scroll-behavior:smooth; }
+body{
+    font-family:var(--font-body);
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.6;
+    min-height:100vh;
+    background-image:
+        radial-gradient(circle at 8% 12%, rgba(226,130,63,0.05) 0%, transparent 38%),
+        radial-gradient(circle at 92% 85%, rgba(51,214,192,0.05) 0%, transparent 38%);
+    background-attachment:fixed;
+}
+::selection{ background:var(--accent); color:#0a0d13; }
+a{ color:inherit; }
+button{ font-family:inherit; }
+:focus-visible{ outline:2px solid var(--accent-2); outline-offset:2px; border-radius:4px; }
+
+/* ============================================================
+   ACCESS DENIED OVERLAY
+   ============================================================ */
+.access-denied-overlay{
+    display:none; position:fixed; inset:0; background:rgba(6,8,12,0.94);
+    backdrop-filter:blur(10px); z-index:9999; justify-content:center; align-items:center;
+    flex-direction:column; padding:20px;
+}
+.access-denied-overlay.active{ display:flex; animation:fadeIn 0.4s var(--ease); }
+@keyframes fadeIn{ from{opacity:0} to{opacity:1} }
+@keyframes slideUp{ from{opacity:0; transform:translateY(24px)} to{opacity:1; transform:translateY(0)} }
+.access-denied-card{
+    background:var(--surface); border:1px solid var(--border-strong); border-radius:20px;
+    padding:48px 40px; max-width:460px; width:100%; text-align:center;
+    box-shadow:0 30px 60px rgba(0,0,0,0.5); animation:slideUp 0.5s var(--ease);
+}
+.access-denied-card .icon-big{ font-size:2.6rem; color:var(--danger); margin-bottom:18px; display:block; }
+.access-denied-card h2{ font-family:var(--font-display); font-size:1.6rem; font-weight:700; margin-bottom:10px; }
+.access-denied-card p{ color:var(--text-muted); font-size:0.95rem; margin-bottom:22px; }
+.btn-redirect{
+    display:inline-block; background:var(--accent); color:#0a0d13; padding:13px 36px;
+    border-radius:10px; text-decoration:none; font-weight:700; font-size:0.95rem; transition:transform 0.3s var(--ease);
+}
+.btn-redirect:hover{ transform:translateY(-2px); }
+.countdown-timer{ color:var(--text-faint); font-size:0.85rem; margin-top:18px; font-family:var(--font-mono); }
+.countdown-timer span{ color:var(--accent); font-weight:700; }
+
+/* ============================================================
+   APP SHELL — sidebar + main
+   ============================================================ */
+.app-shell{ display:flex; min-height:100vh; }
+
+.sidebar{
+    width:var(--sidebar-w); flex-shrink:0; background:var(--surface);
+    border-right:1px solid var(--border); display:flex; flex-direction:column;
+    position:fixed; top:0; left:0; height:100vh; z-index:500; transition:transform 0.35s var(--ease);
+}
+.sidebar-brand{
+    display:flex; align-items:center; gap:0.65rem; padding:1.5rem 1.4rem 1.2rem;
+    border-bottom:1px solid var(--border);
+}
+.sidebar-brand .mark{
+    width:36px; height:36px; border-radius:10px; background:var(--accent-dim); color:var(--accent);
+    display:flex; align-items:center; justify-content:center; font-size:1.05rem; flex-shrink:0;
+    border:1px solid rgba(226,130,63,0.3);
+}
+.sidebar-brand .name{ font-family:var(--font-display); font-weight:700; font-size:1rem; line-height:1.15; }
+.sidebar-brand .sub{ font-size:0.68rem; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.08em; margin-top:2px; }
+
+.status-strip{
+    margin:1rem 1.4rem 0.5rem; padding:0.55rem 0.8rem; border-radius:10px;
+    background:var(--success-dim); border:1px solid rgba(67,201,138,0.25);
+    display:flex; align-items:center; gap:0.5rem; font-size:0.72rem; font-weight:600; color:var(--success);
+}
+.status-strip.degraded{ background:var(--danger-dim); border-color:rgba(240,85,95,0.3); color:var(--danger); }
+.status-dot{ width:7px; height:7px; border-radius:50%; background:currentColor; flex-shrink:0; animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse{ 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+.sidebar-nav{ flex:1; overflow-y:auto; padding:1rem 0.9rem; }
+.nav-group-label{
+    font-size:0.65rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-faint);
+    font-weight:700; padding:0.9rem 0.6rem 0.5rem;
+}
+.nav-item{
+    display:flex; align-items:center; gap:0.7rem; width:100%; padding:0.65rem 0.7rem;
+    border-radius:9px; color:var(--text-muted); background:none; border:none; cursor:pointer;
+    font-size:0.87rem; font-weight:500; text-decoration:none; transition:background 0.2s, color 0.2s;
+    margin-bottom:2px; text-align:left;
+}
+.nav-item i{ width:18px; text-align:center; font-size:0.9rem; flex-shrink:0; }
+.nav-item:hover{ background:var(--surface-hover); color:var(--text); }
+.nav-item.active{ background:var(--accent-dim); color:var(--accent); }
+.nav-item .ext{ margin-left:auto; font-size:0.7rem; opacity:0.5; }
+
+.sidebar-footer{ padding:1rem 1.4rem 1.3rem; border-top:1px solid var(--border); }
+.btn-logout{
+    width:100%; background:var(--danger-dim); color:var(--danger) !important; border:1px solid rgba(240,85,95,0.25);
+    padding:0.65rem 1rem; border-radius:10px; font-weight:600; font-size:0.83rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:0.5rem; transition:background 0.2s;
+}
+.btn-logout:hover{ background:rgba(240,85,95,0.22); }
+
+.menu-toggle{
+    display:none; position:fixed; top:1rem; left:1rem; z-index:600; width:42px; height:42px;
+    border-radius:10px; background:var(--surface); border:1px solid var(--border-strong); color:var(--text);
+    font-size:1.05rem; cursor:pointer; align-items:center; justify-content:center;
+}
+.sidebar-scrim{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:499; }
+.sidebar-scrim.active{ display:block; }
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+.main{ flex:1; margin-left:var(--sidebar-w); min-width:0; }
+.topbar{
+    padding:1.6rem 2.2rem; display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:1rem; border-bottom:1px solid var(--border);
+}
+.topbar-title h1{ font-family:var(--font-display); font-size:1.5rem; font-weight:700; letter-spacing:-0.01em; }
+.topbar-title p{ color:var(--text-muted); font-size:0.85rem; margin-top:2px; }
+.topbar-clock{
+    font-family:var(--font-mono); font-size:1.15rem; font-weight:600; color:var(--text);
+    background:var(--surface); border:1px solid var(--border); padding:0.5rem 1.1rem; border-radius:10px;
+    display:flex; align-items:center; gap:0.8rem;
+}
+.topbar-clock .date{ font-size:0.72rem; font-weight:400; color:var(--text-faint); }
+
+/* ============================================================
+   NOTIFICATION BELL + DROPDOWN
+   ============================================================ */
+.notif-bell-wrap{ position:relative; }
+.notif-bell{
+    position:relative; width:44px; height:44px; border-radius:10px;
+    background:var(--surface); border:1px solid var(--border); color:var(--text);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.05rem;
+    transition:background .2s var(--ease), border-color .2s var(--ease);
+}
+.notif-bell:hover{ background:var(--surface-hover); border-color:var(--border-strong); }
+.notif-bell.ringing{ animation:bellring .6s ease; }
+@keyframes bellring{ 0%,100%{ transform:rotate(0); } 20%{ transform:rotate(14deg); } 40%{ transform:rotate(-12deg); } 60%{ transform:rotate(8deg); } 80%{ transform:rotate(-6deg); } }
+.notif-badge{
+    position:absolute; top:-6px; right:-6px; min-width:19px; height:19px; padding:0 5px;
+    border-radius:10px; background:var(--danger); color:#fff; font-size:0.68rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-mono);
+    border:2px solid var(--bg);
+}
+.notif-badge.hidden{ display:none; }
+.notif-panel{
+    position:absolute; top:calc(100% + 10px); right:0; width:340px; max-width:calc(100vw - 2rem); max-height:420px; overflow-y:auto;
+    background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--radius);
+    box-shadow:0 20px 50px rgba(0,0,0,0.45); z-index:600; opacity:0; visibility:hidden; transform:translateY(-8px);
+    transition:opacity .18s var(--ease), transform .18s var(--ease), visibility .18s;
+}
+.notif-panel.active{ opacity:1; visibility:visible; transform:translateY(0); }
+.notif-panel-head{
+    display:flex; align-items:center; justify-content:space-between; padding:0.9rem 1.1rem;
+    border-bottom:1px solid var(--border); font-family:var(--font-display); font-weight:600; font-size:0.9rem;
+}
+.notif-panel-head button{ background:none; border:none; color:var(--text-muted); font-size:0.72rem; cursor:pointer; font-family:var(--font-body); }
+.notif-panel-head button:hover{ color:var(--accent); }
+.notif-panel-list{ display:flex; flex-direction:column; }
+.notif-panel-empty{ padding:2rem 1.1rem; text-align:center; color:var(--text-faint); font-size:0.82rem; }
+.notif-row{ display:flex; gap:0.7rem; padding:0.8rem 1.1rem; border-bottom:1px solid var(--border); align-items:flex-start; }
+.notif-row:last-child{ border-bottom:none; }
+.notif-row .ni-icon{
+    width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    background:var(--accent-dim); color:var(--accent); font-size:0.9rem;
+}
+.notif-row .ni-body{ flex:1; min-width:0; }
+.notif-row .ni-title{ font-size:0.83rem; font-weight:600; color:var(--text); }
+.notif-row .ni-title b{ color:var(--accent); font-weight:700; }
+.notif-row .ni-sub{ font-size:0.74rem; color:var(--text-muted); margin-top:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.notif-row .ni-time{ font-size:0.68rem; color:var(--text-faint); margin-top:3px; font-family:var(--font-mono); }
+
+/* ============================================================
+   TOAST NOTIFICATIONS (top-right, stacked)
+   ============================================================ */
+.toast-stack{
+    position:fixed; top:1.2rem; right:1.2rem; z-index:9999; display:flex; flex-direction:column; gap:0.7rem;
+    width:min(360px, calc(100vw - 2.4rem)); pointer-events:none;
+}
+.toast-card{
+    pointer-events:auto; background:var(--surface); border:1px solid var(--border-strong); border-left:3px solid var(--accent);
+    border-radius:12px; padding:0.85rem 1rem; box-shadow:0 16px 40px rgba(0,0,0,0.5);
+    display:flex; gap:0.75rem; align-items:flex-start; animation:toastIn .35s var(--ease);
+    position:relative; overflow:hidden;
+}
+.toast-card.leaving{ animation:toastOut .3s var(--ease) forwards; }
+@keyframes toastIn{ from{ opacity:0; transform:translateX(40px) scale(0.96); } to{ opacity:1; transform:translateX(0) scale(1); } }
+@keyframes toastOut{ from{ opacity:1; transform:translateX(0); } to{ opacity:0; transform:translateX(40px) scale(0.96); } }
+.toast-card .t-icon{
+    width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    background:var(--accent-2-dim); color:var(--accent-2); font-size:1rem;
+}
+.toast-card .t-body{ flex:1; min-width:0; }
+.toast-card .t-title{ font-size:0.85rem; font-weight:700; font-family:var(--font-display); }
+.toast-card .t-name{ font-size:0.82rem; color:var(--text); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.toast-card .t-name b{ color:var(--accent); }
+.toast-card .t-meta{ font-size:0.7rem; color:var(--text-faint); margin-top:4px; font-family:var(--font-mono); }
+.toast-card .t-close{ background:none; border:none; color:var(--text-faint); cursor:pointer; font-size:0.85rem; padding:2px; flex-shrink:0; }
+.toast-card .t-close:hover{ color:var(--text); }
+.toast-card .t-bar{ position:absolute; left:0; bottom:0; height:2px; background:var(--accent); animation:toastBar 7s linear forwards; }
+@keyframes toastBar{ from{ width:100%; } to{ width:0%; } }
+
+/* ============================================================
+   SITE SEARCH — trigger button + command-palette modal
+   ============================================================ */
+.site-search-btn{
+    display:flex; align-items:center; gap:0.6rem; height:44px; padding:0 0.9rem;
+    background:var(--surface); border:1px solid var(--border); border-radius:10px; color:var(--text-muted);
+    font-family:var(--font-body); font-size:0.85rem; cursor:pointer; min-width:170px;
+    transition:background .2s var(--ease), border-color .2s var(--ease);
+}
+.site-search-btn:hover{ background:var(--surface-hover); border-color:var(--border-strong); color:var(--text); }
+.site-search-btn span{ flex:1; text-align:left; }
+.site-search-btn kbd{
+    font-family:var(--font-mono); font-size:0.66rem; color:var(--text-faint); background:var(--surface-2);
+    border:1px solid var(--border); border-radius:5px; padding:0.15rem 0.4rem;
+}
+@media (max-width:720px){ .site-search-btn span, .site-search-btn kbd{ display:none; } .site-search-btn{ min-width:auto; width:44px; justify-content:center; padding:0; } }
+
+.search-overlay{
+    position:fixed; inset:0; z-index:9998; display:flex; align-items:flex-start; justify-content:center;
+    padding-top:min(14vh, 120px); background:rgba(6,8,12,0.72); backdrop-filter:blur(3px);
+    opacity:0; visibility:hidden; transition:opacity .18s var(--ease), visibility .18s;
+}
+.search-overlay.active{ opacity:1; visibility:visible; }
+.search-modal{
+    width:min(560px, calc(100vw - 2.4rem)); max-height:min(70vh, 560px); display:flex; flex-direction:column;
+    background:var(--surface); border:1px solid var(--border-strong); border-radius:16px;
+    box-shadow:0 30px 80px rgba(0,0,0,0.55); transform:translateY(-14px); transition:transform .2s var(--ease);
+    overflow:hidden;
+}
+.search-overlay.active .search-modal{ transform:translateY(0); }
+.search-input-row{ display:flex; align-items:center; gap:0.7rem; padding:1rem 1.2rem; border-bottom:1px solid var(--border); color:var(--text-muted); }
+.search-input-row input{
+    flex:1; background:none; border:none; outline:none; color:var(--text); font-family:var(--font-body);
+    font-size:0.95rem;
+}
+.search-input-row input::placeholder{ color:var(--text-faint); }
+.search-close-btn{ background:none; border:none; color:var(--text-faint); cursor:pointer; font-size:0.95rem; }
+.search-close-btn:hover{ color:var(--text); }
+.search-results{ overflow-y:auto; flex:1; }
+.search-hint, .search-empty{ padding:2.2rem 1.2rem; text-align:center; color:var(--text-faint); font-size:0.85rem; }
+.search-section-label{
+    padding:0.6rem 1.2rem 0.4rem; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em;
+    color:var(--text-faint); font-weight:700; position:sticky; top:0; background:var(--surface);
+}
+.search-loading{ padding:1.4rem 1.2rem; text-align:center; color:var(--text-muted); font-size:0.82rem; }
+.search-result{
+    display:flex; gap:0.85rem; align-items:flex-start; padding:0.9rem 1.2rem; cursor:pointer;
+    border-bottom:1px solid var(--border); transition:background .12s var(--ease);
+}
+.search-result:last-child{ border-bottom:none; }
+.search-result:hover, .search-result.active{ background:var(--surface-hover); }
+.search-result .sr-icon{
+    width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    background:var(--accent-2-dim); color:var(--accent-2); font-size:0.95rem; margin-top:2px;
+}
+.search-result .sr-body{ flex:1; min-width:0; }
+.search-result .sr-title{ font-size:0.88rem; font-weight:600; color:var(--text); }
+.search-result .sr-title mark{ background:var(--accent-dim); color:var(--accent); border-radius:3px; padding:0 2px; }
+.search-result .sr-path{ font-size:0.7rem; color:var(--text-faint); font-family:var(--font-mono); margin-top:2px; }
+.search-result .sr-snippet{ font-size:0.78rem; color:var(--text-muted); margin-top:4px; line-height:1.45; }
+.search-result .sr-snippet mark{ background:var(--accent-dim); color:var(--accent); border-radius:3px; padding:0 2px; }
+.search-footer{
+    display:flex; gap:1.1rem; padding:0.6rem 1.2rem; border-top:1px solid var(--border);
+    font-size:0.7rem; color:var(--text-faint);
+}
+.search-footer kbd{
+    font-family:var(--font-mono); background:var(--surface-2); border:1px solid var(--border); border-radius:4px;
+    padding:0.1rem 0.35rem; margin-right:0.2rem;
+}
+
+.quote-strip{
+    margin:1.4rem 2.2rem 0; padding:1rem 1.4rem; border-radius:var(--radius);
+    background:linear-gradient(135deg, rgba(226,130,63,0.08), rgba(155,140,240,0.06));
+    border:1px solid var(--border); display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+}
+.quote-strip .day-badge{
+    font-family:var(--font-mono); font-size:0.72rem; font-weight:700; color:#0a0d13; background:var(--accent);
+    padding:0.3rem 0.75rem; border-radius:6px; white-space:nowrap; letter-spacing:0.03em;
+}
+.quote-strip .quote-body{ flex:1; min-width:200px; font-size:0.95rem; }
+.quote-strip .quote-author{ font-size:0.8rem; color:var(--text-muted); white-space:nowrap; }
+.quote-strip .quote-status{ font-size:0.68rem; padding:0.2rem 0.65rem; border-radius:6px; font-weight:600; white-space:nowrap; }
+.quote-strip .quote-status.found{ background:var(--success-dim); color:var(--success); }
+.quote-strip .quote-status.not-found{ background:var(--accent-dim); color:var(--accent); }
+.quote-strip .quote-status.error{ background:var(--danger-dim); color:var(--danger); }
+
+.view{ display:none; padding:1.8rem 2.2rem 3rem; animation:fadeIn 0.35s var(--ease); }
+.view.active{ display:block; }
+
+.section-heading{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem; margin-bottom:1.2rem; }
+.section-heading h2{ font-family:var(--font-display); font-size:1.15rem; font-weight:700; display:flex; align-items:center; gap:0.6rem; }
+.section-heading h2 i{ color:var(--accent); font-size:1rem; }
+.section-heading .meta{ font-size:0.78rem; color:var(--text-faint); font-family:var(--font-mono); display:flex; align-items:center; gap:0.6rem; }
+
+/* ---- Module (nav) cards ---- */
+.module-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:1rem; margin-bottom:2.2rem; }
+.module-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:1.6rem 1.4rem; text-decoration:none; color:var(--text); display:flex; flex-direction:column;
+    gap:0.6rem; transition:transform 0.3s var(--ease), border-color 0.3s var(--ease); position:relative; overflow:hidden;
+    cursor:pointer;
+}
+.module-card:hover{ transform:translateY(-4px); border-color:var(--border-strong); }
+.module-card .icon-wrap{
+    width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.1rem;
+}
+.module-card.c-banner .icon-wrap{ background:rgba(67,201,138,0.14); color:var(--success); }
+.module-card.c-members .icon-wrap{ background:rgba(240,85,95,0.14); color:var(--danger); }
+.module-card.c-projects .icon-wrap{ background:rgba(226,130,63,0.14); color:var(--accent); }
+.module-card.c-minutes .icon-wrap{ background:rgba(155,140,240,0.14); color:var(--purple); }
+.module-card.c-inquiries .icon-wrap{ background:rgba(51,214,192,0.14); color:var(--accent-2); }
+.module-card h3{ font-size:1rem; font-weight:600; }
+.module-card p{ font-size:0.8rem; color:var(--text-muted); }
+.module-card .go{ font-size:0.75rem; color:var(--text-faint); display:flex; align-items:center; gap:0.4rem; margin-top:auto; }
+.module-card:hover .go{ color:var(--accent); }
+
+/* ---- stat cards ---- */
+.stat-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:0.9rem; margin-bottom:1.4rem; }
+.stat-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.1rem 1rem;
+    position:relative; display:flex; flex-direction:column; gap:0.2rem; transition:border-color 0.3s;
+}
+.stat-card:hover{ border-color:var(--border-strong); }
+.stat-card i{ position:absolute; right:1rem; top:1rem; font-size:0.9rem; opacity:0.3; color:var(--accent); }
+.stat-card .num{ font-family:var(--font-mono); font-size:1.7rem; font-weight:700; }
+.stat-card .label{ font-size:0.68rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.03em; }
+.stat-card .badges{ display:flex; gap:0.35rem; margin-top:0.2rem; }
+.badge-delta{ font-size:0.62rem; font-weight:700; padding:0.05rem 0.45rem; border-radius:6px; background:var(--success-dim); color:var(--success); font-family:var(--font-mono); }
+.badge-delta.neg{ background:var(--danger-dim); color:var(--danger); }
+.badge-today{ font-size:0.6rem; font-weight:600; padding:0.05rem 0.45rem; border-radius:6px; background:var(--accent-dim); color:var(--accent); font-family:var(--font-mono); }
+
+/* ---- feed + panels ---- */
+.panel-row{ display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1rem; }
+.panel{ flex:1; min-width:260px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:1.2rem 1.1rem; }
+.panel h3{ font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted); font-weight:700; margin-bottom:0.8rem; display:flex; align-items:center; gap:0.4rem; }
+.panel h3 i{ color:var(--accent); }
+.feed-item{ display:flex; justify-content:space-between; gap:0.6rem; padding:0.55rem 0; border-bottom:1px solid var(--border); font-size:0.8rem; flex-wrap:wrap; }
+.feed-item:last-child{ border-bottom:0; }
+.feed-item .ftitle{ font-weight:600; }
+.feed-item .fmeta{ color:var(--text-faint); font-family:var(--font-mono); font-size:0.72rem; }
+.feed-item .fbadge{ font-size:0.6rem; font-weight:700; padding:0.05rem 0.4rem; border-radius:5px; background:var(--surface-2); color:var(--text-faint); align-self:center; }
+.latency-row{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:0.6rem; }
+.latency-num{ font-family:var(--font-mono); font-size:1.6rem; font-weight:700; }
+.latency-bar-track{ height:6px; background:var(--surface-2); border-radius:99px; overflow:hidden; margin-bottom:1rem; }
+.latency-bar-fill{ height:100%; border-radius:99px; transition:width 0.6s var(--ease), background 0.4s; }
+.uptime-row{ display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono); }
+
+/* ---- schema table ---- */
+.schema-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:1.2rem 1.1rem; margin-bottom:1rem; }
+.schema-table-wrap{ overflow-x:auto; }
+table.schema-table{ width:100%; border-collapse:collapse; font-size:0.8rem; }
+table.schema-table thead td{ font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-faint); padding:0.4rem 0.6rem; border-bottom:1px solid var(--border); }
+table.schema-table tbody td{ padding:0.5rem 0.6rem; border-bottom:1px solid var(--border); }
+table.schema-table tbody tr:last-child td{ border-bottom:none; }
+.mono{ font-family:var(--font-mono); color:var(--accent-2); }
+.footnote-row{ display:flex; gap:1.2rem; flex-wrap:wrap; font-size:0.7rem; color:var(--text-faint); margin-top:0.8rem; }
+
+/* ---- quick links ---- */
+.tabs-row{ display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.2rem; }
+.tab-btn{
+    background:var(--surface); border:1px solid var(--border); color:var(--text-muted); padding:0.45rem 0.9rem;
+    border-radius:99px; font-size:0.78rem; font-weight:600; cursor:pointer; transition:all 0.25s var(--ease);
+}
+.tab-btn:hover{ color:var(--text); border-color:var(--border-strong); }
+.tab-btn.active{ background:var(--accent); border-color:var(--accent); color:#0a0d13; }
+.links-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:0.7rem; }
+.link-item{
+    display:flex; align-items:center; justify-content:space-between; gap:0.6rem; background:var(--surface);
+    border:1px solid var(--border); border-radius:10px; padding:0.75rem 1rem; text-decoration:none; color:var(--text);
+    font-size:0.85rem; font-weight:500; transition:border-color 0.25s, transform 0.25s;
+}
+.link-item:hover{ border-color:var(--border-strong); transform:translateX(2px); }
+.link-item .link-icon{ color:var(--accent-2); width:18px; text-align:center; margin-right:0.6rem; }
+.link-item .arrow-icon{ opacity:0; transform:translateX(-6px); transition:all 0.25s var(--ease); color:var(--text-faint); font-size:0.75rem; }
+.link-item:hover .arrow-icon{ opacity:1; transform:translateX(0); }
+.link-item.hidden{ display:none; }
+
+footer.app-footer{ padding:1.5rem 2.2rem 2.5rem; color:var(--text-faint); font-size:0.78rem; text-align:center; }
+
+/* ---- more pages (grouped) ---- */
+.page-group{ margin-bottom:1.6rem; }
+.page-group-title{
+    font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-faint);
+    font-weight:700; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem;
+}
+.page-group-title i{ color:var(--accent-2); }
+.page-item{ cursor:pointer; }
+
+/* ---- inline module frame ---- */
+.module-frame-wrap{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    overflow:hidden; height:calc(100vh - 260px); min-height:480px; position:relative;
+}
+.module-frame{ width:100%; height:100%; border:0; background:#0d1119; }
+.module-frame-loading{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    gap:0.6rem; color:var(--text-muted); font-size:0.85rem; background:var(--surface);
+    transition:opacity 0.3s var(--ease); pointer-events:none;
+}
+.module-frame-loading.hidden{ opacity:0; }
+.module-frame-loading i{ animation:spin 0.9s linear infinite; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+.link-open-new{
+    text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;
+}
+
+@media (max-width:900px){
+    .sidebar{ transform:translateX(-100%); }
+    .sidebar.active{ transform:translateX(0); }
+    .main{ margin-left:0; }
+    .menu-toggle{ display:flex; }
+    .topbar{ padding-left:4.2rem; }
+    .quote-strip{ margin-left:1.2rem; margin-right:1.2rem; }
+    .view{ padding-left:1.2rem; padding-right:1.2rem; }
+    footer.app-footer{ padding-left:1.2rem; padding-right:1.2rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== ACCESS DENIED OVERLAY ===== -->
+<div class="access-denied-overlay" id="accessDeniedOverlay">
+    <div class="access-denied-card">
+        <span class="icon-big"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <h2>Access denied</h2>
+        <p>Only active administrator accounts can open this console.</p>
+        <a href="/index.html" class="btn-redirect">Go to homepage</a>
+        <div class="countdown-timer">Redirecting in <span id="countdownNum">5</span>s</div>
+    </div>
+</div>
+
+<button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+    <i class="fa-solid fa-bars"></i>
+</button>
+<div class="sidebar-scrim" id="sidebarScrim"></div>
+
+<div class="app-shell">
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <span class="mark"><i class="fa-solid fa-layer-group"></i></span>
+            <div>
+                <div class="name">Central Hub</div>
+                <div class="sub">Admin Console</div>
+            </div>
+        </div>
+
+        <div class="status-strip" id="statusStrip">
+            <span class="status-dot"></span>
+            <span id="statusStripText">Connecting…</span>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Console sections">
+            <div class="nav-group-label">Console</div>
+            <button class="nav-item active" data-view="overview"><i class="fa-solid fa-gauge-high"></i> Overview</button>
+            <button class="nav-item" data-view="live"><i class="fa-solid fa-tower-broadcast"></i> Live data</button>
+            <button class="nav-item" data-view="links"><i class="fa-solid fa-link"></i> Quick launch</button>
+            <button class="nav-item" data-view="more"><i class="fa-solid fa-layer-group"></i> More pages</button>
+
+            <div class="nav-group-label">Modules</div>
+            <button class="nav-item" data-module="/adminbanner.html"><i class="fa-solid fa-rectangle-ad"></i> Banner</button>
+            <button class="nav-item" data-module="adminmembers.html"><i class="fa-solid fa-users"></i> Members</button>
+            <button class="nav-item" data-module="adminupcomingproject.html"><i class="fa-solid fa-diagram-project"></i> Projects</button>
+            <button class="nav-item" data-module="adminminutes.html"><i class="fa-solid fa-file-lines"></i> Minutes</button>
+            <button class="nav-item" data-module="admininquiries.html"><i class="fa-solid fa-envelope"></i> Inquiries</button>
+
+            <div class="nav-group-label">Account</div>
+            <button class="nav-item" data-module="/dashboard.html"><i class="fa-solid fa-newspaper"></i> Blog dashboard</button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn-logout" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <div class="main">
+        <div class="topbar">
+            <div class="topbar-title">
+                <h1 id="pageTitle">Overview</h1>
+                <p id="pageSubtitle">Members, projects, minutes and inquiries — all in one place.</p>
+            </div>
+            <button class="site-search-btn" id="siteSearchBtn" type="button" title="Search the whole site (Ctrl+K)">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Search site…</span>
+                <kbd>Ctrl K</kbd>
+            </button>
+            <div class="notif-bell-wrap" id="notifBellWrap">
+                <button class="notif-bell" id="notifBellBtn" type="button" title="Notifications" aria-label="Notifications">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="notif-badge hidden" id="notifBadge">0</span>
+                </button>
+                <div class="notif-panel" id="notifPanel">
+                    <div class="notif-panel-head">
+                        <span>Notifications</span>
+                        <button type="button" id="notifClearBtn">Clear all</button>
+                    </div>
+                    <div class="notif-panel-list" id="notifPanelList">
+                        <div class="notif-panel-empty">No notifications yet.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="topbar-clock" id="liveClock">
+                <span id="clockTime">--:--:--</span>
+                <span class="date" id="clockDate">---- --, ----</span>
+            </div>
+        </div>
+
+        <div class="quote-strip">
+            <span class="day-badge">DAY <span id="quoteDayNumber">--</span></span>
+            <span class="quote-body" id="quoteText">Loading today's note…</span>
+            <span class="quote-author" id="quoteAuthorName">—</span>
+            <span class="quote-status" id="quoteStatus">Loading</span>
+        </div>
+
+        <!-- ===== VIEW: OVERVIEW ===== -->
+        <section class="view active" id="view-overview">
+            <div class="section-heading">
+                <h2><i class="fa-solid fa-grid-2"></i> Modules</h2>
+            </div>
+            <div class="module-grid">
+                <div class="module-card c-banner" data-module="adminbanner.html" role="button" tabindex="0">
+                    <span class="icon-wrap"><i class="fa-solid fa-rectangle-ad"></i></span>
+                    <h3>Banner</h3>
+                    <p>Live meeting banner display settings</p>
+                    <span class="go">Open <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+                <div class="module-card c-members" data-module="adminmembers.html" role="button" tabindex="0">
+                    <span class="icon-wrap"><i class="fa-solid fa-users"></i></span>
+                    <h3>Members</h3>
+                    <p>Active members and registration requests</p>
+                    <span class="go">Open <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+                <div class="module-card c-projects" data-module="adminupcomingproject.html" role="button" tabindex="0">
+                    <span class="icon-wrap"><i class="fa-solid fa-diagram-project"></i></span>
+                    <h3>Projects</h3>
+                    <p>Upcoming projects and applications</p>
+                    <span class="go">Open <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+                <div class="module-card c-minutes" data-module="adminminutes.html" role="button" tabindex="0">
+                    <span class="icon-wrap"><i class="fa-solid fa-file-lines"></i></span>
+                    <h3>Minutes</h3>
+                    <p>View, edit and print meeting minutes</p>
+                    <span class="go">Open <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+                <div class="module-card c-inquiries" data-module="admininquiries.html" role="button" tabindex="0">
+                    <span class="icon-wrap"><i class="fa-solid fa-envelope"></i></span>
+                    <h3>Inquiries</h3>
+                    <p>Contact form messages</p>
+                    <span class="go">Open <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+            </div>
+
+            <div class="section-heading">
+                <h2><i class="fa-solid fa-chart-simple"></i> Snapshot</h2>
+                <span class="meta"><span id="tableCountSm">0</span> tables · <span id="rowCountSm">0</span> rows</span>
+            </div>
+            <div class="stat-grid" id="statGrid"></div>
+        </section>
+
+        <!-- ===== VIEW: LIVE DATA ===== -->
+        <section class="view" id="view-live">
+            <div class="section-heading">
+                <h2><i class="fa-solid fa-tower-broadcast"></i> Live system data</h2>
+                <span class="meta"><span id="tableCountLg">0</span> tables · <span id="rowCountLg">0</span> rows · refreshes every 18s</span>
+            </div>
+
+            <div class="panel-row">
+                <div class="panel" style="flex:1.3;">
+                    <h3><i class="fa-solid fa-bolt"></i> Activity feed</h3>
+                    <div id="feedContainer">
+                        <div class="feed-item"><span class="ftitle">Waiting for events…</span></div>
+                    </div>
+                </div>
+                <div class="panel" style="flex:0.9;">
+                    <h3><i class="fa-solid fa-satellite-dish"></i> Connection</h3>
+                    <div class="latency-row">
+                        <span class="latency-num" id="latencyVal">-- ms</span>
+                        <span id="latencyLabel" style="font-size:0.7rem;color:var(--text-muted);">query latency</span>
+                    </div>
+                    <div class="latency-bar-track"><div class="latency-bar-fill" id="latencyBar" style="width:0%;background:var(--success);"></div></div>
+                    <div class="uptime-row"><span>Console uptime</span><span id="uptimeDisplay">00:00:00</span></div>
+                </div>
+            </div>
+
+            <div class="schema-card">
+                <div class="section-heading" style="margin-bottom:0.8rem;">
+                    <h3 style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;display:flex;align-items:center;gap:0.5rem;"><i class="fa-solid fa-table" style="color:var(--accent);"></i> Schema snapshot</h3>
+                    <span class="meta">updated <span id="schemaTime">now</span></span>
+                </div>
+                <div class="schema-table-wrap">
+                    <table class="schema-table">
+                        <thead><tr><td>Table</td><td>Rows</td><td>Columns</td></tr></thead>
+                        <tbody id="schemaBody"></tbody>
+                    </table>
+                </div>
+                <div class="footnote-row">
+                    <span><i class="fa-solid fa-rotate-right"></i> auto-refresh every 18s</span>
+                    <span><i class="fa-solid fa-bolt" style="color:var(--success);"></i> realtime subscriptions active</span>
+                    <span><i class="fa-solid fa-circle-check" style="color:var(--accent);"></i> all reads via Supabase</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== VIEW: QUICK LAUNCH ===== -->
+        <section class="view" id="view-links">
+            <div class="section-heading">
+                <h2><i class="fa-solid fa-link"></i> Quick launch</h2>
+            </div>
+            <div class="tabs-row" id="tabsRow">
+                <button class="tab-btn active" data-filter="all">All</button>
+                <button class="tab-btn" data-filter="learning">Learning</button>
+                <button class="tab-btn" data-filter="typing">Typing tools</button>
+                <button class="tab-btn" data-filter="finance">Banks &amp; finance</button>
+                <button class="tab-btn" data-filter="official">Official logs</button>
+                <button class="tab-btn" data-filter="pan">PAN portals</button>
+                <button class="tab-btn" data-filter="news">News</button>
+                <button class="tab-btn" data-filter="social">Socials</button>
+                <button class="tab-btn" data-filter="google">Google suite</button>
+                <button class="tab-btn" data-filter="emails">Emails</button>
+                <button class="tab-btn" data-filter="share">Share market</button>
+            </div>
+            <div class="links-grid" id="linksGrid">
+                <a href="https://www.udemy.com/" target="_blank" rel="noopener" class="link-item" data-category="learning"><span><i class="fa-brands fa-laravel link-icon"></i> Udemy</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.coursera.org/" target="_blank" rel="noopener" class="link-item" data-category="learning"><span><i class="fa-solid fa-graduation-cap link-icon"></i> Coursera</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.linkedin.com/learning/" target="_blank" rel="noopener" class="link-item" data-category="learning"><span><i class="fa-brands fa-linkedin link-icon"></i> LinkedIn Learning</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.canvas.net/dashboard/in-progress" target="_blank" rel="noopener" class="link-item" data-category="learning"><span><i class="fa-solid fa-chalkboard-user link-icon"></i> Canvas</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://cursa.app/en" target="_blank" rel="noopener" class="link-item" data-category="learning"><span><i class="fa-solid fa-mobile-screen-button link-icon"></i> Cursa</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://academyeurope.org/all-courses" target="_blank" rel="noopener" class="link-item" data-category="learning"><span><i class="fa-solid fa-school link-icon"></i> Academy Europe</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.bbc.co.uk/learningenglish/" target="_blank" rel="noopener" class="link-item" data-category="learning"><span><i class="fa-solid fa-language link-icon"></i> BBC English</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.typerush.com/" target="_blank" rel="noopener" class="link-item" data-category="typing"><span><i class="fa-solid fa-keyboard link-icon"></i> TypeRush</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.edclub.com/sportal/" target="_blank" rel="noopener" class="link-item" data-category="typing"><span><i class="fa-solid fa-gamepad link-icon"></i> EdClub Portal</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.speedtypingonline.com/typing-test" target="_blank" rel="noopener" class="link-item" data-category="typing"><span><i class="fa-solid fa-stopwatch link-icon"></i> Speed Typing Online</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.typing.com/student/lessons" target="_blank" rel="noopener" class="link-item" data-category="typing"><span><i class="fa-solid fa-medal link-icon"></i> Typing.com Lessons</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.keybr.com/" target="_blank" rel="noopener" class="link-item" data-category="typing"><span><i class="fa-solid fa-gauge-high link-icon"></i> Keybr Practice</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://typing.academy/" target="_blank" rel="noopener" class="link-item" data-category="typing"><span><i class="fa-solid fa-award link-icon"></i> Typing Academy</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://esewa.com.np/#/home" target="_blank" rel="noopener" class="link-item" data-category="finance"><span><i class="fa-solid fa-wallet link-icon" style="color:#60bb46;"></i> eSewa Wallet</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://globalonline.gibl.com.np/dashboard" target="_blank" rel="noopener" class="link-item" data-category="finance"><span><i class="fa-solid fa-building-columns link-icon"></i> Global IME Smart</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://web.khalti.com/?csrt=818048846804071483#/" target="_blank" rel="noopener" class="link-item" data-category="finance"><span><i class="fa-solid fa-money-bill-transfer link-icon" style="color:#5c2d91;"></i> Khalti Web</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://emis.nepp.gov.np/" target="_blank" rel="noopener" class="link-item" data-category="official"><span><i class="fa-solid fa-passport link-icon"></i> Rojgar EMIS</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://emis.cehrd.gov.np/login" target="_blank" rel="noopener" class="link-item" data-category="official"><span><i class="fa-solid fa-book-bookmark link-icon"></i> Education EMIS</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://phmis.molcpa.gov.np/login" target="_blank" rel="noopener" class="link-item" data-category="official"><span><i class="fa-solid fa-house-chimney-medical link-icon"></i> PHIMS Portal</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://newpams.fcgo.gov.np/#/Login" target="_blank" rel="noopener" class="link-item" data-category="official"><span><i class="fa-solid fa-gears link-icon"></i> NEWPAMS Login</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://officerportal.ird.gov.np:8443/main/app.html" target="_blank" rel="noopener" class="link-item" data-category="pan"><span><i class="fa-solid fa-user-tie link-icon"></i> IRD Officer Portal</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://taxpayerportal.ird.gov.np/taxpayer/app.html" target="_blank" rel="noopener" class="link-item" data-category="pan"><span><i class="fa-solid fa-id-card-clip link-icon"></i> Taxpayer Portal</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://ird.gov.np/pan-search/" target="_blank" rel="noopener" class="link-item" data-category="pan"><span><i class="fa-solid fa-magnifying-glass link-icon"></i> PAN Search Online</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://ird.gov.np/faq/" target="_blank" rel="noopener" class="link-item" data-category="pan"><span><i class="fa-solid fa-circle-question link-icon"></i> PAN FAQs</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="http://ereturns.ird.gov.np:8289/incometax/d01/d01ReturnEntry" target="_blank" rel="noopener" class="link-item" data-category="pan"><span><i class="fa-solid fa-file-invoice-dollar link-icon"></i> D01 Return Entry</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="http://ereturns.ird.gov.np:8289/general/taxpayerLogin" target="_blank" rel="noopener" class="link-item" data-category="pan"><span><i class="fa-solid fa-stamp link-icon"></i> Tax Clearance</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.hamropatro.com/newsStory" target="_blank" rel="noopener" class="link-item" data-category="news"><span><i class="fa-solid fa-newspaper link-icon"></i> Hamro Patro News</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://epaper.ekantipur.com/" target="_blank" rel="noopener" class="link-item" data-category="news"><span><i class="fa-solid fa-paper-plane link-icon"></i> eKantipur ePaper</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.techpana.com/" target="_blank" rel="noopener" class="link-item" data-category="news"><span><i class="fa-solid fa-microchip link-icon"></i> TechPana</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.facebook.com/" target="_blank" rel="noopener" class="link-item" data-category="social"><span><i class="fa-brands fa-facebook-f link-icon"></i> Facebook</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.instagram.com/" target="_blank" rel="noopener" class="link-item" data-category="social"><span><i class="fa-brands fa-instagram link-icon"></i> Instagram</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://x.com/home" target="_blank" rel="noopener" class="link-item" data-category="social"><span><i class="fa-brands fa-x-twitter link-icon"></i> Twitter / X</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.linkedin.com/feed/" target="_blank" rel="noopener" class="link-item" data-category="social"><span><i class="fa-brands fa-linkedin-in link-icon"></i> LinkedIn</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://web.whatsapp.com/" target="_blank" rel="noopener" class="link-item" data-category="social"><span><i class="fa-brands fa-whatsapp link-icon"></i> WhatsApp Web</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.youtube.com/" target="_blank" rel="noopener" class="link-item" data-category="social"><span><i class="fa-brands fa-youtube link-icon"></i> YouTube</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://docs.google.com/" target="_blank" rel="noopener" class="link-item" data-category="google"><span><i class="fa-solid fa-file-word link-icon" style="color:#4285F4;"></i> Google Docs</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://workspace.google.com/products/slides/" target="_blank" rel="noopener" class="link-item" data-category="google"><span><i class="fa-solid fa-file-powerpoint link-icon" style="color:#FBBC05;"></i> Google Slides</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://docs.google.com/spreadsheets/u/0/" target="_blank" rel="noopener" class="link-item" data-category="google"><span><i class="fa-solid fa-file-excel link-icon" style="color:#34A853;"></i> Google Sheets</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://mail.google.com/mail/u/0/#inbox" target="_blank" rel="noopener" class="link-item" data-category="emails"><span><i class="fa-solid fa-envelope link-icon"></i> Gmail Workspace</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://mail.nepal.gov.np/" target="_blank" rel="noopener" class="link-item" data-category="emails"><span><i class="fa-solid fa-shield-halved link-icon"></i> Gov. NP Mail</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://sunconnect.sunlife.com.np/dashboard" target="_blank" rel="noopener" class="link-item" data-category="share"><span><i class="fa-solid fa-heart-pulse link-icon"></i> SunConnect Portfolio</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://auth.naasasecurities.com.np/realms/naasa/protocol/openid-connect/auth?client_id=kyc&scope=openid%20profile%20email%20roles&response_type=code&redirect_uri=https%3A%2F%2Fwww.naasasecurities.com.np%2Fapi%2Fauth%2Fcallback%2Fkeycloak&state=iQ0HmL3jhoEckqgKC_S20DZADWLrov95UiFv4x89LoA" target="_blank" rel="noopener" class="link-item" data-category="share"><span><i class="fa-solid fa-user-shield link-icon"></i> NASA Securities</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://tms59.nepsetms.com.np/login" target="_blank" rel="noopener" class="link-item" data-category="share"><span><i class="fa-solid fa-arrow-trend-up link-icon"></i> NEPSE TMS 59</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://merolagani.com/newsletter.aspx" target="_blank" rel="noopener" class="link-item" data-category="share"><span><i class="fa-solid fa-mail-bulk link-icon"></i> MeroLagani News</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.sharesansar.com/today-share-price" target="_blank" rel="noopener" class="link-item" data-category="share"><span><i class="fa-solid fa-hand-holding-dollar link-icon"></i> Today's Share Price</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.nepsealpha.com/candlestick" target="_blank" rel="noopener" class="link-item" data-category="share"><span><i class="fa-solid fa-chart-candlestick link-icon"></i> NEPSE Candlesticks</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.nepsealpha.com/trading-signals/tech" target="_blank" rel="noopener" class="link-item" data-category="share"><span><i class="fa-solid fa-wave-square link-icon"></i> Trading Signals</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.nepsealpha.com/floorsheet-analysis#broker_wise_top_buyer" target="_blank" rel="noopener" class="link-item" data-category="share"><span><i class="fa-solid fa-chart-pie link-icon"></i> Top Buyer Brokerwise</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.sebon.gov.np/right-share-approved" target="_blank" rel="noopener" class="link-item" data-category="share"><span><i class="fa-solid fa-check-double link-icon"></i> SEBON Approved</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.sebon.gov.np/right-share-pipeline" target="_blank" rel="noopener" class="link-item" data-category="share"><span><i class="fa-solid fa-ellipsis-h link-icon"></i> Right Share Pipeline</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://www.nepalstock.com/floor-sheet" target="_blank" rel="noopener" class="link-item" data-category="share"><span><i class="fa-solid fa-table-list link-icon"></i> Floorsheet Logs</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+                <a href="https://chukul.com/nepse-charts" target="_blank" rel="noopener" class="link-item" data-category="share"><span><i class="fa-solid fa-chart-line link-icon"></i> Chukul NEPSE Charts</span><i class="fa-solid fa-chevron-right arrow-icon"></i></a>
+            </div>
+        </section>
+
+        <!-- ===== VIEW: MORE PAGES ===== -->
+        <section class="view" id="view-more">
+            <div class="section-heading">
+                <h2><i class="fa-solid fa-layer-group"></i> More pages</h2>
+                <span class="meta">Everything else on this site, opened right here.</span>
+            </div>
+
+            <div class="page-group">
+                <h3 class="page-group-title"><i class="fa-solid fa-globe"></i> Site</h3>
+                <div class="links-grid">
+                    <div class="link-item page-item" data-module="/index.html" role="button" tabindex="0"><span><i class="fa-solid fa-house link-icon"></i> Portfolio home</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/blog.html" role="button" tabindex="0"><span><i class="fa-solid fa-newspaper link-icon"></i> Blog</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/git/index.html" role="button" tabindex="0"><span><i class="fa-brands fa-git-alt link-icon"></i> GitCheat sheet</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                </div>
+            </div>
+
+            <div class="page-group">
+                <h3 class="page-group-title"><i class="fa-solid fa-handshake-angle"></i> Rotaract Club</h3>
+                <div class="links-grid">
+                    <div class="link-item page-item" data-module="/r/index.html" role="button" tabindex="0"><span><i class="fa-solid fa-gauge link-icon"></i> Club dashboard</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/r/board.html" role="button" tabindex="0"><span><i class="fa-solid fa-user-tie link-icon"></i> Board of directors</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/r/membership.html" role="button" tabindex="0"><span><i class="fa-solid fa-id-card link-icon"></i> Membership</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/r/activemembers.html" role="button" tabindex="0"><span><i class="fa-solid fa-users-line link-icon"></i> Active members</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/r/upcomming-projects.html" role="button" tabindex="0"><span><i class="fa-solid fa-calendar-check link-icon"></i> Upcoming projects</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/r/past-projects.html" role="button" tabindex="0"><span><i class="fa-solid fa-box-archive link-icon"></i> Past projects archive</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/r/project-verified-list.html" role="button" tabindex="0"><span><i class="fa-solid fa-circle-check link-icon"></i> Approved projects</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/r/strategic-planning.html" role="button" tabindex="0"><span><i class="fa-solid fa-chess link-icon"></i> Strategic planning</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/r/minutes.html" role="button" tabindex="0"><span><i class="fa-solid fa-file-pen link-icon"></i> Minutes builder</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/r/loginminutes.html" role="button" tabindex="0"><span><i class="fa-solid fa-right-to-bracket link-icon"></i> Minutes login</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/r/anthem.html" role="button" tabindex="0"><span><i class="fa-solid fa-music link-icon"></i> Anthem player</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                </div>
+            </div>
+
+            <div class="page-group">
+                <h3 class="page-group-title"><i class="fa-solid fa-laptop-code"></i> Galkot Tech</h3>
+                <div class="links-grid">
+                    <div class="link-item page-item" data-module="/gt/index.html" role="button" tabindex="0"><span><i class="fa-solid fa-graduation-cap link-icon"></i> Institute home</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/gt/gtregister.html" role="button" tabindex="0"><span><i class="fa-solid fa-pen-to-square link-icon"></i> Apply now</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/gt/courseverify.html" role="button" tabindex="0"><span><i class="fa-solid fa-certificate link-icon"></i> Course verify</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/gt/enrollmentverify.html" role="button" tabindex="0"><span><i class="fa-solid fa-clipboard-check link-icon"></i> Enrollment status</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/gt/stuadmin.html" role="button" tabindex="0"><span><i class="fa-solid fa-user-gear link-icon"></i> Course manager</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                </div>
+            </div>
+
+            <div class="page-group">
+                <h3 class="page-group-title"><i class="fa-solid fa-landmark"></i> Revenue Office (Galkot)</h3>
+                <div class="links-grid">
+                    <div class="link-item page-item" data-module="/g/index.html" role="button" tabindex="0"><span><i class="fa-solid fa-building-columns link-icon"></i> Office home</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/g/pan.html" role="button" tabindex="0"><span><i class="fa-solid fa-id-card-clip link-icon"></i> PAN registration docs</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                </div>
+            </div>
+
+            <div class="page-group">
+                <h3 class="page-group-title"><i class="fa-solid fa-chart-line"></i> Nepal Share Portal</h3>
+                <div class="links-grid">
+                    <div class="link-item page-item" data-module="/s/index.html" role="button" tabindex="0"><span><i class="fa-solid fa-right-to-bracket link-icon"></i> Login</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/s/planningindex.html" role="button" tabindex="0"><span><i class="fa-solid fa-newspaper link-icon"></i> News</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                </div>
+            </div>
+
+            <div class="page-group">
+                <h3 class="page-group-title"><i class="fa-solid fa-user"></i> Personal</h3>
+                <div class="links-grid">
+                    <div class="link-item page-item" data-module="/p/index.html" role="button" tabindex="0"><span><i class="fa-solid fa-award link-icon"></i> Certifications</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                    <div class="link-item page-item" data-module="/p/resume.html" role="button" tabindex="0"><span><i class="fa-solid fa-file-lines link-icon"></i> Resume</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== VIEW: MODULE (loaded inline via iframe) ===== -->
+        <section class="view" id="view-module">
+            <div class="section-heading">
+                <h2><i id="moduleIcon" class="fa-solid fa-cube"></i> <span id="moduleTitle">Module</span></h2>
+                <a id="moduleNewTab" href="#" target="_blank" rel="noopener" class="tab-btn link-open-new">Open in new tab <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+            </div>
+            <div class="module-frame-wrap">
+                <div class="module-frame-loading" id="moduleFrameLoading"><i class="fa-solid fa-circle-notch"></i> Loading module…</div>
+                <iframe class="module-frame" id="moduleFrame" title="Module content"></iframe>
+            </div>
+        </section>
+
+        <footer class="app-footer">&copy; 2026 Central Hub Admin Console.</footer>
+    </div>
+</div>
+
+<div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+<div class="search-overlay" id="searchOverlay">
+    <div class="search-modal">
+        <div class="search-input-row">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="Search pages, sections, or content across the site…" autocomplete="off" />
+            <button class="search-close-btn" id="searchCloseBtn" type="button" aria-label="Close search"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="search-results" id="searchResults">
+            <div class="search-hint">Type to search every page on the site by meaning, not just exact words.</div>
+        </div>
+        <div class="search-footer">
+            <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+            <span><kbd>Enter</kbd> open</span>
+            <span><kbd>Esc</kbd> close</span>
+        </div>
+    </div>
+</div>
+
+<script>
+(() => {
+    "use strict";
+
+    // ============================================================
+    // SUPABASE — one shared client for the whole page
+    // (previously two separate clients were created for the same
+    //  project; a single instance is enough and avoids duplicate
+    //  realtime sockets)
+    // ============================================================
+    const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const $ = (id) => document.getElementById(id);
+    const escapeHtml = (str) => {
+        if (!str) return '';
+        return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    };
+
+    // ============================================================
+    // ACCESS CONTROL — must pass before anything else runs
+    // ============================================================
+    async function checkAdminAccess() {
+        try {
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError || !session) {
+                window.location.href = '/index.html';
+                return false;
+            }
+            const { data: roleData, error: roleError } = await supabase
+                .from('user_roles')
+                .select('role, status')
+                .eq('user_id', session.user.id)
+                .maybeSingle();
+
+            if (roleError || !roleData || roleData.role !== 'admin' || roleData.status !== 'active') {
+                showAccessDenied();
+                return false;
+            }
+            return true;
+        } catch (err) {
+            console.error('Auth check error:', err);
+            showAccessDenied();
+            return false;
+        }
+    }
+
+    function showAccessDenied() {
+        const overlay = $('accessDeniedOverlay');
+        overlay.classList.add('active');
+        let countdown = 5;
+        const countdownEl = $('countdownNum');
+        const timer = setInterval(() => {
+            countdown--;
+            countdownEl.textContent = countdown;
+            if (countdown <= 0) {
+                clearInterval(timer);
+                window.location.href = '/index.html';
+            }
+        }, 1000);
+    }
+
+    // Cross-tab logout sync + 30-minute inactivity timeout
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_OUT' || !session) {
+            if (!window.location.pathname.includes('/index.html')) window.location.href = '/index.html';
+        }
+    });
+    (function () {
+        const INACTIVITY_TIMEOUT = 1800 * 1000;
+        let logoutTimer = null;
+        const performLogout = async () => {
+            try { await supabase.auth.signOut(); } catch (err) { console.error('Auto-logout error:', err); }
+            if (!window.location.pathname.includes('/index.html')) window.location.href = '/index.html';
+        };
+        const resetTimer = () => {
+            if (logoutTimer) clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(performLogout, INACTIVITY_TIMEOUT);
+        };
+        ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click', 'wheel'].forEach(ev =>
+            document.addEventListener(ev, resetTimer, { passive: true }));
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) resetTimer(); });
+        resetTimer();
+        window.addEventListener('beforeunload', () => { if (logoutTimer) clearTimeout(logoutTimer); });
+    })();
+
+    // ============================================================
+    // SIDEBAR / VIEW NAVIGATION (SPA-style, no reloads for these
+    // three internal sections — the four Module links still
+    // navigate to their own pages, that part is real navigation)
+    // ============================================================
+    const VIEW_META = {
+        overview: { title: 'Overview', sub: "Members, projects, minutes and inquiries — all in one place." },
+        live: { title: 'Live data', sub: 'Realtime counts and activity straight from Supabase.' },
+        links: { title: 'Quick launch', sub: 'Shortcuts to the tools this club uses most.' },
+        more: { title: 'More pages', sub: 'Every other page on this site, opened right here.' }
+    };
+    function switchView(name) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        const target = $('view-' + name);
+        if (!target) return;
+        target.classList.add('active');
+        const btn = document.querySelector(`.nav-item[data-view="${name}"]`);
+        if (btn) btn.classList.add('active');
+        const meta = VIEW_META[name];
+        if (meta) { $('pageTitle').textContent = meta.title; $('pageSubtitle').textContent = meta.sub; }
+        closeSidebarMobile();
+        if (name === 'live' && window.startLiveData) window.startLiveData();
+    }
+    document.querySelectorAll('.nav-item[data-view]').forEach(btn => {
+        btn.addEventListener('click', () => switchView(btn.dataset.view));
+    });
+
+    // Modules (Members / Projects / Minutes / Inquiries) open inline,
+    // inside Central Hub, via an iframe — not as a separate page.
+    const MODULE_META = {
+        'adminbanner.html': { title: 'Banner', icon: 'fa-solid fa-rectangle-ad', sub: 'Live meeting banner display settings.' },
+        'adminmembers.html': { title: 'Members', icon: 'fa-solid fa-users', sub: 'Active members and registration requests.' },
+        'adminupcomingproject.html': { title: 'Projects', icon: 'fa-solid fa-diagram-project', sub: 'Upcoming projects and applications.' },
+        'adminminutes.html': { title: 'Minutes', icon: 'fa-solid fa-file-lines', sub: 'View, edit and print meeting minutes.' },
+        'admininquiries.html': { title: 'Inquiries', icon: 'fa-solid fa-envelope', sub: 'Contact form messages.' },
+        '/dashboard.html': { title: 'Blog dashboard', icon: 'fa-solid fa-newspaper', sub: 'Write and manage blog posts.' },
+        '/index.html': { title: 'Portfolio home', icon: 'fa-solid fa-house', sub: 'Public portfolio homepage.' },
+        '/blog.html': { title: 'Blog', icon: 'fa-solid fa-newspaper', sub: 'Public blog listing.' },
+        '/git/index.html': { title: 'GitCheat sheet', icon: 'fa-brands fa-git-alt', sub: 'Interactive git cheat sheet.' },
+        '/r/index.html': { title: 'Club dashboard', icon: 'fa-solid fa-gauge', sub: 'Rotaract club dashboard.' },
+        '/r/board.html': { title: 'Board of directors', icon: 'fa-solid fa-user-tie', sub: 'Rotaract club board.' },
+        '/r/membership.html': { title: 'Membership', icon: 'fa-solid fa-id-card', sub: 'Rotaract club membership.' },
+        '/r/activemembers.html': { title: 'Active members', icon: 'fa-solid fa-users-line', sub: 'Rotaract active members.' },
+        '/r/upcomming-projects.html': { title: 'Upcoming projects', icon: 'fa-solid fa-calendar-check', sub: 'Rotaract upcoming projects.' },
+        '/r/past-projects.html': { title: 'Past projects archive', icon: 'fa-solid fa-box-archive', sub: 'Rotaract past projects.' },
+        '/r/project-verified-list.html': { title: 'Approved projects', icon: 'fa-solid fa-circle-check', sub: 'Rotaract approved project applications.' },
+        '/r/strategic-planning.html': { title: 'Strategic planning', icon: 'fa-solid fa-chess', sub: 'Rotaract strategic planning.' },
+        '/r/minutes.html': { title: 'Minutes builder', icon: 'fa-solid fa-file-pen', sub: 'Rotaract minutes builder.' },
+        '/r/loginminutes.html': { title: 'Minutes login', icon: 'fa-solid fa-right-to-bracket', sub: 'Rotaract minutes login.' },
+        '/r/anthem.html': { title: 'Anthem player', icon: 'fa-solid fa-music', sub: 'Anthem tab player.' },
+        '/gt/index.html': { title: 'Institute home', icon: 'fa-solid fa-graduation-cap', sub: 'Galkot Tech Computer Institute.' },
+        '/gt/gtregister.html': { title: 'Apply now', icon: 'fa-solid fa-pen-to-square', sub: 'Galkot Tech course application.' },
+        '/gt/courseverify.html': { title: 'Course verify', icon: 'fa-solid fa-certificate', sub: 'Galkot Tech course verification.' },
+        '/gt/enrollmentverify.html': { title: 'Enrollment status', icon: 'fa-solid fa-clipboard-check', sub: 'Galkot Tech enrollment status.' },
+        '/gt/stuadmin.html': { title: 'Course manager', icon: 'fa-solid fa-user-gear', sub: 'Galkot Tech course admin.' },
+        '/g/index.html': { title: 'Office home', icon: 'fa-solid fa-building-columns', sub: 'Inland Revenue Office, Galkot.' },
+        '/g/pan.html': { title: 'PAN registration docs', icon: 'fa-solid fa-id-card-clip', sub: 'PAN registration document list.' },
+        '/s/index.html': { title: 'Share portal login', icon: 'fa-solid fa-right-to-bracket', sub: 'Nepal Share Portal login.' },
+        '/s/planningindex.html': { title: 'Share portal news', icon: 'fa-solid fa-newspaper', sub: 'Nepal Share Portal news.' },
+        '/p/index.html': { title: 'Certifications', icon: 'fa-solid fa-award', sub: 'Professional certifications.' },
+        '/p/resume.html': { title: 'Resume', icon: 'fa-solid fa-file-lines', sub: 'Nabin Chalise — resume.' }
+    };
+    function openModule(file) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        $('view-module').classList.add('active');
+        const navBtn = document.querySelector(`.nav-item[data-module="${file}"]`);
+        if (navBtn) navBtn.classList.add('active');
+
+        const meta = MODULE_META[file] || { title: file, icon: 'fa-solid fa-cube', sub: 'Loaded inside Central Hub.' };
+        $('pageTitle').textContent = meta.title;
+        $('pageSubtitle').textContent = meta.sub;
+        $('moduleTitle').textContent = meta.title;
+        $('moduleIcon').className = meta.icon;
+        $('moduleNewTab').href = file;
+
+        const frame = $('moduleFrame');
+        const loading = $('moduleFrameLoading');
+        if (frame.dataset.current !== file) {
+            loading.classList.remove('hidden');
+            frame.addEventListener('load', () => loading.classList.add('hidden'), { once: true });
+            frame.src = file;
+            frame.dataset.current = file;
+        }
+        closeSidebarMobile();
+    }
+    document.querySelectorAll('[data-module]').forEach(el => {
+        el.addEventListener('click', () => openModule(el.dataset.module));
+        if (el.getAttribute('role') === 'button') {
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModule(el.dataset.module); }
+            });
+        }
+    });
+
+    // Mobile sidebar toggle
+    const sidebar = $('sidebar');
+    const menuToggle = $('menuToggle');
+    const scrim = $('sidebarScrim');
+    function openSidebarMobile() {
+        sidebar.classList.add('active');
+        scrim.classList.add('active');
+        menuToggle.setAttribute('aria-expanded', 'true');
+    }
+    function closeSidebarMobile() {
+        sidebar.classList.remove('active');
+        scrim.classList.remove('active');
+        menuToggle.setAttribute('aria-expanded', 'false');
+    }
+    menuToggle.addEventListener('click', () => {
+        sidebar.classList.contains('active') ? closeSidebarMobile() : openSidebarMobile();
+    });
+    scrim.addEventListener('click', closeSidebarMobile);
+
+    // Logout
+    $('logoutBtn').addEventListener('click', async () => {
+        if (confirm('Log out of the console?')) {
+            await supabase.auth.signOut();
+            window.location.href = '/index.html';
+        }
+    });
+
+    // ============================================================
+    // LIVE CLOCK
+    // ============================================================
+    function updateClock() {
+        const now = new Date();
+        $('clockTime').textContent = now.toLocaleTimeString('en-US', { hour12: false });
+        $('clockDate').textContent = now.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // ============================================================
+    // DAILY QUOTE
+    // ============================================================
+    function getDayOfYear() {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), 0, 0);
+        return Math.floor((now - start) / 86400000) + 1;
+    }
+    async function loadDailyQuote() {
+        const day = getDayOfYear();
+        $('quoteDayNumber').textContent = day;
+        const textEl = $('quoteText'), authorEl = $('quoteAuthorName'), statusEl = $('quoteStatus');
+        try {
+            const { data, error } = await supabase.from('spiritual_quotes').select('*').eq('day', day).maybeSingle();
+            if (error) throw error;
+            if (data) {
+                textEl.textContent = data.quote;
+                authorEl.textContent = data.author ? `— ${data.author}` : '';
+                statusEl.textContent = "Today's note";
+                statusEl.className = 'quote-status found';
+            } else {
+                textEl.textContent = 'No note set for today yet.';
+                authorEl.textContent = '';
+                statusEl.textContent = 'Not set';
+                statusEl.className = 'quote-status not-found';
+            }
+        } catch (err) {
+            console.error('Error loading daily quote:', err);
+            textEl.textContent = 'Could not load today\'s note.';
+            authorEl.textContent = '';
+            statusEl.textContent = 'Connection error';
+            statusEl.className = 'quote-status error';
+        }
+    }
+
+    // ============================================================
+    // FORM NOTIFICATIONS — instant alerts (toast + bell + sound)
+    // whenever a new inquiry, membership sign-up, or registration
+    // is inserted into the database, showing the person's name.
+    // ============================================================
+    const NOTIFY_TABLES = {
+        inquiries:               { label: 'New inquiry',            icon: 'fa-envelope',         nameField: 'full_name' },
+        course_inquiries:        { label: 'New course inquiry',     icon: 'fa-graduation-cap',   nameField: 'full_name' },
+        member_registrations:    { label: 'New membership sign-up', icon: 'fa-user-plus',        nameField: 'full_name' },
+        rotaract_galkot_members: { label: 'New Rotaract member',    icon: 'fa-users',            nameField: 'full_name' },
+        project_applications:    { label: 'New project application', icon: 'fa-diagram-project', nameField: 'applicant_name' }
+    };
+
+    let notifList = [];
+    let notifUnread = 0;
+    let audioCtx = null;
+
+    function playNotifChime() {
+        try {
+            audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+            const now = audioCtx.currentTime;
+            [880, 1175].forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.0001, now + i * 0.12);
+                gain.gain.exponentialRampToValueAtTime(0.18, now + i * 0.12 + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.12 + 0.28);
+                osc.connect(gain).connect(audioCtx.destination);
+                osc.start(now + i * 0.12);
+                osc.stop(now + i * 0.12 + 0.3);
+            });
+        } catch (_) {}
+    }
+
+    // Ask for browser-notification permission on first interaction
+    // (some browsers block a request that isn't triggered by a click).
+    if ('Notification' in window && Notification.permission === 'default') {
+        document.addEventListener('click', function requestNotifOnce() {
+            Notification.requestPermission().catch(() => {});
+            document.removeEventListener('click', requestNotifOnce);
+        }, { once: true });
+    }
+
+    function showToast(def, name) {
+        const stack = $('toastStack');
+        const card = document.createElement('div');
+        card.className = 'toast-card';
+        card.innerHTML = `
+            <div class="t-icon"><i class="fa-solid ${def.icon}"></i></div>
+            <div class="t-body">
+                <div class="t-title">${escapeHtml(def.label)}</div>
+                <div class="t-name">From <b>${escapeHtml(name)}</b></div>
+                <div class="t-meta">${new Date().toLocaleTimeString()}</div>
+            </div>
+            <button class="t-close" type="button" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></button>
+            <div class="t-bar"></div>`;
+        const remove = () => { card.classList.add('leaving'); setTimeout(() => card.remove(), 300); };
+        card.querySelector('.t-close').addEventListener('click', remove);
+        const timer = setTimeout(remove, 7000);
+        card.addEventListener('mouseenter', () => clearTimeout(timer));
+        stack.appendChild(card);
+        while (stack.children.length > 5) stack.removeChild(stack.firstChild);
+    }
+
+    function bumpBell() {
+        const bell = $('notifBellBtn');
+        bell.classList.remove('ringing');
+        void bell.offsetWidth; // restart animation
+        bell.classList.add('ringing');
+    }
+
+    function updateNotifBadge() {
+        const badge = $('notifBadge');
+        if (notifUnread > 0) {
+            badge.textContent = notifUnread > 99 ? '99+' : String(notifUnread);
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+
+    function renderNotifPanel() {
+        const list = $('notifPanelList');
+        if (notifList.length === 0) {
+            list.innerHTML = '<div class="notif-panel-empty">No notifications yet.</div>';
+            return;
+        }
+        list.innerHTML = notifList.slice(0, 30).map(n => `
+            <div class="notif-row">
+                <div class="ni-icon"><i class="fa-solid ${n.icon}"></i></div>
+                <div class="ni-body">
+                    <div class="ni-title">${escapeHtml(n.label)} — <b>${escapeHtml(n.name)}</b></div>
+                    <div class="ni-sub">${escapeHtml(n.table)}</div>
+                    <div class="ni-time">${timeAgo(n.time)}</div>
+                </div>
+            </div>`).join('');
+    }
+
+    function notifyFormEvent(table, record) {
+        const def = NOTIFY_TABLES[table];
+        if (!def) return;
+        const name = (record && (record[def.nameField] || record.full_name || record.applicant_name)) || 'Someone';
+        notifList.unshift({ label: def.label, icon: def.icon, name, table, time: new Date() });
+        if (notifList.length > 50) notifList.pop();
+        notifUnread++;
+        updateNotifBadge();
+        renderNotifPanel();
+        showToast(def, name);
+        bumpBell();
+        playNotifChime();
+        if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
+            try { new Notification(def.label, { body: name }); } catch (_) {}
+        }
+    }
+
+    $('notifBellBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const panel = $('notifPanel');
+        panel.classList.toggle('active');
+        if (panel.classList.contains('active')) { notifUnread = 0; updateNotifBadge(); }
+    });
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#notifBellWrap')) $('notifPanel').classList.remove('active');
+    });
+    $('notifClearBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifList = [];
+        renderNotifPanel();
+    });
+
+    // ============================================================
+    // SITE SEARCH — free "semantic-ish" search across every page,
+    // sourced from the `pages` table (title, content, meta
+    // description, keywords). No external API/key: this uses
+    // token overlap + lightweight fuzzy (typo-tolerant) matching
+    // instead of true embeddings, so it understands loose phrasing
+    // and misspellings reasonably well without any ongoing cost.
+    // ============================================================
+    let searchIndex = null;      // cached rows from `pages`
+    let searchIndexAt = 0;       // cache timestamp
+    const SEARCH_CACHE_MS = 5 * 60 * 1000;
+    let searchActiveIndex = -1;
+    let searchDebounce = null;
+
+    const STOPWORDS = new Set(['the','a','an','and','or','of','to','in','on','for','is','are','was','were','with','at','by','this','that','it','as','be','from']);
+
+    function stripHtml(html) {
+        if (!html) return '';
+        return String(html).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+    function tokenize(str) {
+        return (String(str || '').toLowerCase().match(/[a-z0-9]+/g) || []).filter(t => t.length > 1 && !STOPWORDS.has(t));
+    }
+    // Levenshtein distance, capped early for speed — only used on
+    // shortish words so a typo like "memberz" still matches "members".
+    function editDistance(a, b, max) {
+        if (Math.abs(a.length - b.length) > max) return max + 1;
+        const dp = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+        for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+        for (let i = 1; i <= a.length; i++) {
+            for (let j = 1; j <= b.length; j++) {
+                dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] : 1 + Math.min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+        return dp[a.length][b.length];
+    }
+    function fuzzyTokenMatch(queryToken, docToken) {
+        if (docToken === queryToken) return 3;
+        if (docToken.startsWith(queryToken) || queryToken.startsWith(docToken)) return 2;
+        if (queryToken.length >= 4 && docToken.length >= 4) {
+            const dist = editDistance(queryToken, docToken, 2);
+            if (dist <= 1) return 1.6;
+            if (dist === 2 && queryToken.length >= 6) return 1;
+        }
+        return 0;
+    }
+
+    async function ensureSearchIndex() {
+        if (searchIndex && (Date.now() - searchIndexAt) < SEARCH_CACHE_MS) return searchIndex;
+        const { data, error } = await supabase
+            .from('pages')
+            .select('id, page_path, page_directory, filename, title, content, meta_description, keywords, slug, is_published')
+            .eq('is_published', true);
+        if (error) { console.warn('search index load error', error); return searchIndex || []; }
+        searchIndex = (data || []).map(row => {
+            const plainContent = stripHtml(row.content);
+            return {
+                ...row,
+                _titleTokens: tokenize(row.title),
+                _keywordTokens: tokenize(row.keywords),
+                _metaTokens: tokenize(row.meta_description),
+                _contentTokens: tokenize(plainContent).slice(0, 400),
+                _plainContent: plainContent
+            };
+        });
+        searchIndexAt = Date.now();
+        return searchIndex;
+    }
+
+    function scorePage(queryTokens, page) {
+        let score = 0;
+        const matchedContentWords = new Set();
+        for (const qt of queryTokens) {
+            let best = 0;
+            for (const t of page._titleTokens) best = Math.max(best, fuzzyTokenMatch(qt, t) * 3);
+            for (const t of page._keywordTokens) best = Math.max(best, fuzzyTokenMatch(qt, t) * 2.5);
+            for (const t of page._metaTokens) best = Math.max(best, fuzzyTokenMatch(qt, t) * 1.6);
+            for (const t of page._contentTokens) {
+                const m = fuzzyTokenMatch(qt, t);
+                if (m > 0) matchedContentWords.add(t);
+                best = Math.max(best, m);
+            }
+            score += best;
+        }
+        if (matchedContentWords.size) score += Math.min(matchedContentWords.size, 3) * 0.5;
+        return score;
+    }
+
+    function buildSnippet(page, queryTokens) {
+        const text = page._plainContent;
+        if (!text) return escapeHtml(page.meta_description || '');
+        const lower = text.toLowerCase();
+        let hitPos = -1;
+        for (const qt of queryTokens) {
+            const idx = lower.indexOf(qt);
+            if (idx !== -1) { hitPos = idx; break; }
+        }
+        const start = hitPos === -1 ? 0 : Math.max(0, hitPos - 60);
+        let snippet = text.slice(start, start + 160);
+        if (start > 0) snippet = '…' + snippet;
+        if (start + 160 < text.length) snippet += '…';
+        let out = escapeHtml(snippet);
+        for (const qt of queryTokens) {
+            if (qt.length < 2) continue;
+            out = out.replace(new RegExp('(' + qt.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'), '<mark>$1</mark>');
+        }
+        return out;
+    }
+    function highlightTitle(title, queryTokens) {
+        let out = escapeHtml(title || '');
+        for (const qt of queryTokens) {
+            if (qt.length < 2) continue;
+            out = out.replace(new RegExp('(' + qt.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'), '<mark>$1</mark>');
+        }
+        return out;
+    }
+
+    // Every page this console already knows about (Members/Projects/
+    // Minutes/Inquiries modules + the whole "More pages" list) — this
+    // list is always available with zero network calls, so the search
+    // box can show every page by name the instant it opens, and match
+    // against it instantly while typing, even before any Supabase
+    // `pages` content search resolves (or if that table has no rows).
+    function buildStaticPages() {
+        return Object.keys(MODULE_META).map(path => {
+            const meta = MODULE_META[path];
+            return {
+                path,
+                title: meta.title,
+                icon: meta.icon || 'fa-solid fa-file-lines',
+                sub: meta.sub || '',
+                tokens: tokenize(`${meta.title} ${meta.sub} ${path}`)
+            };
+        }).sort((a, b) => a.title.localeCompare(b.title));
+    }
+    const STATIC_PAGES = buildStaticPages();
+
+    function scoreStaticPage(queryTokens, page) {
+        let score = 0;
+        for (const qt of queryTokens) {
+            let best = 0;
+            for (const t of page.tokens) best = Math.max(best, fuzzyTokenMatch(qt, t));
+            score += best;
+        }
+        return score;
+    }
+
+    function renderStaticRow(page, queryTokens) {
+        return `
+            <div class="search-result" data-path="${escapeHtml(page.path)}">
+                <div class="sr-icon"><i class="${page.icon}"></i></div>
+                <div class="sr-body">
+                    <div class="sr-title">${highlightTitle(page.title, queryTokens)}</div>
+                    <div class="sr-path">${escapeHtml(page.path)}</div>
+                    ${page.sub ? `<div class="sr-snippet">${escapeHtml(page.sub)}</div>` : ''}
+                </div>
+            </div>`;
+    }
+    function renderDbRow(page, queryTokens) {
+        return `
+            <div class="search-result" data-path="${escapeHtml(page.page_path || page.filename || '')}">
+                <div class="sr-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+                <div class="sr-body">
+                    <div class="sr-title">${highlightTitle(page.title || page.slug || page.page_path, queryTokens)}</div>
+                    <div class="sr-path">${escapeHtml(page.page_path || '')}</div>
+                    <div class="sr-snippet">${buildSnippet(page, queryTokens)}</div>
+                </div>
+            </div>`;
+    }
+    function attachResultHandlers() {
+        const rows = Array.from($('searchResults').querySelectorAll('.search-result'));
+        rows.forEach((el, i) => {
+            el.dataset.index = i;
+            el.addEventListener('click', () => goToSearchResult(el.dataset.path));
+        });
+        rows.forEach(el => el.classList.remove('active'));
+        searchActiveIndex = rows.length ? 0 : -1;
+        if (rows.length) rows[0].classList.add('active');
+    }
+    function renderAllPagesList() {
+        $('searchResults').innerHTML =
+            `<div class="search-section-label">All pages · ${STATIC_PAGES.length} total — click to open</div>` +
+            STATIC_PAGES.map(p => renderStaticRow(p, [])).join('');
+        attachResultHandlers();
+    }
+
+    async function runSiteSearch(query) {
+        const resultsEl = $('searchResults');
+        const q = query.trim();
+        if (!q) {
+            renderAllPagesList();
+            return;
+        }
+        const queryTokens = tokenize(q);
+        if (queryTokens.length === 0) {
+            renderAllPagesList();
+            return;
+        }
+
+        // 1) Instant: match the known page list (name + path) — this
+        //    never depends on the database, so it always finds pages
+        //    right away, letting you jump fast even before step 2 lands.
+        const staticMatches = STATIC_PAGES
+            .map(page => ({ page, score: scoreStaticPage(queryTokens, page) }))
+            .filter(r => r.score > 0.8)
+            .sort((a, b) => b.score - a.score);
+
+        const staticHtml = staticMatches.map(r => renderStaticRow(r.page, queryTokens)).join('');
+        resultsEl.innerHTML = staticHtml || '<div class="search-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Searching page content…</div>';
+        attachResultHandlers();
+
+        // 2) Enrich with full-text matches from the `pages` table content,
+        //    skipping anything already shown above.
+        const index = await ensureSearchIndex();
+        const shownPaths = new Set(staticMatches.map(r => r.page.path));
+        const dbMatches = index
+            .map(page => ({ page, score: scorePage(queryTokens, page) }))
+            .filter(r => r.score > 0.5 && !shownPaths.has(r.page.page_path))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 8);
+
+        if (staticMatches.length === 0 && dbMatches.length === 0) {
+            resultsEl.innerHTML = `<div class="search-empty">No matches for "${escapeHtml(q)}". Try different words.</div>`;
+            searchActiveIndex = -1;
+            return;
+        }
+        resultsEl.innerHTML = staticHtml + dbMatches.map(r => renderDbRow(r.page, queryTokens)).join('');
+        attachResultHandlers();
+    }
+
+    function goToSearchResult(path) {
+        if (!path) return;
+        closeSearchOverlay();
+        openModule(path);
+    }
+
+    function openSearchOverlay() {
+        const overlay = $('searchOverlay');
+        overlay.classList.add('active');
+        const input = $('searchInput');
+        input.value = '';
+        input.focus();
+        renderAllPagesList();
+        ensureSearchIndex();
+    }
+    function closeSearchOverlay() {
+        $('searchOverlay').classList.remove('active');
+    }
+    function moveSearchSelection(delta) {
+        const items = Array.from($('searchResults').querySelectorAll('.search-result'));
+        if (items.length === 0) return;
+        items[searchActiveIndex]?.classList.remove('active');
+        searchActiveIndex = (searchActiveIndex + delta + items.length) % items.length;
+        items[searchActiveIndex].classList.add('active');
+        items[searchActiveIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    $('siteSearchBtn').addEventListener('click', openSearchOverlay);
+    $('searchCloseBtn').addEventListener('click', closeSearchOverlay);
+    $('searchOverlay').addEventListener('click', (e) => { if (e.target === $('searchOverlay')) closeSearchOverlay(); });
+    $('searchInput').addEventListener('input', (e) => {
+        clearTimeout(searchDebounce);
+        const val = e.target.value;
+        searchDebounce = setTimeout(() => runSiteSearch(val), 180);
+    });
+    $('searchInput').addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown') { e.preventDefault(); moveSearchSelection(1); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); moveSearchSelection(-1); }
+        else if (e.key === 'Enter') {
+            e.preventDefault();
+            const active = $('searchResults').querySelector('.search-result.active') || $('searchResults').querySelector('.search-result');
+            if (active) goToSearchResult(active.dataset.path);
+        } else if (e.key === 'Escape') { closeSearchOverlay(); }
+    });
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            $('searchOverlay').classList.contains('active') ? closeSearchOverlay() : openSearchOverlay();
+        }
+    });
+
+    // ============================================================
+    // LIVE DATA — stats, feed, schema, realtime subscriptions
+    // Bug fixes vs. the old page:
+    //   - table counts now fetch in parallel (Promise.all) instead
+    //     of one-by-one, so this loads in ~1 request's time instead
+    //     of ~20x that
+    //   - "today" boundary now uses the *next* day's midnight
+    //     instead of 23:59:59, so a row created in the last second
+    //     of the day is no longer silently excluded
+    //   - the old "System Health" (CPU/Memory) and "Recent Logins"
+    //     panels showed fabricated Math.random() numbers and a
+    //     hardcoded fake name list — removed rather than shipped
+    //     as if they were real telemetry; the connection panel
+    //     below only shows a number we actually measured
+    // ============================================================
+    const TABLE_SCHEMA = {
+        admin_users: ['id', 'user_id', 'created_at'],
+        app_settings: ['id', 'setting_key', 'setting_value', 'updated_at', 'updated_by'],
+        approved_applications: ['id', 'project_name', 'applicant_name', 'email', 'phone_number', 'message', 'status', 'created_at', 'updated_at'],
+        blogs: ['id', 'title', 'slug', 'content', 'excerpt', 'featured_image', 'tags', 'status', 'views', 'created_at', 'updated_at', 'published_at'],
+        certifications: ['id', 'title', 'issuer', 'description', 'category', 'verify_url', 'issued_date', 'expiry_date', 'credential_id', 'created_at', 'updated_at'],
+        inquiries: ['id', 'full_name', 'email', 'message', 'created_at', 'status'],
+        meeting_minutes: ['id', 'data', 'created_at', 'user_id'],
+        member_registrations: ['id', 'timestamp', 'full_name', 'address', 'phone', 'blood_group', 'gender', 'email', 'birth_date', 'position', 'profession', 'profile_image', 'mentor', 'created_at', 'phone_number'],
+        members: ['id', 'name', 'address', 'rotary_id', 'phone', 'blood_group', 'gender', 'email', 'dob', 'designation', 'profession', 'photo_url', 'created_at', 'updated_at', 'birthday', 'position', 'photo', 'status', 'date_of_birth', 'mentor', 'phone_number', 'profile_image', 'timestamp'],
+        pages: ['id', 'page_path', 'page_directory', 'filename', 'title', 'content', 'meta_description', 'keywords', 'slug', 'is_published', 'created_at', 'updated_at'],
+        profiles: ['id', 'updated_at', 'full_name', 'rotaract_club', 'role'],
+        project_applications: ['id', 'project_name', 'applicant_name', 'email', 'phone_number', 'message', 'status', 'created_at', 'updated_at'],
+        project_applications_view: ['id', 'project_name', 'applicant_name', 'email', 'phone_number', 'message', 'application_status', 'application_date', 'project_description', 'project_date', 'project_location'],
+        rotaract_galkot_members: ['id', 'full_name', 'address', 'phone_number', 'blood_group', 'gender', 'email', 'date_of_birth', 'designation', 'profession', 'mentor', 'photo_url', 'created_at'],
+        spiritual_quotes: ['id', 'day', 'quote', 'author', 'category', 'created_at', 'updated_at'],
+        upcoming_projects: ['id', 'name', 'description', 'date', 'target_audience', 'location', 'status', 'created_at', 'updated_at']
+    };
+    const TABLE_NAMES = Object.keys(TABLE_SCHEMA);
+    const STAT_DEFS = [
+        { label: 'Members', icon: 'fa-users', table: 'members' },
+        { label: 'Registrations', icon: 'fa-user-plus', table: 'member_registrations' },
+        { label: 'Inquiries', icon: 'fa-envelope', table: 'inquiries' },
+        { label: 'Blogs', icon: 'fa-newspaper', table: 'blogs' },
+        { label: 'Upcoming projects', icon: 'fa-calendar-check', table: 'upcoming_projects' },
+        { label: 'Approved apps', icon: 'fa-check-circle', table: 'approved_applications' },
+        { label: 'Certifications', icon: 'fa-certificate', table: 'certifications' }
+    ];
+    const TODAY_TABLES = ['inquiries', 'blogs', 'approved_applications', 'upcoming_projects', 'member_registrations', 'members'];
+
+    let previousCounts = {};
+    let bootTime = Date.now();
+    let feedEntries = [];
+    let liveStarted = false;
+
+    function timeAgo(ts) {
+        const diff = Date.now() - new Date(ts).getTime();
+        if (diff < 60000) return 'just now';
+        const m = Math.floor(diff / 60000);
+        if (m < 60) return m + 'm ago';
+        const h = Math.floor(m / 60);
+        if (h < 24) return h + 'h ago';
+        return Math.floor(h / 24) + 'd ago';
+    }
+
+    async function countTable(table, useTodayFilter) {
+        try {
+            let query = supabase.from(table).select('*', { count: 'exact', head: true });
+            if (useTodayFilter) {
+                const now = new Date();
+                const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const startOfNextDay = new Date(startOfDay.getTime() + 86400000);
+                query = query.gte('created_at', startOfDay.toISOString()).lt('created_at', startOfNextDay.toISOString());
+            }
+            const { count, error } = await query;
+            if (error) { console.warn('count error for', table, error); return null; }
+            return count;
+        } catch (e) {
+            console.warn('count exception', table, e);
+            return null;
+        }
+    }
+
+    async function fetchAllCounts() {
+        // Fetch every table's count in parallel instead of sequentially.
+        const entries = await Promise.all(TABLE_NAMES.map(async (table) => {
+            const total = await countTable(table, false);
+            const today = TODAY_TABLES.includes(table) ? await countTable(table, true) : null;
+            return [table, total, today];
+        }));
+        const counts = {}, today = {};
+        for (const [table, total, todayCount] of entries) { counts[table] = total; today[table] = todayCount; }
+        return { counts, today };
+    }
+
+    function renderStats(counts, today) {
+        let html = '';
+        for (const def of STAT_DEFS) {
+            const val = counts[def.table] ?? '—';
+            const prev = previousCounts[def.table];
+            let delta = '';
+            if (prev !== undefined && val !== '—' && prev !== val) {
+                const diff = val - prev;
+                delta = `<span class="badge-delta ${diff >= 0 ? '' : 'neg'}">${diff >= 0 ? '+' : ''}${diff}</span>`;
+            }
+            let todayBadge = '';
+            const todayVal = today && today[def.table] !== undefined && today[def.table] !== null ? today[def.table] : null;
+            if (todayVal !== null) todayBadge = `<span class="badge-today">today +${todayVal}</span>`;
+            html += `
+                <div class="stat-card">
+                    <i class="fa-solid ${def.icon}"></i>
+                    <div class="num">${val}</div>
+                    <div class="label">${def.label}</div>
+                    <div class="badges">${delta}${todayBadge}</div>
+                </div>`;
+        }
+        $('statGrid').innerHTML = html;
+        for (const def of STAT_DEFS) if (counts[def.table] !== undefined) previousCounts[def.table] = counts[def.table];
+    }
+
+    function renderSchema(counts) {
+        let totalRows = 0, rows = '';
+        for (const table of TABLE_NAMES) {
+            const c = counts[table] ?? '—';
+            if (typeof c === 'number') totalRows += c;
+            const cols = TABLE_SCHEMA[table] || [];
+            rows += `<tr><td><span class="mono">${escapeHtml(table)}</span></td><td>${c}</td><td style="color:var(--text-faint);font-size:0.72rem;">${escapeHtml(cols.slice(0, 3).join(', '))}${cols.length > 3 ? ' …' : ''}</td></tr>`;
+        }
+        $('schemaBody').innerHTML = rows;
+        $('tableCountSm').textContent = $('tableCountLg').textContent = TABLE_NAMES.length;
+        $('rowCountSm').textContent = $('rowCountLg').textContent = totalRows;
+        $('schemaTime').textContent = new Date().toLocaleTimeString();
+    }
+
+    function pushFeed(message, type) {
+        feedEntries.unshift({ message, time: new Date(), type: type || 'info' });
+        if (feedEntries.length > 12) feedEntries.pop();
+        renderFeed();
+    }
+    function renderFeed() {
+        const container = $('feedContainer');
+        if (feedEntries.length === 0) {
+            container.innerHTML = `<div class="feed-item"><span class="ftitle">Waiting for events…</span></div>`;
+            return;
+        }
+        let html = '';
+        for (const e of feedEntries) {
+            const label = e.type === 'insert' ? 'INSERT' : e.type === 'update' ? 'UPDATE' : e.type === 'delete' ? 'DELETE' : 'INFO';
+            html += `
+                <div class="feed-item">
+                    <span class="ftitle">${escapeHtml(e.message)}</span>
+                    <span class="fmeta">${timeAgo(e.time)}</span>
+                    <span class="fbadge">${label}</span>
+                </div>`;
+        }
+        container.innerHTML = html;
+    }
+
+    function updateLatencyDisplay(ms) {
+        $('latencyVal').textContent = Math.round(ms) + ' ms';
+        const bar = $('latencyBar');
+        bar.style.width = Math.min(100, (ms / 600) * 100) + '%';
+        bar.style.background = ms > 400 ? 'var(--danger)' : ms > 200 ? 'var(--accent)' : 'var(--success)';
+        const up = Date.now() - bootTime;
+        const hh = String(Math.floor(up / 3600000)).padStart(2, '0');
+        const mm = String(Math.floor((up % 3600000) / 60000)).padStart(2, '0');
+        const ss = String(Math.floor((up % 60000) / 1000)).padStart(2, '0');
+        $('uptimeDisplay').textContent = `${hh}:${mm}:${ss}`;
+    }
+
+    function setStatus(ok, text) {
+        const strip = $('statusStrip');
+        strip.classList.toggle('degraded', !ok);
+        $('statusStripText').textContent = text;
+    }
+
+    async function pingSupabase() {
+        const t0 = performance.now();
+        try {
+            await supabase.from('members').select('id', { count: 'exact', head: true });
+            const ms = Math.round(performance.now() - t0);
+            updateLatencyDisplay(ms);
+            setStatus(true, `Live · ${ms}ms`);
+        } catch (_) {
+            updateLatencyDisplay(999);
+            setStatus(false, 'Degraded');
+        }
+    }
+
+    async function refreshDashboard() {
+        // Change events are reported by the realtime subscriptions in
+        // subscribeAll() as they happen; this poll only keeps the
+        // counts and schema table numerically fresh every 18s.
+        const data = await fetchAllCounts();
+        renderStats(data.counts, data.today);
+        renderSchema(data.counts);
+    }
+
+    function subscribeAll() {
+        const tables = ['inquiries', 'members', 'member_registrations', 'blogs', 'upcoming_projects', 'approved_applications', 'project_applications', 'course_inquiries', 'rotaract_galkot_members'];
+        for (const table of tables) {
+            try {
+                supabase.channel(`rt-${table}`)
+                    .on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
+                        pushFeed(`${table} · ${payload.eventType.toUpperCase()}`, payload.eventType.toLowerCase());
+                        if (payload.eventType === 'INSERT' && NOTIFY_TABLES[table]) {
+                            notifyFormEvent(table, payload.new);
+                        }
+                        refreshDashboard();
+                    })
+                    .subscribe();
+            } catch (_) {}
+        }
+    }
+
+    async function initLiveData() {
+        if (liveStarted) return;
+        liveStarted = true;
+        await refreshDashboard();
+        pushFeed('Console connected', 'info');
+        await pingSupabase();
+        subscribeAll();
+        setInterval(refreshDashboard, 18000);
+        setInterval(pingSupabase, 6000);
+    }
+    window.startLiveData = initLiveData;
+
+    // ============================================================
+    // QUICK LAUNCH TABS
+    // ============================================================
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const linkItems = document.querySelectorAll('.link-item');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            tabButtons.forEach(b => b.classList.remove('active'));
+            button.classList.add('active');
+            const filter = button.getAttribute('data-filter');
+            linkItems.forEach(item => {
+                const category = item.getAttribute('data-category');
+                item.classList.toggle('hidden', filter !== 'all' && category !== filter);
+            });
+        });
+    });
+
+    // ============================================================
+    // MAIN INIT
+    // ============================================================
+    async function initConsole() {
+        const hasAccess = await checkAdminAccess();
+        if (!hasAccess) return;
+        await loadDailyQuote();
+        await initLiveData(); // load stats immediately so Overview isn't empty
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initConsole);
+    } else {
+        initConsole();
+    }
+})();
+</script>
+</body>
+</html>

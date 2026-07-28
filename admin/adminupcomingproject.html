@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upcoming Projects · Admin Only</title>
+    <meta name="description" content="Admin-only management for upcoming projects and applications." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+    <style>
+        /* --- BASE VARIABLES --- */
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --cls-personal: #38bdf8;
+            --cls-professional: #34d399;
+            --cls-galkot: #fbbf24;
+            --cls-rotaract: #f43f5e;
+            --cls-links: #a78bfa;
+            --primary: #D70060;
+            --secondary: #015491;
+            --cta-logout: #ef4444;
+            --cta-logout-hover: #dc2626;
+            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-dark: #f8fafc;
+                --bg-card: rgba(255, 255, 255, 0.8);
+                --border-color: rgba(0, 0, 0, 0.08);
+                --text-main: #0f172a;
+                --text-muted: #64748b;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(244, 63, 94, 0.03) 0%, transparent 40%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        /* --- ACCESS DENIED OVERLAY --- */
+        .access-denied-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 2rem;
+            text-align: center;
+        }
+        .access-denied-overlay.active {
+            display: flex;
+        }
+        .access-denied-overlay .denied-icon {
+            font-size: 5rem;
+            color: #ef4444;
+        }
+        .access-denied-overlay h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #ef4444;
+        }
+        .access-denied-overlay p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 500px;
+        }
+        .access-denied-overlay .btn-go-back {
+            background: var(--cls-galkot);
+            color: #000 !important;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 48px;
+        }
+        .access-denied-overlay .btn-go-back:hover {
+            background: #e5a800;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+
+        /* --- NAVBAR --- */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition-smooth);
+        }
+        .navbar.scrolled {
+            padding: 0.6rem 2rem;
+            background: rgba(15, 23, 42, 0.95);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        .nav-logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .nav-logo i {
+            color: var(--cls-galkot);
+        }
+        .nav-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+        .btn-back {
+            background: var(--cls-galkot);
+            color: #000 !important;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition-smooth);
+            text-decoration: none;
+            min-height: 44px;
+        }
+        .btn-back:hover {
+            background: #e5a800;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+        .btn-logout {
+            background: var(--cta-logout);
+            color: #ffffff !important;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition-smooth);
+            text-decoration: none;
+            min-height: 44px;
+        }
+        .btn-logout:hover {
+            background: var(--cta-logout-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        /* --- HERO --- */
+        .hero {
+            padding: 8rem 2rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            background: linear-gradient(to right, var(--cls-galkot), var(--cls-links));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        /* --- WORKSPACE SECTION --- */
+        .workspace-section {
+            max-width: 1200px;
+            margin: 0 auto 3rem;
+            padding: 0 2rem;
+        }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .panel-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .panel-header h2 i {
+            color: var(--cls-galkot);
+        }
+        .panel-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition-smooth);
+            font-family: 'Inter', sans-serif;
+        }
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .clear-btn-accent {
+            border-color: rgba(239, 68, 68, 0.25) !important;
+        }
+        .clear-btn-accent:hover {
+            background: rgba(239, 68, 68, 0.1) !important;
+            border-color: rgba(239, 68, 68, 0.6) !important;
+        }
+        .btn-add-accent {
+            background: var(--cls-professional);
+            border-color: var(--cls-professional);
+            color: #000 !important;
+        }
+        .btn-add-accent:hover {
+            background: #2bbf8a;
+            border-color: #2bbf8a;
+        }
+        .btn-edit-accent {
+            background: var(--cls-galkot);
+            border-color: var(--cls-galkot);
+            color: #000 !important;
+        }
+        .btn-edit-accent:hover {
+            background: #e5a800;
+            border-color: #e5a800;
+        }
+        .btn-primary-accent {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff !important;
+        }
+        .btn-primary-accent:hover {
+            background: #b50051;
+            border-color: #b50051;
+        }
+
+        .projects-feed {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+        .project-node {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--cls-galkot);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: var(--transition-smooth);
+        }
+        .project-node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+        .node-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .node-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .node-detail {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .node-message {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            color: rgba(248, 250, 252, 0.9);
+            white-space: pre-wrap;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        .status-msg {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .print-selector-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .print-selector-bar select {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            min-height: 44px;
+            cursor: pointer;
+        }
+        .print-selector-bar select option {
+            background: #1e293b;
+            color: #fff;
+        }
+
+        .action-btn-sm {
+            padding: 0.35rem 0.85rem;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition-smooth);
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .action-btn-sm.edit-btn {
+            background: var(--cls-galkot);
+            color: #000;
+        }
+        .action-btn-sm.edit-btn:hover {
+            background: #e5a800;
+            transform: scale(1.02);
+        }
+        .action-btn-sm.delete-btn {
+            background: #f43f5e;
+            color: #fff;
+        }
+        .action-btn-sm.delete-btn:hover {
+            background: #e11d48;
+            transform: scale(1.02);
+        }
+        .action-btn-sm.approve-btn {
+            background: #34d399;
+            color: #000;
+        }
+        .action-btn-sm.approve-btn:hover {
+            background: #2bbf8a;
+            transform: scale(1.02);
+        }
+        .action-btn-sm.reject-btn {
+            background: #ef4444;
+            color: #fff;
+        }
+        .action-btn-sm.reject-btn:hover {
+            background: #dc2626;
+            transform: scale(1.02);
+        }
+        .application-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-pending {
+            background: #fbbf24;
+            color: #000;
+        }
+        .status-approved {
+            background: #34d399;
+            color: #000;
+        }
+        .status-rejected {
+            background: #ef4444;
+            color: #fff;
+        }
+        .status-new {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 2.5rem;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .modal-content::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            min-height: 44px;
+            min-width: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-close:hover {
+            color: var(--text-main);
+            transform: rotate(90deg);
+        }
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .modal-title i {
+            color: var(--cls-galkot);
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: var(--transition-smooth);
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--cls-galkot);
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+        }
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: flex-end;
+        }
+        .form-actions .action-btn {
+            padding: 0.7rem 1.5rem;
+            font-weight: 600;
+        }
+        .btn-save-accent {
+            background: var(--cls-professional);
+            border-color: var(--cls-professional);
+            color: #000 !important;
+        }
+        .btn-save-accent:hover {
+            background: #2bbf8a;
+            border-color: #2bbf8a;
+        }
+        .btn-cancel-accent {
+            border-color: rgba(239, 68, 68, 0.3) !important;
+        }
+        .btn-cancel-accent:hover {
+            background: rgba(239, 68, 68, 0.1) !important;
+            border-color: rgba(239, 68, 68, 0.6) !important;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #34d399;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            font-weight: 500;
+            z-index: 9999;
+            max-width: 400px;
+            animation: slideIn 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+        .toast.info {
+            border-left-color: #3b82f6;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            .projects-feed {
+                grid-template-columns: 1fr;
+            }
+            .modal-content {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .print-selector-bar {
+                flex-direction: column;
+            }
+            .print-selector-bar select {
+                width: 100%;
+            }
+            .navbar {
+                padding: 0.75rem 1rem;
+            }
+            .workspace-section {
+                padding: 0 1rem;
+            }
+            .panel-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .panel-actions {
+                flex-wrap: wrap;
+            }
+            .nav-actions {
+                flex-wrap: wrap;
+            }
+            .btn-back,
+            .btn-logout {
+                font-size: 0.75rem;
+                padding: 0.4rem 0.8rem;
+            }
+            .access-denied-overlay h2 {
+                font-size: 1.8rem;
+            }
+            .access-denied-overlay .denied-icon {
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== ACCESS DENIED OVERLAY ===== -->
+    <div class="access-denied-overlay" id="accessDeniedOverlay">
+        <div class="denied-icon"><i class="fa-solid fa-lock"></i></div>
+        <h2>⛔ Access Denied</h2>
+        <p>This area is strictly for administrators only. You do not have permission to view this page.</p>
+        <button class="btn-go-back" id="goBackBtn">
+            <i class="fa-solid fa-arrow-left"></i> Go Back
+        </button>
+    </div>
+
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar" id="navbar" aria-label="Main Navigation">
+        <a href="#" class="nav-logo">
+            <i class="fa-solid fa-project-diagram" aria-hidden="true"></i> Project Management · Admin Only
+        </a>
+        <div class="nav-actions">
+            <button class="btn-back" id="backToAdminBtn">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to Admin
+            </button>
+            <button class="btn-logout" id="logout-btn">
+                <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Log Out
+            </button>
+        </div>
+    </nav>
+
+    <!-- ===== HERO ===== -->
+    <header class="hero">
+        <h1><i class="fa-solid fa-project-diagram" style="color:var(--cls-galkot);"></i> Upcoming Projects</h1>
+        <p>Manage your projects and track applications in one place.</p>
+    </header>
+
+    <!-- ===== PROJECTS MANAGEMENT ===== -->
+    <section class="workspace-section" id="projects-panel">
+        <div class="panel-header">
+            <h2><i class="fa-solid fa-project-diagram" aria-hidden="true" style="color: var(--cls-galkot);"></i> Upcoming Projects</h2>
+            <div class="panel-actions">
+                <button class="action-btn btn-add-accent" id="addProjectBtn"><i class="fa-solid fa-plus"></i> Add New Project</button>
+                <button class="action-btn btn-edit-accent" id="editProjectBtn"><i class="fa-solid fa-pen-to-square"></i> Edit Selected</button>
+                <button class="action-btn clear-btn-accent" id="clear-projects-btn"><i class="fa-solid fa-trash-can" style="color:#ef4444;"></i> Clear All</button>
+                <button class="action-btn" id="refresh-projects-btn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+            </div>
+        </div>
+        <div class="print-selector-bar">
+            <label for="projectSelect" style="font-weight:600;font-size:0.9rem;"><i class="fa-solid fa-list"></i> Select Project:</label>
+            <select id="projectSelect"><option value="">-- Loading projects --</option></select>
+            <button class="action-btn btn-primary-accent" id="viewProjectBtn" style="background: var(--cls-links); border-color: var(--cls-links);"><i class="fa-solid fa-eye"></i> View Details</button>
+        </div>
+        <div class="projects-feed" id="projects-feed">
+            <div class="status-msg">Loading upcoming projects...</div>
+        </div>
+    </section>
+
+    <!-- ===== PROJECT APPLICATIONS ===== -->
+    <section class="workspace-section" id="applications-panel">
+        <div class="panel-header">
+            <h2><i class="fa-solid fa-users" aria-hidden="true" style="color: var(--cls-professional);"></i> Project Applications</h2>
+            <div class="panel-actions">
+                <button class="action-btn" id="refresh-applications-btn"><i class="fa-solid fa-rotate"></i> Refresh Logs</button>
+                <button class="action-btn clear-btn-accent" id="clear-applications-btn"><i class="fa-solid fa-trash-can" style="color:#ef4444;"></i> Clear All Logs</button>
+            </div>
+        </div>
+        <div class="projects-feed" id="applications-feed">
+            <div class="status-msg">Loading project applications...</div>
+        </div>
+    </section>
+
+    <!-- ===== PROJECT MODAL ===== -->
+    <div class="modal-overlay" id="projectModal">
+        <div class="modal-content">
+            <button class="modal-close" id="projectModalCloseBtn" aria-label="Close project modal"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-title"><i class="fa-solid fa-project-diagram" style="color: var(--cls-galkot);"></i> <span id="projectModalTitle">Add New Project</span></div>
+            <form id="projectForm">
+                <input type="hidden" id="projectId" value="">
+                <div class="form-group"><label for="projectName">Project Name *</label><input type="text" id="projectName" placeholder="e.g. Project Akshara: Rural E-Library Set up" required /></div>
+                <div class="form-row">
+                    <div class="form-group"><label for="projectDate">Date *</label><input type="text" id="projectDate" placeholder="e.g. August 2026" required /></div>
+                    <div class="form-group"><label for="projectAudience">Target Audience *</label><input type="text" id="projectAudience" placeholder="e.g. Public School Students" required /></div>
+                </div>
+                <div class="form-group"><label for="projectLocation">Location *</label><input type="text" id="projectLocation" placeholder="e.g. Ward No. 3, Galkot, Baglung" required /></div>
+                <div class="form-group"><label for="projectDescription">Project Description</label><textarea id="projectDescription" placeholder="Brief description of the project..." rows="3"></textarea></div>
+                <div class="form-actions">
+                    <button type="button" class="action-btn btn-cancel-accent" id="projectModalCancelBtn">Cancel</button>
+                    <button type="submit" class="action-btn btn-save-accent"><i class="fa-solid fa-floppy-disk"></i> <span id="projectSubmitBtnText">Save Project</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <p>&copy; 2026 Project Management Dashboard · Admin Only</p>
+    </footer>
+
+    <!-- ============================================================ -->
+    <!-- ===== JAVASCRIPT - SECURE VERSION ===== -->
+    <!-- ============================================================ -->
+    <script>
+        (() => {
+            "use strict";
+
+            const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+            const SUPABASE_KEY =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            // ============================================================
+            // ===== SECURE ADMIN ACCESS CONTROL (Database-based) =====
+            // ============================================================
+            const accessDeniedOverlay = document.getElementById('accessDeniedOverlay');
+
+            const showAccessDenied = () => {
+                accessDeniedOverlay.classList.add('active');
+                document.querySelectorAll('.workspace-section').forEach(el => el.style.display = 'none');
+                document.querySelector('.hero').style.display = 'none';
+            };
+
+            const hideAccessDenied = () => {
+                accessDeniedOverlay.classList.remove('active');
+                document.querySelectorAll('.workspace-section').forEach(el => el.style.display = 'block');
+                document.querySelector('.hero').style.display = 'block';
+            };
+
+            document.getElementById('goBackBtn')?.addEventListener('click', () => {
+                window.location.href = '/index.html';
+            });
+
+            // ============================================================
+            // CHECK ADMIN ROLE FROM DATABASE (user_roles table)
+            // ============================================================
+            const checkAdminRole = async () => {
+                try {
+                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+                    if (sessionError || !session) {
+                        window.location.href = '/index.html';
+                        return false;
+                    }
+
+                    // Check user_roles table for admin role
+                    const { data: roleData, error: roleError } = await supabase
+                        .from('user_roles')
+                        .select('role')
+                        .eq('user_id', session.user.id)
+                        .maybeSingle();
+
+                    if (roleError) {
+                        console.error('Error fetching role:', roleError);
+                        showAccessDenied();
+                        return false;
+                    }
+
+                    if (!roleData || roleData.role !== 'admin') {
+                        console.warn('Access denied: User does not have admin role.');
+                        showAccessDenied();
+                        return false;
+                    }
+
+                    hideAccessDenied();
+                    return true;
+
+                } catch (err) {
+                    console.error('Auth check error:', err);
+                    showAccessDenied();
+                    return false;
+                }
+            };
+
+            let allProjects = [];
+            let editingProjectId = null;
+
+            const escapeHtml = (str) => {
+                if (!str) return '';
+                return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g,
+                    "&quot;").replace(/'/g, "&#039;");
+            };
+
+            // ---- TOAST ----
+            const showToast = (message, type = 'success') => {
+                const existing = document.querySelector('.toast');
+                if (existing) existing.remove();
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => toast.remove(), 400);
+                }, 3000);
+            };
+
+            // ============================================================
+            // ===== LOAD PROJECTS =====
+            // ============================================================
+            const loadProjects = async () => {
+                const isAuthorized = await checkAdminRole();
+                if (!isAuthorized) return;
+
+                const feedContainer = document.getElementById('projects-feed');
+                const selectDropdown = document.getElementById('projectSelect');
+                if (!feedContainer) return;
+                feedContainer.innerHTML =
+                    '<div class="status-msg"><i class="fa-solid fa-spinner fa-spin"></i> Loading projects...</div>';
+                try {
+                    const { data, error } = await supabase
+                        .from('upcoming_projects')
+                        .select('*')
+                        .order('id', { ascending: false });
+                    if (error) throw error;
+                    allProjects = data || [];
+
+                    if (!allProjects.length) {
+                        selectDropdown.innerHTML = '<option value="">-- No projects available --</option>';
+                        feedContainer.innerHTML =
+                            '📋 No upcoming projects created yet. Click "Add New Project" to get started.';
+                        return;
+                    }
+
+                    selectDropdown.innerHTML = allProjects.map((project, idx) =>
+                        `<option value="${project.id}" ${idx === 0 ? 'selected' : ''}>${escapeHtml(project.name)}</option>`
+                    ).join('');
+
+                    feedContainer.innerHTML = allProjects.map(project => `
+                        <article class="project-node" style="border-left-color: var(--cls-galkot);">
+                            <div class="node-meta">
+                                <span>ID: ${project.id}</span>
+                                <span>${escapeHtml(project.date)}</span>
+                            </div>
+                            <div class="node-title" style="color: var(--cls-galkot);">
+                                <i class="fa-solid fa-project-diagram" aria-hidden="true"></i> ${escapeHtml(project.name)}
+                            </div>
+                            <div class="node-detail">
+                                <i class="fa-solid fa-users" aria-hidden="true"></i> ${escapeHtml(project.target_audience)}
+                            </div>
+                            <div class="node-detail">
+                                <i class="fa-solid fa-location-dot" aria-hidden="true"></i> ${escapeHtml(project.location)}
+                            </div>
+                            ${project.description ? `<div class="node-message">${escapeHtml(project.description)}</div>` : ''}
+                            <div class="application-actions">
+                                <button class="action-btn-sm edit-btn" data-id="${project.id}" data-action="edit"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                                <button class="action-btn-sm delete-btn" data-id="${project.id}" data-action="delete"><i class="fa-solid fa-trash"></i> Delete</button>
+                            </div>
+                        </article>
+                    `).join('');
+
+                    // Attach event listeners
+                    document.querySelectorAll('.project-node .action-btn-sm').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const id = parseInt(btn.dataset.id);
+                            const action = btn.dataset.action;
+                            if (action === 'delete') {
+                                deleteProject(id);
+                            } else if (action === 'edit') {
+                                editProject(id);
+                            }
+                        });
+                    });
+
+                } catch (err) {
+                    feedContainer.innerHTML =
+                        `<div class="status-msg" style="color:#ef4444;"><i class="fa-solid fa-circle-exclamation"></i> Error loading projects: ${err.message}</div>`;
+                    selectDropdown.innerHTML = '<option value="">Error loading projects</option>';
+                    showToast('Error loading projects: ' + err.message, 'error');
+                }
+            };
+
+            // ============================================================
+            // ===== LOAD APPLICATIONS =====
+            // ============================================================
+            const loadApplications = async () => {
+                const isAuthorized = await checkAdminRole();
+                if (!isAuthorized) return;
+
+                const feedContainer = document.getElementById('applications-feed');
+                if (!feedContainer) return;
+                feedContainer.innerHTML =
+                    '<div class="status-msg"><i class="fa-solid fa-spinner fa-spin"></i> Loading applications...</div>';
+                try {
+                    const { data, error } = await supabase
+                        .from('project_applications')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    if (error) throw error;
+
+                    if (!data || data.length === 0) {
+                        feedContainer.innerHTML = '📭 No applications submitted yet.';
+                        return;
+                    }
+
+                    feedContainer.innerHTML = data.map(item => {
+                        const statusColor = item.status === 'pending' ? '#fbbf24' :
+                            item.status === 'approved' ? '#34d399' :
+                            item.status === 'rejected' ? '#ef4444' : '#3b82f6';
+                        return `
+                            <article class="project-node" style="border-left-color: ${statusColor};">
+                                <div class="node-meta">
+                                    <span>ID: ${item.id}</span>
+                                    <span>${new Date(item.created_at).toLocaleString()}</span>
+                                </div>
+                                <div class="node-title" style="color: ${statusColor};">
+                                    <i class="fa-solid fa-project-diagram" aria-hidden="true"></i> ${escapeHtml(item.project_name)}
+                                </div>
+                                <div class="node-title" style="font-size: 1rem; color: var(--text-main);">
+                                    <i class="fa-regular fa-user" aria-hidden="true"></i> ${escapeHtml(item.applicant_name)}
+                                </div>
+                                <a href="mailto:${escapeHtml(item.email)}" class="node-detail" style="color: var(--cls-personal); text-decoration: none;">
+                                    <i class="fa-solid fa-envelope" aria-hidden="true"></i> ${escapeHtml(item.email)}
+                                </a>
+                                <div class="node-detail">
+                                    <i class="fa-solid fa-phone" aria-hidden="true"></i> ${escapeHtml(item.phone_number)}
+                                </div>
+                                ${item.message ? `<div class="node-message">${escapeHtml(item.message)}</div>` : ''}
+                                <div class="application-actions">
+                                    <span class="status-badge status-${item.status || 'pending'}">${item.status || 'pending'}</span>
+                                    <button class="action-btn-sm approve-btn" data-id="${item.id}" data-action="approve"><i class="fa-regular fa-check"></i> Approve</button>
+                                    <button class="action-btn-sm reject-btn" data-id="${item.id}" data-action="reject"><i class="fa-regular fa-circle-xmark"></i> Reject</button>
+                                    <button class="action-btn-sm delete-btn" data-id="${item.id}" data-action="delete-app"><i class="fa-solid fa-trash"></i> Delete</button>
+                                </div>
+                            </article>
+                        `;
+                    }).join('');
+
+                    // Attach event listeners for applications
+                    document.querySelectorAll('#applications-feed .action-btn-sm').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            e.stopPropagation();
+                            const id = parseInt(btn.dataset.id);
+                            const action = btn.dataset.action;
+                            if (action === 'approve') {
+                                await updateApplicationStatus(id, 'approved');
+                            } else if (action === 'reject') {
+                                await updateApplicationStatus(id, 'rejected');
+                            } else if (action === 'delete-app') {
+                                await deleteApplication(id);
+                            }
+                        });
+                    });
+
+                } catch (err) {
+                    feedContainer.innerHTML =
+                        `<div class="status-msg" style="color:#ef4444;"><i class="fa-solid fa-circle-exclamation"></i> Error loading applications: ${err.message}</div>`;
+                    showToast('Error loading applications: ' + err.message, 'error');
+                }
+            };
+
+            // ============================================================
+            // ===== PROJECT FUNCTIONS =====
+            // ============================================================
+            const editProject = (id) => {
+                const project = allProjects.find(p => p.id === id);
+                if (!project) { showToast('Project not found.', 'error'); return; }
+                openProjectModal(project);
+            };
+
+            const deleteProject = async (id) => {
+                if (!confirm(`⚠️ Are you sure you want to delete project #${id} permanently?`)) return;
+                try {
+                    const { error } = await supabase
+                        .from('upcoming_projects')
+                        .delete()
+                        .eq('id', id);
+                    if (error) throw error;
+                    showToast(`🗑️ Project #${id} deleted!`, 'success');
+                    await loadProjects();
+                } catch (err) {
+                    showToast('❌ Error deleting project: ' + err.message, 'error');
+                }
+            };
+
+            // ============================================================
+            // ===== APPLICATION FUNCTIONS =====
+            // ============================================================
+            const updateApplicationStatus = async (id, status) => {
+                try {
+                    const { error } = await supabase
+                        .from('project_applications')
+                        .update({ status: status })
+                        .eq('id', id);
+                    if (error) throw error;
+                    showToast(`✅ Application #${id} ${status}!`, 'success');
+                    await loadApplications();
+                } catch (err) {
+                    showToast('❌ Error updating status: ' + err.message, 'error');
+                }
+            };
+
+            const deleteApplication = async (id) => {
+                if (!confirm(`⚠️ Are you sure you want to delete application #${id}?`)) return;
+                try {
+                    const { error } = await supabase
+                        .from('project_applications')
+                        .delete()
+                        .eq('id', id);
+                    if (error) throw error;
+                    showToast(`🗑️ Application #${id} deleted!`, 'success');
+                    await loadApplications();
+                } catch (err) {
+                    showToast('❌ Error deleting application: ' + err.message, 'error');
+                }
+            };
+
+            // ============================================================
+            // ===== PROJECT MODAL =====
+            // ============================================================
+            const openProjectModal = (project = null) => {
+                const modal = document.getElementById('projectModal');
+                const title = document.getElementById('projectModalTitle');
+                const submitBtnText = document.getElementById('projectSubmitBtnText');
+
+                if (project) {
+                    title.innerText = 'Edit Project';
+                    submitBtnText.innerText = 'Update Project';
+                    document.getElementById('projectId').value = project.id;
+                    document.getElementById('projectName').value = project.name || '';
+                    document.getElementById('projectDate').value = project.date || '';
+                    document.getElementById('projectAudience').value = project.target_audience || '';
+                    document.getElementById('projectLocation').value = project.location || '';
+                    document.getElementById('projectDescription').value = project.description || '';
+                    editingProjectId = project.id;
+                } else {
+                    title.innerText = 'Add New Project';
+                    submitBtnText.innerText = 'Save Project';
+                    document.getElementById('projectForm').reset();
+                    document.getElementById('projectId').value = '';
+                    editingProjectId = null;
+                }
+                modal.classList.add('active');
+            };
+
+            const closeProjectModal = () => {
+                document.getElementById('projectModal').classList.remove('active');
+                editingProjectId = null;
+            };
+
+            // ---- Modal events ----
+            document.getElementById('projectModalCloseBtn').addEventListener('click', closeProjectModal);
+            document.getElementById('projectModalCancelBtn').addEventListener('click', closeProjectModal);
+            document.getElementById('projectModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('projectModal')) closeProjectModal();
+            });
+
+            // ---- Project form submit ----
+            document.getElementById('projectForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const projectData = {
+                    name: document.getElementById('projectName').value.trim(),
+                    date: document.getElementById('projectDate').value.trim(),
+                    target_audience: document.getElementById('projectAudience').value.trim(),
+                    location: document.getElementById('projectLocation').value.trim(),
+                    description: document.getElementById('projectDescription').value.trim()
+                };
+
+                if (!projectData.name || !projectData.date || !projectData.target_audience || !projectData
+                    .location) {
+                    showToast('Please fill in all required fields marked with *.', 'error');
+                    return;
+                }
+
+                const projectId = document.getElementById('projectId').value;
+
+                try {
+                    let result;
+                    if (projectId) {
+                        result = await supabase
+                            .from('upcoming_projects')
+                            .update(projectData)
+                            .eq('id', parseInt(projectId));
+                    } else {
+                        result = await supabase
+                            .from('upcoming_projects')
+                            .insert([projectData]);
+                    }
+                    if (result.error) throw result.error;
+                    showToast(projectId ? '✅ Project updated successfully!' : '✅ New project added!', 'success');
+                    closeProjectModal();
+                    await loadProjects();
+                } catch (err) {
+                    showToast('❌ Error saving project: ' + err.message, 'error');
+                }
+            });
+
+            // ============================================================
+            // ===== EXPOSE GLOBALLY =====
+            // ============================================================
+            window.editProject = editProject;
+            window.deleteProject = deleteProject;
+            window.updateApplicationStatus = updateApplicationStatus;
+            window.deleteApplication = deleteApplication;
+
+            // ============================================================
+            // ===== CROSS-TAB LOGOUT + INACTIVITY TIMEOUT =====
+            // ============================================================
+            (function() {
+                supabase.auth.onAuthStateChange((event, session) => {
+                    if (event === 'SIGNED_OUT' || !session) {
+                        if (!window.location.pathname.includes('/index.html')) {
+                            window.location.href = '/index.html';
+                        }
+                    }
+                });
+
+                const INACTIVITY_TIMEOUT = 1800 * 1000;
+                let logoutTimer = null;
+
+                const performLogout = async () => {
+                    try {
+                        await supabase.auth.signOut();
+                        if (!window.location.pathname.includes('/index.html')) {
+                            window.location.href = '/index.html';
+                        }
+                    } catch (err) {
+                        console.error('Auto-logout error:', err);
+                    }
+                };
+
+                const resetTimer = () => {
+                    if (logoutTimer) clearTimeout(logoutTimer);
+                    logoutTimer = setTimeout(performLogout, INACTIVITY_TIMEOUT);
+                };
+
+                const activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click', 'wheel'];
+                activityEvents.forEach(event => {
+                    document.addEventListener(event, resetTimer, { passive: true });
+                });
+
+                document.addEventListener('visibilitychange', () => {
+                    if (!document.hidden) resetTimer();
+                });
+
+                resetTimer();
+                window.addEventListener('beforeunload', () => { if (logoutTimer) clearTimeout(logoutTimer); });
+            })();
+
+            // ============================================================
+            // ===== BUTTON EVENTS =====
+            // ============================================================
+            document.getElementById('addProjectBtn')?.addEventListener('click', () => openProjectModal(null));
+
+            document.getElementById('editProjectBtn')?.addEventListener('click', () => {
+                const selectedId = document.getElementById('projectSelect').value;
+                if (!selectedId) { showToast('Please select a project to edit.', 'error'); return; }
+                const found = allProjects.find(item => item.id == selectedId);
+                if (found) openProjectModal(found);
+                else showToast('Project not found.', 'error');
+            });
+
+            document.getElementById('viewProjectBtn')?.addEventListener('click', () => {
+                const selectedId = document.getElementById('projectSelect').value;
+                if (!selectedId) { showToast('Please select a project to view.', 'error'); return; }
+                const found = allProjects.find(item => item.id == selectedId);
+                if (found) {
+                    alert(
+                        `📋 Project Details:\n\nName: ${found.name}\nDate: ${found.date}\nAudience: ${found.target_audience}\nLocation: ${found.location}${found.description ? '\n\nDescription: ' + found.description : ''}`
+                    );
+                } else showToast('Project not found.', 'error');
+            });
+
+            document.getElementById('refresh-projects-btn')?.addEventListener('click', () => {
+                showToast('🔄 Refreshing projects...', 'info');
+                loadProjects();
+            });
+
+            document.getElementById('refresh-applications-btn')?.addEventListener('click', () => {
+                showToast('🔄 Refreshing applications...', 'info');
+                loadApplications();
+            });
+
+            // ============================================================
+            // ===== CLEAR ALL =====
+            // ============================================================
+            document.getElementById('clear-projects-btn')?.addEventListener('click', async () => {
+                if (!confirm("⚠️ Are you sure you want to DELETE ALL projects permanently?")) return;
+                const feedContainer = document.getElementById('projects-feed');
+                feedContainer.innerHTML =
+                    '<div class="status-msg"><i class="fa-solid fa-spinner fa-spin"></i> Clearing all projects...</div>';
+                try {
+                    const { error } = await supabase
+                        .from('upcoming_projects')
+                        .delete()
+                        .neq('id', 0);
+                    if (error) throw error;
+                    showToast('✅ All projects cleared!', 'success');
+                    document.getElementById('projectSelect').innerHTML = '<option value="">-- No projects available --</option>';
+                    allProjects = [];
+                    await loadProjects();
+                } catch (err) {
+                    feedContainer.innerHTML =
+                        `<div class="status-msg" style="color:#ef4444;"><i class="fa-solid fa-circle-exclamation"></i> Error: ${err.message}</div>`;
+                    showToast('❌ Error clearing projects: ' + err.message, 'error');
+                }
+            });
+
+            document.getElementById('clear-applications-btn')?.addEventListener('click', async () => {
+                if (!confirm("⚠️ Are you sure you want to DELETE ALL applications permanently?")) return;
+                const feedContainer = document.getElementById('applications-feed');
+                feedContainer.innerHTML =
+                    '<div class="status-msg"><i class="fa-solid fa-spinner fa-spin"></i> Clearing all applications...</div>';
+                try {
+                    const { error } = await supabase
+                        .from('project_applications')
+                        .delete()
+                        .neq('id', 0);
+                    if (error) throw error;
+                    showToast('✅ All applications cleared!', 'success');
+                    await loadApplications();
+                } catch (err) {
+                    feedContainer.innerHTML =
+                        `<div class="status-msg" style="color:#ef4444;"><i class="fa-solid fa-circle-exclamation"></i> Error: ${err.message}</div>`;
+                    showToast('❌ Error clearing applications: ' + err.message, 'error');
+                }
+            });
+
+            // ============================================================
+            // ===== REALTIME SUBSCRIPTIONS =====
+            // ============================================================
+            const setupRealtimeSubscriptions = () => {
+                supabase.channel('projects-changes')
+                    .on('postgres_changes', {
+                        event: '*',
+                        schema: 'public',
+                        table: 'upcoming_projects'
+                    }, () => {
+                        console.log('🔄 Projects changed, refreshing...');
+                        loadProjects();
+                    })
+                    .subscribe((status) => {
+                        console.log('📡 Projects subscription status:', status);
+                    });
+
+                supabase.channel('applications-changes')
+                    .on('postgres_changes', {
+                        event: '*',
+                        schema: 'public',
+                        table: 'project_applications'
+                    }, () => {
+                        console.log('🔄 Applications changed, refreshing...');
+                        loadApplications();
+                    })
+                    .subscribe((status) => {
+                        console.log('📡 Applications subscription status:', status);
+                    });
+            };
+
+            // ============================================================
+            // ===== SESSION & ROLE VERIFICATION =====
+            // ============================================================
+            const verifySecureAuthentication = async () => {
+                try {
+                    const { data: { session } } = await supabase.auth.getSession();
+
+                    if (!session) {
+                        window.location.href = '/index.html';
+                        return;
+                    }
+
+                    // Check role
+                    const isAuthorized = await checkAdminRole();
+
+                    if (isAuthorized) {
+                        await Promise.all([
+                            loadProjects(),
+                            loadApplications()
+                        ]);
+                        setupRealtimeSubscriptions();
+                    } else {
+                        showAccessDenied();
+                    }
+                } catch (error) {
+                    console.error('Auth error:', error);
+                    window.location.href = '/index.html';
+                }
+            };
+
+            // ============================================================
+            // ===== NAVBAR SCROLL =====
+            // ============================================================
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', () => {
+                navbar.classList.toggle('scrolled', window.scrollY > 50);
+            });
+
+            // ============================================================
+            // ===== BACK TO ADMIN =====
+            // ============================================================
+            document.getElementById('backToAdminBtn')?.addEventListener('click', () => {
+                window.location.href = 'admin.html';
+            });
+
+            // ============================================================
+            // ===== LOGOUT =====
+            // ============================================================
+            document.getElementById('logout-btn')?.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await supabase.auth.signOut();
+                window.location.href = '/index.html';
+            });
+
+            // ============================================================
+            // ===== DOM CONTENT LOADED =====
+            // ============================================================
+            document.addEventListener('DOMContentLoaded', () => {
+                verifySecureAuthentication();
+            });
+
+        })();
+    </script>
+</body>
+</html>

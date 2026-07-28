@@ -1,0 +1,2389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Members · Admin Only</title>
+    <meta name="description" content="Admin-only members management with image upload, roles, and realtime sync." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+    <!-- html2pdf library for PDF generation (member print/export) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --cls-personal: #38bdf8;
+            --cls-professional: #34d399;
+            --cls-galkot: #fbbf24;
+            --cls-rotaract: #f43f5e;
+            --cls-links: #a78bfa;
+            --primary: #D70060;
+            --secondary: #015491;
+            --cta-logout: #ef4444;
+            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-dark: #f8fafc;
+                --bg-card: rgba(255, 255, 255, 0.8);
+                --border-color: rgba(0, 0, 0, 0.08);
+                --text-main: #0f172a;
+                --text-muted: #64748b;
+            }
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            background-image: radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(244, 63, 94, 0.03) 0%, transparent 40%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .access-denied-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 2rem;
+            text-align: center;
+        }
+        .access-denied-overlay.active { display: flex; }
+        .access-denied-overlay .denied-icon { font-size: 5rem; color: #ef4444; }
+        .access-denied-overlay h2 { font-size: 2.5rem; font-weight: 800; color: #ef4444; }
+        .access-denied-overlay p { font-size: 1.2rem; color: var(--text-muted); max-width: 500px; }
+        .access-denied-overlay .btn-go-back {
+            background: var(--cls-galkot);
+            color: #000 !important;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 48px;
+        }
+        .access-denied-overlay .btn-go-back:hover {
+            background: #e5a800;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition-smooth);
+        }
+        .navbar.scrolled {
+            padding: 0.6rem 2rem;
+            background: rgba(15, 23, 42, 0.95);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        .nav-logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .nav-logo i { color: var(--cls-rotaract); }
+        .nav-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .btn-back {
+            background: var(--cls-galkot);
+            color: #000 !important;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition-smooth);
+            text-decoration: none;
+            min-height: 44px;
+        }
+        .btn-back:hover {
+            background: #e5a800;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+        .btn-logout {
+            background: var(--cta-logout);
+            color: #fff !important;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition-smooth);
+            min-height: 44px;
+        }
+        .btn-logout:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        .hero {
+            padding: 8rem 2rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            background: linear-gradient(to right, var(--cls-rotaract), var(--cls-professional));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 650px;
+            margin: 0 auto;
+        }
+        .workspace-section {
+            max-width: 1200px;
+            margin: 0 auto 3rem;
+            padding: 0 2rem;
+        }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .panel-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .panel-header h2 i { color: var(--cls-rotaract); }
+        .panel-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition-smooth);
+            font-family: 'Inter', sans-serif;
+        }
+        .action-btn:hover { background: rgba(255, 255, 255, 0.1); }
+        .clear-btn-accent {
+            border-color: rgba(239, 68, 68, 0.25) !important;
+        }
+        .clear-btn-accent:hover {
+            background: rgba(239, 68, 68, 0.1) !important;
+            border-color: rgba(239, 68, 68, 0.6) !important;
+        }
+        .btn-add-accent {
+            background: var(--cls-professional);
+            border-color: var(--cls-professional);
+            color: #000 !important;
+        }
+        .btn-add-accent:hover {
+            background: #2bbf8a;
+            border-color: #2bbf8a;
+        }
+        .btn-print-active-accent {
+            background: #34d399;
+            border-color: #34d399;
+            color: #000 !important;
+        }
+        .btn-print-active-accent:hover {
+            background: #2bbf8a;
+            border-color: #2bbf8a;
+        }
+        .btn-print-inactive-accent {
+            background: #94a3b8;
+            border-color: #94a3b8;
+            color: #000 !important;
+        }
+        .btn-print-inactive-accent:hover {
+            background: #7c8ba1;
+            border-color: #7c8ba1;
+        }
+
+        .members-feed {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+        .member-node {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--cls-rotaract);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            backdrop-filter: blur(20px);
+            transition: var(--transition-smooth);
+        }
+        .member-node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+        .member-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        .member-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .member-header .node-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .node-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .node-detail {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .status-badge {
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .status-active { background: #34d399; color: #000; }
+        .status-inactive { background: #94a3b8; color: #000; }
+        .status-pending { background: #fbbf24; color: #000; }
+        .application-actions {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .action-btn-sm {
+            padding: 0.3rem 0.75rem;
+            font-size: 0.7rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition-smooth);
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .action-btn-sm.edit-btn {
+            background: var(--cls-galkot);
+            color: #000;
+        }
+        .action-btn-sm.edit-btn:hover {
+            background: #e5a800;
+            transform: scale(1.02);
+        }
+        .action-btn-sm.delete-btn {
+            background: #f43f5e;
+            color: #fff;
+        }
+        .action-btn-sm.delete-btn:hover {
+            background: #e11d48;
+            transform: scale(1.02);
+        }
+        .action-btn-sm.status-toggle {
+            background: #3b82f6;
+            color: #fff;
+        }
+        .action-btn-sm.status-toggle:hover {
+            background: #2563eb;
+            transform: scale(1.02);
+        }
+        .action-btn-sm.status-toggle.inactive-toggle {
+            background: #f59e0b;
+            color: #000;
+        }
+        .action-btn-sm.status-toggle.inactive-toggle:hover {
+            background: #d97706;
+        }
+        .action-btn-sm.verify-btn {
+            background: #34d399;
+            color: #000;
+        }
+        .action-btn-sm.verify-btn:hover {
+            background: #2bbf8a;
+            transform: scale(1.02);
+        }
+        .action-btn-sm.reject-btn {
+            background: #ef4444;
+            color: #fff;
+        }
+        .action-btn-sm.reject-btn:hover {
+            background: #dc2626;
+            transform: scale(1.02);
+        }
+        .action-btn-sm.role-btn {
+            background: var(--cls-links);
+            color: #000;
+        }
+        .action-btn-sm.role-btn:hover {
+            background: #9370db;
+            transform: scale(1.02);
+        }
+        .action-btn-sm.add-role-btn {
+            background: var(--cls-professional);
+            color: #000;
+        }
+        .action-btn-sm.add-role-btn:hover {
+            background: #2bbf8a;
+            transform: scale(1.02);
+        }
+        .action-btn-sm.print-btn {
+            background: var(--cls-personal);
+            color: #000;
+        }
+        .action-btn-sm.print-btn:hover {
+            background: #0ea5e9;
+            transform: scale(1.02);
+        }
+
+        .search-box-inline {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.2rem 0.2rem 0.2rem 0.8rem;
+        }
+        .search-box-inline input {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            padding: 0.4rem 0;
+            font-size: 0.85rem;
+            outline: none;
+            min-width: 140px;
+            font-family: 'Inter', sans-serif;
+        }
+        .search-box-inline input::placeholder {
+            color: var(--text-muted);
+        }
+        .search-box-inline button {
+            background: var(--cls-links);
+            border: none;
+            color: #000;
+            padding: 0.3rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            font-family: 'Inter', sans-serif;
+        }
+        .search-box-inline button:hover {
+            background: #9370db;
+        }
+        .status-msg {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .slider-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+        }
+        .slider-track {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            gap: 1.5rem;
+        }
+        .slider-track .member-node {
+            min-width: calc(33.333% - 1rem);
+            flex: 0 0 calc(33.333% - 1rem);
+        }
+        .slider-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-smooth);
+        }
+        .slider-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .slider-btn.prev { left: 10px; }
+        .slider-btn.next { right: 10px; }
+        .slider-dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .slider-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border-color);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .slider-dot.active {
+            background: var(--cls-rotaract);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 2.5rem;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-content::-webkit-scrollbar { width: 6px; }
+        .modal-content::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            min-height: 44px;
+            min-width: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-close:hover {
+            color: var(--text-main);
+            transform: rotate(90deg);
+        }
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .modal-title i { color: var(--cls-rotaract); }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: var(--transition-smooth);
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--cls-galkot);
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .form-actions .action-btn {
+            padding: 0.7rem 1.5rem;
+            font-weight: 600;
+        }
+        .btn-save-accent {
+            background: var(--cls-professional);
+            border-color: var(--cls-professional);
+            color: #000 !important;
+        }
+        .btn-save-accent:hover {
+            background: #2bbf8a;
+            border-color: #2bbf8a;
+        }
+        .btn-cancel-accent {
+            border-color: rgba(239, 68, 68, 0.3) !important;
+        }
+        .btn-cancel-accent:hover {
+            background: rgba(239, 68, 68, 0.1) !important;
+            border-color: rgba(239, 68, 68, 0.6) !important;
+        }
+
+        .image-preview {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .image-preview img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .image-preview .no-image {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .file-input-wrapper .action-btn {
+            pointer-events: none;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #34d399;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            font-weight: 500;
+            z-index: 9999;
+            max-width: 400px;
+            animation: slideIn 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .toast.error { border-left-color: #ef4444; }
+        .toast.info { border-left-color: #3b82f6; }
+        footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Role Badge Colors */
+        .role-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .role-badge.admin { background: #fef3c7; color: #92400e; }
+        .role-badge.president { background: #fce4ec; color: #991b1b; }
+        .role-badge.secretary { background: #dbeafe; color: #1e40af; }
+        .role-badge.editor { background: #e0f2fe; color: #0369a1; }
+        .role-badge.viewer { background: #e5e7eb; color: #374151; }
+        .role-badge.no-role { background: #f3f4f6; color: #6b7280; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 1024px) {
+            .slider-track .member-node {
+                min-width: calc(50% - 1rem);
+                flex: 0 0 calc(50% - 1rem);
+            }
+        }
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .members-feed { grid-template-columns: 1fr; }
+            .modal-content { padding: 1.5rem; margin: 1rem; }
+            .form-row { grid-template-columns: 1fr; }
+            .navbar { padding: 0.75rem 1rem; }
+            .workspace-section { padding: 0 1rem; }
+            .panel-header { flex-direction: column; align-items: stretch; }
+            .panel-actions { flex-wrap: wrap; }
+            .search-box-inline input { min-width: 100px; width: 100%; }
+            .search-box-inline { flex: 1; }
+            .nav-actions { flex-wrap: wrap; }
+            .btn-back, .btn-logout { font-size: 0.75rem; padding: 0.4rem 0.8rem; }
+            .slider-track .member-node {
+                min-width: calc(100% - 0rem);
+                flex: 0 0 calc(100% - 0rem);
+            }
+            .slider-btn { width: 32px; height: 32px; font-size: 0.8rem; }
+            .access-denied-overlay h2 { font-size: 1.8rem; }
+            .access-denied-overlay .denied-icon { font-size: 3.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== ACCESS DENIED OVERLAY ===== -->
+    <div class="access-denied-overlay" id="accessDeniedOverlay">
+        <div class="denied-icon"><i class="fa-solid fa-lock"></i></div>
+        <h2>⛔ Access Denied</h2>
+        <p>This area is strictly for administrators only. You do not have permission to view this page.</p>
+        <button class="btn-go-back" id="goBackBtn">
+            <i class="fa-solid fa-arrow-left"></i> Go Back
+        </button>
+    </div>
+
+    <nav class="navbar" id="navbar">
+        <a href="#" class="nav-logo"><i class="fa-solid fa-users"></i> Members · Admin Only</a>
+        <div class="nav-actions">
+            <button class="btn-back" id="backToAdminBtn"><i class="fa-solid fa-arrow-left"></i> Back</button>
+            <button class="btn-logout" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</button>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1><i class="fa-solid fa-address-card" style="color:var(--cls-rotaract);"></i> Members Management</h1>
+        <p>Manage members, roles, and sync in realtime.</p>
+    </header>
+
+    <!-- NEW MEMBER REQUESTS SECTION -->
+    <section class="workspace-section" id="registrations-panel">
+        <div class="panel-header">
+            <h2><i class="fa-solid fa-user-plus" style="color: var(--cls-galkot);"></i> New Member Requests</h2>
+            <div class="panel-actions">
+                <button class="action-btn" id="refresh-registrations-btn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                <button class="action-btn clear-btn-accent" id="clear-registrations-btn"><i class="fa-solid fa-trash-can" style="color:#ef4444;"></i> Clear All</button>
+            </div>
+        </div>
+        <div class="slider-container" id="registrationsSlider">
+            <button class="slider-btn prev" id="regSliderPrev"><i class="fa-solid fa-chevron-left"></i></button>
+            <div class="slider-track" id="registrationsTrack"></div>
+            <button class="slider-btn next" id="regSliderNext"><i class="fa-solid fa-chevron-right"></i></button>
+            <div class="slider-dots" id="regDots"></div>
+        </div>
+    </section>
+
+    <!-- MEMBERS SECTION -->
+    <section class="workspace-section" id="members-panel">
+        <div class="panel-header">
+            <h2><i class="fa-solid fa-user-check" style="color: var(--cls-professional);"></i> Members</h2>
+            <div class="panel-actions">
+                <div class="search-box-inline">
+                    <input type="text" id="memberSearchInput" placeholder="Search by name..." />
+                    <button id="memberSearchBtn"><i class="fa-solid fa-search"></i> Search</button>
+                </div>
+                <button class="action-btn btn-add-accent" id="addMemberBtn"><i class="fa-solid fa-plus"></i> Add</button>
+                <button class="action-btn btn-print-active-accent" id="printActiveMembersBtn"><i class="fa-solid fa-file-pdf"></i> Print All Active</button>
+                <button class="action-btn btn-print-inactive-accent" id="printInactiveMembersBtn"><i class="fa-solid fa-file-pdf"></i> Print All Inactive</button>
+                <button class="action-btn" id="refresh-members-btn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                <button class="action-btn clear-btn-accent" id="clear-members-btn"><i class="fa-solid fa-trash-can" style="color:#ef4444;"></i> Clear All</button>
+            </div>
+        </div>
+        <div class="slider-container" id="membersSlider">
+            <button class="slider-btn prev" id="memSliderPrev"><i class="fa-solid fa-chevron-left"></i></button>
+            <div class="slider-track" id="membersTrack"></div>
+            <button class="slider-btn next" id="memSliderNext"><i class="fa-solid fa-chevron-right"></i></button>
+            <div class="slider-dots" id="memDots"></div>
+        </div>
+    </section>
+
+    <!-- ROLE MANAGEMENT SECTION -->
+    <section class="workspace-section" id="roles-panel">
+        <div class="panel-header">
+            <h2><i class="fa-solid fa-user-shield" style="color: var(--cls-links);"></i> Manage Roles</h2>
+            <div class="panel-actions">
+                <button class="action-btn btn-add-accent" id="addRoleBtn"><i class="fa-solid fa-plus"></i> Add Role</button>
+                <button class="action-btn" id="refresh-roles-btn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+            </div>
+        </div>
+        <div class="slider-container" id="rolesSlider">
+            <button class="slider-btn prev" id="roleSliderPrev"><i class="fa-solid fa-chevron-left"></i></button>
+            <div class="slider-track" id="rolesTrack"></div>
+            <button class="slider-btn next" id="roleSliderNext"><i class="fa-solid fa-chevron-right"></i></button>
+            <div class="slider-dots" id="roleDots"></div>
+        </div>
+    </section>
+
+    <!-- MODAL for Member -->
+    <div class="modal-overlay" id="memberModal">
+        <div class="modal-content">
+            <button class="modal-close" id="memberModalCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-title"><i class="fa-solid fa-user-pen" style="color: var(--cls-rotaract);"></i> <span id="memberModalTitle">Add / Edit Member</span></div>
+            <form id="memberForm">
+                <input type="hidden" id="memberId" value="">
+                <div class="form-group"><label>Full Name *</label><input type="text" id="memberName" placeholder="Rtr. Nabin Chalise" required /></div>
+                <div class="form-group"><label>Email *</label><input type="email" id="memberEmail" placeholder="member@example.com" required /></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Phone</label><input type="text" id="memberPhone" placeholder="984-1234567" /></div>
+                    <div class="form-group"><label>Gender</label>
+                        <select id="memberGender"><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Blood Group</label>
+                        <select id="memberBlood"><option value="">Select</option><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="O+">O+</option><option value="O-">O-</option></select>
+                    </div>
+                    <div class="form-group"><label>Position</label>
+                        <select id="memberPosition">
+                            <option value="Club Member">Club Member</option>
+                            <option value="President">President</option>
+                            <option value="President Elect">President Elect</option>
+                            <option value="Secretary">Secretary</option>
+                            <option value="Joint Secretary">Joint Secretary</option>
+                            <option value="Treasurer">Treasurer</option>
+                            <option value="Vice President">Vice President</option>
+                            <option value="IPP / Mentor">IPP / Mentor</option>
+                            <option value="Membership Chair">Membership Chair</option>
+                            <option value="Public Image Chair">Public Image Chair</option>
+                            <option value="Service Projects Chair">Service Projects Chair</option>
+                            <option value="Health Program Chair">Health Program Chair</option>
+                            <option value="Rotary Foundation Chair">Rotary Foundation Chair</option>
+                            <option value="Sergeant At Arms">Sergeant At Arms</option>
+                            <option value="IT Officer">IT Officer</option>
+                            <option value="Young Leaders Contact">Young Leaders Contact</option>
+                            <option value="Learning Facilitator">Learning Facilitator</option>
+                            <option value="Club Advisor">Club Advisor</option>
+                            <option value="ISD Advisor">ISD Advisor</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group"><label>Address</label><input type="text" id="memberAddress" placeholder="Galkot Municipality-3" /></div>
+                <div class="form-group"><label>Profession</label><input type="text" id="memberProfession" placeholder="ICT Teacher" /></div>
+                <div class="form-group"><label>Birthday</label><input type="date" id="memberBirthday" /></div>
+                <div class="form-group"><label>Status</label>
+                    <select id="memberStatus"><option value="active">Active</option><option value="inactive">Inactive</option></select>
+                </div>
+
+                <!-- Image Upload -->
+                <div class="form-group">
+                    <label>Profile Image</label>
+                    <div class="image-preview" id="imagePreviewContainer">
+                        <img id="imagePreview" src="" alt="Profile preview" style="display:none;" />
+                        <span class="no-image" id="noImageText">No image uploaded</span>
+                    </div>
+                    <div style="display:flex; gap:0.5rem; margin-top:0.5rem; flex-wrap:wrap;">
+                        <div class="file-input-wrapper">
+                            <button type="button" class="action-btn" style="pointer-events:none;"><i class="fa-solid fa-upload"></i> Choose Image</button>
+                            <input type="file" id="profileImageInput" accept="image/*" />
+                        </div>
+                        <button type="button" class="action-btn clear-btn-accent" id="removeImageBtn" style="border-color:rgba(239,68,68,0.3);"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                    </div>
+                    <input type="hidden" id="profileImageUrl" value="" />
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="action-btn btn-cancel-accent" id="memberModalCancelBtn">Cancel</button>
+                    <button type="submit" class="action-btn btn-save-accent"><i class="fa-solid fa-floppy-disk"></i> <span id="memberSubmitBtnText">Save Member</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL for Role Management (Add/Edit) -->
+    <div class="modal-overlay" id="roleModal">
+        <div class="modal-content">
+            <button class="modal-close" id="roleModalCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-title"><i class="fa-solid fa-user-shield" style="color: var(--cls-links);"></i> <span id="roleModalTitle">Manage User Role</span></div>
+            <form id="roleForm">
+                <input type="hidden" id="roleUserId" value="">
+                <input type="hidden" id="roleEditMode" value="edit">
+                <div class="form-group">
+                    <label>User Email *</label>
+                    <input type="email" id="roleUserEmail" placeholder="user@example.com" required />
+                </div>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="roleFullName" placeholder="Full Name" />
+                </div>
+                <div class="form-group">
+                    <label>Assign Role *</label>
+                    <select id="roleNewRole" required>
+                        <option value="viewer">👀 Viewer</option>
+                        <option value="editor">✏️ Editor</option>
+                        <option value="secretary">📝 Secretary</option>
+                        <option value="president">👑 President</option>
+                        <option value="admin">⚙️ Admin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="roleStatus">
+                        <option value="active">✅ Active</option>
+                        <option value="inactive">❌ Inactive</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="action-btn btn-cancel-accent" id="roleModalCancelBtn">Cancel</button>
+                    <button type="submit" class="action-btn btn-save-accent"><i class="fa-solid fa-floppy-disk"></i> <span id="roleSubmitBtnText">Save Role</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer><p>&copy; 2026 Members · Admin Only</p></footer>
+
+    <script>
+        (() => {
+            "use strict";
+
+            const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+            const SUPABASE_KEY =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            const STORAGE_BUCKET = 'members-profile';
+            const MEMBERS_TABLE = 'members';
+            const REGISTRATIONS_TABLE = 'member_registrations';
+            const USER_ROLES_TABLE = 'user_roles';
+
+            // ============================================================
+            // ===== SECURE ADMIN ACCESS CONTROL =====
+            // ============================================================
+            const accessDeniedOverlay = document.getElementById('accessDeniedOverlay');
+
+            const showAccessDenied = () => {
+                accessDeniedOverlay.classList.add('active');
+                document.querySelectorAll('.workspace-section').forEach(el => el.style.display = 'none');
+                document.querySelector('.hero').style.display = 'none';
+            };
+
+            const hideAccessDenied = () => {
+                accessDeniedOverlay.classList.remove('active');
+                document.querySelectorAll('.workspace-section').forEach(el => el.style.display = 'block');
+                document.querySelector('.hero').style.display = 'block';
+            };
+
+            document.getElementById('goBackBtn')?.addEventListener('click', () => {
+                window.location.href = '/index.html';
+            });
+
+            const checkAdminRole = async () => {
+                try {
+                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                    if (sessionError || !session) {
+                        window.location.href = '/index.html';
+                        return false;
+                    }
+
+                    const { data: roleData, error: roleError } = await supabase
+                        .from('user_roles')
+                        .select('role, status')
+                        .eq('user_id', session.user.id)
+                        .maybeSingle();
+
+                    if (roleError) {
+                        console.error('Error fetching role:', roleError);
+                        showAccessDenied();
+                        return false;
+                    }
+
+                    if (!roleData || roleData.role !== 'admin' || roleData.status !== 'active') {
+                        console.warn('Access denied: User is not active admin.', roleData);
+                        showAccessDenied();
+                        return false;
+                    }
+
+                    hideAccessDenied();
+                    return true;
+
+                } catch (err) {
+                    console.error('Auth check error:', err);
+                    showAccessDenied();
+                    return false;
+                }
+            };
+
+            let editingMemberId = null;
+            let allMembers = [];
+            let registrations = [];
+            let userRoles = [];
+            let currentImageFile = null;
+            let existingImageUrl = '';
+
+            let regSliderIndex = 0;
+            let memSliderIndex = 0;
+            let roleSliderIndex = 0;
+
+            const escapeHtml = (str) => {
+                if (!str) return '';
+                return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g,
+                    "&quot;").replace(/'/g, "&#039;");
+            };
+
+            const showToast = (message, type = 'success') => {
+                const existing = document.querySelector('.toast');
+                if (existing) existing.remove();
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => toast.remove(), 400);
+                }, 3000);
+            };
+
+            // ---------- ROLE HELPERS ----------
+            const getRoleBadgeClass = (role) => {
+                if (!role || role === 'no_role') return 'no-role';
+                return role;
+            };
+
+            const getRoleDisplayName = (role) => {
+                const map = {
+                    'admin': 'Admin',
+                    'president': 'President',
+                    'secretary': 'Secretary',
+                    'editor': 'Editor',
+                    'viewer': 'Viewer',
+                    'no_role': 'No Role'
+                };
+                return map[role] || role || 'No Role';
+            };
+
+            const getRoleIcon = (role) => {
+                const map = {
+                    'admin': '⚙️',
+                    'president': '👑',
+                    'secretary': '📝',
+                    'editor': '✏️',
+                    'viewer': '👀',
+                    'no_role': '❌'
+                };
+                return map[role] || '❌';
+            };
+
+            // ---------- IMAGE UPLOAD HELPERS ----------
+            const uploadImage = async (file, memberId) => {
+                if (!file) return null;
+                const ext = file.name.split('.').pop() || 'jpg';
+                const fileName = `member_${memberId}_${Date.now()}.${ext}`;
+                try {
+                    const { data, error } = await supabase.storage
+                        .from(STORAGE_BUCKET)
+                        .upload(fileName, file, { cacheControl: '3600', upsert: true });
+                    if (error) throw new Error('Upload failed: ' + error.message);
+                    const { data: urlData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(fileName);
+                    return urlData.publicUrl;
+                } catch (err) {
+                    console.error('Upload error:', err);
+                    throw new Error('Image upload failed: ' + err.message);
+                }
+            };
+
+            const deleteOldImage = async (imageUrl) => {
+                if (!imageUrl) return;
+                try {
+                    const urlParts = imageUrl.split(`/storage/v1/object/public/${STORAGE_BUCKET}/`);
+                    if (urlParts.length > 1) {
+                        await supabase.storage.from(STORAGE_BUCKET).remove([urlParts[1]]);
+                    }
+                } catch (e) { console.warn('Could not delete old image:', e); }
+            };
+
+            // ---------- SLIDER HELPERS ----------
+            function renderSlider(trackId, items, dotsId, renderFn, sliderIndex) {
+                const track = document.getElementById(trackId);
+                if (!track) return;
+                if (!items || items.length === 0) {
+                    track.innerHTML = `<div class="status-msg">📭 No items to display</div>`;
+                    return;
+                }
+                track.innerHTML = items.map(renderFn).join('');
+
+                const dots = document.getElementById(dotsId);
+                if (dots) {
+                    const perView = getItemsPerView();
+                    const totalSlides = Math.ceil(items.length / perView);
+                    dots.innerHTML = Array.from({ length: totalSlides }, (_, i) =>
+                        `<button class="slider-dot ${i === sliderIndex ? 'active' : ''}" data-index="${i}"></button>`
+                    ).join('');
+                    dots.querySelectorAll('.slider-dot').forEach(dot => {
+                        dot.addEventListener('click', () => {
+                            const idx = parseInt(dot.dataset.index);
+                            if (dotsId === 'regDots') {
+                                regSliderIndex = idx;
+                                updateSlider('registrationsTrack', registrations, 'regDots', renderRegistrationItem, regSliderIndex);
+                            } else if (dotsId === 'memDots') {
+                                memSliderIndex = idx;
+                                updateSlider('membersTrack', allMembers, 'memDots', renderMemberItem, memSliderIndex);
+                            } else if (dotsId === 'roleDots') {
+                                roleSliderIndex = idx;
+                                updateSlider('rolesTrack', userRoles, 'roleDots', renderRoleItem, roleSliderIndex);
+                            }
+                        });
+                    });
+                }
+                updateSlider(trackId, items, dotsId, renderFn, sliderIndex);
+            }
+
+            function getItemsPerView() {
+                const width = window.innerWidth;
+                if (width < 768) return 1;
+                if (width < 1024) return 2;
+                return 3;
+            }
+
+            function updateSlider(trackId, items, dotsId, renderFn, sliderIndex) {
+                const track = document.getElementById(trackId);
+                if (!track || !items || items.length === 0) return;
+                const perView = getItemsPerView();
+                const totalSlides = Math.ceil(items.length / perView);
+                if (sliderIndex >= totalSlides) sliderIndex = totalSlides - 1;
+                if (sliderIndex < 0) sliderIndex = 0;
+                const offset = sliderIndex * (100 / perView);
+                track.style.transform = `translateX(-${offset}%)`;
+
+                const dots = document.getElementById(dotsId);
+                if (dots) {
+                    dots.querySelectorAll('.slider-dot').forEach((dot, i) => {
+                        dot.classList.toggle('active', i === sliderIndex);
+                    });
+                }
+            }
+
+            // ---------- RENDER FUNCTIONS ----------
+            function renderRegistrationItem(item) {
+                const name = item.full_name || item.name || '';
+                const imgUrl = item.profile_image || '';
+                return `
+                    <article class="member-node" style="border-left-color: #fbbf24;">
+                        <div class="node-meta">
+                            <span>📝 Request</span>
+                            <span>${item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</span>
+                        </div>
+                        <div class="member-header">
+                            ${imgUrl ? `<img src="${escapeHtml(imgUrl)}" class="member-avatar" alt="avatar" onerror="this.style.display='none';" />` : ''}
+                            <div class="member-avatar" style="${imgUrl ? 'display:none;' : 'display:flex;'}align-items:center;justify-content:center;background:rgba(255,255,255,0.05);"><i class="fa-solid fa-user-plus" style="color:var(--cls-galkot);font-size:1.5rem;"></i></div>
+                            <div class="node-title" style="color: var(--cls-galkot);">${escapeHtml(name)}</div>
+                        </div>
+                        <a href="mailto:${escapeHtml(item.email)}" class="node-detail" style="color: var(--cls-personal);">${escapeHtml(item.email)}</a>
+                        ${item.phone || item.phone_number ? `<div class="node-detail"><i class="fa-solid fa-phone"></i> ${escapeHtml(item.phone || item.phone_number)}</div>` : ''}
+                        ${item.position ? `<div class="node-detail"><i class="fa-solid fa-briefcase"></i> ${escapeHtml(item.position)}</div>` : ''}
+                        ${item.address ? `<div class="node-detail"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(item.address)}</div>` : ''}
+                        ${item.profession ? `<div class="node-detail"><i class="fa-solid fa-briefcase"></i> ${escapeHtml(item.profession)}</div>` : ''}
+                        ${item.gender ? `<div class="node-detail"><i class="fa-solid fa-venus-mars"></i> ${escapeHtml(item.gender)}</div>` : ''}
+                        ${item.blood_group ? `<div class="node-detail"><i class="fa-solid fa-droplet"></i> ${escapeHtml(item.blood_group)}</div>` : ''}
+                        ${item.birth_date ? `<div class="node-detail"><i class="fa-solid fa-calendar"></i> ${new Date(item.birth_date).toLocaleDateString()}</div>` : ''}
+                        ${item.mentor ? `<div class="node-detail"><i class="fa-solid fa-star"></i> Mentor: ${escapeHtml(item.mentor)}</div>` : ''}
+                        <div class="application-actions">
+                            <button class="action-btn-sm verify-btn" data-id="${item.id}" data-action="verify"><i class="fa-solid fa-check"></i> Verify & Add</button>
+                            <button class="action-btn-sm reject-btn" data-id="${item.id}" data-action="reject"><i class="fa-solid fa-times"></i> Reject</button>
+                        </div>
+                    </article>
+                `;
+            }
+
+            function renderMemberItem(item) {
+                const status = item.status || 'active';
+                const badgeClass = status === 'active' ? 'status-active' : 'status-inactive';
+                const toggleText = status === 'active' ? 'Set Inactive' : 'Set Active';
+                const toggleClass = status === 'active' ? '' : 'inactive-toggle';
+                const profileImg = item.profile_image || item.photo || item.photo_url || '';
+                return `
+                    <article class="member-node" style="border-left-color: ${status === 'active' ? 'var(--cls-rotaract)' : '#94a3b8'};">
+                        <div class="node-meta">
+                            <span>ID: ${item.id}</span>
+                            <span class="status-badge ${badgeClass}">${status}</span>
+                        </div>
+                        <div class="member-header">
+                            ${profileImg ? `<img src="${escapeHtml(profileImg)}" class="member-avatar" alt="avatar" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />` : ''}
+                            <div class="member-avatar" style="${profileImg ? 'display:none;' : 'display:flex;'}align-items:center;justify-content:center;background:rgba(255,255,255,0.05);"><i class="fa-solid fa-user" style="color:var(--text-muted);font-size:1.5rem;"></i></div>
+                            <div class="node-title">${escapeHtml(item.name)}</div>
+                        </div>
+                        <a href="mailto:${escapeHtml(item.email)}" class="node-detail" style="color: var(--cls-personal);">${escapeHtml(item.email)}</a>
+                        ${item.phone ? `<div class="node-detail"><i class="fa-solid fa-phone"></i> ${escapeHtml(item.phone)}</div>` : ''}
+                        ${item.position ? `<div class="node-detail"><i class="fa-solid fa-briefcase"></i> ${escapeHtml(item.position)}</div>` : ''}
+                        ${item.address ? `<div class="node-detail"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(item.address)}</div>` : ''}
+                        ${item.profession ? `<div class="node-detail"><i class="fa-solid fa-briefcase"></i> ${escapeHtml(item.profession)}</div>` : ''}
+                        ${item.gender ? `<div class="node-detail"><i class="fa-solid fa-venus-mars"></i> ${escapeHtml(item.gender)}</div>` : ''}
+                        ${item.blood_group ? `<div class="node-detail"><i class="fa-solid fa-droplet"></i> ${escapeHtml(item.blood_group)}</div>` : ''}
+                        ${item.birthday ? `<div class="node-detail"><i class="fa-solid fa-calendar"></i> ${new Date(item.birthday).toLocaleDateString()}</div>` : ''}
+                        <div class="application-actions">
+                            <button class="action-btn-sm status-toggle ${toggleClass}" data-id="${item.id}" data-action="toggle-status"><i class="fa-solid fa-arrows-rotate"></i> ${toggleText}</button>
+                            <button class="action-btn-sm edit-btn" data-id="${item.id}" data-action="edit"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                            <button class="action-btn-sm print-btn" data-id="${item.id}" data-action="print"><i class="fa-solid fa-print"></i> Print</button>
+                            <button class="action-btn-sm delete-btn" data-id="${item.id}" data-action="delete"><i class="fa-solid fa-trash"></i> Delete</button>
+                        </div>
+                    </article>
+                `;
+            }
+
+            function renderRoleItem(item) {
+                const role = item.role || 'no_role';
+                const badgeClass = getRoleBadgeClass(role);
+                const roleDisplay = getRoleDisplayName(role);
+                const icon = getRoleIcon(role);
+                const userName = item.full_name || item.name || item.email || 'Unknown User';
+                const userEmail = item.email || 'No email';
+                const isActive = item.status !== 'inactive';
+                const userId = item.user_id || '';
+
+                return `
+                    <article class="member-node" style="border-left-color: var(--cls-links);">
+                        <div class="node-meta">
+                            <span>${icon} ${roleDisplay}</span>
+                            <span class="status-badge ${isActive ? 'status-active' : 'status-inactive'}">${isActive ? 'Active' : 'Inactive'}</span>
+                        </div>
+                        <div class="member-header">
+                            <div class="member-avatar" style="display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);">
+                                <i class="fa-solid fa-user" style="color:var(--text-muted);font-size:1.5rem;"></i>
+                            </div>
+                            <div class="node-title">${escapeHtml(userName)}</div>
+                        </div>
+                        <a href="mailto:${escapeHtml(userEmail)}" class="node-detail" style="color: var(--cls-personal);">${escapeHtml(userEmail)}</a>
+                        <div class="node-detail" style="margin-top:4px;">
+                            <span class="role-badge ${badgeClass}">${icon} ${roleDisplay}</span>
+                        </div>
+                        <div class="application-actions">
+                            <button class="action-btn-sm role-btn" data-user-id="${userId}" data-action="edit-role" data-email="${escapeHtml(userEmail)}" data-role="${role}" data-fullname="${escapeHtml(userName)}" data-status="${item.status || 'active'}">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </button>
+                            <button class="action-btn-sm status-toggle ${isActive ? '' : 'inactive-toggle'}" data-user-id="${userId}" data-action="toggle-user-status">
+                                <i class="fa-solid fa-arrows-rotate"></i> ${isActive ? 'Set Inactive' : 'Set Active'}
+                            </button>
+                            <button class="action-btn-sm delete-btn" data-user-id="${userId}" data-action="delete-role">
+                                <i class="fa-solid fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </article>
+                `;
+            }
+
+            // ============================================================
+            // ===== LOAD REGISTRATIONS =====
+            // ============================================================
+            const loadRegistrations = async () => {
+                const isAuthorized = await checkAdminRole();
+                if (!isAuthorized) return;
+                try {
+                    const { data, error } = await supabase
+                        .from(REGISTRATIONS_TABLE)
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    if (error) throw error;
+                    registrations = data || [];
+                    renderSlider('registrationsTrack', registrations, 'regDots', renderRegistrationItem, regSliderIndex);
+                } catch (err) {
+                    console.error('Error loading registrations:', err);
+                    document.getElementById('registrationsTrack').innerHTML =
+                        `<div class="status-msg" style="color:#ef4444;"><i class="fa-solid fa-circle-exclamation"></i> ${err.message}</div>`;
+                }
+            };
+
+            // ============================================================
+            // ===== LOAD MEMBERS =====
+            // ============================================================
+            const loadMembers = async (searchTerm = '') => {
+                const isAuthorized = await checkAdminRole();
+                if (!isAuthorized) return;
+                try {
+                    let query = supabase.from(MEMBERS_TABLE).select('*').order('id', { ascending: false });
+                    if (searchTerm && searchTerm.trim()) {
+                        query = query.ilike('name', `%${searchTerm.trim()}%`);
+                    }
+                    const { data, error } = await query;
+                    if (error) throw error;
+                    allMembers = data || [];
+                    renderSlider('membersTrack', allMembers, 'memDots', renderMemberItem, memSliderIndex);
+                } catch (err) {
+                    document.getElementById('membersTrack').innerHTML =
+                        `<div class="status-msg" style="color:#ef4444;"><i class="fa-solid fa-circle-exclamation"></i> ${err.message}</div>`;
+                    showToast('Error loading members: ' + err.message, 'error');
+                }
+            };
+
+            // ============================================================
+            // ===== MEMBER PRINT / PDF EXPORT =====
+            // Same html2pdf approach as activemembers.html's roster export.
+            // Two pieces:
+            //   1) exportMemberRosterPdf(status) - "Print All Active/Inactive"
+            //      header buttons - a compact roster table, queried fresh
+            //      from the DB by status (independent of the search box).
+            //   2) printSingleMember(id) - the per-card "Print" button next
+            //      to Delete - a full one-member profile with every column
+            //      the `members` table has, photo fields excluded, and
+            //      duplicate-value columns (phone/phone_number,
+            //      dob/birthday/date_of_birth, position/designation)
+            //      collapsed so nothing prints twice.
+            // ============================================================
+            const escapeHtmlPdf = (str) => {
+                const div = document.createElement('div');
+                div.textContent = str == null ? '' : String(str);
+                return div.innerHTML;
+            };
+
+            const formatPdfDate = (val) => {
+                if (!val) return '';
+                const d = new Date(val);
+                if (isNaN(d.getTime())) return String(val);
+                return d.toLocaleDateString();
+            };
+
+            const formatPdfDateTime = (val) => {
+                if (!val) return '';
+                const d = new Date(val);
+                if (isNaN(d.getTime())) return String(val);
+                return d.toLocaleString();
+            };
+
+            // Pulls the first non-empty value out of several possible
+            // column names that hold the same real-world fact, so a
+            // legacy duplicate column (e.g. phone_number vs phone) never
+            // shows up twice on the printout.
+            const firstNonEmpty = (member, keys) => {
+                for (const k of keys) {
+                    const v = member[k];
+                    if (v !== null && v !== undefined && String(v).trim() !== '') return v;
+                }
+                return '';
+            };
+
+            // Ordered, de-duplicated field list for a full single-member
+            // printout. Every real `members` table column is represented
+            // here exactly once (photo/photo_url/profile_image excluded
+            // per request), with aliases merged into one row.
+            const getMemberPrintFields = (member) => {
+                const fields = [
+                    { label: 'Member ID', value: member.id != null ? String(member.id) : '' },
+                    { label: 'Name', value: member.name || '' },
+                    { label: 'Status', value: member.status || 'active' },
+                    { label: 'Rotary ID', value: member.rotary_id || '' },
+                    { label: 'Position / Designation', value: firstNonEmpty(member, ['position', 'designation']) },
+                    { label: 'Profession', value: member.profession || '' },
+                    { label: 'Gender', value: member.gender || '' },
+                    { label: 'Blood Group', value: member.blood_group || '' },
+                    { label: 'Phone Number', value: firstNonEmpty(member, ['phone', 'phone_number']) },
+                    { label: 'Email', value: member.email || '' },
+                    { label: 'Date of Birth', value: formatPdfDate(firstNonEmpty(member, ['dob', 'date_of_birth', 'birthday'])) },
+                    { label: 'Address', value: member.address || '' },
+                    { label: 'Mentor', value: member.mentor || '' },
+                    { label: 'Registered On', value: formatPdfDateTime(member.created_at) },
+                    { label: 'Last Updated', value: formatPdfDateTime(member.updated_at) },
+                    { label: 'Timestamp', value: formatPdfDateTime(member.timestamp) }
+                ];
+
+                // Final safety pass: if two rows ended up with the exact
+                // same displayed value (e.g. timestamp === created_at),
+                // keep only the first so nothing is printed twice.
+                const seenValues = new Set();
+                const deduped = [];
+                fields.forEach(f => {
+                    if (!f.value) return; // skip empty fields entirely
+                    const key = f.label === 'Registered On' || f.label === 'Last Updated' || f.label === 'Timestamp'
+                        ? f.value // datetime fields compare on their own formatted value
+                        : f.value.toString().trim().toLowerCase();
+                    if (seenValues.has(key)) return;
+                    seenValues.add(key);
+                    deduped.push(f);
+                });
+                return deduped;
+            };
+
+            const runHtml2Pdf = (container, opt, onDone) => {
+                window.scrollTo(0, 0);
+                setTimeout(() => {
+                    html2pdf().set(opt).from(container).save().then(onDone).catch(function(err) {
+                        console.error('PDF generation error:', err);
+                        showToast('❌ PDF error: ' + err.message, 'error');
+                        onDone();
+                    });
+                }, 80);
+            };
+
+            // ---- 1) PRINT ALL ACTIVE / INACTIVE (roster table) ----
+            const exportMemberRosterPdf = async (statusFilter) => {
+                const btn = document.getElementById(
+                    statusFilter === 'active' ? 'printActiveMembersBtn' : 'printInactiveMembersBtn'
+                );
+                const originalHtml = btn ? btn.innerHTML : '';
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Preparing...';
+                }
+
+                try {
+                    const isAuthorized = await checkAdminRole();
+                    if (!isAuthorized) return;
+
+                    let query = supabase.from(MEMBERS_TABLE).select('*').order('name', { ascending: true });
+                    query = statusFilter === 'active'
+                        ? query.eq('status', 'active')
+                        : query.neq('status', 'active');
+                    const { data, error } = await query;
+                    if (error) throw error;
+
+                    const list = data || [];
+                    if (!list.length) {
+                        showToast(`No ${statusFilter} members found to print.`, 'error');
+                        return;
+                    }
+
+                    const rows = list.map((member, idx) => {
+                        const name = member.name || '—';
+                        const position = firstNonEmpty(member, ['position', 'designation']) || '—';
+                        const phone = firstNonEmpty(member, ['phone', 'phone_number']) || '—';
+                        const email = member.email || '—';
+                        const blood = member.blood_group || '—';
+                        const address = member.address || '—';
+                        return `
+                            <tr>
+                                <td style="text-align:center;">${idx + 1}</td>
+                                <td>${escapeHtmlPdf(name)}</td>
+                                <td>${escapeHtmlPdf(position)}</td>
+                                <td>${escapeHtmlPdf(phone)}</td>
+                                <td>${escapeHtmlPdf(email)}</td>
+                                <td style="text-align:center;">${escapeHtmlPdf(blood)}</td>
+                                <td>${escapeHtmlPdf(address)}</td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    const statusLabel = statusFilter === 'active' ? 'Active' : 'Inactive';
+                    const generatedOn = new Date().toLocaleString();
+                    const printHtml = `
+                        <div style="font-family: 'Segoe UI', Arial, sans-serif; color:#0f172a; padding:16px;">
+                            <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #1e293b; padding-bottom:10px; margin-bottom:14px;">
+                                <div>
+                                    <div style="font-size:18px; font-weight:800;">Rotaract Club of Galkot Baglung</div>
+                                    <div style="font-size:12px; color:#64748b;">${statusLabel} Member Directory</div>
+                                </div>
+                                <div style="text-align:right; font-size:11px; color:#64748b;">
+                                    <div>Generated: ${escapeHtmlPdf(generatedOn)}</div>
+                                    <div>Total ${statusLabel} Members: ${list.length}</div>
+                                </div>
+                            </div>
+                            <table style="width:100%; border-collapse:collapse; font-size:11px;">
+                                <thead>
+                                    <tr style="background:#1e293b; color:#fff;">
+                                        <th style="padding:6px 8px; text-align:center; width:34px;">S.N.</th>
+                                        <th style="padding:6px 8px; text-align:left;">Name</th>
+                                        <th style="padding:6px 8px; text-align:left;">Position</th>
+                                        <th style="padding:6px 8px; text-align:left;">Phone</th>
+                                        <th style="padding:6px 8px; text-align:left;">Email</th>
+                                        <th style="padding:6px 8px; text-align:center;">Blood Group</th>
+                                        <th style="padding:6px 8px; text-align:left;">Address</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${rows}</tbody>
+                            </table>
+                        </div>
+                    `;
+
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .pdf-roster-table table tr { page-break-inside: avoid; }
+                        .pdf-roster-table table tbody tr:nth-child(even) { background: #f8fafc; }
+                        .pdf-roster-table table td { padding: 5px 8px; border-bottom: 1px solid #e2e8f0; }
+                    `;
+                    document.head.appendChild(style);
+
+                    const overlay = document.createElement('div');
+                    overlay.style.cssText = 'position:fixed; inset:0; background:#ffffff; z-index:99999; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; font-family:inherit; color:#1e293b;';
+                    overlay.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:2rem;color:#dc2626;"></i><div>Generating PDF...</div>';
+                    document.body.appendChild(overlay);
+
+                    const prevBodyOverflow = document.body.style.overflow;
+                    document.body.style.overflow = 'hidden';
+
+                    const container = document.createElement('div');
+                    container.className = 'pdf-roster-table';
+                    container.style.width = '1050px';
+                    container.style.background = '#ffffff';
+                    container.style.flex = 'none';
+                    container.style.alignSelf = 'flex-start';
+                    container.innerHTML = printHtml;
+                    document.body.appendChild(container);
+
+                    const opt = {
+                        margin:       [0.4, 0.3, 0.4, 0.3],
+                        filename:     `${statusLabel}_Member_Directory_${new Date().toISOString().slice(0, 10)}.pdf`,
+                        image:        { type: 'jpeg', quality: 0.98 },
+                        html2canvas:  { scale: 2, letterRendering: true, useCORS: true, logging: false },
+                        jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' },
+                        pagebreak:    { mode: ['css', 'legacy'] }
+                    };
+
+                    const cleanup = () => {
+                        if (container.parentNode) document.body.removeChild(container);
+                        if (overlay.parentNode) document.body.removeChild(overlay);
+                        if (style.parentNode) document.head.removeChild(style);
+                        document.body.style.overflow = prevBodyOverflow;
+                        if (btn) { btn.disabled = false; btn.innerHTML = originalHtml; }
+                    };
+
+                    runHtml2Pdf(container, opt, cleanup);
+                } catch (err) {
+                    console.error('Roster PDF error:', err);
+                    showToast('❌ Error preparing PDF: ' + err.message, 'error');
+                    if (btn) { btn.disabled = false; btn.innerHTML = originalHtml; }
+                }
+            };
+
+            // ---- 2) PRINT ONE MEMBER (full profile, all fields, no photo) ----
+            window.printSingleMember = function(id) {
+                const member = allMembers.find(m => m.id === id);
+                if (!member) { showToast('Member not found.', 'error'); return; }
+
+                const fields = getMemberPrintFields(member);
+                const rows = fields.map(f => `
+                    <tr>
+                        <td style="padding:8px 10px; font-weight:700; width:38%; background:#f8fafc; border:1px solid #e2e8f0;">${escapeHtmlPdf(f.label)}</td>
+                        <td style="padding:8px 10px; border:1px solid #e2e8f0;">${escapeHtmlPdf(f.value)}</td>
+                    </tr>
+                `).join('');
+
+                const generatedOn = new Date().toLocaleString();
+                const printHtml = `
+                    <div style="font-family: 'Segoe UI', Arial, sans-serif; color:#0f172a; padding:20px; width:700px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #1e293b; padding-bottom:10px; margin-bottom:16px;">
+                            <div>
+                                <div style="font-size:19px; font-weight:800;">Rotaract Club of Galkot Baglung</div>
+                                <div style="font-size:12px; color:#64748b;">Member Profile</div>
+                            </div>
+                            <div style="text-align:right; font-size:11px; color:#64748b;">
+                                <div>Generated: ${escapeHtmlPdf(generatedOn)}</div>
+                            </div>
+                        </div>
+                        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                `;
+
+                const overlay = document.createElement('div');
+                overlay.style.cssText = 'position:fixed; inset:0; background:#ffffff; z-index:99999; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; font-family:inherit; color:#1e293b;';
+                overlay.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:2rem;color:#dc2626;"></i><div>Generating PDF...</div>';
+                document.body.appendChild(overlay);
+
+                const prevBodyOverflow = document.body.style.overflow;
+                document.body.style.overflow = 'hidden';
+
+                const container = document.createElement('div');
+                container.style.width = '700px';
+                container.style.background = '#ffffff';
+                container.style.flex = 'none';
+                container.style.alignSelf = 'flex-start';
+                container.innerHTML = printHtml;
+                document.body.appendChild(container);
+
+                const safeName = (member.name || 'Member').replace(/[^a-z0-9]+/gi, '_');
+                const opt = {
+                    margin:       [0.4, 0.4, 0.4, 0.4],
+                    filename:     `Member_${safeName}_${new Date().toISOString().slice(0, 10)}.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2, letterRendering: true, useCORS: true, logging: false },
+                    jsPDF:        { unit: 'in', format: 'a5', orientation: 'portrait' },
+                    pagebreak:    { mode: ['css', 'legacy'] }
+                };
+
+                const cleanup = () => {
+                    if (container.parentNode) document.body.removeChild(container);
+                    if (overlay.parentNode) document.body.removeChild(overlay);
+                    document.body.style.overflow = prevBodyOverflow;
+                };
+
+                runHtml2Pdf(container, opt, cleanup);
+            };
+
+            document.getElementById('printActiveMembersBtn')?.addEventListener('click', () => exportMemberRosterPdf('active'));
+            document.getElementById('printInactiveMembersBtn')?.addEventListener('click', () => exportMemberRosterPdf('inactive'));
+
+            // ============================================================
+            // ===== LOAD USER ROLES - WITH NAME AND EMAIL =====
+            // ============================================================
+            const loadUserRoles = async () => {
+                const isAuthorized = await checkAdminRole();
+                if (!isAuthorized) return;
+                try {
+                    const { data: rolesData, error: rolesError } = await supabase
+                        .from(USER_ROLES_TABLE)
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (rolesError) throw rolesError;
+
+                    // Try to get user details from user_roles_view first
+                    const { data: viewData, error: viewError } = await supabase
+                        .from('user_roles_view')
+                        .select('*')
+                        .order('joined_at', { ascending: false });
+
+                    let merged = [];
+
+                    if (!viewError && viewData && viewData.length > 0) {
+                        merged = (viewData || []).map(viewUser => {
+                            const roleEntry = (rolesData || []).find(r => r.user_id === viewUser.user_id);
+                            return {
+                                user_id: viewUser.user_id,
+                                email: viewUser.email || 'No email',
+                                full_name: viewUser.full_name || viewUser.email?.split('@')[0] || 'Unknown User',
+                                role: roleEntry?.role || viewUser.role || 'no_role',
+                                created_at: viewUser.joined_at || viewUser.role_assigned_at,
+                                status: roleEntry?.status || 'active'
+                            };
+                        });
+                    } else {
+                        // Fallback: Join with members table to get name
+                        const { data: membersData } = await supabase
+                            .from(MEMBERS_TABLE)
+                            .select('email, name')
+                            .not('email', 'is', null);
+
+                        const memberMap = {};
+                        if (membersData) {
+                            membersData.forEach(m => {
+                                if (m.email) memberMap[m.email.toLowerCase()] = m.name;
+                            });
+                        }
+
+                        merged = (rolesData || []).map(role => {
+                            const email = role.email || 'Unknown';
+                            const fullName = memberMap[email.toLowerCase()] || email.split('@')[0] || 'Unknown User';
+                            return {
+                                user_id: role.user_id,
+                                email: email,
+                                full_name: fullName,
+                                role: role.role || 'no_role',
+                                created_at: role.created_at,
+                                status: role.status || 'active'
+                            };
+                        });
+                    }
+
+                    if (merged.length === 0) {
+                        merged = (rolesData || []).map(role => ({
+                            user_id: role.user_id,
+                            email: role.email || 'Unknown',
+                            full_name: role.email?.split('@')[0] || 'Unknown User',
+                            role: role.role || 'no_role',
+                            created_at: role.created_at,
+                            status: role.status || 'active'
+                        }));
+                    }
+
+                    userRoles = merged;
+                    renderSlider('rolesTrack', userRoles, 'roleDots', renderRoleItem, roleSliderIndex);
+                    attachRoleListeners();
+
+                } catch (err) {
+                    console.error('Error loading roles:', err);
+                    document.getElementById('rolesTrack').innerHTML =
+                        `<div class="status-msg" style="color:#ef4444;"><i class="fa-solid fa-circle-exclamation"></i> ${err.message}</div>`;
+                    showToast('Error loading roles: ' + err.message, 'error');
+                }
+            };
+
+            // ============================================================
+            // ===== ROLE LISTENERS =====
+            // ============================================================
+            function attachRoleListeners() {
+                document.querySelectorAll('#rolesTrack .action-btn-sm').forEach(btn => {
+                    btn.removeEventListener('click', handleRoleAction);
+                    btn.addEventListener('click', handleRoleAction);
+                });
+            }
+
+            function handleRoleAction(e) {
+                e.stopPropagation();
+                const btn = e.currentTarget;
+                const userId = btn.dataset.userId;
+                const action = btn.dataset.action;
+
+                if (action === 'edit-role') {
+                    const email = btn.dataset.email || '';
+                    const role = btn.dataset.role || 'viewer';
+                    const fullName = btn.dataset.fullname || '';
+                    const status = btn.dataset.status || 'active';
+                    openEditRoleModal(userId, email, role, fullName, status);
+                } else if (action === 'toggle-user-status') {
+                    toggleUserStatus(userId);
+                } else if (action === 'delete-role') {
+                    deleteUserRole(userId);
+                }
+            }
+
+            // ============================================================
+            // ===== OPEN EDIT ROLE MODAL =====
+            // ============================================================
+            const openEditRoleModal = (userId, email, currentRole, fullName, status) => {
+                document.getElementById('roleUserId').value = userId || '';
+                document.getElementById('roleUserEmail').value = email || '';
+                document.getElementById('roleFullName').value = fullName || '';
+                document.getElementById('roleNewRole').value = currentRole || 'viewer';
+                document.getElementById('roleStatus').value = status || 'active';
+                document.getElementById('roleEditMode').value = 'edit';
+                document.getElementById('roleModalTitle').textContent = '✏️ Edit User Role';
+                document.getElementById('roleSubmitBtnText').textContent = 'Update Role';
+                document.getElementById('roleModal').classList.add('active');
+            };
+
+            // ============================================================
+            // ===== OPEN ADD ROLE MODAL =====
+            // ============================================================
+            const openAddRoleModal = () => {
+                document.getElementById('roleUserId').value = '';
+                document.getElementById('roleUserEmail').value = '';
+                document.getElementById('roleFullName').value = '';
+                document.getElementById('roleNewRole').value = 'viewer';
+                document.getElementById('roleStatus').value = 'active';
+                document.getElementById('roleEditMode').value = 'add';
+                document.getElementById('roleModalTitle').textContent = '➕ Add New Role';
+                document.getElementById('roleSubmitBtnText').textContent = 'Add Role';
+                document.getElementById('roleModal').classList.add('active');
+            };
+
+            // ============================================================
+            // ===== CLOSE ROLE MODAL =====
+            // ============================================================
+            const closeRoleModal = () => {
+                document.getElementById('roleModal').classList.remove('active');
+            };
+
+            // ============================================================
+            // ===== SUBMIT ROLE (Add/Edit) =====
+            // ============================================================
+            document.getElementById('roleForm')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const userId = document.getElementById('roleUserId').value;
+                const email = document.getElementById('roleUserEmail').value.trim();
+                const fullName = document.getElementById('roleFullName').value.trim();
+                const newRole = document.getElementById('roleNewRole').value;
+                const status = document.getElementById('roleStatus').value;
+                const editMode = document.getElementById('roleEditMode').value;
+
+                if (!email) {
+                    showToast('❌ Email is required.', 'error');
+                    return;
+                }
+
+                try {
+                    let result;
+
+                    if (editMode === 'edit' && userId) {
+                        // Update existing role
+                        result = await supabase
+                            .from(USER_ROLES_TABLE)
+                            .update({
+                                role: newRole,
+                                status: status,
+                                email: email,
+                                full_name: fullName || email.split('@')[0],
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('user_id', userId);
+                    } else {
+                        // Add new role - first check if user exists in auth.users
+                        const { data: authUser, error: authError } = await supabase
+                            .from('auth.users')
+                            .select('id')
+                            .eq('email', email)
+                            .maybeSingle();
+
+                        if (authError || !authUser) {
+                            showToast('❌ User not found. Please add user to auth first.', 'error');
+                            return;
+                        }
+
+                        // Check if role already exists
+                        const { data: existingRole } = await supabase
+                            .from(USER_ROLES_TABLE)
+                            .select('user_id')
+                            .eq('user_id', authUser.id)
+                            .maybeSingle();
+
+                        if (existingRole) {
+                            showToast('⚠️ User already has a role. Use Edit instead.', 'error');
+                            return;
+                        }
+
+                        result = await supabase
+                            .from(USER_ROLES_TABLE)
+                            .insert([{
+                                user_id: authUser.id,
+                                email: email,
+                                full_name: fullName || email.split('@')[0],
+                                role: newRole,
+                                status: status,
+                                created_at: new Date().toISOString(),
+                                updated_at: new Date().toISOString()
+                            }]);
+                    }
+
+                    if (result.error) throw result.error;
+
+                    showToast(`✅ Role ${editMode === 'edit' ? 'updated' : 'added'} successfully!`, 'success');
+                    closeRoleModal();
+                    await loadUserRoles();
+
+                } catch (err) {
+                    console.error('Error saving role:', err);
+                    showToast('❌ Error saving role: ' + err.message, 'error');
+                }
+            });
+
+            // ============================================================
+            // ===== DELETE USER ROLE =====
+            // ============================================================
+            const deleteUserRole = async (userId) => {
+                if (!userId) {
+                    showToast('❌ User ID not found.', 'error');
+                    return;
+                }
+
+                if (!confirm('⚠️ Are you sure you want to delete this user role permanently?')) return;
+
+                try {
+                    const { error } = await supabase
+                        .from(USER_ROLES_TABLE)
+                        .delete()
+                        .eq('user_id', userId);
+
+                    if (error) throw error;
+
+                    showToast('🗑️ User role deleted successfully!', 'success');
+                    await loadUserRoles();
+
+                } catch (err) {
+                    console.error('Error deleting role:', err);
+                    showToast('❌ Error deleting role: ' + err.message, 'error');
+                }
+            };
+
+            // ============================================================
+            // ===== VERIFY REGISTRATION =====
+            // ============================================================
+            const verifyRegistration = async (id) => {
+                if (!confirm('✅ Verify this member and add to active members list?')) return;
+                try {
+                    const reg = registrations.find(r => String(r.id) === String(id));
+                    if (!reg) { showToast('Registration not found.', 'error'); return; }
+
+                    const memberData = {
+                        name: reg.full_name || reg.name || '',
+                        email: reg.email || '',
+                        phone: reg.phone || reg.phone_number || '',
+                        gender: reg.gender || '',
+                        blood_group: reg.blood_group || '',
+                        position: reg.position || '',
+                        address: reg.address || '',
+                        profession: reg.profession || '',
+                        birthday: reg.birth_date || null,
+                        profile_image: reg.profile_image || '',
+                        status: 'active'
+                    };
+
+                    const { data: existing } = await supabase
+                        .from(MEMBERS_TABLE)
+                        .select('id')
+                        .eq('email', memberData.email)
+                        .maybeSingle();
+
+                    if (existing) {
+                        showToast('⚠️ Member already exists. Deleting request...', 'info');
+                        await supabase.from(REGISTRATIONS_TABLE).delete().eq('id', id);
+                        await loadRegistrations();
+                        await loadMembers(document.getElementById('memberSearchInput').value || '');
+                        return;
+                    }
+
+                    const { data: insertData, error: insertError } = await supabase
+                        .from(MEMBERS_TABLE)
+                        .insert([memberData])
+                        .select();
+
+                    if (insertError) throw new Error(insertError.message);
+
+                    await supabase.from(REGISTRATIONS_TABLE).delete().eq('id', id);
+
+                    showToast('✅ Member verified and added to active members!', 'success');
+                    await loadRegistrations();
+                    await loadMembers(document.getElementById('memberSearchInput').value || '');
+                    await loadUserRoles();
+
+                } catch (err) {
+                    console.error('Error verifying member:', err);
+                    showToast('❌ Error verifying member: ' + err.message, 'error');
+                }
+            };
+
+            // ============================================================
+            // ===== REJECT REGISTRATION =====
+            // ============================================================
+            const rejectRegistration = async (id) => {
+                if (!confirm('❌ Reject this registration? This will delete it permanently.')) return;
+                try {
+                    await supabase.from(REGISTRATIONS_TABLE).delete().eq('id', id);
+                    showToast('🗑️ Registration rejected.', 'info');
+                    await loadRegistrations();
+                } catch (err) {
+                    showToast('❌ Error rejecting: ' + err.message, 'error');
+                }
+            };
+
+            // ============================================================
+            // ===== TOGGLE MEMBER STATUS =====
+            // ============================================================
+            const toggleMemberStatus = async (id) => {
+                try {
+                    const member = allMembers.find(m => m.id === id);
+                    if (!member) { showToast('Member not found.', 'error'); return; }
+                    const newStatus = member.status === 'active' ? 'inactive' : 'active';
+                    await supabase.from(MEMBERS_TABLE).update({ status: newStatus }).eq('id', id);
+                    showToast(`✅ Status updated to ${newStatus}`, 'success');
+                    await loadMembers(document.getElementById('memberSearchInput').value || '');
+                    await loadUserRoles();
+                } catch (err) {
+                    showToast('❌ Error toggling status: ' + err.message, 'error');
+                }
+            };
+
+            // ============================================================
+            // ===== TOGGLE USER STATUS =====
+            // ============================================================
+            const toggleUserStatus = async (userId) => {
+                try {
+                    const user = userRoles.find(u => u.user_id === userId);
+                    if (!user) { showToast('User not found.', 'error'); return; }
+                    const newStatus = user.status === 'active' ? 'inactive' : 'active';
+
+                    const { error } = await supabase
+                        .from(USER_ROLES_TABLE)
+                        .update({ status: newStatus })
+                        .eq('user_id', userId);
+
+                    if (error) throw error;
+                    showToast(`✅ User status updated to ${newStatus}`, 'success');
+                    await loadUserRoles();
+                } catch (err) {
+                    showToast('❌ Error toggling user status: ' + err.message, 'error');
+                }
+            };
+
+            // ============================================================
+            // ===== DELETE MEMBER =====
+            // ============================================================
+            const deleteMember = async (id) => {
+                if (!confirm(`⚠️ Delete member #${id}?`)) return;
+                try {
+                    const member = allMembers.find(m => m.id === id);
+                    if (member && member.profile_image) {
+                        await deleteOldImage(member.profile_image);
+                    }
+                    await supabase.from(MEMBERS_TABLE).delete().eq('id', id);
+                    showToast(`🗑️ Member #${id} deleted`, 'success');
+                    await loadMembers(document.getElementById('memberSearchInput').value || '');
+                    await loadUserRoles();
+                } catch (err) {
+                    showToast('❌ Error deleting: ' + err.message, 'error');
+                }
+            };
+
+            // ============================================================
+            // ===== EDIT MEMBER =====
+            // ============================================================
+            const editMember = async (id) => {
+                try {
+                    const { data, error } = await supabase.from(MEMBERS_TABLE).select('*').eq('id', id).single();
+                    if (error) throw error;
+                    if (!data) { showToast('Member not found.', 'error'); return; }
+
+                    editingMemberId = id;
+                    document.getElementById('memberId').value = id;
+                    document.getElementById('memberName').value = data.name || '';
+                    document.getElementById('memberEmail').value = data.email || '';
+                    document.getElementById('memberPhone').value = data.phone || '';
+                    document.getElementById('memberGender').value = data.gender || '';
+                    document.getElementById('memberBlood').value = data.blood_group || '';
+                    document.getElementById('memberPosition').value = data.position || '';
+                    document.getElementById('memberAddress').value = data.address || '';
+                    document.getElementById('memberProfession').value = data.profession || '';
+                    document.getElementById('memberBirthday').value = data.birthday ? data.birthday.split('T')[0] : '';
+                    document.getElementById('memberStatus').value = data.status || 'active';
+
+                    const imgUrl = data.profile_image || data.photo || data.photo_url || '';
+                    existingImageUrl = imgUrl;
+                    document.getElementById('profileImageUrl').value = imgUrl;
+                    const preview = document.getElementById('imagePreview');
+                    const noText = document.getElementById('noImageText');
+                    if (imgUrl) {
+                        preview.src = imgUrl;
+                        preview.style.display = 'block';
+                        noText.style.display = 'none';
+                    } else {
+                        preview.style.display = 'none';
+                        noText.style.display = 'inline';
+                    }
+                    currentImageFile = null;
+
+                    document.getElementById('memberModalTitle').textContent = 'Edit Member';
+                    document.getElementById('memberSubmitBtnText').textContent = 'Update Member';
+                    document.getElementById('memberModal').classList.add('active');
+                } catch (err) {
+                    showToast('Error loading member: ' + err.message, 'error');
+                }
+            };
+
+            // ============================================================
+            // ===== OPEN ADD MODAL =====
+            // ============================================================
+            const openAddModal = () => {
+                editingMemberId = null;
+                document.getElementById('memberForm').reset();
+                document.getElementById('memberId').value = '';
+                document.getElementById('memberStatus').value = 'active';
+                document.getElementById('profileImageUrl').value = '';
+                document.getElementById('imagePreview').style.display = 'none';
+                document.getElementById('noImageText').style.display = 'inline';
+                currentImageFile = null;
+                existingImageUrl = '';
+                document.getElementById('memberModalTitle').textContent = 'Add New Member';
+                document.getElementById('memberSubmitBtnText').textContent = 'Save Member';
+                document.getElementById('memberModal').classList.add('active');
+            };
+
+            const closeModal = () => {
+                document.getElementById('memberModal').classList.remove('active');
+                editingMemberId = null;
+                currentImageFile = null;
+                existingImageUrl = '';
+                document.getElementById('profileImageInput').value = '';
+            };
+
+            // ============================================================
+            // ===== IMAGE PREVIEW =====
+            // ============================================================
+            document.getElementById('profileImageInput')?.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                currentImageFile = file;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = ev.target.result;
+                    preview.style.display = 'block';
+                    document.getElementById('noImageText').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            });
+
+            document.getElementById('removeImageBtn')?.addEventListener('click', () => {
+                currentImageFile = null;
+                document.getElementById('profileImageInput').value = '';
+                document.getElementById('profileImageUrl').value = '';
+                document.getElementById('imagePreview').style.display = 'none';
+                document.getElementById('noImageText').style.display = 'inline';
+                existingImageUrl = '';
+            });
+
+            // ============================================================
+            // ===== FORM SUBMIT =====
+            // ============================================================
+            document.getElementById('memberForm')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const memberData = {
+                    name: document.getElementById('memberName').value.trim(),
+                    email: document.getElementById('memberEmail').value.trim(),
+                    phone: document.getElementById('memberPhone').value.trim(),
+                    gender: document.getElementById('memberGender').value,
+                    blood_group: document.getElementById('memberBlood').value,
+                    position: document.getElementById('memberPosition').value.trim(),
+                    address: document.getElementById('memberAddress').value.trim(),
+                    profession: document.getElementById('memberProfession').value.trim(),
+                    birthday: document.getElementById('memberBirthday').value || null,
+                    status: document.getElementById('memberStatus').value || 'active'
+                };
+                if (!memberData.name || !memberData.email) {
+                    showToast('Name and Email are required.', 'error');
+                    return;
+                }
+
+                const id = document.getElementById('memberId').value;
+                const isEdit = !!id;
+
+                try {
+                    let finalImageUrl = document.getElementById('profileImageUrl').value || existingImageUrl;
+
+                    if (currentImageFile) {
+                        if (isEdit && finalImageUrl) {
+                            await deleteOldImage(finalImageUrl);
+                        }
+                        const tempId = isEdit ? id : Date.now();
+                        const uploadedUrl = await uploadImage(currentImageFile, tempId);
+                        if (uploadedUrl) finalImageUrl = uploadedUrl;
+                    } else if (isEdit && !currentImageFile && !document.getElementById('profileImageUrl').value &&
+                        existingImageUrl) {
+                        await deleteOldImage(existingImageUrl);
+                        finalImageUrl = '';
+                    }
+
+                    memberData.profile_image = finalImageUrl || null;
+
+                    let result;
+                    if (isEdit) {
+                        result = await supabase.from(MEMBERS_TABLE).update(memberData).eq('id', parseInt(id));
+                    } else {
+                        result = await supabase.from(MEMBERS_TABLE).insert([memberData]);
+                    }
+                    if (result.error) throw result.error;
+
+                    showToast(isEdit ? '✅ Member updated!' : '✅ Member added!', 'success');
+                    closeModal();
+                    await loadMembers(document.getElementById('memberSearchInput').value || '');
+                    await loadUserRoles();
+                } catch (err) {
+                    console.error('Save error:', err);
+                    showToast('❌ Error saving: ' + err.message, 'error');
+                }
+            });
+
+            // ============================================================
+            // ===== EVENT LISTENERS =====
+            // ============================================================
+            document.getElementById('registrationsTrack')?.addEventListener('click', (e) => {
+                const btn = e.target.closest('.action-btn-sm');
+                if (!btn) return;
+                const id = btn.dataset.id;
+                const action = btn.dataset.action;
+                if (action === 'verify') verifyRegistration(id);
+                else if (action === 'reject') rejectRegistration(id);
+            });
+
+            document.getElementById('membersTrack')?.addEventListener('click', (e) => {
+                const btn = e.target.closest('.action-btn-sm');
+                if (!btn) return;
+                const id = parseInt(btn.dataset.id);
+                const action = btn.dataset.action;
+                if (action === 'delete') deleteMember(id);
+                else if (action === 'edit') editMember(id);
+                else if (action === 'toggle-status') toggleMemberStatus(id);
+                else if (action === 'print') printSingleMember(id);
+            });
+
+            // Slider navigation
+            document.getElementById('regSliderPrev')?.addEventListener('click', () => {
+                const perView = getItemsPerView();
+                const totalSlides = Math.ceil(registrations.length / perView);
+                regSliderIndex = (regSliderIndex - 1 + totalSlides) % totalSlides;
+                updateSlider('registrationsTrack', registrations, 'regDots', renderRegistrationItem, regSliderIndex);
+            });
+
+            document.getElementById('regSliderNext')?.addEventListener('click', () => {
+                const perView = getItemsPerView();
+                const totalSlides = Math.ceil(registrations.length / perView);
+                regSliderIndex = (regSliderIndex + 1) % totalSlides;
+                updateSlider('registrationsTrack', registrations, 'regDots', renderRegistrationItem, regSliderIndex);
+            });
+
+            document.getElementById('memSliderPrev')?.addEventListener('click', () => {
+                const perView = getItemsPerView();
+                const totalSlides = Math.ceil(allMembers.length / perView);
+                memSliderIndex = (memSliderIndex - 1 + totalSlides) % totalSlides;
+                updateSlider('membersTrack', allMembers, 'memDots', renderMemberItem, memSliderIndex);
+            });
+
+            document.getElementById('memSliderNext')?.addEventListener('click', () => {
+                const perView = getItemsPerView();
+                const totalSlides = Math.ceil(allMembers.length / perView);
+                memSliderIndex = (memSliderIndex + 1) % totalSlides;
+                updateSlider('membersTrack', allMembers, 'memDots', renderMemberItem, memSliderIndex);
+            });
+
+            document.getElementById('roleSliderPrev')?.addEventListener('click', () => {
+                const perView = getItemsPerView();
+                const totalSlides = Math.ceil(userRoles.length / perView);
+                roleSliderIndex = (roleSliderIndex - 1 + totalSlides) % totalSlides;
+                updateSlider('rolesTrack', userRoles, 'roleDots', renderRoleItem, roleSliderIndex);
+            });
+
+            document.getElementById('roleSliderNext')?.addEventListener('click', () => {
+                const perView = getItemsPerView();
+                const totalSlides = Math.ceil(userRoles.length / perView);
+                roleSliderIndex = (roleSliderIndex + 1) % totalSlides;
+                updateSlider('rolesTrack', userRoles, 'roleDots', renderRoleItem, roleSliderIndex);
+            });
+
+            // Refresh buttons
+            document.getElementById('refresh-registrations-btn')?.addEventListener('click', loadRegistrations);
+            document.getElementById('refresh-members-btn')?.addEventListener('click', () => {
+                loadMembers(document.getElementById('memberSearchInput').value || '');
+            });
+            document.getElementById('refresh-roles-btn')?.addEventListener('click', loadUserRoles);
+
+            // Add Role button
+            document.getElementById('addRoleBtn')?.addEventListener('click', openAddRoleModal);
+
+            // Clear buttons
+            document.getElementById('clear-registrations-btn')?.addEventListener('click', async () => {
+                if (!confirm("⚠️ DELETE ALL registration requests?")) return;
+                try {
+                    await supabase.from(REGISTRATIONS_TABLE).delete().neq('id', '');
+                    showToast('✅ All registrations cleared.', 'success');
+                    await loadRegistrations();
+                } catch (err) {
+                    showToast('❌ Error clearing: ' + err.message, 'error');
+                }
+            });
+
+            document.getElementById('clear-members-btn')?.addEventListener('click', async () => {
+                if (!confirm("⚠️ DELETE ALL members?")) return;
+                try {
+                    for (const m of allMembers) {
+                        if (m.profile_image) await deleteOldImage(m.profile_image);
+                    }
+                    await supabase.from(MEMBERS_TABLE).delete().neq('id', 0);
+                    showToast('✅ All members cleared.', 'success');
+                    await loadMembers();
+                    await loadUserRoles();
+                } catch (err) {
+                    showToast('❌ Error clearing: ' + err.message, 'error');
+                }
+            });
+
+            // Search
+            document.getElementById('memberSearchBtn')?.addEventListener('click', () => {
+                loadMembers(document.getElementById('memberSearchInput').value || '');
+            });
+            document.getElementById('memberSearchInput')?.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') loadMembers(e.target.value);
+            });
+
+            // Modal events
+            document.getElementById('addMemberBtn')?.addEventListener('click', openAddModal);
+            document.getElementById('memberModalCloseBtn')?.addEventListener('click', closeModal);
+            document.getElementById('memberModalCancelBtn')?.addEventListener('click', closeModal);
+            document.getElementById('memberModal')?.addEventListener('click', (e) => {
+                if (e.target === document.getElementById('memberModal')) closeModal();
+            });
+
+            // Role Modal events
+            document.getElementById('roleModalCloseBtn')?.addEventListener('click', closeRoleModal);
+            document.getElementById('roleModalCancelBtn')?.addEventListener('click', closeRoleModal);
+            document.getElementById('roleModal')?.addEventListener('click', (e) => {
+                if (e.target === document.getElementById('roleModal')) closeRoleModal();
+            });
+
+            // Back & Logout
+            document.getElementById('backToAdminBtn')?.addEventListener('click', () => { window.location.href = 'admin.html'; });
+            document.getElementById('logout-btn')?.addEventListener('click', async () => {
+                await supabase.auth.signOut();
+                window.location.href = '/index.html';
+            });
+
+            // ---------- REALTIME ----------
+            const setupRealtime = () => {
+                supabase.channel('members-realtime')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: MEMBERS_TABLE }, () => {
+                        console.log('🔄 Members changed');
+                        loadMembers(document.getElementById('memberSearchInput').value || '');
+                    })
+                    .subscribe();
+
+                supabase.channel('registrations-realtime')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: REGISTRATIONS_TABLE }, () => {
+                        console.log('🔄 Registrations changed');
+                        loadRegistrations();
+                    })
+                    .subscribe();
+
+                supabase.channel('roles-realtime')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: USER_ROLES_TABLE }, () => {
+                        console.log('🔄 Roles changed');
+                        loadUserRoles();
+                    })
+                    .subscribe();
+            };
+
+            // ---------- INIT ----------
+            const init = async () => {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    window.location.href = '/index.html';
+                    return;
+                }
+
+                const isAuthorized = await checkAdminRole();
+                if (!isAuthorized) {
+                    showAccessDenied();
+                    return;
+                }
+
+                await Promise.all([loadRegistrations(), loadMembers(), loadUserRoles()]);
+                setupRealtime();
+
+                let resizeTimeout;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(() => {
+                        updateSlider('registrationsTrack', registrations, 'regDots', renderRegistrationItem, regSliderIndex);
+                        updateSlider('membersTrack', allMembers, 'memDots', renderMemberItem, memSliderIndex);
+                        updateSlider('rolesTrack', userRoles, 'roleDots', renderRoleItem, roleSliderIndex);
+                    }, 200);
+                });
+            };
+
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', () => {
+                navbar.classList.toggle('scrolled', window.scrollY > 50);
+            });
+
+            document.addEventListener('DOMContentLoaded', init);
+
+        })();
+    </script>
+</body>
+</html>
