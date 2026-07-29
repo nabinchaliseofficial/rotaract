@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rotaract Club - पत्र प्रमाणीकरण</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- ─── Supabase JS Client ─── -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js">
+    </script>
+
     <style>
         /* ── Reset & Base ── */
         * {
@@ -186,19 +191,45 @@
             gap: 0.5rem;
         }
 
-        .search-grid .btn-verify:hover {
+        .search-grid .btn-verify:hover:not(:disabled) {
             transform: translateY(-1px);
             box-shadow: 0 8px 24px rgba(26, 75, 116, 0.30);
         }
 
-        .search-grid .btn-verify:active {
+        .search-grid .btn-verify:active:not(:disabled) {
             transform: translateY(0);
         }
 
         .search-grid .btn-verify:disabled {
-            opacity: 0.5;
+            opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+        }
+
+        .search-grid .btn-verify .spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .search-grid .btn-verify.loading .spinner {
+            display: inline-block;
+        }
+        .search-grid .btn-verify.loading .btn-text {
+            display: none;
+        }
+        .search-grid .btn-verify.loading .btn-icon {
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* ── Message / Error ── */
@@ -224,6 +255,13 @@
             background: #eaf6ed;
             color: #1e6b44;
             border: 1px solid #c5e0d0;
+        }
+
+        .message.info {
+            display: flex;
+            background: #e8f0fe;
+            color: #1a4b74;
+            border: 1px solid #c5d8ed;
         }
 
         .message .icon {
@@ -514,7 +552,9 @@
                     />
                 </div>
                 <button type="submit" class="btn-verify" id="verifyBtn">
-                    <span>✓</span> प्रमाणित गर्नुहोस्
+                    <span class="btn-icon">✓</span>
+                    <span class="btn-text">प्रमाणित गर्नुहोस्</span>
+                    <span class="spinner"></span>
                 </button>
             </form>
 
@@ -538,35 +578,12 @@
         (function() {
             'use strict';
 
-            // ─── DATA ────────────────────────────────────────────────────────
-            const letters = [{
-                fiscalYear: '026/027',
-                refNo: '2',
-                date: '2026/07/29 A.D.',
-                to: 'श्री ३ नं. वडा कार्यालय, गलकोट नगरपालिका, गलकोट, बागलुङ ।',
-                subject: 'क्लब दर्ताका लागि सिफारिस गरिदिनुहुन अनुरोध।',
-                title: 'क्लब दर्ता सिफारिस पत्र',
-                club: 'Rotaract Club of Galkot',
-                issuedBy: 'सचिव, Rotaract Club'
-            }, {
-                fiscalYear: '026/027',
-                refNo: '1',
-                date: '2026/07/15 A.D.',
-                to: 'जिल्ला प्रशासन कार्यालय, बागलुङ',
-                subject: 'वार्षिक कार्यक्रम स्वीकृतिका लागि अनुरोध।',
-                title: 'वार्षिक कार्यक्रम स्वीकृति पत्र',
-                club: 'Rotaract Club of Galkot',
-                issuedBy: 'अध्यक्ष, Rotaract Club'
-            }, {
-                fiscalYear: '025/026',
-                refNo: '3',
-                date: '2026/06/10 A.D.',
-                to: 'नेपाल रोटार्याक्ट जिल्ला समिति, काठमाडौं',
-                subject: 'जिल्ला सम्मेलनमा सहभागिताका लागि अनुरोध।',
-                title: 'जिल्ला सम्मेलन सहभागिता पत्र',
-                club: 'Rotaract Club of Galkot',
-                issuedBy: 'सचिव, Rotaract Club'
-            }];
+            // ─── SUPABASE CONFIG ──────────────────────────────────────────
+            const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
+            const SUPABASE_ANON_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
+
+            // ─── Initialize Supabase Client ─────────────────────────────
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
             // ─── DOM refs ──────────────────────────────────────────────────
             const form = document.getElementById('searchForm');
@@ -582,16 +599,26 @@
             function showMessage(text, type) {
                 messageEl.className = 'message ' + type;
                 messageText.textContent = text;
-                // auto-hide after 5s
+                // auto-hide after 6s
                 clearTimeout(window._msgTimeout);
                 window._msgTimeout = setTimeout(() => {
                     messageEl.className = 'message';
-                }, 5000);
+                }, 6000);
             }
 
             function hideMessage() {
                 messageEl.className = 'message';
                 clearTimeout(window._msgTimeout);
+            }
+
+            function setLoading(loading) {
+                if (loading) {
+                    verifyBtn.classList.add('loading');
+                    verifyBtn.disabled = true;
+                } else {
+                    verifyBtn.classList.remove('loading');
+                    verifyBtn.disabled = false;
+                }
             }
 
             function renderLetter(letter) {
@@ -600,6 +627,7 @@
                         <div class="no-data">
                             <span class="icon-big">📄</span>
                             <p>क्षमा गर्नुहोस्, यो दर्ता नम्बरको कुनै पत्र फेला परेन।</p>
+                            <p style="font-size:0.8rem;margin-top:0.5rem;color:#8a9bb0;">कृपया आर्थिक वर्ष र दर्ता नम्बर मिलाएर हेर्नुहोस्।</p>
                         </div>
                     `;
                     resultSection.classList.add('visible');
@@ -610,35 +638,35 @@
                     <div class="letter-card">
                         <div class="letter-header">
                             <div class="org">
-                                <span class="name">${letter.club}</span>
-                                <span class="sub">${letter.issuedBy}</span>
+                                <span class="name">${escapeHtml(letter.club)}</span>
+                                <span class="sub">${escapeHtml(letter.issued_by)}</span>
                             </div>
                             <div class="ref-badge">
-                                दर्ता नं. ${letter.refNo}  •  आ.व. ${letter.fiscalYear}
+                                दर्ता नं. ${escapeHtml(letter.ref_no)}  •  आ.व. ${escapeHtml(letter.fiscal_year)}
                             </div>
                         </div>
 
                         <div class="letter-body">
                             <div class="to-line">
-                                <strong>प्रति :</strong> ${letter.to}
+                                <strong>प्रति :</strong> ${escapeHtml(letter.to_address)}
                             </div>
 
                             <div class="subject">
-                                📌 विषय: ${letter.subject}
+                                📌 विषय: ${escapeHtml(letter.subject)}
                             </div>
 
                             <div class="details-grid">
                                 <span class="label">शीर्षक</span>
-                                <span class="value">${letter.title}</span>
+                                <span class="value">${escapeHtml(letter.title)}</span>
 
                                 <span class="label">मिति</span>
-                                <span class="value">${letter.date}</span>
+                                <span class="value">${escapeHtml(letter.date)}</span>
 
                                 <span class="label">आ.व.</span>
-                                <span class="value">${letter.fiscalYear}</span>
+                                <span class="value">${escapeHtml(letter.fiscal_year)}</span>
 
                                 <span class="label">दर्ता नं.</span>
-                                <span class="value">${letter.refNo}</span>
+                                <span class="value">${escapeHtml(letter.ref_no)}</span>
                             </div>
                         </div>
 
@@ -657,18 +685,38 @@
                 resultSection.classList.add('visible');
             }
 
-            function findLetter(fiscal, ref) {
-                // Normalise: trim, case-insensitive for ref, exact for fiscal
-                const f = fiscal.trim();
-                const r = ref.trim();
-                return letters.find(l =>
-                    l.fiscalYear === f &&
-                    l.refNo === r
-                );
+            // Simple escape to prevent XSS
+            function escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // ─── Supabase Query ──────────────────────────────────────────
+            async function findLetter(fiscal, ref) {
+                try {
+                    const { data, error } = await supabase
+                        .from('rotaract_verify')
+                        .select('*')
+                        .eq('fiscal_year', fiscal.trim())
+                        .eq('ref_no', ref.trim())
+                        .maybeSingle();
+
+                    if (error) {
+                        console.error('Supabase query error:', error);
+                        throw new Error(error.message);
+                    }
+
+                    return data;
+                } catch (err) {
+                    console.error('findLetter error:', err);
+                    throw err;
+                }
             }
 
             // ─── Handle search ──────────────────────────────────────────
-            function handleSearch(e) {
+            async function handleSearch(e) {
                 e.preventDefault();
                 hideMessage();
 
@@ -682,36 +730,82 @@
                     return;
                 }
 
-                // Lookup
-                const letter = findLetter(fiscal, ref);
+                // Show loading state
+                setLoading(true);
 
-                if (letter) {
-                    showMessage('✅ पत्र फेला पर्यो — प्रमाणीकरण सफल ।', 'success');
-                    renderLetter(letter);
-                } else {
-                    showMessage('❌ क्षमा गर्नुहोस्, यो आर्थिक वर्ष र दर्ता नम्बरको कुनै पत्र फेला परेन । कृपया पुनः प्रयास गर्नुहोस् ।',
-                        'error');
+                try {
+                    const letter = await findLetter(fiscal, ref);
+
+                    if (letter) {
+                        showMessage('✅ पत्र फेला पर्यो — प्रमाणीकरण सफल ।', 'success');
+                        renderLetter(letter);
+                    } else {
+                        showMessage('❌ क्षमा गर्नुहोस्, यो आर्थिक वर्ष र दर्ता नम्बरको कुनै पत्र फेला परेन । कृपया पुनः प्रयास गर्नुहोस् ।',
+                            'error');
+                        resultSection.classList.remove('visible');
+                    }
+                } catch (err) {
+                    console.error('Search error:', err);
+                    showMessage('⚠️ सर्भरमा समस्या भयो। कृपया केही समयपछि पुनः प्रयास गर्नुहोस्।', 'error');
                     resultSection.classList.remove('visible');
+                } finally {
+                    setLoading(false);
                 }
             }
 
-            // ─── Preset demo: auto-load on page load ──────────────────
-            function autoLoadDemo() {
-                // The inputs already have values '026/027' and '2'
-                // Trigger search automatically after a tiny delay
-                setTimeout(() => {
-                    form.dispatchEvent(new Event('submit'));
-                }, 300);
+            // ─── Auto-load demo on page load ────────────────────────────
+            async function autoLoadDemo() {
+                // Show a brief "loading" state while fetching
+                setLoading(true);
+
+                try {
+                    // Try to load the default entry: fiscal_year='026/027', ref_no='2'
+                    const letter = await findLetter('026/027', '2');
+
+                    if (letter) {
+                        renderLetter(letter);
+                        showMessage('✅ पत्र फेला पर्यो — प्रमाणीकरण सफल ।', 'success');
+                    } else {
+                        // If not found, try to fetch any one record
+                        const { data, error } = await supabase
+                            .from('rotaract_verify')
+                            .select('*')
+                            .limit(1)
+                            .maybeSingle();
+
+                        if (error) throw new Error(error.message);
+
+                        if (data) {
+                            // Update input fields to match the found record
+                            fiscalInput.value = data.fiscal_year;
+                            refInput.value = data.ref_no;
+                            renderLetter(data);
+                            showMessage('✅ पत्र फेला पर्यो — प्रमाणीकरण सफल ।', 'success');
+                        } else {
+                            // No data at all in the table
+                            showMessage('ℹ️ हाल कुनै पत्र डाटाबेसमा छैन। कृपया पछि फेरि प्रयास गर्नुहोस्।', 'info');
+                            resultSection.classList.remove('visible');
+                        }
+                    }
+                } catch (err) {
+                    console.error('Auto-load error:', err);
+                    // Don't show error on auto-load, just silently fail
+                    // but we show a subtle message
+                    showMessage('ℹ️ डाटाबेस जडान हुन सकेन। कृपया पुनः प्रयास गर्नुहोस्।', 'info');
+                } finally {
+                    setLoading(false);
+                }
             }
 
             // ─── Events ──────────────────────────────────────────────────
             form.addEventListener('submit', handleSearch);
 
             // ─── Init ────────────────────────────────────────────────────
-            autoLoadDemo();
+            // Load demo after a tiny delay to let everything settle
+            setTimeout(autoLoadDemo, 400);
 
             // Expose for debugging (optional)
-            window._letters = letters;
+            window._supabase = supabase;
 
         })();
     </script>
