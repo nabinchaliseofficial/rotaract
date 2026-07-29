@@ -356,6 +356,7 @@ button{ font-family:inherit; }
 .module-card.c-projects .icon-wrap{ background:rgba(226,130,63,0.14); color:var(--accent); }
 .module-card.c-minutes .icon-wrap{ background:rgba(155,140,240,0.14); color:var(--purple); }
 .module-card.c-inquiries .icon-wrap{ background:rgba(51,214,192,0.14); color:var(--accent-2); }
+.module-card.c-letterhead .icon-wrap{ background:rgba(155,140,240,0.14); color:var(--purple); }
 .module-card h3{ font-size:1rem; font-weight:600; }
 .module-card p{ font-size:0.8rem; color:var(--text-muted); }
 .module-card .go{ font-size:0.75rem; color:var(--text-faint); display:flex; align-items:center; gap:0.4rem; margin-top:auto; }
@@ -510,6 +511,7 @@ footer.app-footer{ padding:1.5rem 2.2rem 2.5rem; color:var(--text-faint); font-s
             <button class="nav-item" data-module="adminupcomingproject.html"><i class="fa-solid fa-diagram-project"></i> Projects</button>
             <button class="nav-item" data-module="adminminutes.html"><i class="fa-solid fa-file-lines"></i> Minutes</button>
             <button class="nav-item" data-module="admininquiries.html"><i class="fa-solid fa-envelope"></i> Inquiries</button>
+            <button class="nav-item" data-module="adminletter.html"><i class="fa-solid fa-file-signature"></i> Letterhead</button>
 
             <div class="nav-group-label">Account</div>
             <button class="nav-item" data-module="/dashboard.html"><i class="fa-solid fa-newspaper"></i> Blog dashboard</button>
@@ -594,6 +596,12 @@ footer.app-footer{ padding:1.5rem 2.2rem 2.5rem; color:var(--text-faint); font-s
                     <span class="icon-wrap"><i class="fa-solid fa-envelope"></i></span>
                     <h3>Inquiries</h3>
                     <p>Contact form messages</p>
+                    <span class="go">Open <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+                <div class="module-card c-letterhead" data-module="adminletter.html" role="button" tabindex="0">
+                    <span class="icon-wrap"><i class="fa-solid fa-file-signature"></i></span>
+                    <h3>Letterhead</h3>
+                    <p>Create and print official club letterhead</p>
                     <span class="go">Open <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
             </div>
@@ -952,6 +960,7 @@ footer.app-footer{ padding:1.5rem 2.2rem 2.5rem; color:var(--text-faint); font-s
         'adminupcomingproject.html': { title: 'Projects', icon: 'fa-solid fa-diagram-project', sub: 'Upcoming projects and applications.' },
         'adminminutes.html': { title: 'Minutes', icon: 'fa-solid fa-file-lines', sub: 'View, edit and print meeting minutes.' },
         'admininquiries.html': { title: 'Inquiries', icon: 'fa-solid fa-envelope', sub: 'Contact form messages.' },
+        'adminletter.html': { title: 'Letterhead', icon: 'fa-solid fa-file-signature', sub: 'Create and print official club letterhead.' },
         '/dashboard.html': { title: 'Blog dashboard', icon: 'fa-solid fa-newspaper', sub: 'Write and manage blog posts.' },
         '/index.html': { title: 'Portfolio home', icon: 'fa-solid fa-house', sub: 'Public portfolio homepage.' },
         '/blog.html': { title: 'Blog', icon: 'fa-solid fa-newspaper', sub: 'Public blog listing.' },

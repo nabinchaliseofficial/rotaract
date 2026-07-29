@@ -1,1302 +1,2158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard | Rotaract Club of Galkot Baglung</title>
-    <meta name="description" content="Official dashboard for Rotaract Club of Galkot Baglung, RI District 3292. Tracking our milestones, strategic goals, and community updates." />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rotaract Club of Galkot Baglung | International Premium</title>
+  <meta name="description" content="Official dashboard for Rotaract Club of Galkot Baglung, RI District 3292. Tracking our milestones, strategic goals, and community updates." />
 
-    <!-- Tailwind CSS CDN + Google Fonts -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cinzel:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
 
-    <!-- Supabase Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-    <style>
-        :root {
-            --primary-color: #D91A5C;
-            --primary-dark: #A61042;
-            --secondary-color: #1D2A44;
-            --accent-gold: #D4AF37;
-            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-            --card-bg: #ffffff;
-            --text-main: #2d3748;
-            --text-muted: #718096;
-            --radius-lg: 16px;
-            --radius-md: 12px;
-            --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-gradient);
-            color: var(--text-main);
-            line-height: 1.6;
-            padding: 20px 10px;
-            min-height: 100vh;
-        }
-        .skip-link {
-            position: absolute;
-            top: -40px;
-            left: 0;
-            background: var(--primary-color);
-            color: white;
-            padding: 8px;
-            z-index: 100;
-            transition: top 0.2s;
-        }
-        .skip-link:focus {
-            top: 0;
-        }
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        /* ---- announcement banner ---- */
-        .announcement-banner {
-            background: linear-gradient(135deg, #0b1a2e 0%, #1a2f44 100%);
-            border-left: 6px solid #D4AF37;
-            border-radius: var(--radius-md);
-            padding: 16px 24px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
-            box-shadow: var(--shadow-sm);
-            color: #f0f4f8;
-        }
-        .announcement-banner .badge {
-            background: #D4AF37;
-            color: #0b1a2e;
-            font-weight: 700;
-            font-size: 0.7rem;
-            letter-spacing: 0.06em;
-            padding: 4px 14px;
-            border-radius: 40px;
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
-        .announcement-banner .msg {
-            flex: 1;
-            font-weight: 500;
-            font-size: 0.95rem;
-        }
-        .announcement-banner .msg strong {
-            color: #f9d77e;
-            font-weight: 700;
-        }
-        .announcement-banner .date-tag {
-            background: rgba(255, 255, 255, 0.08);
-            padding: 4px 16px;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            color: #cbd5e1;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            white-space: nowrap;
-        }
+  <style>
+    /* ===== CSS VARIABLES ===== */
+    :root {
+      --primary: #D91A5C;
+      --primary-dark: #A61042;
+      --primary-light: #FDE8F0;
+      --secondary: #1D2A44;
+      --secondary-light: #2D3A5A;
+      --gold: #D4AF37;
+      --gold-light: #F4E08A;
+      --dark: #0B1120;
+      --dark-card: #111827;
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --text-muted: #94A3B8;
+      --bg-light: #F8FAFC;
+      --bg-white: #FFFFFF;
+      --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.12);
+      --shadow-xl: 0 30px 80px rgba(0, 0, 0, 0.16);
+      --radius-sm: 12px;
+      --radius-md: 20px;
+      --radius-lg: 28px;
+      --radius-xl: 36px;
+      --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --transition-smooth: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      --glass-bg: rgba(255, 255, 255, 0.12);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    }
 
-        /* ---- header ---- */
-        header {
-            background: linear-gradient(135deg, var(--secondary-color) 0%, #111827 100%);
-            color: #ffffff;
-            padding: 40px 30px;
-            border-radius: var(--radius-lg);
-            text-align: center;
-            box-shadow: var(--shadow-md);
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 24px;
-        }
-        header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(217, 26, 92, 0.15) 0%, transparent 60%);
-            pointer-events: none;
-        }
-        header h1 {
-            font-size: 2.25rem;
-            font-weight: 700;
-            letter-spacing: -0.025em;
-            margin-bottom: 8px;
-            background: linear-gradient(to right, #fff, #f0f4f8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        header p {
-            font-size: 1.1rem;
-            color: #cbd5e1;
-            font-weight: 500;
-            letter-spacing: 0.05em;
-        }
+    /* Dark Mode */
+    [data-theme="dark"] {
+      --bg-light: #0B1120;
+      --bg-white: #111827;
+      --text-primary: #F1F5F9;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.08);
+    }
 
-        /* ---- status bar ---- */
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            background: var(--card-bg);
-            padding: 16px 24px;
-            border-radius: var(--radius-md);
-            margin-bottom: 30px;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-        }
-        .status-item {
-            display: flex;
-            align-items: center;
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-        .status-item strong {
-            color: var(--text-main);
-            margin-left: 6px;
-        }
-        .status-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background-color: #10B981;
-            border-radius: 50%;
-            margin-right: 8px;
-            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
-            }
-            70% {
-                transform: scale(1);
-                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
-            }
-            100% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-            }
-        }
+    /* ===== RESET & BASE ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-light);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      transition: background 0.6s ease, color 0.6s ease;
+    }
 
-        /* ---- nav tabs ---- */
-        .nav-tabs-container {
-            margin-bottom: 40px;
-        }
-        .nav-tabs {
-            list-style: none;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-        }
-        .nav-tabs a {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 24px 16px;
-            background: var(--card-bg);
-            text-decoration: none;
-            color: var(--text-main);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-sm);
-            border: 1px solid rgba(226, 232, 240, 0.7);
-            transition: var(--transition);
-            text-align: center;
-        }
-        .nav-tabs a:hover,
-        .nav-tabs a:focus {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--primary-color);
-            outline: none;
-        }
-        .nav-tabs .icon {
-            font-size: 2rem;
-            margin-bottom: 12px;
-            transition: var(--transition);
-        }
-        .nav-tabs a:hover .icon {
-            transform: scale(1.15);
-        }
-        .nav-tabs .tab-title {
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: var(--secondary-color);
-        }
+    /* ===== PRELOADER ===== */
+    #preloader {
+      position: fixed;
+      inset: 0;
+      background: var(--dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 999999;
+      transition: opacity 0.8s ease, visibility 0.8s ease;
+    }
+    #preloader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .preloader-wheel {
+      width: 80px;
+      height: 80px;
+      border: 4px solid rgba(217, 26, 92, 0.2);
+      border-top: 4px solid var(--gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      position: relative;
+    }
+    .preloader-wheel::after {
+      content: '⚙';
+      position: absolute;
+      inset: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2rem;
+      color: var(--gold);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { 0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.8); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+    .preloader-bar { width: 200px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; margin-top: 30px; overflow: hidden; }
+    .preloader-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--gold)); border-radius: 4px; animation: loadBar 2s ease-in-out forwards; }
+    @keyframes loadBar { 0% { width: 0%; } 100% { width: 100%; } }
+    .preloader-quote { color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; margin-top: 20px; font-style: italic; font-weight: 300; letter-spacing: 0.5px; animation: fadeQuote 2s ease-in-out infinite alternate; }
+    @keyframes fadeQuote { 0% { opacity: 0.4; transform: translateY(5px); } 100% { opacity: 1; transform: translateY(-5px); } }
 
-        /* ---- about section ---- */
-        .about-section {
-            background: var(--card-bg);
-            padding: 40px 35px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            margin-bottom: 40px;
-        }
-        .about-section h2 {
-            font-size: 1.75rem;
-            color: var(--secondary-color);
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 2px solid #edf2f7;
-            padding-bottom: 12px;
-        }
-        .about-text p {
-            margin-bottom: 20px;
-            color: #4a5568;
-            font-size: 1.05rem;
-        }
-        .highlight-box {
-            background: linear-gradient(to right, #fff5f7, #fff);
-            border-left: 4px solid var(--primary-color);
-            padding: 24px;
-            border-radius: 0 var(--radius-md) var(--radius-md) 0;
-            margin: 28px 0;
-            font-style: italic;
-            color: #319795;
-            font-size: 1.05rem;
-            box-shadow: inset 0 0 8px rgba(219, 26, 92, 0.02);
-        }
+    /* ===== GLASSMORPHISM NAVBAR ===== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10000;
+      padding: 0 2rem;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    [data-theme="dark"] .navbar { background: rgba(11, 17, 32, 0.85); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    .navbar.scrolled { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(30px) saturate(1.6); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06); height: 64px; }
+    [data-theme="dark"] .navbar.scrolled { background: rgba(11, 17, 32, 0.95); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3); }
+    .navbar-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-primary); font-weight: 700; font-size: 1.2rem; letter-spacing: -0.5px; }
+    .navbar-brand img { height: 40px; width: auto; border-radius: 8px; }
+    .navbar-brand span { background: linear-gradient(135deg, var(--primary), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .nav-links { display: flex; align-items: center; gap: 8px; list-style: none; }
+    .nav-links > li { position: relative; }
+    .nav-links a {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 50px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .nav-links a:hover, .nav-links a:focus { color: var(--text-primary); background: rgba(217, 26, 92, 0.08); }
+    [data-theme="dark"] .nav-links a:hover { background: rgba(255, 255, 255, 0.06); }
+    .nav-links a .nav-indicator {
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--gold));
+      border-radius: 2px;
+      transform: translateX(-50%);
+      transition: width 0.3s ease;
+    }
+    .nav-links a:hover .nav-indicator, .nav-links a.active .nav-indicator { width: 60%; }
+    .nav-links a.active { color: var(--primary); }
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .nav-actions button { background: none; border: none; color: var(--text-secondary); font-size: 1.1rem; cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.3s ease; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+    .nav-actions button:hover { background: rgba(217, 26, 92, 0.1); color: var(--primary); }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; background: none; border: none; }
+    .hamburger span { display: block; width: 24px; height: 2px; background: var(--text-primary); border-radius: 2px; transition: all 0.3s ease; }
+    .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .hamburger.active span:nth-child(2) { opacity: 0; }
+    .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
 
-        /* ---- president quote card ---- */
-        .president-quote-card {
-            background: linear-gradient(145deg, #ffffff 0%, #fafcff 100%);
-            border-radius: var(--radius-lg);
-            padding: 32px 32px 28px;
-            margin: 28px 0 20px;
-            border: 1px solid rgba(217, 26, 92, 0.15);
-            box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.06);
-            position: relative;
-        }
-        .president-quote-card::before {
-            content: '"';
-            position: absolute;
-            top: -10px;
-            left: 20px;
-            font-size: 5rem;
-            color: rgba(217, 26, 92, 0.08);
-            font-family: Georgia, serif;
-            line-height: 1;
-        }
-        .president-quote-card .quote-text {
-            font-size: 1.15rem;
-            font-weight: 500;
-            color: #1e293b;
-            line-height: 1.7;
-            padding-left: 8px;
-            position: relative;
-            z-index: 2;
-        }
-        .president-quote-card .quote-text strong {
-            color: var(--primary-color);
-            font-weight: 700;
-        }
-        .president-quote-card .attribution {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-top: 18px;
-            padding-top: 16px;
-            border-top: 1px solid #edf2f7;
-        }
-        .president-quote-card .attribution .avatar {
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #fff;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-            background: #e2e8f0;
-        }
-        .president-quote-card .attribution .name-title {
-            font-weight: 700;
-            color: #0f172a;
-        }
-        .president-quote-card .attribution .name-title span {
-            display: block;
-            font-weight: 400;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
+    @media (max-width: 1024px) {
+      .hamburger { display: flex; }
+      .nav-links {
+        position: fixed;
+        top: 72px;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        flex-direction: column;
+        padding: 20px;
+        gap: 4px;
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.3);
+      }
+      [data-theme="dark"] .nav-links { background: rgba(11, 17, 32, 0.98); border-bottom-color: rgba(255, 255, 255, 0.05); }
+      .nav-links.open { max-height: 500px; padding: 20px; overflow-y: auto; }
+      .nav-links a { padding: 12px 16px; width: 100%; border-radius: var(--radius-sm); }
+      .navbar.scrolled .nav-links { top: 64px; }
+    }
 
-        /* ---- jay rotaract button ---- */
-        .jay-rotaract-wrapper {
-            margin-top: 30px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .jay-rotaract {
-            display: inline-block;
-            font-size: 1.8rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            color: #f9f3e7;
-            background: linear-gradient(145deg, #0b1a2e 0%, #1a2f44 100%);
-            padding: 0.8rem 2.2rem;
-            border-radius: 4rem 2rem 4rem 2rem;
-            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 215, 0, 0.15);
-            text-decoration: none;
-            transition: box-shadow 0.3s, transform 0.3s;
-            cursor: pointer;
-            border: none;
-            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-            position: relative;
-            overflow: hidden;
-            min-width: 220px;
-            text-align: center;
-        }
-        .jay-rotaract:hover {
-            box-shadow: 0 28px 56px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(255, 215, 0, 0.25);
-            transform: scale(1.02);
-        }
-        .jay-rotaract .cta-text-inner {
-            display: inline-block;
-            transition: transform 0.3s ease;
-        }
-        .jay-rotaract .cursor-cta {
-            display: inline-block;
-            width: 0.08em;
-            height: 1.05em;
-            background-color: #f9d77e;
-            margin-left: 0.04em;
-            vertical-align: text-bottom;
-            border-radius: 2px;
-            box-shadow: 0 0 12px #f9d77e88;
-            transition: opacity 0.1s, width 0.2s, margin 0.2s;
-            opacity: 1;
-        }
-        .jay-rotaract .cursor-cta.hidden-cursor {
-            opacity: 0;
-            width: 0;
-            margin: 0;
-        }
-        @media (max-width: 480px) {
-            .jay-rotaract {
-                font-size: 1.4rem;
-                padding: 0.6rem 1.2rem;
-                min-width: 160px;
-            }
-        }
+    /* ===== HERO SECTION ===== */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 120px 20px 80px;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--dark) 0%, #1a1a2e 50%, var(--secondary) 100%);
+    }
+    .hero-particles { position: absolute; inset: 0; overflow: hidden; }
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--gold);
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: floatParticle 20s infinite linear;
+    }
+    @keyframes floatParticle {
+      0% { transform: translateY(100vh) rotate(0deg) scale(0); opacity: 0; }
+      10% { opacity: 0.3; }
+      90% { opacity: 0.3; }
+      100% { transform: translateY(-10vh) rotate(720deg) scale(1); opacity: 0; }
+    }
+    .hero-glow {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(217, 26, 92, 0.15), transparent 70%);
+      top: -200px;
+      right: -200px;
+      animation: glowPulse 8s ease-in-out infinite;
+    }
+    .hero-glow-2 {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.1), transparent 70%);
+      bottom: -200px;
+      left: -200px;
+      animation: glowPulse 10s ease-in-out infinite reverse;
+    }
+    @keyframes glowPulse { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.3); opacity: 1; } }
+    .hero-content { position: relative; z-index: 2; max-width: 900px; text-align: center; animation: heroFadeIn 1.2s ease forwards; }
+    @keyframes heroFadeIn { 0% { opacity: 0; transform: translateY(40px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 20px;
+      background: rgba(212, 175, 55, 0.15);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 50px;
+      color: var(--gold);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+      animation: badgePulse 2s ease-in-out infinite;
+    }
+    @keyframes badgePulse { 0%, 100% { box-shadow: 0 0 20px rgba(212, 175, 55, 0.1); } 50% { box-shadow: 0 0 40px rgba(212, 175, 55, 0.25); } }
+    .hero-title {
+      font-size: clamp(2.5rem, 8vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+    .hero-title .gradient-text {
+      background: linear-gradient(135deg, var(--gold), #FFD700, var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmerText 4s ease-in-out infinite;
+      background-size: 200% 200%;
+    }
+    @keyframes shimmerText { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
 
-        /* ---- home button ---- */
-        .home-btn-container {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 99;
-        }
-        .home-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--secondary-color);
-            color: #fff;
-            padding: 14px 24px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.95rem;
-            box-shadow: var(--shadow-md);
-            transition: var(--transition);
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-        .home-btn:hover,
-        .home-btn:focus {
-            background: #111827;
-            transform: translateY(-3px);
-            box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.2);
-            outline: none;
-        }
-        .ripple {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 50%;
-            transform: scale(0);
-            animation: ripple-animation 0.5s linear;
-            pointer-events: none;
-        }
-        @keyframes ripple-animation {
-            to {
-                transform: scale(2.5);
-                opacity: 0;
-            }
-        }
-        .clicked-exit {
-            transform: scale(0.95);
-            opacity: 0.8;
-        }
+    /* ----- SLIDER (replaces static subtitle) ----- */
+    .hero-slider-wrapper {
+      position: relative;
+      max-width: 780px;
+      margin: 0 auto 32px;
+      min-height: 80px;
+      overflow: hidden;
+      padding: 0 4px;
+    }
+    .hero-slider-track {
+      position: relative;
+      width: 100%;
+      min-height: 80px;
+    }
+    .hero-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      opacity: 0;
+      transform: translateX(30px);
+      transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      pointer-events: none;
+      visibility: hidden;
+      text-align: center;
+      padding: 0 6px;
+      color: rgba(255, 255, 255, 0.85);
+      font-size: clamp(1rem, 2vw, 1.4rem);
+      font-weight: 400;
+      line-height: 1.7;
+    }
+    .hero-slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+      visibility: visible;
+      position: relative;
+    }
+    .hero-slide.exit {
+      opacity: 0;
+      transform: translateX(-30px);
+      pointer-events: none;
+      visibility: hidden;
+    }
+    .hero-slide strong {
+      color: var(--gold);
+      font-weight: 600;
+    }
+    .hero-slide .highlight {
+      color: #fff;
+      font-weight: 500;
+    }
+    .hero-slide .small {
+      font-size: 0.85em;
+      opacity: 0.9;
+    }
+    .hero-slide .pill {
+      display: inline-block;
+      background: rgba(212, 175, 55, 0.12);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-radius: 40px;
+      padding: 0 14px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--gold);
+      letter-spacing: 0.3px;
+      margin-bottom: 6px;
+    }
+    /* dots */
+    .slider-dots {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 6px;
+      margin-bottom: 18px;
+    }
+    .slider-dots .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.25);
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .slider-dots .dot.active {
+      background: var(--gold);
+      transform: scale(1.25);
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+    }
+    .slider-dots .dot:hover {
+      background: var(--gold-light);
+      transform: scale(1.15);
+    }
+    /* pause indicator */
+    .slider-pause-badge {
+      display: inline-block;
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: rgba(255,255,255,0.4);
+      background: rgba(0,0,0,0.2);
+      padding: 2px 12px;
+      border-radius: 40px;
+      margin-top: 4px;
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.04);
+    }
 
-        /* ---- footer ---- */
-        footer {
-            background: #111827;
-            color: #f9fafb;
-            padding: 50px 20px 30px;
-            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-            margin-top: 60px;
-        }
-        .footer-content {
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        .footer-club-name {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 12px;
-        }
-        .footer-desc {
-            color: #9ca3af;
-            font-size: 0.95rem;
-            max-width: 500px;
-            margin: 0 auto 28px;
-        }
-        .social-icons {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-bottom: 35px;
-        }
-        .social-icon-link {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: #1f2937;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-            color: #fff;
-            text-decoration: none;
-        }
-        .social-icon-link svg {
-            width: 20px;
-            height: 20px;
-            fill: currentColor;
-        }
-        .social-icon-link:hover,
-        .social-icon-link:focus {
-            transform: translateY(-4px);
-            outline: none;
-        }
-        .social-icon-link.fb:hover {
-            background-color: #1877F2;
-        }
-        .social-icon-link.ig:hover {
-            background-color: #E1306C;
-        }
-        .social-icon-link.li:hover {
-            background-color: #0077B5;
-        }
-        .social-icon-link.mail:hover {
-            background-color: var(--primary-color);
-        }
-        .footer-copyright {
-            font-size: 0.85rem;
-            color: #6b7280;
-            border-top: 1px solid #1f2937;
-            padding-top: 24px;
-        }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 8px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; box-shadow: 0 8px 30px rgba(217, 26, 92, 0.3); }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(217, 26, 92, 0.4); }
+    .btn-gold { background: linear-gradient(135deg, var(--gold), #B8960F); color: #fff; box-shadow: 0 8px 30px rgba(212, 175, 55, 0.3); }
+    .btn-gold:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(212, 175, 55, 0.4); }
+    .btn-outline { background: transparent; color: #fff; border: 2px solid rgba(255, 255, 255, 0.3); }
+    .btn-outline:hover { background: rgba(255, 255, 255, 0.1); border-color: #fff; transform: translateY(-3px); }
 
-        /* ---- utility ---- */
-        .cinzel-font {
-            font-family: 'Cinzel', serif;
-        }
-        .interactive-title-bar {
-            background: linear-gradient(-45deg, #1e293b, #0f172a, #2d121c, #111827);
-            background-size: 400% 400%;
-            animation: gradientShift 12s ease infinite;
-            transition: all 0.5s ease;
-        }
-        .interactive-title-bar:hover {
-            background-size: 200% 200%;
-            box-shadow: inset 0 0 20px rgba(219, 26, 92, 0.2);
-        }
-        @keyframes gradientShift {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-        .dynamic-frame-container {
-            position: relative;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .dynamic-frame-container::before {
-            content: '';
-            position: absolute;
-            inset: -4px;
-            border: 2px solid #baa697;
-            opacity: 0.4;
-            clip-path: polygon(18px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 18px);
-            transition: all 0.4s ease;
-            z-index: 0;
-        }
-        .dynamic-cut-frame {
-            clip-path: polygon(16px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 16px);
-            border: 2px solid #a38a75;
-            background-color: #c4b2a4;
-            position: relative;
-            z-index: 10;
-        }
-        .dynamic-frame-container:hover {
-            transform: translateY(-6px) scale(1.03);
-        }
-        .dynamic-frame-container:hover::before {
-            inset: -8px;
-            opacity: 0.8;
-            border-color: #D91A5C;
-        }
+    @media (max-width: 640px) {
+      .hero-slider-wrapper { min-height: 100px; }
+      .hero-slide { font-size: 1rem; }
+    }
 
-        /* ---- member slider ---- */
-        .member-slider-wrapper {
-            background: #f8fafc;
-            border-radius: 1.5rem;
-            padding: 2rem 1rem;
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.02);
-        }
-        .slider-track {
-            display: flex;
-            gap: 1.5rem;
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            will-change: transform;
-        }
-        .member-card {
-            flex: 0 0 160px;
-            background: white;
-            border-radius: 1.2rem;
-            box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.08);
-            padding: 1rem 0.5rem 1rem 0.5rem;
-            text-align: center;
-            border: 1px solid rgba(226, 232, 240, 0.6);
-            transition: all 0.2s;
-        }
-        .member-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 14px 28px -10px rgba(0, 0, 0, 0.12);
-            border-color: #D91A5C40;
-        }
-        .member-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin: 0 auto 8px;
-            background: #e2e8f0;
-            border: 2px solid #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
-        }
-        .member-name {
-            font-weight: 700;
-            font-size: 0.9rem;
-            color: #0f172a;
-            line-height: 1.2;
-        }
-        .member-designation {
-            font-size: 0.7rem;
-            color: #64748b;
-            font-weight: 500;
-            letter-spacing: 0.02em;
-            margin-top: 2px;
-        }
-        .slider-btn {
-            background: white;
-            border: 1px solid #e2e8f0;
-            width: 44px;
-            height: 44px;
-            border-radius: 999px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.6rem;
-            font-weight: 300;
-            color: #1e293b;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        .slider-btn:hover {
-            background: #1e293b;
-            color: white;
-            border-color: #1e293b;
-            box-shadow: 0 8px 16px -6px rgba(0, 0, 0, 0.1);
-        }
-        .slider-btn:disabled {
-            opacity: 0.3;
-            pointer-events: none;
-        }
-        @media (max-width: 640px) {
-            .member-card {
-                flex: 0 0 130px;
-            }
-            .member-avatar {
-                width: 64px;
-                height: 64px;
-            }
-            .member-name {
-                font-size: 0.8rem;
-            }
-        }
+    /* ===== ANNOUNCEMENT TICKER ===== */
+    .ticker-wrapper {
+      background: var(--dark);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 10px 0;
+      overflow: hidden;
+      position: sticky;
+      top: 72px;
+      z-index: 9999;
+    }
+    [data-theme="dark"] .ticker-wrapper { background: var(--dark-card); }
+    .ticker-container {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      white-space: nowrap;
+      animation: tickerScroll 30s linear infinite;
+    }
+    .ticker-container:hover { animation-play-state: paused; }
+    @keyframes tickerScroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+    .ticker-item { display: inline-flex; align-items: center; gap: 8px; color: rgba(255, 255, 255, 0.8); font-size: 0.85rem; padding: 0 10px; }
+    .ticker-item .badge { padding: 2px 10px; border-radius: 20px; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .badge-hot { background: #EF4444; color: #fff; }
+    .badge-new { background: #10B981; color: #fff; }
+    .badge-update { background: var(--gold); color: var(--dark); }
+    .badge-birthday { background: #F59E0B; color: #fff; }
 
-        /* ---- welcome popup ---- */
-        .welcome-popup-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            padding: 20px;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.35s ease, visibility 0.35s ease;
-        }
-        .welcome-popup-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        .welcome-popup-card {
-            background: #ffffff;
-            border-radius: var(--radius-lg);
-            padding: 40px 32px;
-            max-width: 560px;
-            width: 100%;
-            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.35);
-            transform: scale(0.92) translateY(20px);
-            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-            text-align: center;
-            position: relative;
-        }
-        .welcome-popup-overlay.active .welcome-popup-card {
-            transform: scale(1) translateY(0);
-        }
-        .welcome-popup-close {
-            position: absolute;
-            top: 14px;
-            right: 16px;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 1.6rem;
-            line-height: 1;
-            cursor: pointer;
-            padding: 6px 10px;
-            border-radius: 8px;
-            transition: 0.2s;
-        }
-        .welcome-popup-close:hover {
-            color: var(--text-main);
-            background: #f1f5f9;
-        }
-        .welcome-popup-title {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: var(--secondary-color);
-            margin-bottom: 6px;
-        }
-        .welcome-popup-sub {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            margin-bottom: 24px;
-        }
-        .welcome-popup-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            margin-bottom: 24px;
-        }
-        .welcome-popup-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            padding: 18px 12px;
-            background: #f8fafc;
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            border-radius: var(--radius-md);
-            text-decoration: none;
-            color: var(--text-main);
-            transition: var(--transition);
-        }
-        .welcome-popup-item:hover,
-        .welcome-popup-item:focus {
-            transform: translateY(-3px);
-            border-color: var(--primary-color);
-            box-shadow: var(--shadow-sm);
-            outline: none;
-        }
-        .welcome-popup-item .icon {
-            font-size: 1.6rem;
-        }
-        .welcome-popup-item .label {
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-        .welcome-popup-continue {
-            display: inline-block;
-            background: #f1f5f9;
-            border: 1px solid rgba(226, 232, 240, 0.9);
-            padding: 10px 30px;
-            border-radius: 60px;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: 0.25s;
-        }
-        .welcome-popup-continue:hover {
-            background: #e2e8f0;
-            color: var(--text-main);
-        }
-        @media (max-width: 480px) {
-            .welcome-popup-card {
-                padding: 32px 20px;
-            }
-            .welcome-popup-title {
-                font-size: 1.3rem;
-            }
-        }
-    </style>
+    /* ===== STATS SECTION ===== */
+    .stats-section { padding: 80px 20px; background: var(--bg-white); transition: background 0.6s ease; }
+    .stats-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 24px; }
+    .stat-card {
+      background: var(--bg-light);
+      border-radius: var(--radius-md);
+      padding: 24px 20px;
+      text-align: center;
+      border: 1px solid rgba(226, 232, 240, 0.4);
+      transition: all 0.4s ease;
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    .stat-card.visible { opacity: 1; transform: translateY(0); }
+    .stat-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+    .stat-icon { font-size: 2rem; color: var(--primary); margin-bottom: 8px; display: block; }
+    .stat-number { font-size: 2.2rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; }
+    .stat-label { font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+    /* ===== BOARD MARQUEE ===== */
+    .board-section { padding: 60px 20px; background: var(--bg-light); overflow: hidden; transition: background 0.6s ease; }
+    .board-marquee { display: flex; gap: 24px; animation: boardScroll 40s linear infinite; width: max-content; }
+    .board-marquee:hover { animation-play-state: paused; }
+    @keyframes boardScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .board-card {
+      flex: 0 0 220px;
+      background: var(--bg-white);
+      border-radius: var(--radius-md);
+      padding: 20px 16px;
+      text-align: center;
+      border: 1px solid rgba(226, 232, 240, 0.4);
+      transition: all 0.4s ease;
+      box-shadow: var(--shadow-sm);
+    }
+    .board-card:hover { transform: scale(1.05) translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
+    .board-card .avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto 12px; border: 3px solid var(--gold); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
+    .board-card .name { font-weight: 700; font-size: 0.9rem; color: var(--text-primary); }
+    .board-card .position { font-size: 0.7rem; color: var(--primary); font-weight: 600; }
+
+    /* ===== MEMBERS MARQUEE ===== */
+    .members-marquee-section { padding: 60px 20px; background: var(--bg-white); overflow: hidden; transition: background 0.6s ease; }
+    .members-marquee { display: flex; gap: 20px; animation: membersScroll 50s linear infinite; width: max-content; }
+    .members-marquee:hover { animation-play-state: paused; }
+    @keyframes membersScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .member-marquee-card {
+      flex: 0 0 180px;
+      background: var(--bg-light);
+      border-radius: var(--radius-md);
+      padding: 16px 14px;
+      text-align: center;
+      border: 1px solid rgba(226, 232, 240, 0.3);
+      transition: all 0.4s ease;
+      box-shadow: var(--shadow-sm);
+    }
+    .member-marquee-card:hover { transform: scale(1.05) translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
+    .member-marquee-card .avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin: 0 auto 8px; border: 2px solid var(--gold); }
+    .member-marquee-card .name { font-weight: 600; font-size: 0.85rem; color: var(--text-primary); }
+    .member-marquee-card .designation { font-size: 0.65rem; color: var(--text-muted); }
+
+    /* ===== PRESIDENT'S MESSAGE ===== */
+    .message-section {
+      padding: 80px 20px;
+      background: linear-gradient(135deg, var(--secondary), var(--dark));
+      position: relative;
+      overflow: hidden;
+    }
+    .message-section::before {
+      content: '"';
+      position: absolute;
+      top: -40px;
+      left: 20px;
+      font-size: 12rem;
+      color: rgba(255, 255, 255, 0.03);
+      font-family: 'Playfair Display', serif;
+    }
+    .message-container { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; position: relative; z-index: 2; }
+    .message-content { color: rgba(255, 255, 255, 0.85); }
+    .message-content .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 3px; color: var(--gold); font-weight: 600; }
+    .message-content h2 { font-size: 2.5rem; font-weight: 800; color: #fff; margin: 12px 0 20px; line-height: 1.2; }
+    .message-content .quote { font-size: 1.15rem; line-height: 1.8; font-weight: 300; margin-bottom: 24px; }
+    .message-content .quote strong { color: var(--gold); font-weight: 600; }
+    .message-author { display: flex; align-items: center; gap: 16px; }
+    .message-author img { width: 60px; height: 60px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; cursor: pointer; transition: transform 0.3s ease; }
+    .message-author img:hover { transform: scale(1.05); }
+    .message-author .info .name { font-weight: 700; color: #fff; font-size: 1.1rem; cursor: pointer; }
+    .message-author .info .title { font-size: 0.85rem; color: rgba(255, 255, 255, 0.5); }
+    .message-signature { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: rgba(255, 255, 255, 0.1); margin-top: 8px; cursor: pointer; transition: color 0.3s ease; }
+    .message-signature:hover { color: rgba(255, 215, 0, 0.3); }
+    .circle-clickable { cursor: pointer; transition: transform 0.3s ease; }
+    .circle-clickable:hover { transform: scale(1.02); }
+
+    @media (max-width: 768px) {
+      .message-container { grid-template-columns: 1fr; gap: 30px; text-align: center; }
+      .message-author { justify-content: center; }
+    }
+
+    /* ===== RECOGNITION SECTION ===== */
+    .recognition-section {
+      padding: 70px 20px 80px;
+      background: var(--bg-white);
+      transition: background 0.6s ease;
+    }
+    .recognition-section .section-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .recognition-section .section-header h2 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--primary), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .recognition-section .section-header p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+    .recognition-grid {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    .recognition-card {
+      background: var(--bg-light);
+      border-radius: var(--radius-lg);
+      padding: 30px 28px;
+      border: 1px solid rgba(226, 232, 240, 0.4);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.4s ease;
+    }
+    .recognition-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--gold);
+    }
+    .recognition-card .award-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .recognition-card .award-title i {
+      color: var(--gold);
+      font-size: 1.8rem;
+    }
+    .recognition-card .award-title .sub {
+      margin-left: auto;
+      background: rgba(226, 232, 240, 0.6);
+      padding: 4px 16px;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .winner-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--bg-white);
+      padding: 14px 18px;
+      border-radius: 60px;
+      border: 1px solid rgba(226, 232, 240, 0.3);
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+    }
+    .winner-item:last-child { margin-bottom: 0; }
+    .winner-item:hover { border-color: var(--primary); background: var(--primary-light); }
+    .winner-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e2e8f0;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text-primary);
+      overflow: hidden;
+      border: 2px solid var(--gold);
+    }
+    .winner-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .winner-info { flex: 1; min-width: 0; }
+    .winner-name { font-weight: 700; font-size: 1rem; color: var(--text-primary); display: block; }
+    .winner-designation { font-size: 0.8rem; color: var(--text-muted); }
+    .winner-score {
+      background: var(--gold);
+      color: var(--dark);
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 4px 16px;
+      border-radius: 40px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .no-winner {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-style: italic;
+      padding: 12px 0;
+      text-align: center;
+    }
+    .recognition-loading, .recognition-error {
+      text-align: center;
+      padding: 30px 0;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+    }
+    .recognition-error { color: #EF4444; }
+
+    @media (max-width: 768px) {
+      .recognition-grid { grid-template-columns: 1fr; gap: 24px; }
+      .recognition-section .section-header h2 { font-size: 2.2rem; }
+      .recognition-card .award-title { font-size: 1.3rem; }
+    }
+
+    /* ===== BIRTHDAY POPUP ===== */
+    .birthday-popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 1rem;
+      animation: fadeIn 0.5s ease;
+    }
+    .birthday-popup-overlay.active { display: flex; }
+    .birthday-popup {
+      background: linear-gradient(135deg, #fef9c3, #fde047);
+      border-radius: 30px;
+      padding: 2.5rem 2rem;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+      animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border: 2px solid #fbbf24;
+      position: relative;
+    }
+    .birthday-popup .confetti { font-size: 4rem; margin-bottom: 0.5rem; }
+    .birthday-popup h2 { font-size: 2.2rem; font-weight: 800; color: #78350f; margin: 0.5rem 0; }
+    .birthday-popup .name { font-size: 1.8rem; font-weight: 700; color: #92400e; background: rgba(255, 255, 255, 0.5); padding: 0.3rem 1.5rem; border-radius: 60px; display: inline-block; margin: 0.5rem 0; }
+    .birthday-popup .message { font-size: 1.1rem; color: #78350f; margin: 0.8rem 0; font-weight: 500; }
+    .birthday-popup .close-btn {
+      margin-top: 1rem;
+      background: #78350f;
+      border: none;
+      color: white;
+      padding: 0.7rem 2.5rem;
+      border-radius: 60px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .birthday-popup .close-btn:hover { background: #5a280b; transform: scale(1.05); }
+    .popup-logo { margin-bottom: 0.5rem; }
+    .popup-logo img { border-radius: 50%; border: 3px solid #fbbf24; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .club-name-line {
+      margin-top: 0.8rem;
+      font-weight: 600;
+      color: #78350f;
+      font-size: 0.9rem;
+      background: rgba(255,255,255,0.3);
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      display: inline-block;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes popIn { 0% { transform: scale(0.5) rotate(-5deg); opacity: 0; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      background: var(--dark);
+      color: rgba(255, 255, 255, 0.7);
+      padding: 60px 20px 30px;
+      position: relative;
+      overflow: hidden;
+    }
+    .footer-waves { position: absolute; top: -2px; left: 0; right: 0; height: 60px; overflow: hidden; }
+    .footer-waves svg { width: 100%; height: 100%; }
+    .footer-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1.5fr;
+      gap: 40px;
+      position: relative;
+      z-index: 2;
+    }
+    .footer-brand .logo { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 12px; }
+    .footer-brand .logo span { color: var(--gold); }
+    .footer-brand p { font-size: 0.85rem; line-height: 1.8; max-width: 300px; }
+    .footer h4 { color: #fff; font-size: 0.9rem; font-weight: 600; margin-bottom: 16px; }
+    .footer ul { list-style: none; }
+    .footer ul li { margin-bottom: 8px; }
+    .footer ul a { color: rgba(255, 255, 255, 0.6); text-decoration: none; font-size: 0.85rem; transition: color 0.3s ease; }
+    .footer ul a:hover { color: var(--gold); }
+    .footer-social { display: flex; gap: 12px; margin-top: 16px; }
+    .footer-social a {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    .footer-social a:hover { background: var(--primary); color: #fff; transform: translateY(-3px); }
+    .footer-bottom {
+      max-width: 1200px;
+      margin: 40px auto 0;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      text-align: center;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+    @media (max-width: 1024px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 30px; } }
+    @media (max-width: 640px) { .footer-grid { grid-template-columns: 1fr; gap: 24px; } }
+
+    /* ===== SCROLL ANIMATIONS ===== */
+    .reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-left { opacity: 0; transform: translateX(-40px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .reveal-left.visible { opacity: 1; transform: translateX(0); }
+    .reveal-right { opacity: 0; transform: translateX(40px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .reveal-right.visible { opacity: 1; transform: translateX(0); }
+    .reveal-scale { opacity: 0; transform: scale(0.9); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .reveal-scale.visible { opacity: 1; transform: scale(1); }
+
+    /* ===== DARK MODE TOGGLE ===== */
+    .theme-toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      border-radius: 12px;
+      background: rgba(226, 232, 240, 0.5);
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      flex-shrink: 0;
+    }
+    .theme-toggle .thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    [data-theme="dark"] .theme-toggle { background: var(--primary); }
+    [data-theme="dark"] .theme-toggle .thumb { left: 22px; background: var(--gold); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .hero { min-height: 80vh; padding: 100px 16px 60px; }
+      .hero-title { font-size: 2.5rem; }
+      .hero-actions .btn { padding: 10px 20px; font-size: 0.8rem; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .stat-card { padding: 16px; }
+      .stat-number { font-size: 1.6rem; }
+      .ticker-wrapper { top: 64px; }
+    }
+    @media (max-width: 480px) {
+      .navbar { padding: 0 12px; height: 60px; }
+      .navbar-brand { font-size: 1rem; }
+      .navbar-brand img { height: 32px; }
+      .hero-title { font-size: 2rem; }
+      .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .stat-card { padding: 12px; }
+      .stat-number { font-size: 1.3rem; }
+      .stat-icon { font-size: 1.4rem; }
+      .member-marquee-card { flex: 0 0 140px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+      .ticker-container { animation: none; }
+      .board-marquee { animation: none; }
+      .members-marquee { animation: none; }
+      .hero-content { animation: none; opacity: 1; }
+      .reveal, .reveal-left, .reveal-right, .reveal-scale { opacity: 1; transform: none; }
+    }
+
+    /* ===== ADMIN LOGIN POPUP ===== */
+    .admin-login-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10002;
+      padding: 20px;
+    }
+    .admin-login-overlay.active { display: flex; }
+    .admin-login-card {
+      background: var(--bg-white);
+      border-radius: var(--radius-lg);
+      padding: 40px 32px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.35);
+      transform: scale(0.92) translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      text-align: center;
+      position: relative;
+    }
+    .admin-login-overlay.active .admin-login-card { transform: scale(1) translateY(0); }
+    .admin-login-card form { display: flex; flex-direction: column; gap: 16px; text-align: left; margin-top: 8px; }
+    .admin-login-card .field label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+    .admin-login-card .field input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid rgba(226, 232, 240, 0.9);
+      background: transparent;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .admin-login-card .field input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(217, 26, 92, 0.12);
+    }
+    .admin-login-card .pass-wrap { position: relative; }
+    .admin-login-card .pass-wrap input { padding-right: 44px; }
+    .admin-login-card .toggle-pass {
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 6px 8px;
+      color: var(--text-muted);
+    }
+    .admin-login-card .form-error {
+      color: var(--primary);
+      font-size: 0.85rem;
+      min-height: 1.1em;
+      font-weight: 500;
+    }
+    .admin-login-card .submit-btn {
+      margin-top: 4px;
+      position: relative;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 12px 20px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s ease, transform 0.15s ease;
+    }
+    .admin-login-card .submit-btn:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); }
+    .admin-login-card .submit-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+    .admin-login-card .submit-btn .spinner {
+      display: none;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: adminSpin 0.7s linear infinite;
+    }
+    .admin-login-card .submit-btn.loading .btn-text { visibility: hidden; position: absolute; }
+    .admin-login-card .submit-btn.loading .spinner { display: inline-block; }
+    @keyframes adminSpin { to { transform: rotate(360deg); } }
+    .admin-login-card .popup-close {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.6rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 8px;
+      transition: 0.2s;
+    }
+    .admin-login-card .popup-close:hover { color: var(--text-primary); background: #f1f5f9; }
+  </style>
 </head>
 <body>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
 
-    <!-- ====== WELCOME / QUICK NAV POPUP ====== -->
-    <div class="welcome-popup-overlay" id="welcomePopup" role="dialog" aria-modal="true" aria-labelledby="welcomePopupTitle" aria-hidden="true">
-        <div class="welcome-popup-card">
-            <button class="welcome-popup-close" id="welcomePopupClose" aria-label="Close popup">&times;</button>
-            <div class="welcome-popup-title" id="welcomePopupTitle">Welcome 👋</div>
-            <div class="welcome-popup-sub">Jump straight to what you're looking for</div>
-            <div class="welcome-popup-grid">
-                <a href="activemembers.html" class="welcome-popup-item">
-                    <span class="icon">📅</span>
-                    <span class="label">Active Members</span>
-                </a>
-                <a href="strategic-planning.html" class="welcome-popup-item">
-                    <span class="icon">🎯</span>
-                    <span class="label">Vision & Goals</span>
-                </a>
-                <a href="upcomming-projects.html" class="welcome-popup-item">
-                    <span class="icon">🚀</span>
-                    <span class="label">Upcoming Projects</span>
-                </a>
-                <a href="loginminutes.html" class="welcome-popup-item">
-                    <span class="icon">🔐</span>
-                    <span class="label">Rotaract Login</span>
-                </a>
-            </div>
-            <a href="#" class="welcome-popup-continue" id="welcomePopupContinue">Continue to Dashboard</a>
-        </div>
+<!-- ===== PRELOADER ===== -->
+<div id="preloader">
+  <div class="preloader-wheel"></div>
+  <div class="preloader-bar"><div class="preloader-bar-fill"></div></div>
+  <p class="preloader-quote">"Service Above Self"</p>
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar" id="navbar" role="navigation" aria-label="Main Navigation">
+  <a href="#" class="navbar-brand">
+    <img src="rotaract-logo.jpg" alt="Rotaract Logo" onerror="this.style.display='none'">
+    <span>Rotaract</span>
+  </a>
+
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#hero" class="active">Home <span class="nav-indicator"></span></a></li>
+    <li><a href="#board">Board <span class="nav-indicator"></span></a></li>
+    <li><a href="#members">Members <span class="nav-indicator"></span></a></li>
+    <li><a href="#recognition">Recognition <span class="nav-indicator"></span></a></li>
+    <li><a href="#about">About <span class="nav-indicator"></span></a></li>
+    <li><a href="loginminutes.html">Secretary <span class="nav-indicator"></span></a></li>
+    <li><a href="#" id="adminLoginNavBtn">Admin <span class="nav-indicator"></span></a></li>
+    <li><a href="https://my.rotaract3292.org/software" target="_blank">Member Login <span class="nav-indicator"></span></a></li>
+  </ul>
+
+  <div class="nav-actions">
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+      <span class="thumb"></span>
+    </button>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ===== ANNOUNCEMENT TICKER ===== -->
+<div class="ticker-wrapper" id="tickerWrapper">
+  <div class="ticker-container" id="tickerContainer">
+    <!-- Dynamic content from Supabase -->
+  </div>
+</div>
+
+<!-- ===== HERO SECTION ===== -->
+<section class="hero" id="hero">
+  <div class="hero-particles" id="particlesContainer"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow-2"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge">
+      <i class="fas fa-star"></i> RI District 3292 · R.Y. 2026-27
+    </div>
+    <h1 class="hero-title">
+      Rotaract Club of<br>
+      <span class="gradient-text">Galkot Baglung</span>
+    </h1>
+
+    <!-- animated slider replaces static subtitle -->
+    <div class="hero-slider-wrapper" id="heroSliderWrapper">
+      <div class="hero-slider-track" id="heroSliderTrack">
+        <!-- slides injected by JS -->
+      </div>
+      <div class="slider-dots" id="sliderDots"></div>
+      <div class="slider-pause-badge" id="pauseBadge">▶ auto-play</div>
     </div>
 
-    <div class="dashboard-container">
-        <!-- ====== ANNOUNCEMENT BANNER ====== -->
-        <div class="announcement-banner">
-            <span class="badge">📢 Announcement</span>
-            <span class="msg"><strong>R.Y. 2026-27 Launch:</strong> Club Assembly on <strong>August 15, 2026</strong> — all members are requested to attend. New board orientation &amp; project roadmap.</span>
-            <span class="date-tag">🗓️ Jul 29, 2026</span>
+    <div class="hero-actions">
+      <a href="membership.html" class="btn btn-primary">
+        <i class="fas fa-user-plus"></i> Join Us
+      </a>
+      <a href="/upcomming-projects.html" class="btn btn-gold">
+        <i class="fas fa-hand-holding-heart"></i> Event Volunteer
+      </a>
+      <a href="donate.html" class="btn btn-outline">
+        <i class="fas fa-heart"></i> Donate
+      </a>
+      <a href="#recognition" class="btn btn-outline">
+        <i class="fas fa-trophy"></i> Recognition
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STATISTICS DASHBOARD ===== -->
+<section class="stats-section" id="stats">
+  <div class="stats-grid" id="statsGrid">
+    <!-- Stats injected by JS -->
+  </div>
+</section>
+
+<!-- ===== BOARD OF DIRECTORS ===== -->
+<section class="board-section" id="board">
+  <div style="max-width:1200px;margin:0 auto;text-align:center;margin-bottom:30px;">
+    <h2 style="font-size:2rem;font-weight:800;letter-spacing:-0.5px;">Board of Directors</h2>
+    <p style="color:var(--text-secondary);">R.Y. 2026-27 Leadership Team</p>
+  </div>
+  <div class="board-marquee" id="boardMarquee">
+    <!-- Board cards injected by JS -->
+  </div>
+</section>
+
+<!-- ===== PRESIDENT'S MESSAGE ===== -->
+<section class="message-section" id="about">
+  <div class="message-container">
+    <div class="message-content reveal-left">
+      <div class="label">President's Message</div>
+      <h2>Service Above Self</h2>
+      <div class="quote">
+        <strong>"Service Above Self"</strong> is more than a motto - it's the heartbeat of our club.
+        As we embark on this new Rotary year, I am inspired by the dedication of every Rotaractor
+        who steps up to serve our community. Together, we will build bridges, create opportunities,
+        and leave a lasting impact in Galkot Baglung. Let's make this year one of fellowship, growth,
+        and meaningful change.
+      </div>
+      <div class="message-author">
+        <img src="images/nabinchalise.jpg" alt="Rtr. Nabin Chalise" onclick="window.open('https://nabinchalise.com.np/','_blank')" onerror="this.src='https://ui-avatars.com/api/?name=Nabin+Chalise&background=D91A5C&color=fff&size=100'">
+        <div class="info">
+          <div class="name" onclick="window.open('https://nabinchalise.com.np/','_blank')" style="cursor:pointer;">Rtr. Nabin Chalise</div>
+          <div class="title">President, R.Y. 2026-27</div>
         </div>
-
-        <header role="banner">
-            <h1>Rotaract Club of Galkot Baglung</h1>
-            <p>RI District 3292 | Rota Year 2026-27</p>
-        </header>
-
-        <div class="status-bar" aria-label="System Status">
-            <div class="status-item"><span>📅 Today:</span> <strong id="live-date">Loading...</strong></div>
-            <div class="status-item"><span class="status-indicator" aria-hidden="true"></span><span>⚡ Portal Status:</span> <strong>Operational (R.Y. Active)</strong></div>
+      </div>
+      <div class="message-signature" onclick="window.open('https://nabinchalise.com.np/','_blank')">— Nabin Chalise</div>
+    </div>
+    <div class="reveal-right" style="display:flex;justify-content:center;align-items:center;">
+      <div class="circle-clickable" style="width:100%;max-width:400px;aspect-ratio:1;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--gold));padding:4px;" onclick="window.open('https://nabinchalise.com.np/','_blank')">
+        <div style="width:100%;height:100%;border-radius:50%;background:var(--dark);display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          <img src="images/nabinchalise.jpg" alt="President Nabin Chalise" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.src='https://ui-avatars.com/api/?name=Nabin+Chalise&background=D91A5C&color=fff&size=400'">
         </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-        <main id="main-content">
-            <nav class="nav-tabs-container" aria-label="Dashboard Navigation">
-                <ul class="nav-tabs">
-                    <li><a href="activemembers.html"><span class="icon" aria-hidden="true">📅</span><span class="tab-title">Active Members</span></a></li>
-                    <li><a href="strategic-planning.html"><span class="icon" aria-hidden="true">🎯</span><span class="tab-title">Vision & Goals</span></a></li>
-                    <li><a href="upcomming-projects.html"><span class="icon" aria-hidden="true">🚀</span><span class="tab-title">Upcoming Projects</span></a></li>
-                    <li><a href="past-projects.html"><span class="icon" aria-hidden="true">⏳</span><span class="tab-title">Past Projects</span></a></li>
-                    <li><a href="anthem.html"><span class="icon" aria-hidden="true">🎵</span><span class="tab-title">Club Anthem</span></a></li>
-                    <li><a href="loginminutes.html"><span class="icon" aria-hidden="true">🔐</span><span class="tab-title">Rotaract Login</span></a></li>
-                </ul>
-            </nav>
+<!-- ===== ACTIVE MEMBERS MARQUEE ===== -->
+<section class="members-marquee-section" id="members">
+  <div style="max-width:1200px;margin:0 auto;text-align:center;margin-bottom:30px;">
+    <h2 style="font-size:2rem;font-weight:800;letter-spacing:-0.5px;">👥 Active Members</h2>
+    <p style="color:var(--text-secondary);">Our dedicated team of Rotaractors making a difference</p>
+  </div>
+  <div class="members-marquee" id="membersMarquee">
+    <!-- Member cards injected by JS -->
+  </div>
+</section>
 
-            <!-- BOARD OF DIRECTORS -->
-            <section class="w-full bg-white shadow-xl border border-slate-200 rounded-2xl overflow-hidden flex flex-col justify-between mb-6" aria-label="Club Board of Directors">
-                <div class="interactive-title-bar py-5 px-4 text-center border-b border-slate-800 shadow-lg relative group overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_ease-in-out] pointer-events-none"></div>
-                    <h2 class="cinzel-font text-2xl sm:text-4xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 drop-shadow-sm transition-transform duration-300 group-hover:scale-[1.01]">BOARD OF DIRECTORS</h2>
-                    <div class="mt-1 flex items-center justify-center gap-3">
-                        <span class="h-[1px] w-8 bg-gradient-to-r from-transparent to-rose-500"></span>
-                        <p class="text-xs sm:text-sm font-extrabold text-rose-400 tracking-widest uppercase font-mono">R.Y. 2026/27</p>
-                        <span class="h-[1px] w-8 bg-gradient-to-l from-transparent to-rose-500"></span>
-                    </div>
-                </div>
-                <div class="p-6 sm:p-12 flex-grow flex flex-col justify-center gap-12 bg-gradient-to-b from-white via-slate-50/50 to-white">
-                    <!-- TIER 1: CORE EXECUTIVE -->
-                    <div>
-                        <div class="grid grid-cols-3 gap-6 max-w-3xl mx-auto w-full items-end">
-                            <div class="flex flex-col items-center">
-                                <div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-md"><div class="w-full h-full bg-[#baa697] overflow-hidden flex items-center justify-center relative"><img src="images/madansharma.jpg" alt="Rtr. Madan Sharma" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Madan+Sharma&background=D91A5C&color=fff&size=200';"><div class="absolute bottom-0 left-0 right-0 bg-black/90 backdrop-blur-xs text-white text-[8px] sm:text-xs font-bold py-1 px-1.5 truncate text-center">Rtr. Madan Sharma</div></div></div></div>
-                                <span class="text-[10px] sm:text-xs font-black text-slate-800 mt-3 text-center uppercase tracking-wide">Secretary</span>
-                            </div>
-                            <div class="flex flex-col items-center transform scale-105 z-10">
-                                <div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1.5 w-full h-full shadow-xl border-2 border-rose-700/60"><div class="w-full h-full bg-[#baa697] overflow-hidden flex items-center justify-center relative"><img src="images/nabinchalise.jpg" alt="Rtr. Nabin Chalise" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Nabin+Chalise&background=D91A5C&color=fff&size=200';"><div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-rose-950 to-rose-900 text-white text-[10px] sm:text-sm font-black py-1 px-1.5 truncate text-center">Rtr. Nabin Chalise</div></div></div></div>
-                                <span class="text-xs sm:text-sm font-black text-rose-700 mt-3 text-center uppercase tracking-wider">President</span>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-md"><div class="w-full h-full bg-[#baa697] overflow-hidden flex items-center justify-center relative"><img src="images/manishkandel.jpg" alt="Rtr. Manish Kandel" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Manish+Kandel&background=D91A5C&color=fff&size=200';"><div class="absolute bottom-0 left-0 right-0 bg-black/90 backdrop-blur-xs text-white text-[8px] sm:text-xs font-bold py-1 px-1.5 truncate text-center">Rtr. Manish Kandel</div></div></div></div>
-                                <span class="text-[10px] sm:text-xs font-black text-slate-800 mt-3 text-center uppercase tracking-wide">Treasurer</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- TIER 2: VICE-PRESIDENTS -->
-                    <div>
-                        <div class="grid grid-cols-4 gap-6 max-w-4xl mx-auto w-full">
-                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/nabinsubedi.jpg" alt="Rtr. Nabin Subedi" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Nabin+Subedi&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[10px] font-bold py-0.5 px-1 truncate text-center">Rtr. Nabin Subedi</div></div></div></div><span class="text-[9px] sm:text-[11px] font-bold text-slate-700 mt-2 text-center leading-tight">IPP / Mentor</span></div>
-                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/tikaramgautam.jpg" alt="Rtr. Tika Ram Gautam" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Tika+Ram+Gautam&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[10px] font-bold py-0.5 px-1 truncate text-center">Rtr. Tika Ram Gautam</div></div></div></div><span class="text-[9px] sm:text-[11px] font-bold text-slate-700 mt-2 text-center leading-tight">President Elect</span></div>
-                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/vikashsubedi.jpg" alt="Rtr. Vikash Subedi" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Vikash+Subedi&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[10px] font-bold py-0.5 px-1 truncate text-center">Rtr. Vikash Subedi</div></div></div></div><span class="text-[9px] sm:text-[11px] font-bold text-slate-700 mt-2 text-center leading-tight">Vice President</span></div>
-                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/sagarchalise.jpg" alt="Rtr. Sagar Chalise" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Sagar+Chalise&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[10px] font-bold py-0.5 px-1 truncate text-center">Rtr. Sagar Chalise</div></div></div></div><span class="text-[9px] sm:text-[11px] font-bold text-slate-700 mt-2 text-center leading-tight">Joint Secretary</span></div>
-                        </div>
-                    </div>
-                    <!-- TIER 3: ACTION CHAIRS -->
-                    <div>
-                        <div class="grid grid-cols-5 gap-4 w-full">
-                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/bipinchalise.jpg" alt="Rtr. Bipin Chalise" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Bipin+Chalise&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[9px] font-bold py-0.5 px-1 truncate text-center">Rtr. Bipin Chalise</div></div></div></div><span class="text-[8px] sm:text-[10px] font-bold text-slate-600 mt-2 text-center leading-tight">Membership Chair</span></div>
-                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/manishgurung.jpg" alt="Rtr. Manish Gurung" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Manish+Gurung&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[9px] font-bold py-0.5 px-1 truncate text-center">Rtr. Manish Gurung</div></div></div></div><span class="text-[8px] sm:text-[10px] font-bold text-slate-600 mt-2 text-center leading-tight">Public Image Chair</span></div>
-                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/smritibudhathoki.jpg" alt="Rtr. Smriti Budhathoki" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Smriti+Budhathoki&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[9px] font-bold py-0.5 px-1 truncate text-center">Rtr. Smriti Budhathoki</div></div></div></div><span class="text-[8px] sm:text-[10px] font-bold text-slate-600 mt-2 text-center leading-tight">Service Projects Chair</span></div>
-                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/manojkarki.jpg" alt="Rtr. Dr Manoj Karki" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Dr+Manoj+Karki&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[9px] font-bold py-0.5 px-1 truncate text-center">Rtr. Dr. Manoj Karki</div></div></div></div><span class="text-[8px] sm:text-[10px] font-bold text-slate-600 mt-2 text-center leading-tight">Health Program Chair</span></div>
-                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-1 w-full h-full shadow-sm"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/manjeelashrestha.jpg" alt="Rtr. Manjeela Shrestha" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Manjeela+Shrestha&background=D91A5C&color=fff&size=150'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[8px] sm:text-[9px] font-bold py-0.5 px-1 truncate text-center">Rtr. Manjeela Shrestha</div></div></div></div><span class="text-[8px] sm:text-[10px] font-bold text-slate-600 mt-2 text-center leading-tight">Rotary Foundation Chair</span></div>
-                        </div>
-                    </div>
-                    <!-- TIER 4: OFFICERS -->
-                    <div>
-                        <div class="grid grid-cols-6 gap-3 w-full">
-                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-0.5 w-full h-full shadow-xs"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/lokendragaire.jpg" alt="Rtr. Lokendra Gaire" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Lokendra+Gaire&background=D91A5C&color=fff&size=120'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[7px] sm:text-[9px] font-bold py-0.5 px-0.5 truncate text-center">Rtr. Lokendra Gaire</div></div></div></div><span class="text-[7px] sm:text-[9px] font-bold text-slate-500 mt-1.5 text-center leading-none">Sergeant At Arms</span></div>
-                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-0.5 w-full h-full shadow-xs"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/rajusahani.jpg" alt="Rtr. Raju Sahani" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Raju+Sahani&background=D91A5C&color=fff&size=120'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[7px] sm:text-[9px] font-bold py-0.5 px-0.5 truncate text-center">Rtr. Raju Sahani (RJ)</div></div></div></div><span class="text-[7px] sm:text-[9px] font-bold text-slate-500 mt-1.5 text-center leading-none">IT Officer</span></div>
-                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-0.5 w-full h-full shadow-xs"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/melinakharel.jpg" alt="Rtr. Melina Kharel" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Melina+Kharel&background=D91A5C&color=fff&size=120'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[7px] sm:text-[9px] font-bold py-0.5 px-0.5 truncate text-center">Rtr. Melina Kharel</div></div></div></div><span class="text-[7px] sm:text-[9px] font-bold text-slate-500 mt-1.5 text-center leading-none">Young Leaders Contact</span></div>
-                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-0.5 w-full h-full shadow-xs"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/laxmipun.jpg" alt="Rtr. Laxmi Pun" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Laxmi+Pun&background=D91A5C&color=fff&size=120'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[7px] sm:text-[9px] font-bold py-0.5 px-0.5 truncate text-center">Rtr. Laxmi Pun</div></div></div></div><span class="text-[7px] sm:text-[9px] font-bold text-slate-500 mt-1.5 text-center leading-none">PP/Learning Facilitator</span></div>
-                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-0.5 w-full h-full shadow-xs"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/anilshrestha.jpg" alt="Rtr. Anil Shrestha" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Anil+Shrestha&background=D91A5C&color=fff&size=120'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[7px] sm:text-[9px] font-bold py-0.5 px-0.5 truncate text-center">Rtr. Anil Shrestha</div></div></div></div><span class="text-[7px] sm:text-[9px] font-bold text-slate-500 mt-1.5 text-center leading-none">PP/ISD/Advisor</span></div>
-                            <div class="flex flex-col items-center"><div class="dynamic-frame-container w-full aspect-[4/5]"><div class="dynamic-cut-frame p-0.5 w-full h-full shadow-xs"><div class="w-full h-full bg-[#baa697] overflow-hidden relative"><img src="images/kamalkharel.jpg" alt="Rtr. Kamal Kharel" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Kamal+Kharel&background=D91A5C&color=fff&size=120'"><div class="absolute bottom-0 inset-x-0 bg-black/90 text-white text-[7px] sm:text-[9px] font-bold py-0.5 px-0.5 truncate text-center">Rtr. Kamal Kharel</div></div></div></div><span class="text-[7px] sm:text-[9px] font-bold text-slate-500 mt-1.5 text-center leading-none">PP/Club Advisor</span></div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+<!-- ===== RECOGNITION SECTION ===== -->
+<section class="recognition-section" id="recognition">
+  <div class="section-header">
+    <h2><i class="fas fa-trophy" style="color:var(--gold);margin-right:12px;"></i> Recognition · R.Y. 2026-27</h2>
+    <p>Outstanding Club Leader &amp; Rising Star based on attendance and action items</p>
+  </div>
+  <div class="recognition-grid" id="recognitionGrid">
+    <div class="recognition-card">
+      <div class="award-title">
+        <i class="fas fa-crown"></i> Outstanding Club Leader
+        <span class="sub">Board</span>
+      </div>
+      <div id="leaderWinners">
+        <div class="recognition-loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+      </div>
+    </div>
+    <div class="recognition-card">
+      <div class="award-title">
+        <i class="fas fa-star"></i> Rising Star
+        <span class="sub">Member</span>
+      </div>
+      <div id="risingWinners">
+        <div class="recognition-loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-            <!-- ====== PRESIDENT'S QUOTE CARD ====== -->
-            <div class="president-quote-card">
-                <div class="quote-text">
-                    <strong>“Service Above Self</strong> is more than a motto — it's the heartbeat of our club. As we embark on this new Rotary year, I am inspired by the dedication of every Rotaractor who steps up to serve our community. Together, we will build bridges, create opportunities, and leave a lasting impact in Galkot Baglung. Let's make this year one of fellowship, growth, and meaningful change.”
-                </div>
-                <div class="attribution">
-                    <img src="images/nabinchalise.jpg" alt="Rtr. Nabin Chalise" class="avatar" onerror="this.src='https://ui-avatars.com/api/?name=Nabin+Chalise&background=D91A5C&color=fff&size=100'" />
-                    <div class="name-title">
-                        Rtr. Nabin Chalise
-                        <span>President, R.Y. 2026-27</span>
-                    </div>
-                </div>
-            </div>
+<!-- ===== BIRTHDAY POPUP ===== -->
+<div id="birthdayPopup" class="birthday-popup-overlay" role="dialog" aria-modal="true" aria-labelledby="popupName" aria-hidden="true">
+  <div class="birthday-popup" id="popupContent">
+    <div class="popup-logo">
+      <img src="rotaract-logo.jpg" alt="Rotaract Club Logo" width="80" height="80" id="popupLogoImg" onerror="this.style.display='none'">
+    </div>
+    <div class="confetti">🎉🎂🎉</div>
+    <h2>Happy Birthday!!!</h2>
+    <div class="name" id="popupName">Rtr. Member</div>
+    <div class="message">🎊 Wishing you a wonderful day! 🎊</div>
+    <div class="club-name-line">
+      <i class="fas fa-heart" style="color:#b45309;"></i> ROTARACT CLUB OF GALKOT BAGLUNG <i class="fas fa-heart" style="color:#b45309;"></i>
+    </div>
+    <button class="close-btn" onclick="closeBirthdayPopup()"><i class="fas fa-heart"></i> Thank You!</button>
+  </div>
+</div>
 
-            <!-- ====== MEMBER SLIDER (active members from Supabase) ====== -->
-            <section class="member-slider-wrapper w-full bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6 mb-8" aria-label="Club Members">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xl sm:text-2xl font-bold text-slate-800 flex items-center gap-2">
-                        <span>👥</span> Active Members <span class="text-sm font-normal text-slate-400 ml-1">(excluding board)</span>
-                    </h3>
-                    <div class="flex gap-2">
-                        <button id="sliderPrev" class="slider-btn" aria-label="Previous members"><span aria-hidden="true">‹</span></button>
-                        <button id="sliderNext" class="slider-btn" aria-label="Next members"><span aria-hidden="true">›</span></button>
-                    </div>
-                </div>
-                <div class="overflow-hidden relative">
-                    <div id="sliderTrack" class="slider-track">
-                        <!-- cards injected by JS -->
-                    </div>
-                </div>
-                <div class="text-center text-xs text-slate-400 mt-3" id="sliderCounter">Loading members...</div>
-            </section>
+<!-- ===== ADMIN LOGIN POPUP ===== -->
+<div class="admin-login-overlay" id="adminLoginPopup" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle" aria-hidden="true">
+  <div class="admin-login-card">
+    <button class="popup-close" id="adminLoginClose" aria-label="Close admin login">&times;</button>
+    <div class="hero-badge" style="margin-bottom:12px;display:inline-block;">🛡️ Admin Access</div>
+    <div class="welcome-popup-title" id="adminLoginTitle" style="font-size:1.5rem;font-weight:700;color:var(--text-primary);">Admin Login</div>
+    <div class="popup-sub" style="color:var(--text-muted);font-size:0.9rem;margin-bottom:20px;">Sign in with your admin account to continue</div>
 
-            <!-- About Rotaract Narrative -->
-            <section class="about-section">
-                <h2><span>✨</span> About Rotaract Club of Galkot Baglung</h2>
-                <div class="about-text">
-                    <p>Embark on the dynamic journey of the Rotaract Club of Galkot Baglung, where visionary leaders have continuously inspired positive change. From our Chartered President, the visionary Rtr. Neetu Khadka, to the trailblazing leadership of Rtr. Anil Shrestha (President, RY 2020-21), the dynamic stewardship of Rtr. Ishor Gautam (President, RY 2022-23), the torch bearing dedication of Rtr. Kamal Kharel (President, RY 2023-24), the compassionate leadership of Rtr. Laxmi Pun (President, RY 2024-25), the progressive guidance of Rtr. Nabin Subedi (President, RY 2025-26), and the inspirational leadership of Rtr. Nabin Chalise (President, RY 2026-27), our club continues to thrive through the commitment and passion of its leaders.</p>
-                    <p>Together, we are a diverse group of young leaders, professionals, and change-makers aged 16 years and above, passionately dedicated to creating meaningful impact by spreading kindness through service. Join us on this exciting journey of positive change and vibrant community engagement with the Rotaract Club of Galkot Baglung!</p>
-                    <div class="highlight-box">Established on April 23, 2020, under the leadership of our Chartered President, Rtr. Neetu Khadka, the Rotaract Club of Galkot Baglung is a vibrant team committed to placing service above self in a world often driven by material pursuits. As the heart and soul of the organization, we, as Rotaractors, regularly come together to discuss, plan, and implement projects that positively transform our community.</div>
-                    <p>We envision ourselves as seeds of hope, leadership, and collaboration, committed to changing lives locally and globally, regardless of our numbers. Through fellowship, service, and professional development, we strive to inspire others and build a better world.</p>
-                    <div class="jay-rotaract-wrapper">
-                        <a href="membership.html" class="jay-rotaract" id="ctaButton" role="button" aria-label="Join Rotaract">
-                            <span class="cta-text-inner" id="ctaDisplay">Join Rotaract! 🤝</span>
-                            <span class="cursor-cta" aria-hidden="true" id="cursorCta">|</span>
-                        </a>
-                    </div>
-                </div>
-            </section>
-        </main>
+    <form id="adminLoginForm" autocomplete="off" novalidate>
+      <div class="field">
+        <label for="adminEmail">Email</label>
+        <input type="email" id="adminEmail" placeholder="you@example.com" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="adminPassword">Password</label>
+        <div class="pass-wrap">
+          <input type="password" id="adminPassword" placeholder="••••••••" required autocomplete="current-password">
+          <button type="button" class="toggle-pass" id="toggleAdminPass" aria-label="Show password">👁</button>
+        </div>
+      </div>
+      <div class="form-error" id="adminLoginError" role="alert"></div>
+      <button type="submit" class="submit-btn" id="adminSubmitBtn">
+        <span class="btn-text">Sign In</span>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="footer-waves">
+    <svg viewBox="0 0 1200 60" preserveAspectRatio="none">
+      <path d="M0,30 C300,60 600,0 900,30 C1050,45 1150,30 1200,20 L1200,60 L0,60 Z" fill="var(--bg-light)" opacity="0.1"/>
+      <path d="M0,40 C200,70 500,10 800,40 C1000,55 1100,35 1200,25 L1200,60 L0,60 Z" fill="var(--bg-light)" opacity="0.05"/>
+    </svg>
+  </div>
+
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo">Rotaract <span>Galkot</span></div>
+      <p>Empowering communities through service, leadership, and fellowship in Galkot Baglung and beyond.</p>
+      <div class="footer-social">
+        <a href="https://www.facebook.com/rotaract.galkot/" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com/rotaract.galkot/" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://www.linkedin.com/in/rotaract/" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        <a href="mailto:galkot@rotaract3292.org" aria-label="Email"><i class="fas fa-envelope"></i></a>
+      </div>
     </div>
 
-    <div class="home-btn-container">
-        <a href="/index.html" class="home-btn" id="interactiveHomeBtn"><span aria-hidden="true">🏠</span> HOME</a>
+    <div>
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="#hero">Home</a></li>
+        <li><a href="#board">Board</a></li>
+        <li><a href="#members">Members</a></li>
+        <li><a href="#recognition">Recognition</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
     </div>
 
-    <footer role="contentinfo">
-        <div class="footer-content">
-            <p class="footer-club-name">Rotaract Club of Galkot Baglung</p>
-            <p class="footer-desc">Follow us on social media to stay updated with our community service projects, events, and club activities.</p>
-            <div class="social-icons">
-                <a href="https://www.facebook.com/rotaract.galkot/" class="social-icon-link fb" target="_blank" rel="noopener noreferrer" title="Facebook Page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/></svg></a>
-                <a href="https://www.instagram.com/rotaract.galkot/" class="social-icon-link ig" target="_blank" rel="noopener noreferrer" title="Instagram Profile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>
-                <a href="https://www.linkedin.com/in/rotaract/" class="social-icon-link li" target="_blank" rel="noopener noreferrer" title="LinkedIn Page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg></a>
-                <a href="mailto:galkot@rotaract3292.org" class="social-icon-link mail" title="Email Club Administration"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
-            </div>
-            <p class="footer-copyright">&copy; 2026 Rotaract Club of Galkot Baglung All Rights Reserved.</p>
+    <div>
+      <h4>Resources</h4>
+      <ul>
+        <li><a href="membership.html">Join Us</a></li>
+        <li><a href="strategic-planning.html">Strategic Plan</a></li>
+        <li><a href="past-projects.html">Past Projects</a></li>
+        <li><a href="anthem.html">Club Anthem</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h4>Contact</h4>
+      <ul>
+        <li><i class="fas fa-map-marker-alt" style="color:var(--gold);margin-right:8px;"></i> Galkot, Baglung, Nepal</li>
+        <li><i class="fas fa-envelope" style="color:var(--gold);margin-right:8px;"></i> galkot@rotaract3292.org</li>
+        <li><i class="fas fa-phone" style="color:var(--gold);margin-right:8px;"></i> +977-9851338747</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    &copy; 2026 Rotaract Club of Galkot Baglung. All Rights Reserved. | RI District 3292
+  </div>
+</footer>
+
+<script>
+  // ============================================================
+  // MAIN APPLICATION
+  // ============================================================
+  document.addEventListener('DOMContentLoaded', () => {
+
+    // ---------- PRELOADER ----------
+    setTimeout(() => {
+      document.getElementById('preloader').classList.add('hidden');
+    }, 2500);
+
+    // ---------- SUPABASE ----------
+    const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+    const SUPABASE_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // ---------- THEME ----------
+    const themeToggle = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    themeToggle?.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    });
+
+    // ---------- NAVBAR ----------
+    const navbar = document.getElementById('navbar');
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    hamburger?.addEventListener('click', () => {
+      hamburger.classList.toggle('active');
+      navLinks.classList.toggle('open');
+    });
+
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.classList.remove('active');
+        navLinks.classList.remove('open');
+      });
+    });
+
+    // ---------- ADMIN LOGIN POPUP ----------
+    const adminLoginNavBtn = document.getElementById('adminLoginNavBtn');
+    const adminLoginPopup = document.getElementById('adminLoginPopup');
+    const adminLoginClose = document.getElementById('adminLoginClose');
+    const adminLoginForm = document.getElementById('adminLoginForm');
+    const adminEmailInput = document.getElementById('adminEmail');
+    const adminPasswordInput = document.getElementById('adminPassword');
+    const adminLoginError = document.getElementById('adminLoginError');
+    const adminSubmitBtn = document.getElementById('adminSubmitBtn');
+    const toggleAdminPass = document.getElementById('toggleAdminPass');
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let adminLastFocusedEl = null;
+
+    function openAdminLoginPopup() {
+      adminLastFocusedEl = document.activeElement;
+      adminLoginPopup.classList.add('active');
+      adminLoginPopup.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      adminEmailInput?.focus();
+    }
+
+    function closeAdminLoginPopup() {
+      adminLoginPopup.classList.remove('active');
+      adminLoginPopup.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      if (adminLoginError) adminLoginError.textContent = '';
+      if (adminLastFocusedEl) adminLastFocusedEl.focus();
+    }
+
+    adminLoginNavBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      openAdminLoginPopup();
+    });
+    adminLoginClose?.addEventListener('click', closeAdminLoginPopup);
+    adminLoginPopup?.addEventListener('click', (e) => {
+      if (e.target === adminLoginPopup) closeAdminLoginPopup();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && adminLoginPopup?.classList.contains('active')) closeAdminLoginPopup();
+    });
+    toggleAdminPass?.addEventListener('click', () => {
+      const isPass = adminPasswordInput.type === 'password';
+      adminPasswordInput.type = isPass ? 'text' : 'password';
+      toggleAdminPass.textContent = isPass ? '🙈' : '👁';
+    });
+    [adminEmailInput, adminPasswordInput].forEach(el => {
+      el?.addEventListener('input', () => { if (adminLoginError) adminLoginError.textContent = ''; });
+    });
+
+    function withTimeout(promise, ms, label) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error(label || 'Request timed out')), ms))
+      ]);
+    }
+
+    function mapAuthError(err) {
+      const status = err?.status;
+      const msg = (err?.message || '').toLowerCase();
+      if (msg.includes('invalid login credentials')) return 'Incorrect email or password.';
+      if (msg.includes('email not confirmed')) return 'Please confirm your email address before signing in.';
+      if (msg.includes('user not found')) return 'No account found with that email.';
+      if (status === 429 || msg.includes('too many') || msg.includes('rate limit')) return 'Too many attempts — please wait a minute.';
+      if (status === 400 && msg.includes('email')) return 'Please enter a valid email address.';
+      if (status >= 500) return "Supabase is having trouble right now — please try again shortly.";
+      if (err instanceof TypeError || msg.includes('failed to fetch') || msg.includes('network')) {
+        return 'Network error — check your internet connection.';
+      }
+      if (msg.includes('timed out')) return 'The request took too long — please try again.';
+      return err?.message || "Couldn't sign in right now — please try again.";
+    }
+
+    async function checkAdminAccess(user) {
+      try {
+        const { data, error } = await supabase
+          .from('user_roles')
+          .select('role, status')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.warn('user_roles query error:', error);
+          return { isAdmin: false };
+        }
+        if (data && data.role === 'admin' && data.status === 'active') {
+          return { isAdmin: true };
+        }
+      } catch (e) {
+        console.warn('user_roles exception:', e);
+      }
+      return { isAdmin: false };
+    }
+
+    adminLoginForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = adminEmailInput.value.trim();
+      const password = adminPasswordInput.value;
+
+      adminLoginError.textContent = '';
+
+      if (!email || !EMAIL_RE.test(email)) {
+        adminLoginError.textContent = 'Please enter a valid email address.';
+        adminEmailInput.focus();
+        return;
+      }
+      if (!password) {
+        adminLoginError.textContent = 'Please enter your password.';
+        adminPasswordInput.focus();
+        return;
+      }
+
+      adminSubmitBtn.classList.add('loading');
+      adminSubmitBtn.disabled = true;
+
+      try {
+        const { data, error } = await withTimeout(
+          supabase.auth.signInWithPassword({ email, password }),
+          15000,
+          'Sign-in timed out'
+        );
+        if (error) throw error;
+
+        const user = data.user;
+        const result = await withTimeout(checkAdminAccess(user), 15000, 'Access check timed out');
+
+        if (result.isAdmin) {
+          try {
+            await supabase.from('admin_activity_log').insert([{
+              admin_id: user.id,
+              admin_email: user.email,
+              action: 'login',
+              details: 'Admin login from index.html'
+            }]);
+          } catch (_) { /* ignore */ }
+          window.location.href = 'admin.html';
+          return;
+        }
+
+        await supabase.auth.signOut();
+        adminLoginError.textContent = 'This account does not have admin access.';
+      } catch (err) {
+        console.error('Admin login error:', err);
+        adminLoginError.textContent = mapAuthError(err);
+      } finally {
+        adminSubmitBtn.classList.remove('loading');
+        adminSubmitBtn.disabled = false;
+      }
+    });
+
+    // ---------- PARTICLES ----------
+    function createParticles() {
+      const container = document.getElementById('particlesContainer');
+      const colors = ['#D4AF37', '#D91A5C', '#FFD700', '#FDE8F0', '#FFFFFF'];
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        const size = Math.random() * 6 + 2;
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        particle.style.animationDuration = (Math.random() * 20 + 10) + 's';
+        particle.style.animationDelay = (Math.random() * 20) + 's';
+        container.appendChild(particle);
+      }
+    }
+    createParticles();
+
+    // ---------- STATISTICS ----------
+    const statsData = [
+      { icon: 'fa-users', label: 'Total Members', value: 0, suffix: '' },
+      { icon: 'fa-user-check', label: 'Active Members', value: 0, suffix: '' },
+      { icon: 'fa-tasks', label: 'Projects Completed', value: 47, suffix: '' },
+      { icon: 'fa-clock', label: 'Volunteer Hours', value: 2840, suffix: '+' },
+      { icon: 'fa-trophy', label: 'Awards Won', value: 12, suffix: '' },
+      { icon: 'fa-hand-holding-usd', label: 'Funds Raised', value: 125, suffix: 'K' },
+      { icon: 'fa-globe-asia', label: 'Communities Served', value: 23, suffix: '' }
+    ];
+
+    async function updateStatsFromSupabase() {
+      try {
+        const { count, error } = await supabase
+          .from('members')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'active');
+
+        if (!error) {
+          statsData[0].value = count || 0;
+          statsData[1].value = count || 0;
+        }
+      } catch (e) {
+        console.warn('Could not fetch member count:', e);
+      }
+      renderStats();
+    }
+
+    function renderStats() {
+      const grid = document.getElementById('statsGrid');
+      grid.innerHTML = statsData.map((stat, i) => `
+        <div class="stat-card reveal" style="transition-delay:${i * 0.08}s">
+          <span class="stat-icon"><i class="fas ${stat.icon}"></i></span>
+          <div class="stat-number" data-target="${stat.value}">0</div>
+          <div class="stat-label">${stat.label}</div>
         </div>
-    </footer>
+      `).join('');
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // ---------- WELCOME POPUP ----------
-            const welcomePopup = document.getElementById('welcomePopup');
-            const welcomePopupClose = document.getElementById('welcomePopupClose');
-            const welcomePopupContinue = document.getElementById('welcomePopupContinue');
-            let lastFocusedEl = null;
-
-            function openWelcomePopup() {
-                lastFocusedEl = document.activeElement;
-                welcomePopup.classList.add('active');
-                welcomePopup.setAttribute('aria-hidden', 'false');
-                document.body.style.overflow = 'hidden';
-                welcomePopupClose.focus();
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const el = entry.target;
+            el.classList.add('visible');
+            const number = el.querySelector('.stat-number');
+            if (number) {
+              animateNumber(number);
             }
-
-            function closeWelcomePopup() {
-                welcomePopup.classList.remove('active');
-                welcomePopup.setAttribute('aria-hidden', 'true');
-                document.body.style.overflow = '';
-                sessionStorage.setItem('welcomePopupSeen', '1');
-                if (lastFocusedEl) lastFocusedEl.focus();
-            }
-            if (welcomePopup && !sessionStorage.getItem('welcomePopupSeen')) {
-                setTimeout(openWelcomePopup, 500);
-            }
-            welcomePopupClose?.addEventListener('click', closeWelcomePopup);
-            welcomePopupContinue?.addEventListener('click', (e) => { e.preventDefault();
-                closeWelcomePopup(); });
-            welcomePopup?.addEventListener('click', (e) => { if (e.target === welcomePopup) closeWelcomePopup(); });
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && welcomePopup?.classList.contains('active')) closeWelcomePopup();
-            });
-
-            // Live date
-            const dateEl = document.getElementById("live-date");
-            if (dateEl) dateEl.innerText = new Date().toLocaleDateString("en-US", { weekday: 'long', year: 'numeric',
-                    month: 'long', day: 'numeric' });
-
-            // Home button ripple
-            const homeBtn = document.getElementById('interactiveHomeBtn');
-            if (homeBtn) {
-                homeBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const target = this.getAttribute('href');
-                    const ripple = document.createElement('span');
-                    ripple.classList.add('ripple');
-                    const rect = this.getBoundingClientRect();
-                    const size = Math.max(rect.width, rect.height);
-                    ripple.style.width = ripple.style.height = `${size}px`;
-                    ripple.style.left = `${e.clientX - rect.left - size/2}px`;
-                    ripple.style.top = `${e.clientY - rect.top - size/2}px`;
-                    this.appendChild(ripple);
-                    this.classList.add('clicked-exit');
-                    setTimeout(() => window.location.href = target, 400);
-                });
-            }
-
-            // ---------- SUPABASE SETUP ----------
-            const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
-            const SUPABASE_KEY =
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
-            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-            // ---------- MEMBER SLIDER ----------
-            const track = document.getElementById('sliderTrack');
-            const prevBtn = document.getElementById('sliderPrev');
-            const nextBtn = document.getElementById('sliderNext');
-            const counter = document.getElementById('sliderCounter');
-
-            let members = [];
-            let currentIndex = 0;
-            let cardsPerView = 5;
-
-            // Board positions to exclude
-            const boardPositions = [
-                'president', 'secretary', 'treasurer',
-                'vice president', 'joint secretary',
-                'ipp', 'mentor', 'president elect',
-                'membership chair', 'public image chair',
-                'service projects chair', 'health program chair',
-                'rotary foundation chair',
-                'sergeant at arms', 'it officer', 'young leaders contact',
-                'pp/learning facilitator', 'pp/isd/advisor', 'pp/club advisor'
-            ];
-
-            function renderSlider() {
-                if (!members.length) {
-                    track.innerHTML =
-                        `<div class="text-center w-full text-slate-400 py-8">No active members found in database.</div>`;
-                    counter.textContent = '0 / 0';
-                    return;
-                }
-                const total = members.length;
-                const cPerView = updateCardsPerView();
-                const maxIndex = Math.max(0, Math.ceil(total / cPerView) - 1);
-                if (currentIndex > maxIndex) currentIndex = maxIndex;
-
-                track.innerHTML = members.map(m => {
-                    const photoUrl = m.photo_url || m.photo || m.profile_image || '';
-                    const name = m.name || 'Member';
-                    const designation = m.designation || m.position || 'Member';
-                    return `
-                        <div class="member-card">
-                            <img src="${photoUrl || 'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=D91A5C&color=fff&size=80'}" 
-                                 alt="${name}" class="member-avatar" loading="lazy"
-                                 onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=D91A5C&color=fff&size=80'">
-                            <div class="member-name">${name}</div>
-                            <div class="member-designation">${designation}</div>
-                        </div>
-                    `;
-                }).join('');
-
-                const start = currentIndex * cPerView + 1;
-                const end = Math.min((currentIndex + 1) * cPerView, total);
-                counter.textContent = `${start} – ${end} of ${total}`;
-                prevBtn.disabled = currentIndex === 0;
-                nextBtn.disabled = currentIndex >= maxIndex;
-                const cardWidth = 160 + 24;
-                const shift = currentIndex * cPerView * cardWidth;
-                track.style.transform = `translateX(-${shift}px)`;
-            }
-
-            function updateCardsPerView() {
-                const w = window.innerWidth;
-                if (w < 480) return 2;
-                if (w < 768) return 3;
-                if (w < 1024) return 4;
-                return 5;
-            }
-
-            async function fetchMembers() {
-                try {
-                    counter.textContent = 'Loading members...';
-                    const { data, error } = await supabase
-                        .from('members')
-                        .select('*')
-                        .eq('status', 'active')
-                        .order('name');
-
-                    if (error) {
-                        console.error('Supabase error:', error);
-                        throw error;
-                    }
-
-                    if (!data || data.length === 0) {
-                        members = [];
-                        renderSlider();
-                        return;
-                    }
-
-                    const filtered = data.filter(m => {
-                        const pos = (m.designation || m.position || '').toLowerCase().trim();
-                        const isBoard = boardPositions.some(bp => pos.includes(bp));
-                        return !isBoard;
-                    });
-
-                    members = filtered;
-                    currentIndex = 0;
-                    renderSlider();
-                    console.log(`✅ Loaded ${members.length} active members from Supabase`);
-                } catch (err) {
-                    console.error('❌ Failed to fetch members:', err);
-                    counter.textContent = 'Error loading members';
-                    track.innerHTML =
-                        `<div class="text-center w-full text-red-500 py-8">Failed to load members. Please check console.</div>`;
-                }
-            }
-
-            prevBtn.addEventListener('click', () => {
-                if (currentIndex > 0) { currentIndex--;
-                    renderSlider(); }
-            });
-            nextBtn.addEventListener('click', () => {
-                const total = members.length;
-                const cPerView = updateCardsPerView();
-                const maxIndex = Math.max(0, Math.ceil(total / cPerView) - 1);
-                if (currentIndex < maxIndex) { currentIndex++;
-                    renderSlider(); }
-            });
-
-            window.addEventListener('resize', () => {
-                cardsPerView = updateCardsPerView();
-                renderSlider();
-            });
-
-            fetchMembers();
-
-            // ---------- TYPEWRITER / ZOOM ----------
-            (function() {
-                const CONFIG = { textContent: 'Join Rotaract! 🤝', zoomDuration: 500, zoomScale: 1.18,
-                    zoomRepetitions: 5, typingSpeed: 70, backspaceSpeed: 40, pauseAfterTyping: 2000,
-                    typewriterRepetitions: 3, cursorBlinkSpeed: 480 };
-                const ctaWrapper = document.getElementById('ctaButton');
-                const displayEl = document.getElementById('ctaDisplay');
-                const cursorEl = document.getElementById('cursorCta');
-                if (!ctaWrapper || !displayEl || !cursorEl) return;
-                let currentCycle = 0,
-                    typeTimer = null,
-                    backspaceTimer = null,
-                    pauseTimer = null,
-                    cursorInterval = null;
-                let currentText = '',
-                    targetText = CONFIG.textContent,
-                    charIndex = 0;
-
-                function clearAllTimers() {
-                    if (typeTimer) { clearTimeout(typeTimer);
-                        typeTimer = null; }
-                    if (backspaceTimer) { clearTimeout(backspaceTimer);
-                        backspaceTimer = null; }
-                    if (pauseTimer) { clearTimeout(pauseTimer);
-                        pauseTimer = null; }
-                    if (cursorInterval) { clearInterval(cursorInterval);
-                        cursorInterval = null; }
-                }
-
-                function startCursorBlink() {
-                    if (cursorInterval) clearInterval(cursorInterval);
-                    cursorEl.style.opacity = '1';
-                    cursorInterval = setInterval(() => { cursorEl.style.opacity = (cursorEl.style.opacity === '0' ? '1' :
-                            '0'); }, CONFIG.cursorBlinkSpeed);
-                }
-
-                function stopCursorAndHide() {
-                    if (cursorInterval) { clearInterval(cursorInterval);
-                        cursorInterval = null; }
-                    cursorEl.classList.add('hidden-cursor');
-                    cursorEl.style.opacity = '0';
-                }
-
-                function renderText() { displayEl.textContent = currentText; }
-
-                function typeChar() {
-                    if (charIndex < targetText.length) { currentText += targetText.charAt(charIndex);
-                        charIndex++;
-                        renderText();
-                        typeTimer = setTimeout(typeChar, CONFIG.typingSpeed); } else { startCursorBlink();
-                        pauseTimer = setTimeout(startBackspace, CONFIG.pauseAfterTyping); }
-                }
-
-                function backspaceChar() {
-                    if (currentText.length > 0) { currentText = currentText.slice(0, -1);
-                        charIndex = currentText.length;
-                        renderText();
-                        backspaceTimer = setTimeout(backspaceChar, CONFIG.backspaceSpeed); } else { currentCycle++;
-                        if (currentCycle < CONFIG.typewriterRepetitions) { charIndex = 0;
-                            currentText = '';
-                            renderText();
-                            startCursorBlink();
-                            typeTimer = setTimeout(typeChar, CONFIG.typingSpeed); } else { currentText = targetText;
-                            charIndex = targetText.length;
-                            renderText();
-                            stopCursorAndHide();
-                            displayEl.textContent = currentText;
-                            clearAllTimers(); } }
-                }
-
-                function startBackspace() { pauseTimer = null; if (currentText.length > 0) { if (cursorInterval) { clearInterval(
-                            cursorInterval);
-                        cursorInterval = null; }
-                        cursorEl.style.opacity = '1';
-                        backspaceTimer = setTimeout(backspaceChar, CONFIG.backspaceSpeed); } else { currentCycle++;
-                        if (currentCycle < CONFIG.typewriterRepetitions) { charIndex = 0;
-                            currentText = '';
-                            renderText();
-                            startCursorBlink();
-                            typeTimer = setTimeout(typeChar, CONFIG.typingSpeed); } else { currentText = targetText;
-                            charIndex = targetText.length;
-                            renderText();
-                            stopCursorAndHide();
-                            displayEl.textContent = currentText;
-                            clearAllTimers(); } } }
-
-                function runZoomSequence() {
-                    let count = 0;
-                    const totalZoom = CONFIG.zoomRepetitions,
-                        scale = CONFIG.zoomScale,
-                        duration = CONFIG.zoomDuration;
-                    displayEl.style.transition = `transform ${duration/2}ms ease-in-out`;
-
-                    function doZoom() {
-                        if (count >= totalZoom) { displayEl.style.transition = 'none';
-                            displayEl.style.transform = 'scale(1)';
-                            startTypewriter(); return; }
-                        displayEl.style.transform = `scale(${scale})`;
-                        setTimeout(() => { displayEl.style.transform = 'scale(1)';
-                            setTimeout(() => { count++;
-                                doZoom(); }, duration / 2); }, duration / 2);
-                    }
-                    displayEl.style.transform = 'scale(1)';
-                    doZoom();
-                }
-
-                function startTypewriter() {
-                    currentCycle = 0;
-                    charIndex = 0;
-                    currentText = '';
-                    targetText = CONFIG.textContent;
-                    cursorEl.classList.remove('hidden-cursor');
-                    cursorEl.style.opacity = '1';
-                    displayEl.textContent = '';
-                    startCursorBlink();
-                    typeTimer = setTimeout(typeChar, CONFIG.typingSpeed);
-                }
-
-                function init() { currentText = '';
-                    displayEl.textContent = '';
-                    displayEl.style.transform = 'scale(1)';
-                    displayEl.style.transition = `transform ${CONFIG.zoomDuration/2}ms ease-in-out`;
-                    runZoomSequence(); }
-                window.addEventListener('beforeunload', () => { clearAllTimers(); if (cursorInterval) clearInterval(
-                        cursorInterval); });
-                init();
-            })();
+          }
         });
-    </script>
+      }, { threshold: 0.3 });
+
+      document.querySelectorAll('.stat-card').forEach(card => {
+        observer.observe(card);
+      });
+    }
+
+    function animateNumber(el) {
+      const target = parseInt(el.dataset.target);
+      const duration = 2000;
+      const startTime = performance.now();
+
+      function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(eased * target);
+        el.textContent = current.toLocaleString() + (el.dataset.suffix || '');
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        } else {
+          el.textContent = target.toLocaleString() + (el.dataset.suffix || '');
+        }
+      }
+      requestAnimationFrame(update);
+    }
+
+    updateStatsFromSupabase();
+
+    // ---------- BOARD MARQUEE ----------
+    const boardMembers = [
+      { name: 'Rtr. Nabin Chalise', position: 'President', photo: 'images/nabinchalise.jpg' },
+      { name: 'Rtr. Madan Sharma', position: 'Secretary', photo: 'images/madansharma.jpg' },
+      { name: 'Rtr. Manish Kandel', position: 'Treasurer', photo: 'images/manishkandel.jpg' },
+      { name: 'Rtr. Nabin Subedi', position: 'IPP / Mentor', photo: 'images/nabinsubedi.jpg' },
+      { name: 'Rtr. Tika Ram Gautam', position: 'President Elect', photo: 'images/tikaramgautam.jpg' },
+      { name: 'Rtr. Vikash Subedi', position: 'Vice President', photo: 'images/vikashsubedi.jpg' },
+      { name: 'Rtr. Sagar Chalise', position: 'Joint Secretary', photo: 'images/sagarchalise.jpg' },
+      { name: 'Rtr. Bipin Chalise', position: 'Membership Chair', photo: 'images/bipinchalise.jpg' },
+      { name: 'Rtr. Manish Gurung', position: 'Public Image Chair', photo: 'images/manishgurung.jpg' },
+      { name: 'Rtr. Smriti Budhathoki', position: 'Service Projects Chair', photo: 'images/smritibudhathoki.jpg' },
+    ];
+
+    function renderBoard() {
+      const marquee = document.getElementById('boardMarquee');
+      const doubled = [...boardMembers, ...boardMembers];
+      marquee.innerHTML = doubled.map(m => `
+        <div class="board-card">
+          <img src="${m.photo}" alt="${m.name}" class="avatar" 
+               onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}&background=D91A5C&color=fff&size=80'">
+          <div class="name">${m.name}</div>
+          <div class="position">${m.position}</div>
+        </div>
+      `).join('');
+    }
+    renderBoard();
+
+    // ---------- MEMBERS MARQUEE ----------
+    async function renderMembersMarquee() {
+      const marquee = document.getElementById('membersMarquee');
+      try {
+        const { data, error } = await supabase
+          .from('members')
+          .select('name, designation, photo_url, photo, profile_image')
+          .eq('status', 'active')
+          .limit(30);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          marquee.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);width:100%;">No active members found</div>`;
+          return;
+        }
+
+        const doubled = [...data, ...data];
+        marquee.innerHTML = doubled.map(m => {
+          const photo = m.photo_url || m.photo || m.profile_image || '';
+          const name = m.name || 'Member';
+          const designation = m.designation || 'Member';
+          return `
+            <div class="member-marquee-card">
+              <img src="${photo || 'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=D91A5C&color=fff&size=64'}" 
+                   alt="${name}" class="avatar" loading="lazy"
+                   onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=D91A5C&color=fff&size=64'">
+              <div class="name">${name}</div>
+              <div class="designation">${designation}</div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Failed to load members:', err);
+        marquee.innerHTML = `<div style="padding:20px;text-align:center;color:#EF4444;width:100%;">Failed to load members</div>`;
+      }
+    }
+
+    renderMembersMarquee();
+
+    // ---------- RECOGNITION ----------
+    const leaderContainer = document.getElementById('leaderWinners');
+    const risingContainer = document.getElementById('risingWinners');
+
+    async function fetchRecognitionData() {
+      leaderContainer.innerHTML = `<div class="recognition-loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>`;
+      risingContainer.innerHTML = `<div class="recognition-loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>`;
+      try {
+        const { data: minutes, error: mError } = await supabase
+          .from('meeting_minutes')
+          .select('*');
+
+        if (mError) throw new Error('Minutes fetch failed: ' + mError.message);
+
+        if (!minutes || minutes.length === 0) {
+          leaderContainer.innerHTML = `<div class="no-winner"><i class="fas fa-circle-exclamation"></i> No meetings found.</div>`;
+          risingContainer.innerHTML = `<div class="no-winner"><i class="fas fa-circle-exclamation"></i> No meetings found.</div>`;
+          return;
+        }
+
+        const publishedMinutes = minutes.filter(m => (m.status || '').toLowerCase() === 'published');
+
+        if (publishedMinutes.length === 0) {
+          leaderContainer.innerHTML = `<div class="no-winner">No Published meetings yet.</div>`;
+          risingContainer.innerHTML = `<div class="no-winner">No Published meetings yet.</div>`;
+          return;
+        }
+
+        const { data: members, error: memError } = await supabase
+          .from('members')
+          .select('id, name, designation, position, status, mentor, photo_url, photo, profile_image');
+
+        if (memError) throw new Error('Members fetch failed: ' + memError.message);
+
+        const BOARD_DESIGNATIONS = [
+          'President', 'President Elect', 'Secretary', 'Joint Secretary', 'Treasurer',
+          'Vice President', 'IPP / Mentor', 'Membership Chair', 'Public Image Chair',
+          'Service Projects Chair', 'Health Program Chair', 'Rotary Foundation Chair',
+          'Sergeant At Arms', 'IT Officer', 'Young Leaders Contact',
+          'Learning Facilitator', 'Club Advisor', 'ISD Advisor'
+        ];
+
+        function normalizeKey(str) {
+          return (str || '').toString().trim().toLowerCase()
+            .replace(/^rtr(?:\.\s*|\s+)/, '')
+            .replace(/^dr(?:\.\s*|\s+)/, '')
+            .replace(/\s+/g, ' ');
+        }
+
+        function normalizeDesignationText(str) {
+          return (str || '').toString().toLowerCase()
+            .replace(/\brotaract\b/g, ' ')
+            .replace(/\brotary\b/g, ' ')
+            .replace(/\bpp\b/g, ' ')
+            .replace(/\//g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        }
+
+        const NORMALIZED_BOARD_DESIGNATIONS = BOARD_DESIGNATIONS.map(normalizeDesignationText);
+
+        function classifyMember(m) {
+          const rawDesignation = (m.designation || m.position || '').toString().trim();
+          const normalized = normalizeDesignationText(rawDesignation);
+          const matchIndex = NORMALIZED_BOARD_DESIGNATIONS.indexOf(normalized);
+          const isBoard = matchIndex !== -1;
+          const displayDesignation = isBoard ? BOARD_DESIGNATIONS[matchIndex] : (rawDesignation || 'Club Member');
+          return {
+            designation: displayDesignation,
+            isPresident: isBoard && displayDesignation === 'President',
+            isBoard
+          };
+        }
+
+        function isBoardOnlyMeetingType(meeting) {
+          const t = (meeting.meeting_type || (meeting.data || {}).meeting_type || '').toString().trim().toLowerCase();
+          return t === 'board meeting' || t === 'special board meeting';
+        }
+
+        const totalMeetingsAll = publishedMinutes.length;
+        const clubMemberMinutes = publishedMinutes.filter(m => !isBoardOnlyMeetingType(m));
+        const totalMeetingsClub = clubMemberMinutes.length;
+
+        const presentSetsAll = publishedMinutes.map(meeting => {
+          const list = Array.isArray((meeting.data || {}).members) ? meeting.data.members : [];
+          return new Set(list.map(p => normalizeKey(p && (p.name || p.full_name || p))));
+        });
+        const presentSetsClub = clubMemberMinutes.map(meeting => {
+          const list = Array.isArray((meeting.data || {}).members) ? meeting.data.members : [];
+          return new Set(list.map(p => normalizeKey(p && (p.name || p.full_name || p))));
+        });
+
+        const bonusMap = {};
+        publishedMinutes.forEach(meeting => {
+          const items = Array.isArray((meeting.data || {}).actionItems) ? meeting.data.actionItems : [];
+          items.forEach(item => {
+            const isCompleted = (item.status || '').toString().toLowerCase() === 'completed' || item.completed === true;
+            if (!isCompleted) return;
+            const personRaw = item.person || item.responsible_person || item.assignee || item.assigned_to || item.responsible;
+            const personName = typeof personRaw === 'string' ? personRaw : (personRaw && (personRaw.name || personRaw.full_name));
+            if (!personName) return;
+            const key = normalizeKey(personName);
+            bonusMap[key] = (bonusMap[key] || 0) + 1;
+          });
+        });
+
+        const memberScores = (members || []).map(m => {
+          const key = normalizeKey(m.name);
+          const classification = classifyMember(m);
+          const presentSets = classification.isBoard ? presentSetsAll : presentSetsClub;
+          const totalMeetings = classification.isBoard ? totalMeetingsAll : totalMeetingsClub;
+          const attended = presentSets.filter(s => s.has(key)).length;
+          const attendancePct = totalMeetings > 0 ? Math.round((attended / totalMeetings) * 1000) / 10 : 0;
+          const bonus = bonusMap[key] || 0;
+          const photoUrl = m.photo_url || m.photo || m.profile_image || null;
+          const finalScore = attendancePct + bonus;
+          return {
+            id: m.id,
+            fullName: m.name,
+            designation: classification.designation,
+            photoUrl,
+            attendancePct,
+            bonus,
+            finalScore,
+            isBoard: classification.isBoard,
+            isPresident: classification.isPresident
+          };
+        });
+
+        const leaders = memberScores
+          .filter(m => m.isBoard === true && !m.isPresident)
+          .sort((a, b) => b.finalScore - a.finalScore);
+        const topLeaderScore = leaders.length > 0 ? leaders[0].finalScore : -Infinity;
+        const leaderWinners = leaders.filter(m => m.finalScore === topLeaderScore);
+
+        const rising = memberScores
+          .filter(m => m.isBoard === false)
+          .sort((a, b) => b.finalScore - a.finalScore);
+        const topRisingScore = rising.length > 0 ? rising[0].finalScore : -Infinity;
+        const risingWinners = rising.filter(m => m.finalScore === topRisingScore);
+
+        function renderWinnerList(winners, container) {
+          if (!winners || winners.length === 0) {
+            container.innerHTML = `<div class="no-winner"><i class="fas fa-circle-exclamation"></i> No eligible winner</div>`;
+            return;
+          }
+          container.innerHTML = winners.map(w => `
+            <div class="winner-item">
+              <div class="winner-avatar">
+                ${w.photoUrl ? `<img src="${w.photoUrl}" alt="${w.fullName}">` : 
+                  (w.fullName ? w.fullName.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0,2) : 'M')}
+              </div>
+              <div class="winner-info">
+                <span class="winner-name">${w.fullName || 'Member'}</span>
+                <span class="winner-designation">${w.designation || 'Member'}</span>
+              </div>
+              <div class="winner-score"><i class="fas fa-star"></i> ${w.finalScore.toFixed(1)}</div>
+            </div>
+          `).join('');
+        }
+
+        renderWinnerList(leaderWinners, leaderContainer);
+        renderWinnerList(risingWinners, risingContainer);
+
+      } catch (err) {
+        console.error('Recognition error:', err);
+        leaderContainer.innerHTML = `<div class="recognition-error"><i class="fas fa-triangle-exclamation"></i> ${err.message}</div>`;
+        risingContainer.innerHTML = `<div class="recognition-error"><i class="fas fa-triangle-exclamation"></i> ${err.message}</div>`;
+      }
+    }
+
+    fetchRecognitionData();
+
+    // ---------- TICKER ----------
+    async function updateTicker() {
+      const container = document.getElementById('tickerContainer');
+      const today = new Date().toISOString().split('T')[0];
+
+      try {
+        const { data: members, error: memError } = await supabase
+          .from('members')
+          .select('name, birthday, dob')
+          .eq('status', 'active');
+
+        if (memError) throw memError;
+
+        let birthdayItems = [];
+        if (members) {
+          const todayDate = new Date();
+          todayDate.setHours(0, 0, 0, 0);
+          
+          const upcomingBirthdays = members.filter(m => {
+            const birthDate = m.birthday || m.dob;
+            if (!birthDate) return false;
+            const d = new Date(birthDate);
+            if (isNaN(d.getTime())) return false;
+            for (let i = 0; i <= 10; i++) {
+              const check = new Date(todayDate);
+              check.setDate(check.getDate() + i);
+              if (check.getMonth() === d.getMonth() && check.getDate() === d.getDate()) {
+                return true;
+              }
+            }
+            return false;
+          });
+
+          birthdayItems = upcomingBirthdays.map(m => {
+            const name = m.name || 'Member';
+            const birthDate = m.birthday || m.dob;
+            const dateStr = birthDate ? new Date(birthDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+            return `
+              <span class="ticker-item">
+                <span class="badge badge-birthday">🎂</span>
+                ${name} celebrates birthday ${dateStr ? 'on '+dateStr : ''}
+              </span>
+            `;
+          });
+        }
+
+        const { data: projects, error: projError } = await supabase
+          .from('upcoming_projects')
+          .select('*')
+          .eq('status', 'upcoming')
+          .gte('date', today)
+          .order('date', { ascending: true })
+          .limit(5);
+
+        if (projError) throw projError;
+
+        let projectItems = [];
+        if (projects && projects.length > 0) {
+          projectItems = projects.map(p => {
+            const date = p.date ? new Date(p.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD';
+            return `
+              <span class="ticker-item">
+                <span class="badge badge-hot">🔥 NEW</span>
+                ${p.name}
+                <span style="color:var(--text-muted);font-size:0.7rem;">📅 ${date}</span>
+              </span>
+            `;
+          });
+        }
+
+        let allItems = [...birthdayItems, ...projectItems];
+
+        if (allItems.length === 0) {
+          allItems = [
+            `<span class="ticker-item"><span class="badge badge-update">📢</span> Welcome to Rotaract Club of Galkot Baglung — Service Above Self</span>`,
+            `<span class="ticker-item"><span class="badge badge-new">✨</span> R.Y. 2026-27 is here! Join us in making a difference</span>`,
+          ];
+        }
+
+        container.innerHTML = allItems.join('') + allItems.join('');
+
+      } catch (err) {
+        console.error('Ticker error:', err);
+        container.innerHTML = `
+          <span class="ticker-item"><span class="badge badge-update">📢</span> Welcome to Rotaract Club of Galkot Baglung — Service Above Self</span>
+          <span class="ticker-item"><span class="badge badge-new">✨</span> R.Y. 2026-27 is here! Join us in making a difference</span>
+        `;
+      }
+    }
+
+    // ---------- BIRTHDAY POPUP ----------
+    const birthdayPopup = document.getElementById('birthdayPopup');
+    const popupName = document.getElementById('popupName');
+    let popupTimeout = null;
+    let birthdayPopupLastFocusedEl = null;
+
+    window.showBirthdayPopup = function(name) {
+      popupName.textContent = name || 'Rtr. Member';
+      birthdayPopupLastFocusedEl = document.activeElement;
+      birthdayPopup.classList.add('active');
+      birthdayPopup.setAttribute('aria-hidden', 'false');
+
+      if (popupTimeout) clearTimeout(popupTimeout);
+      popupTimeout = setTimeout(() => {
+        closeBirthdayPopup();
+      }, 15000);
+    };
+
+    window.closeBirthdayPopup = function() {
+      birthdayPopup.classList.remove('active');
+      birthdayPopup.setAttribute('aria-hidden', 'true');
+      if (popupTimeout) {
+        clearTimeout(popupTimeout);
+        popupTimeout = null;
+      }
+      if (birthdayPopupLastFocusedEl) birthdayPopupLastFocusedEl.focus();
+    };
+
+    birthdayPopup.addEventListener('click', function(e) {
+      if (e.target === this) closeBirthdayPopup();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && birthdayPopup.classList.contains('active')) closeBirthdayPopup();
+    });
+
+    // ---------- REVEAL ANIMATIONS ----------
+    function initReveals() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -20px 0px' });
+
+      document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach(el => {
+        observer.observe(el);
+      });
+    }
+
+    // ---------- SMOOTH SCROLLING ----------
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          const offset = navbar.offsetHeight + 20;
+          window.scrollTo({
+            top: target.offsetTop - offset,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+
+    // ---------- ACTIVE NAV LINK ----------
+    const sections = document.querySelectorAll('section[id]');
+    const navLinksAll = document.querySelectorAll('.nav-links a:not([href*="://"])');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const top = section.offsetTop - 200;
+        if (window.scrollY >= top) {
+          current = section.getAttribute('id');
+        }
+      });
+      navLinksAll.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${current}`) {
+          link.classList.add('active');
+        }
+      });
+    });
+
+    // ============================================================
+    // HERO SLIDER (premium animated content slider)
+    // ============================================================
+    const slidesData = [
+      {
+        html: `<span class="pill">✦ Welcome</span><br><strong>About Rotaract Club of Galkot Baglung</strong><br>Established on <strong>April 23, 2020</strong>, under the leadership of our <strong>Chartered President, Rtr. Neetu Khadka</strong>, the Rotaract Club of Galkot Baglung is a vibrant organization of young leaders committed to serving the community through leadership, fellowship, and meaningful service projects.`
+      },
+      {
+        html: `<span class="pill">◈ Our Journey</span><br>Embark on the inspiring journey of the Rotaract Club of Galkot Baglung, where visionary leaders have continuously guided the club toward positive change and sustainable community development.<br><span class="small">From Rtr. Neetu Khadka → Rtr. Anil Shrestha → Rtr. Ishor Gautam → Rtr. Kamal Kharel → Rtr. Laxmi Pun → Rtr. Nabin Subedi → <strong>Rtr. Nabin Chalise</strong> (RY 2026-27)</span>`
+      },
+      {
+        html: `<span class="pill">◈ Who We Are</span><br>We are a diverse network of young leaders, professionals, and change-makers aged <strong>16 years and above</strong>, united by a shared passion for creating lasting impact through volunteerism, leadership, and community engagement.<br>Together, we transform ideas into action and inspire positive change.`
+      },
+      {
+        html: `<span class="pill">◈ What We Do</span><br>As Rotaractors, we regularly meet to discuss, plan, and implement impactful service projects that address community needs.<br>Through leadership development, professional growth, international understanding, and fellowship, we strive to make a meaningful difference both locally and globally.`
+      },
+      {
+        html: `<span class="pill">◈ Our Vision</span><br>We envision ourselves as seeds of hope, leadership, and collaboration.<br>Regardless of our size, we are committed to changing lives through compassion, innovation, and <strong>service above self</strong>.<br>Together, we build stronger communities and inspire a better future.`
+      }
+    ];
+
+    const track = document.getElementById('heroSliderTrack');
+    const dotsContainer = document.getElementById('sliderDots');
+    const pauseBadge = document.getElementById('pauseBadge');
+    let currentSlide = 0;
+    let slideInterval = null;
+    let isPaused = false;
+    const INTERVAL_MS = 5000;
+
+    function buildSlides() {
+      track.innerHTML = '';
+      slidesData.forEach((slide, idx) => {
+        const div = document.createElement('div');
+        div.className = 'hero-slide' + (idx === 0 ? ' active' : '');
+        div.setAttribute('data-index', idx);
+        div.innerHTML = slide.html;
+        track.appendChild(div);
+      });
+      buildDots();
+    }
+
+    function buildDots() {
+      dotsContainer.innerHTML = '';
+      slidesData.forEach((_, idx) => {
+        const dot = document.createElement('button');
+        dot.className = 'dot' + (idx === 0 ? ' active' : '');
+        dot.setAttribute('data-index', idx);
+        dot.setAttribute('aria-label', `Slide ${idx+1}`);
+        dot.addEventListener('click', () => {
+          goToSlide(idx);
+          pauseSlider();
+        });
+        dotsContainer.appendChild(dot);
+      });
+    }
+
+    function goToSlide(index) {
+      const slides = track.querySelectorAll('.hero-slide');
+      if (!slides.length) return;
+      const prevIndex = currentSlide;
+      if (index === prevIndex) return;
+      slides.forEach((el, i) => {
+        el.classList.remove('active', 'exit');
+        if (i === index) {
+          el.classList.add('active');
+        } else if (i === prevIndex) {
+          el.classList.add('exit');
+          setTimeout(() => el.classList.remove('exit'), 700);
+        }
+      });
+      currentSlide = index;
+      updateDots();
+    }
+
+    function updateDots() {
+      const dots = dotsContainer.querySelectorAll('.dot');
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentSlide);
+      });
+    }
+
+    function nextSlide() {
+      if (isPaused) return;
+      const next = (currentSlide + 1) % slidesData.length;
+      goToSlide(next);
+    }
+
+    function startAutoSlide() {
+      if (slideInterval) clearInterval(slideInterval);
+      slideInterval = setInterval(nextSlide, INTERVAL_MS);
+      isPaused = false;
+      pauseBadge.textContent = '▶ auto-play';
+    }
+
+    function pauseSlider() {
+      if (slideInterval) {
+        clearInterval(slideInterval);
+        slideInterval = null;
+      }
+      isPaused = true;
+      pauseBadge.textContent = '⏸ paused';
+    }
+
+    function resumeSlider() {
+      if (isPaused) {
+        isPaused = false;
+        startAutoSlide();
+      }
+    }
+
+    // ---- Hover / click / focus pause ----
+    const sliderWrapper = document.getElementById('heroSliderWrapper');
+
+    sliderWrapper.addEventListener('mouseenter', () => {
+      if (!isPaused) pauseSlider();
+    });
+    sliderWrapper.addEventListener('mouseleave', () => {
+      if (isPaused) resumeSlider();
+    });
+    sliderWrapper.addEventListener('focusin', () => {
+      if (!isPaused) pauseSlider();
+    });
+    sliderWrapper.addEventListener('focusout', () => {
+      if (isPaused) resumeSlider();
+    });
+    // click on dots already pauses via goToSlide
+
+    // ---- Touch swipe support ----
+    let touchStartX = 0;
+    let touchEndX = 0;
+    sliderWrapper.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+      pauseSlider();
+    }, { passive: true });
+    sliderWrapper.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      const diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > 40) {
+        if (diff > 0) {
+          const next = (currentSlide + 1) % slidesData.length;
+          goToSlide(next);
+        } else {
+          const prev = (currentSlide - 1 + slidesData.length) % slidesData.length;
+          goToSlide(prev);
+        }
+      }
+      resumeSlider();
+    }, { passive: true });
+
+    // ---- Keyboard accessibility ----
+    sliderWrapper.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        pauseSlider();
+        const next = (currentSlide + 1) % slidesData.length;
+        goToSlide(next);
+        setTimeout(resumeSlider, 3000);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        pauseSlider();
+        const prev = (currentSlide - 1 + slidesData.length) % slidesData.length;
+        goToSlide(prev);
+        setTimeout(resumeSlider, 3000);
+      }
+    });
+    sliderWrapper.setAttribute('tabindex', '0');
+    sliderWrapper.setAttribute('role', 'region');
+    sliderWrapper.setAttribute('aria-label', 'Rotaract Club information slider');
+
+    // ---- init ----
+    buildSlides();
+    startAutoSlide();
+
+    // ---------- INIT ALL ----------
+    updateTicker();
+    initReveals();
+
+    setInterval(updateTicker, 60000);
+
+    console.log('🚀 Rotaract Club of Galkot Baglung — Premium International Dashboard Loaded (Hero Slider Active)');
+  });
+</script>
+
 </body>
 </html>
