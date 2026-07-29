@@ -1,21 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard | Rotaract Club of Galkot Baglung</title>
-    <meta name="description" content="Official dashboard for Rotaract Club of Galkot Baglung, RI District 3292. Tracking our milestones, strategic goals, and community updates.">
+    <meta name="description" content="Official dashboard for Rotaract Club of Galkot Baglung, RI District 3292. Tracking our milestones, strategic goals, and community updates." />
 
     <!-- Tailwind CSS CDN + Google Fonts -->
-    <script src="https://cdn.tailwindcss.com">
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
     <!-- Supabase Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -63,6 +61,52 @@
             max-width: 1200px;
             margin: 0 auto;
         }
+
+        /* ---- announcement banner ---- */
+        .announcement-banner {
+            background: linear-gradient(135deg, #0b1a2e 0%, #1a2f44 100%);
+            border-left: 6px solid #D4AF37;
+            border-radius: var(--radius-md);
+            padding: 16px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-sm);
+            color: #f0f4f8;
+        }
+        .announcement-banner .badge {
+            background: #D4AF37;
+            color: #0b1a2e;
+            font-weight: 700;
+            font-size: 0.7rem;
+            letter-spacing: 0.06em;
+            padding: 4px 14px;
+            border-radius: 40px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .announcement-banner .msg {
+            flex: 1;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .announcement-banner .msg strong {
+            color: #f9d77e;
+            font-weight: 700;
+        }
+        .announcement-banner .date-tag {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            color: #cbd5e1;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            white-space: nowrap;
+        }
+
+        /* ---- header ---- */
         header {
             background: linear-gradient(135deg, var(--secondary-color) 0%, #111827 100%);
             color: #ffffff;
@@ -100,6 +144,7 @@
             letter-spacing: 0.05em;
         }
 
+        /* ---- status bar ---- */
         .status-bar {
             display: flex;
             justify-content: space-between;
@@ -149,6 +194,7 @@
             }
         }
 
+        /* ---- nav tabs ---- */
         .nav-tabs-container {
             margin-bottom: 40px;
         }
@@ -194,6 +240,7 @@
             color: var(--secondary-color);
         }
 
+        /* ---- about section ---- */
         .about-section {
             background: var(--card-bg);
             padding: 40px 35px;
@@ -229,6 +276,69 @@
             box-shadow: inset 0 0 8px rgba(219, 26, 92, 0.02);
         }
 
+        /* ---- president quote card ---- */
+        .president-quote-card {
+            background: linear-gradient(145deg, #ffffff 0%, #fafcff 100%);
+            border-radius: var(--radius-lg);
+            padding: 32px 32px 28px;
+            margin: 28px 0 20px;
+            border: 1px solid rgba(217, 26, 92, 0.15);
+            box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.06);
+            position: relative;
+        }
+        .president-quote-card::before {
+            content: '"';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            font-size: 5rem;
+            color: rgba(217, 26, 92, 0.08);
+            font-family: Georgia, serif;
+            line-height: 1;
+        }
+        .president-quote-card .quote-text {
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: #1e293b;
+            line-height: 1.7;
+            padding-left: 8px;
+            position: relative;
+            z-index: 2;
+        }
+        .president-quote-card .quote-text strong {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+        .president-quote-card .attribution {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid #edf2f7;
+        }
+        .president-quote-card .attribution .avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            background: #e2e8f0;
+        }
+        .president-quote-card .attribution .name-title {
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .president-quote-card .attribution .name-title span {
+            display: block;
+            font-weight: 400;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ---- jay rotaract button ---- */
         .jay-rotaract-wrapper {
             margin-top: 30px;
             display: flex;
@@ -288,6 +398,7 @@
             }
         }
 
+        /* ---- home button ---- */
         .home-btn-container {
             position: fixed;
             bottom: 30px;
@@ -337,6 +448,7 @@
             opacity: 0.8;
         }
 
+        /* ---- footer ---- */
         footer {
             background: #111827;
             color: #f9fafb;
@@ -408,6 +520,7 @@
             padding-top: 24px;
         }
 
+        /* ---- utility ---- */
         .cinzel-font {
             font-family: 'Cinzel', serif;
         }
@@ -461,12 +574,8 @@
             opacity: 0.8;
             border-color: #D91A5C;
         }
-        @keyframes shimmer {
-            100% {
-                transform: translateX(100%);
-            }
-        }
 
+        /* ---- member slider ---- */
         .member-slider-wrapper {
             background: #f8fafc;
             border-radius: 1.5rem;
@@ -556,7 +665,7 @@
             }
         }
 
-        /* ====== WELCOME POPUP ====== */
+        /* ---- welcome popup ---- */
         .welcome-popup-overlay {
             position: fixed;
             inset: 0;
@@ -670,8 +779,12 @@
             color: var(--text-main);
         }
         @media (max-width: 480px) {
-            .welcome-popup-card { padding: 32px 20px; }
-            .welcome-popup-title { font-size: 1.3rem; }
+            .welcome-popup-card {
+                padding: 32px 20px;
+            }
+            .welcome-popup-title {
+                font-size: 1.3rem;
+            }
         }
     </style>
 </head>
@@ -707,6 +820,13 @@
     </div>
 
     <div class="dashboard-container">
+        <!-- ====== ANNOUNCEMENT BANNER ====== -->
+        <div class="announcement-banner">
+            <span class="badge">📢 Announcement</span>
+            <span class="msg"><strong>R.Y. 2026-27 Launch:</strong> Club Assembly on <strong>August 15, 2026</strong> — all members are requested to attend. New board orientation &amp; project roadmap.</span>
+            <span class="date-tag">🗓️ Jul 29, 2026</span>
+        </div>
+
         <header role="banner">
             <h1>Rotaract Club of Galkot Baglung</h1>
             <p>RI District 3292 | Rota Year 2026-27</p>
@@ -721,13 +841,11 @@
             <nav class="nav-tabs-container" aria-label="Dashboard Navigation">
                 <ul class="nav-tabs">
                     <li><a href="activemembers.html"><span class="icon" aria-hidden="true">📅</span><span class="tab-title">Active Members</span></a></li>
-                    <!-- Changed from e-Minutes to Rotaract Login -->
                     <li><a href="strategic-planning.html"><span class="icon" aria-hidden="true">🎯</span><span class="tab-title">Vision & Goals</span></a></li>
                     <li><a href="upcomming-projects.html"><span class="icon" aria-hidden="true">🚀</span><span class="tab-title">Upcoming Projects</span></a></li>
                     <li><a href="past-projects.html"><span class="icon" aria-hidden="true">⏳</span><span class="tab-title">Past Projects</span></a></li>
                     <li><a href="anthem.html"><span class="icon" aria-hidden="true">🎵</span><span class="tab-title">Club Anthem</span></a></li>
                     <li><a href="loginminutes.html"><span class="icon" aria-hidden="true">🔐</span><span class="tab-title">Rotaract Login</span></a></li>
-
                 </ul>
             </nav>
 
@@ -792,6 +910,20 @@
                     </div>
                 </div>
             </section>
+
+            <!-- ====== PRESIDENT'S QUOTE CARD ====== -->
+            <div class="president-quote-card">
+                <div class="quote-text">
+                    <strong>“Service Above Self</strong> is more than a motto — it's the heartbeat of our club. As we embark on this new Rotary year, I am inspired by the dedication of every Rotaractor who steps up to serve our community. Together, we will build bridges, create opportunities, and leave a lasting impact in Galkot Baglung. Let's make this year one of fellowship, growth, and meaningful change.”
+                </div>
+                <div class="attribution">
+                    <img src="images/nabinchalise.jpg" alt="Rtr. Nabin Chalise" class="avatar" onerror="this.src='https://ui-avatars.com/api/?name=Nabin+Chalise&background=D91A5C&color=fff&size=100'" />
+                    <div class="name-title">
+                        Rtr. Nabin Chalise
+                        <span>President, R.Y. 2026-27</span>
+                    </div>
+                </div>
+            </div>
 
             <!-- ====== MEMBER SLIDER (active members from Supabase) ====== -->
             <section class="member-slider-wrapper w-full bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6 mb-8" aria-label="Club Members">
@@ -864,6 +996,7 @@
                 document.body.style.overflow = 'hidden';
                 welcomePopupClose.focus();
             }
+
             function closeWelcomePopup() {
                 welcomePopup.classList.remove('active');
                 welcomePopup.setAttribute('aria-hidden', 'true');
@@ -875,7 +1008,8 @@
                 setTimeout(openWelcomePopup, 500);
             }
             welcomePopupClose?.addEventListener('click', closeWelcomePopup);
-            welcomePopupContinue?.addEventListener('click', (e) => { e.preventDefault(); closeWelcomePopup(); });
+            welcomePopupContinue?.addEventListener('click', (e) => { e.preventDefault();
+                closeWelcomePopup(); });
             welcomePopup?.addEventListener('click', (e) => { if (e.target === welcomePopup) closeWelcomePopup(); });
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && welcomePopup?.classList.contains('active')) closeWelcomePopup();
@@ -883,8 +1017,8 @@
 
             // Live date
             const dateEl = document.getElementById("live-date");
-            if (dateEl) dateEl.innerText = new Date().toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long',
-                    day: 'numeric' });
+            if (dateEl) dateEl.innerText = new Date().toLocaleDateString("en-US", { weekday: 'long', year: 'numeric',
+                    month: 'long', day: 'numeric' });
 
             // Home button ripple
             const homeBtn = document.getElementById('interactiveHomeBtn');
@@ -921,30 +1055,22 @@
             let currentIndex = 0;
             let cardsPerView = 5;
 
-            // Board positions to exclude (based on BOARD OF DIRECTORS R.Y. 2026/27)
+            // Board positions to exclude
             const boardPositions = [
-                // Core Executive
                 'president', 'secretary', 'treasurer',
-                // Vice Presidents / Mentors
                 'vice president', 'joint secretary',
                 'ipp', 'mentor', 'president elect',
-                // Action Chairs
                 'membership chair', 'public image chair',
                 'service projects chair', 'health program chair',
                 'rotary foundation chair',
-                // Officers
                 'sergeant at arms', 'it officer', 'young leaders contact',
-                // Past Presidents / Advisors
-                'pp/learning facilitator',
-                'pp/rotaract learning facilitator', // ✅ ADD THIS for Laxmi Pun
-                'pp/isd/advisor',
-                'pp/club advisor'
+                'pp/learning facilitator', 'pp/isd/advisor', 'pp/club advisor'
             ];
 
             function renderSlider() {
                 if (!members.length) {
                     track.innerHTML =
-                    `<div class="text-center w-full text-slate-400 py-8">No active members found in database.</div>`;
+                        `<div class="text-center w-full text-slate-400 py-8">No active members found in database.</div>`;
                     counter.textContent = '0 / 0';
                     return;
                 }
@@ -989,8 +1115,6 @@
             async function fetchMembers() {
                 try {
                     counter.textContent = 'Loading members...';
-
-                    // Fetch all active members from Supabase
                     const { data, error } = await supabase
                         .from('members')
                         .select('*')
@@ -1003,13 +1127,11 @@
                     }
 
                     if (!data || data.length === 0) {
-                        console.log('No active members found in database');
                         members = [];
                         renderSlider();
                         return;
                     }
 
-                    // Filter out board members
                     const filtered = data.filter(m => {
                         const pos = (m.designation || m.position || '').toLowerCase().trim();
                         const isBoard = boardPositions.some(bp => pos.includes(bp));
@@ -1019,7 +1141,6 @@
                     members = filtered;
                     currentIndex = 0;
                     renderSlider();
-
                     console.log(`✅ Loaded ${members.length} active members from Supabase`);
                 } catch (err) {
                     console.error('❌ Failed to fetch members:', err);
@@ -1029,7 +1150,6 @@
                 }
             }
 
-            // Slider controls
             prevBtn.addEventListener('click', () => {
                 if (currentIndex > 0) { currentIndex--;
                     renderSlider(); }
@@ -1042,13 +1162,11 @@
                     renderSlider(); }
             });
 
-            // Responsive
             window.addEventListener('resize', () => {
                 cardsPerView = updateCardsPerView();
                 renderSlider();
             });
 
-            // Fetch members from Supabase
             fetchMembers();
 
             // ---------- TYPEWRITER / ZOOM ----------
