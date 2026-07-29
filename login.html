@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Admin Login | Rotaract Club of Galkot Baglung</title>
 <meta name="robots" content="noindex, nofollow" />
-<link rel="icon" type="image/jpeg" href="images/rotaract-logo.jpg" />
+<link rel="icon" type="image/jpeg" href="images/rotaract logo.jpg" />
 
 <script>
   (function() {
@@ -367,64 +367,32 @@
   }
 
   /**
-   * Check admin – tries admin_users first, then user_roles, then profiles.
-   * All errors are logged to console for debugging.
+   * Check admin access using the public.user_roles table only.
+   * Only a row with role = 'admin' AND status = 'active' is allowed through.
    */
   async function checkAdminAccess(user) {
     console.log('🔍 Checking admin for user:', user.email, user.id);
 
-    // 1) admin_users (legacy)
-    try {
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      if (error) {
-        console.warn('⚠️ admin_users query error:', error);
-      } else if (data) {
-        console.log('✅ Found in admin_users');
-        return { isAdmin: true };
-      }
-    } catch (e) {
-      console.warn('⚠️ admin_users exception:', e);
-    }
-
-    // 2) user_roles (primary)
     try {
       const { data, error } = await supabase
         .from('user_roles')
         .select('role, status')
         .eq('user_id', user.id)
         .maybeSingle();
+
       if (error) {
         console.warn('⚠️ user_roles query error:', error);
-      } else if (data && data.role === 'admin' && (!data.status || data.status === 'active')) {
-        console.log('✅ Found in user_roles with admin role');
+        return { isAdmin: false };
+      }
+      if (data && data.role === 'admin' && data.status === 'active') {
+        console.log('✅ Admin role confirmed in user_roles');
         return { isAdmin: true };
       }
     } catch (e) {
       console.warn('⚠️ user_roles exception:', e);
     }
 
-    // 3) profiles (fallback)
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .maybeSingle();
-      if (error) {
-        console.warn('⚠️ profiles query error:', error);
-      } else if (data && data.role === 'admin') {
-        console.log('✅ Found in profiles with admin role');
-        return { isAdmin: true };
-      }
-    } catch (e) {
-      console.warn('⚠️ profiles exception:', e);
-    }
-
-    console.warn('❌ No admin role found in any table');
+    console.warn('❌ No active admin role found in user_roles');
     return { isAdmin: false };
   }
 
@@ -436,7 +404,7 @@
       const result = await checkAdminAccess(session.user);
       if (result.isAdmin) {
         console.log('✅ Existing session is admin, redirecting...');
-        window.location.href = '/admin/admin.html';
+        window.location.href = 'admin.html';
       } else {
         console.log('ℹ️ Existing session is not admin, staying on login page.');
       }
@@ -485,7 +453,7 @@
             details: 'Admin login from login.html'
           }]);
         } catch (_) { /* ignore */ }
-        window.location.href = '/admin/admin.html';
+        window.location.href = 'admin.html';
         return;
       }
 
