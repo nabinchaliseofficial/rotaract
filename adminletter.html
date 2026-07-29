@@ -1,0 +1,1839 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rotaract Club - Admin: पत्र व्यवस्थापन</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
+    </script>
+    <style>
+        /* ─── Root Variables ─────────────────────────────────────────────── */
+        :root {
+            --magenta: #D91B5C;
+            --magenta-dark: #B5154C;
+            --magenta-light: #FCE4EC;
+            --magenta-glow: rgba(217, 27, 92, 0.15);
+            --blue-dark: #0B1E30;
+            --blue-mid: #1A3A5C;
+            --gray-100: #F8FAFC;
+            --gray-200: #E9EDF4;
+            --gray-300: #D0D9E8;
+            --gray-400: #8A9BB0;
+            --gray-500: #6B7A93;
+            --gray-600: #4A5A72;
+            --gray-700: #1E3146;
+            --white: #FFFFFF;
+            --success: #1E8B4C;
+            --success-bg: #E6F7EE;
+            --error: #B13A2E;
+            --error-bg: #FEF0EE;
+            --shadow-card: 0 20px 60px rgba(0, 20, 40, 0.08);
+            --shadow-btn: 0 4px 16px rgba(217, 27, 92, 0.30);
+            --radius-lg: 28px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --transition: 0.25s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+            background: #F4F7FB;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem 1rem;
+        }
+
+        .app {
+            max-width: 1280px;
+            width: 100%;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ─── Header ──────────────────────────────────────────────────────── */
+        .app-header {
+            background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+            padding: 1.2rem 2.5rem;
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+            border-bottom: 4px solid var(--magenta);
+        }
+
+        .app-header .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1 1 auto;
+        }
+
+        .app-header .logo-wrap .logo-img {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--white);
+            border: 2px solid var(--magenta);
+            flex-shrink: 0;
+        }
+
+        .app-header .logo-wrap .logo-fallback {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: var(--magenta);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: var(--white);
+            flex-shrink: 0;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .app-header .club-info h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            line-height: 1.2;
+        }
+
+        .app-header .club-info .sub {
+            font-size: 0.72rem;
+            opacity: 0.8;
+            font-weight: 400;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem 0.8rem;
+        }
+
+        .app-header .badge-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            margin-left: auto;
+        }
+
+        .app-header .badge {
+            background: rgba(255, 255, 255, 0.10);
+            padding: 0.3rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.4px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            backdrop-filter: blur(4px);
+        }
+
+        .badge .live-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #4ADE80;
+            border-radius: 50%;
+            animation: pulse-dot 1.8s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.4;
+                transform: scale(0.8);
+            }
+        }
+
+        .header-magenta-accent {
+            height: 4px;
+            background: var(--magenta);
+            width: 100%;
+        }
+
+        /* ─── Stats ───────────────────────────────────────────────────────── */
+        .stats-dash {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            padding: 1.2rem 2.5rem;
+            background: var(--gray-100);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .stat-item .stat-number {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--blue-dark);
+            letter-spacing: -0.5px;
+        }
+        .stat-item .stat-number .accent {
+            color: var(--magenta);
+        }
+        .stat-item .stat-label {
+            font-size: 0.68rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--gray-500);
+        }
+
+        /* ─── Admin Layout ───────────────────────────────────────────────── */
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 0;
+            background: var(--gray-100);
+        }
+
+        @media (max-width: 920px) {
+            .admin-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ─── Form Panel ─────────────────────────────────────────────────── */
+        .form-panel {
+            padding: 1.8rem 2rem;
+            background: var(--white);
+            border-right: 1px solid var(--gray-200);
+        }
+
+        .form-panel .panel-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--blue-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .form-panel .panel-title .magenta {
+            color: var(--magenta);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem 1.2rem;
+        }
+
+        .form-grid .full {
+            grid-column: 1 / -1;
+        }
+
+        .form-grid .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .form-grid .field label {
+            font-size: 0.68rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--gray-500);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .form-grid .field label .required {
+            color: var(--error);
+        }
+
+        .form-grid .field input,
+        .form-grid .field select,
+        .form-grid .field textarea {
+            padding: 0.55rem 0.9rem;
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-family: inherit;
+            background: var(--white);
+            transition: border var(--transition), box-shadow var(--transition);
+            outline: none;
+            width: 100%;
+            color: var(--gray-700);
+        }
+
+        .form-grid .field input:focus,
+        .form-grid .field select:focus,
+        .form-grid .field textarea:focus {
+            border-color: var(--magenta);
+            box-shadow: 0 0 0 3px var(--magenta-glow);
+        }
+
+        .form-grid .field textarea {
+            resize: vertical;
+            min-height: 80px;
+            line-height: 1.6;
+        }
+
+        .form-grid .field .hint-text {
+            font-size: 0.68rem;
+            color: var(--gray-400);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1.2rem;
+            flex-wrap: wrap;
+        }
+
+        .form-actions .btn {
+            padding: 0.6rem 1.8rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.85rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-actions .btn-primary {
+            background: linear-gradient(135deg, var(--magenta), var(--magenta-dark));
+            color: var(--white);
+            box-shadow: var(--shadow-btn);
+        }
+
+        .form-actions .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(217, 27, 92, 0.35);
+        }
+
+        .form-actions .btn-secondary {
+            background: var(--gray-200);
+            color: var(--gray-600);
+        }
+
+        .form-actions .btn-secondary:hover {
+            background: var(--gray-300);
+        }
+
+        .form-actions .btn-danger {
+            background: var(--error-bg);
+            color: var(--error);
+            border: 1px solid #FADCD7;
+        }
+
+        .form-actions .btn-danger:hover {
+            background: #FDE0DC;
+        }
+
+        .form-actions .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .form-actions .btn .spinner-small {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid var(--white);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .form-actions .btn.loading .spinner-small {
+            display: inline-block;
+        }
+        .form-actions .btn.loading .btn-text {
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ─── List Panel ─────────────────────────────────────────────────── */
+        .list-panel {
+            padding: 1.8rem 2rem;
+            background: var(--gray-100);
+            overflow: hidden;
+        }
+
+        .list-panel .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .list-panel .panel-header .panel-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--blue-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .list-panel .panel-header .panel-title .count {
+            background: var(--magenta-light);
+            color: var(--magenta-dark);
+            padding: 0.05rem 0.7rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+        }
+
+        .list-panel .panel-header .search-box {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--white);
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            padding: 0.2rem 0.8rem;
+            transition: border var(--transition);
+        }
+
+        .list-panel .panel-header .search-box:focus-within {
+            border-color: var(--magenta);
+        }
+
+        .list-panel .panel-header .search-box input {
+            border: none;
+            outline: none;
+            padding: 0.4rem 0;
+            font-size: 0.82rem;
+            font-family: inherit;
+            background: transparent;
+            width: 160px;
+            color: var(--gray-700);
+        }
+
+        .list-panel .panel-header .search-box .search-icon {
+            color: var(--gray-400);
+            font-size: 0.9rem;
+        }
+
+        /* ─── Table ───────────────────────────────────────────────────────── */
+        .table-wrap {
+            overflow-x: auto;
+            background: var(--white);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gray-200);
+        }
+
+        .table-wrap table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .table-wrap table thead {
+            background: var(--gray-100);
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .table-wrap table thead th {
+            padding: 0.6rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gray-600);
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .table-wrap table tbody td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--gray-100);
+            color: var(--gray-700);
+            vertical-align: middle;
+        }
+
+        .table-wrap table tbody tr:hover {
+            background: var(--gray-100);
+        }
+
+        .table-wrap table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-wrap table .status-badge {
+            display: inline-block;
+            padding: 0.1rem 0.6rem;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .table-wrap table .status-badge.active {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .table-wrap table .status-badge.pending {
+            background: #FFF3CD;
+            color: #856404;
+        }
+
+        .table-wrap table .status-badge.archived {
+            background: var(--gray-200);
+            color: var(--gray-500);
+        }
+
+        .table-wrap table .actions {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+
+        .table-wrap table .actions .btn-icon {
+            padding: 0.2rem 0.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all var(--transition);
+            background: transparent;
+            color: var(--gray-500);
+        }
+
+        .table-wrap table .actions .btn-icon:hover {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .table-wrap table .actions .btn-icon.edit:hover {
+            background: var(--magenta-light);
+            color: var(--magenta);
+        }
+
+        .table-wrap table .actions .btn-icon.clone:hover {
+            background: #E8F0FE;
+            color: var(--blue-mid);
+        }
+
+        .table-wrap table .actions .btn-icon.delete:hover {
+            background: var(--error-bg);
+            color: var(--error);
+        }
+
+        .table-wrap table .actions .btn-icon.print:hover {
+            background: #E8F0FE;
+            color: var(--blue-mid);
+        }
+
+        .no-records {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--gray-400);
+        }
+
+        .no-records .icon-big {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        /* ─── Message Toast ───────────────────────────────────────────────── */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: 380px;
+            width: 100%;
+        }
+
+        .toast {
+            padding: 0.8rem 1.2rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            animation: slideUp 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: var(--white);
+            border-left: 4px solid;
+        }
+
+        .toast.success {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .toast.error {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .toast.info {
+            border-color: var(--blue-mid);
+            color: var(--blue-mid);
+        }
+
+        @keyframes slideUp {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ─── Print Modal ────────────────────────────────────────────────── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: var(--radius-md);
+            max-width: 820px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem 2.5rem;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+            position: relative;
+        }
+
+        .modal-content .modal-close {
+            position: sticky;
+            top: 0;
+            float: right;
+            background: var(--gray-100);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-500);
+            transition: all var(--transition);
+            z-index: 10;
+        }
+
+        .modal-content .modal-close:hover {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .modal-content .modal-actions {
+            display: flex;
+            gap: 0.6rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--gray-200);
+            flex-wrap: wrap;
+        }
+
+        /* ─── Letter Print Styles ────────────────────────────────────────── */
+        .letter-preview {
+            font-family: 'Noto Sans Devanagari', 'Inter', serif;
+            padding: 1rem 0;
+            line-height: 1.8;
+            color: var(--gray-700);
+        }
+
+        .letter-preview .letter-header {
+            text-align: center;
+            border-bottom: 2px solid var(--gray-200);
+            padding-bottom: 0.8rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .letter-preview .letter-header .club-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--blue-dark);
+        }
+
+        .letter-preview .letter-header .club-sub {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+        }
+
+        .letter-preview .letter-to {
+            margin-bottom: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.8;
+        }
+
+        .letter-preview .letter-to .to-label {
+            font-weight: 600;
+        }
+
+        .letter-preview .letter-subject {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 1.2rem;
+            color: var(--blue-dark);
+            text-align: center;
+        }
+
+        .letter-preview .letter-body {
+            white-space: pre-wrap;
+            margin-bottom: 1.2rem;
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .letter-preview .letter-meta-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.2rem;
+            font-size: 0.9rem;
+            color: var(--gray-700);
+        }
+
+        .letter-preview .letter-meta-line .fiscal-left {
+            font-weight: 500;
+        }
+
+        .letter-preview .letter-meta-line .ref-right {
+            font-weight: 500;
+        }
+
+        .letter-preview .letter-date-right {
+            text-align: right;
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            margin-bottom: 1rem;
+        }
+
+        .letter-preview .letter-signature {
+            margin-top: 2rem;
+            border-top: 1px solid var(--gray-200);
+            padding-top: 1.2rem;
+        }
+
+        .letter-preview .letter-signature .sig-line {
+            font-weight: 600;
+        }
+
+        .letter-preview .letter-signature .sig-sub {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+        }
+
+        .letter-preview .qr-section {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .letter-preview .qr-section .qr-label {
+            font-size: 0.7rem;
+            color: var(--gray-400);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .letter-preview .qr-section .qr-box {
+            width: 120px;
+            height: 120px;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+        }
+
+        .letter-preview .qr-section .qr-box canvas,
+        .letter-preview .qr-section .qr-box img {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* ─── Print overrides ────────────────────────────────────────────── */
+        @media print {
+            .letter-preview .letter-subject {
+                text-align: center !important;
+            }
+
+            .letter-preview .letter-meta-line {
+                display: flex !important;
+                justify-content: space-between !important;
+            }
+
+            .letter-preview .letter-date-right {
+                text-align: right !important;
+            }
+
+            .letter-preview .qr-section {
+                page-break-inside: avoid;
+            }
+
+            .letter-preview .qr-section .qr-box {
+                width: 140px;
+                height: 140px;
+            }
+
+            /* Hide the meta footer that was previously shown */
+            .letter-preview .letter-meta-old {
+                display: none !important;
+            }
+
+            /* Ensure proper spacing */
+            .letter-preview .letter-body {
+                page-break-after: avoid;
+            }
+
+            .letter-preview .letter-signature {
+                page-break-inside: avoid;
+            }
+        }
+
+        /* ─── Responsive ──────────────────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .app-header {
+                padding: 1rem 1.2rem;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+            .app-header .badge-wrap {
+                margin-left: 0;
+            }
+            .stats-dash {
+                padding: 0.8rem 1.2rem;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+            .form-panel {
+                padding: 1.2rem;
+                border-right: none;
+                border-bottom: 1px solid var(--gray-200);
+            }
+            .list-panel {
+                padding: 1.2rem;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-grid .full {
+                grid-column: 1;
+            }
+            .list-panel .panel-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .list-panel .panel-header .search-box input {
+                width: 100%;
+            }
+            .modal-content {
+                padding: 1.2rem;
+                margin: 0.5rem;
+            }
+            .toast-container {
+                right: 0.5rem;
+                bottom: 0.5rem;
+                max-width: calc(100% - 1rem);
+            }
+            .table-wrap table {
+                font-size: 0.7rem;
+            }
+            .table-wrap table thead th,
+            .table-wrap table tbody td {
+                padding: 0.4rem 0.6rem;
+            }
+            .letter-preview .letter-meta-line {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.2rem;
+            }
+            .letter-preview .letter-date-right {
+                text-align: left;
+            }
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .modal-overlay {
+                position: static !important;
+                background: none !important;
+                backdrop-filter: none !important;
+                padding: 0 !important;
+            }
+            .modal-content {
+                box-shadow: none !important;
+                max-height: none !important;
+                padding: 1rem !important;
+            }
+            .modal-content .modal-close,
+            .modal-content .modal-actions {
+                display: none !important;
+            }
+            body {
+                padding: 0 !important;
+                background: white !important;
+            }
+            .app {
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+            .letter-preview .qr-section .qr-box {
+                width: 140px !important;
+                height: 140px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app">
+
+        <!-- ═══ HEADER ═══ -->
+        <header class="app-header no-print">
+            <div class="logo-wrap">
+                <img src="rotaract.jpg" alt="Rotaract Logo" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                <div class="logo-fallback">R</div>
+                <div class="club-info">
+                    <h1>ROTARACT CLUB OF GALKOT BAGLUNG</h1>
+                    <div class="sub">
+                        <span>RI District 3292 • Nepal</span>
+                        <span>|</span>
+                        <span>📝 पत्र व्यवस्थापन</span>
+                    </div>
+                </div>
+            </div>
+            <div class="badge-wrap">
+                <div class="badge">
+                    <span class="live-dot"></span>
+                    <span>लाइभ • प्रमाणित</span>
+                </div>
+                <a href="verify.html" style="color:rgba(255,255,255,0.7);font-size:0.75rem;text-decoration:none;border:1px solid rgba(255,255,255,0.15);padding:0.25rem 1rem;border-radius:30px;">🔍 प्रमाणीकरण</a>
+            </div>
+        </header>
+        <div class="header-magenta-accent no-print"></div>
+
+        <!-- ═══ STATS ═══ -->
+        <section class="stats-dash no-print" id="statsDash">
+            <div class="stat-item">
+                <span class="stat-number" id="statTotal">—</span>
+                <span class="stat-label">📚 जम्मा पत्र</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="statActive">—</span>
+                <span class="stat-label">✅ सक्रिय</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="statFiscal">—</span>
+                <span class="stat-label">📅 चालू आ.व.</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="statUpdated">—</span>
+                <span class="stat-label">🕐 अन्तिम अपडेट</span>
+            </div>
+        </section>
+
+        <!-- ═══ ADMIN LAYOUT ═══ -->
+        <div class="admin-layout">
+
+            <!-- ─── FORM PANEL ─── -->
+            <section class="form-panel no-print" id="formPanel">
+                <div class="panel-title">
+                    <span class="magenta">✏️</span>
+                    <span id="formTitle">नयाँ पत्र सिर्जना गर्नुहोस्</span>
+                </div>
+
+                <form id="letterForm" class="form-grid">
+                    <input type="hidden" id="editId" value="" />
+
+                    <div class="field">
+                        <label>आ.व. <span class="required">*</span></label>
+                        <input type="text" id="fiscalYear" placeholder="जस्तै: 026/027" value="026/027" required />
+                    </div>
+
+                    <div class="field">
+                        <label>दर्ता नम्बर <span class="required">*</span></label>
+                        <input type="text" id="refNo" placeholder="जस्तै: 2" required />
+                    </div>
+
+                    <div class="field">
+                        <label>मिति <span class="required">*</span></label>
+                        <input type="date" id="letterDate" required />
+                    </div>
+
+                    <div class="field">
+                        <label>पत्र प्रकार</label>
+                        <input type="text" id="letterType" placeholder="जस्तै: निवेदन, सूचना" value="निवेदन" />
+                    </div>
+
+                    <div class="field full">
+                        <label>प्रति (To Address) <span class="required">*</span></label>
+                        <textarea id="toAddress" placeholder="जस्तै: श्री गलकोट नगरपालिका, गलकोट, बागलुङ" rows="3" required></textarea>
+                        <span class="hint-text">धेरै लाइनमा लेख्न Enter थिच्नुहोस्</span>
+                    </div>
+
+                    <div class="field full">
+                        <label>विषय (Subject) <span class="required">*</span></label>
+                        <input type="text" id="subject" placeholder="पत्रको विषय" required />
+                    </div>
+
+                    <div class="field full">
+                        <label>शीर्षक (Title) <span class="required">*</span></label>
+                        <input type="text" id="title" placeholder="पत्रको शीर्षक" required />
+                    </div>
+
+                    <div class="field full">
+                        <label>सामग्री (Body) <span class="required">*</span></label>
+                        <textarea id="body" placeholder="पत्रको मुख्य सामग्री यहाँ लेख्नुहोस्..." rows="5" required></textarea>
+                        <span class="hint-text">पत्रको मुख्य विवरण, अनुरोध वा जानकारी</span>
+                    </div>
+
+                    <div class="field">
+                        <label>क्लब</label>
+                        <input type="text" id="club" value="Rotaract Club of Galkot Baglung" />
+                    </div>
+
+                    <div class="field">
+                        <label>जारीकर्ता</label>
+                        <input type="text" id="issuedBy" value="Rotaract Club of Galkot Baglung" />
+                    </div>
+
+                    <div class="field">
+                        <label>हस्ताक्षरकर्ता</label>
+                        <input type="text" id="signedBy" placeholder="जस्तै: रो. नविन चालिसे" />
+                    </div>
+
+                    <div class="field">
+                        <label>पद (Designation)</label>
+                        <input type="text" id="designation" placeholder="जस्तै: अध्यक्ष" />
+                    </div>
+
+                    <div class="field">
+                        <label>स्थिति (Status)</label>
+                        <select id="letterStatus">
+                            <option value="Active">✅ Active</option>
+                            <option value="Pending">⏳ Pending</option>
+                            <option value="Archived">📦 Archived</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>प्रमाणीकरण ID</label>
+                        <input type="text" id="verificationId" placeholder="स्वत: जनरेट हुन्छ" readonly style="background:var(--gray-100);" />
+                    </div>
+
+                    <div class="form-actions full">
+                        <button type="submit" class="btn btn-primary" id="saveBtn">
+                            <span class="spinner-small"></span>
+                            <span class="btn-text">💾 पत्र सुरक्षित गर्नुहोस्</span>
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="resetBtn">🔄 नयाँ</button>
+                        <button type="button" class="btn btn-danger" id="deleteBtn" style="display:none;">🗑️ मेट्नुहोस्</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- ─── LIST PANEL ─── -->
+            <section class="list-panel no-print" id="listPanel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        📋 पत्रहरूको सूची
+                        <span class="count" id="listCount">0</span>
+                    </div>
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="खोज्नुहोस्..." />
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>आ.व.</th>
+                                <th>दर्ता नं.</th>
+                                <th>विषय</th>
+                                <th>प्रति</th>
+                                <th>स्थिति</th>
+                                <th style="min-width:160px;">कार्य</th>
+                            </tr>
+                        </thead>
+                        <tbody id="letterTableBody">
+                            <tr>
+                                <td colspan="6" class="no-records">
+                                    <span class="icon-big">📭</span>
+                                    <p>हालसम्म कुनै पत्र छैन।</p>
+                                    <p style="font-size:0.8rem;color:var(--gray-400);">नयाँ पत्र सिर्जना गर्न फारम भर्नुहोस्।</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ═══ FOOTER ═══ -->
+        <footer class="app-footer no-print" style="background:var(--blue-dark);color:rgba(255,255,255,0.7);padding:1rem 2.5rem;font-size:0.75rem;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0.5rem;border-top:3px solid var(--magenta);">
+            <span>© 2026 Rotaract Club of Galkot Baglung • RI District 3292</span>
+            <span style="opacity:0.5;">Admin Panel v2.2</span>
+        </footer>
+
+    </div>
+
+    <!-- ═══ PRINT MODAL ═══ -->
+    <div class="modal-overlay" id="printModal">
+        <div class="modal-content">
+            <button class="modal-close no-print" id="modalClose">✕</button>
+            <div id="printContent" class="letter-preview"></div>
+            <div class="modal-actions no-print">
+                <button class="btn btn-primary" onclick="window.print()">🖨️ प्रिन्ट गर्नुहोस्</button>
+                <button class="btn btn-secondary" id="modalCloseBtn">बन्द गर्नुहोस्</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ TOAST CONTAINER ═══ -->
+    <div class="toast-container no-print" id="toastContainer"></div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ─── Supabase ──────────────────────────────────────────────────────────
+            const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
+            const SUPABASE_ANON_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
+
+            // ─── DOM refs ──────────────────────────────────────────────────────────
+            const form = document.getElementById('letterForm');
+            const editId = document.getElementById('editId');
+            const fiscalYear = document.getElementById('fiscalYear');
+            const refNo = document.getElementById('refNo');
+            const letterDate = document.getElementById('letterDate');
+            const letterType = document.getElementById('letterType');
+            const toAddress = document.getElementById('toAddress');
+            const subject = document.getElementById('subject');
+            const title = document.getElementById('title');
+            const body = document.getElementById('body');
+            const club = document.getElementById('club');
+            const issuedBy = document.getElementById('issuedBy');
+            const signedBy = document.getElementById('signedBy');
+            const designation = document.getElementById('designation');
+            const letterStatus = document.getElementById('letterStatus');
+            const verificationId = document.getElementById('verificationId');
+
+            const saveBtn = document.getElementById('saveBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const deleteBtn = document.getElementById('deleteBtn');
+            const formTitle = document.getElementById('formTitle');
+            const tableBody = document.getElementById('letterTableBody');
+            const listCount = document.getElementById('listCount');
+            const searchInput = document.getElementById('searchInput');
+            const statTotal = document.getElementById('statTotal');
+            const statActive = document.getElementById('statActive');
+            const statFiscal = document.getElementById('statFiscal');
+            const statUpdated = document.getElementById('statUpdated');
+
+            const printModal = document.getElementById('printModal');
+            const printContent = document.getElementById('printContent');
+            const modalClose = document.getElementById('modalClose');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+            const toastContainer = document.getElementById('toastContainer');
+
+            let supabaseClient = null;
+
+            // ─── Init Supabase ─────────────────────────────────────────────────────
+            try {
+                if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    console.log('✅ Supabase client initialized.');
+                } else {
+                    console.warn('⚠️ Supabase library not loaded.');
+                }
+            } catch (e) {
+                console.error('❌ Failed to init Supabase:', e);
+            }
+
+            // ─── Toast ─────────────────────────────────────────────────────────────
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+                toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${message}`;
+                toastContainer.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000);
+            }
+
+            // ─── Generate Verification ID ─────────────────────────────────────────
+            function generateVerificationId(fiscal, ref) {
+                const now = Date.now().toString(36).toUpperCase();
+                return `ROT-${fiscal}-${ref}-${now}`;
+            }
+
+            // ─── Set form data ────────────────────────────────────────────────────
+            function setFormData(data) {
+                editId.value = data.id || '';
+                fiscalYear.value = data.fiscal_year || '';
+                refNo.value = data.ref_no || '';
+                letterDate.value = data.date || '';
+                letterType.value = data.letter_type || '';
+                toAddress.value = data.to_address || '';
+                subject.value = data.subject || '';
+                title.value = data.title || '';
+                body.value = data.body || '';
+                club.value = data.club || 'Rotaract Club of Galkot Baglung';
+                issuedBy.value = data.issued_by || 'Rotaract Club of Galkot Baglung';
+                signedBy.value = data.signed_by || '';
+                designation.value = data.designation || '';
+                letterStatus.value = data.letter_status || 'Active';
+                verificationId.value = data.verification_id || '';
+            }
+
+            // ─── Get form data ────────────────────────────────────────────────────
+            function getFormData() {
+                return {
+                    fiscal_year: fiscalYear.value.trim(),
+                    ref_no: refNo.value.trim(),
+                    date: letterDate.value,
+                    letter_type: letterType.value.trim(),
+                    to_address: toAddress.value.trim(),
+                    subject: subject.value.trim(),
+                    title: title.value.trim(),
+                    body: body.value.trim(),
+                    club: club.value.trim() || 'Rotaract Club of Galkot Baglung',
+                    issued_by: issuedBy.value.trim() || 'Rotaract Club of Galkot Baglung',
+                    signed_by: signedBy.value.trim(),
+                    designation: designation.value.trim(),
+                    letter_status: letterStatus.value,
+                    verification_id: verificationId.value.trim() || generateVerificationId(
+                        fiscalYear.value.trim() || '0000',
+                        refNo.value.trim() || '0'
+                    ),
+                };
+            }
+
+            // ─── Validate form ────────────────────────────────────────────────────
+            function validateForm(data) {
+                if (!data.fiscal_year) { showToast('कृपया आर्थिक वर्ष प्रविष्ट गर्नुहोस्।', 'error'); return false; }
+                if (!data.ref_no) { showToast('कृपया दर्ता नम्बर प्रविष्ट गर्नुहोस्।', 'error'); return false; }
+                if (!data.date) { showToast('कृपया मिति चयन गर्नुहोस्।', 'error'); return false; }
+                if (!data.to_address) { showToast('कृपया प्रति (To Address) प्रविष्ट गर्नुहोस्।', 'error'); return false; }
+                if (!data.subject) { showToast('कृपया विषय प्रविष्ट गर्नुहोस्।', 'error'); return false; }
+                if (!data.title) { showToast('कृपया शीर्षक प्रविष्ट गर्नुहोस्।', 'error'); return false; }
+                if (!data.body) { showToast('कृपया सामग्री प्रविष्ट गर्नुहोस्।', 'error'); return false; }
+                return true;
+            }
+
+            // ─── Set loading state ────────────────────────────────────────────────
+            function setLoading(loading) {
+                if (loading) {
+                    saveBtn.classList.add('loading');
+                    saveBtn.disabled = true;
+                } else {
+                    saveBtn.classList.remove('loading');
+                    saveBtn.disabled = false;
+                }
+            }
+
+            // ─── Reset form ──────────────────────────────────────────────────────
+            function resetForm() {
+                editId.value = '';
+                formTitle.textContent = 'नयाँ पत्र सिर्जना गर्नुहोस्';
+                deleteBtn.style.display = 'none';
+                setFormData({
+                    fiscal_year: fiscalYear.value || '026/027',
+                    ref_no: '',
+                    date: '',
+                    letter_type: 'निवेदन',
+                    to_address: '',
+                    subject: '',
+                    title: '',
+                    body: '',
+                    club: 'Rotaract Club of Galkot Baglung',
+                    issued_by: 'Rotaract Club of Galkot Baglung',
+                    signed_by: '',
+                    designation: '',
+                    letter_status: 'Active',
+                    verification_id: '',
+                });
+                verificationId.value = generateVerificationId(
+                    fiscalYear.value.trim() || '0000',
+                    '000'
+                );
+                refNo.focus();
+            }
+
+            // ─── CRUD Operations ──────────────────────────────────────────────────
+
+            // Save / Update
+            async function saveLetter(e) {
+                e.preventDefault();
+                const data = getFormData();
+
+                if (!validateForm(data)) return;
+
+                // Ensure verification ID
+                if (!data.verification_id) {
+                    data.verification_id = generateVerificationId(data.fiscal_year, data.ref_no);
+                }
+
+                setLoading(true);
+
+                try {
+                    if (!supabaseClient) throw new Error('Supabase client not initialized.');
+
+                    const isEdit = !!editId.value;
+
+                    if (isEdit) {
+                        // ── PRE-CHECK: Verify the row exists ────────────────────
+                        const { data: existing, error: checkError } = await supabaseClient
+                            .from('rotaract_verify')
+                            .select('id')
+                            .eq('id', editId.value)
+                            .maybeSingle();
+
+                        if (checkError) throw checkError;
+
+                        if (!existing) {
+                            showToast(
+                                `⚠️ पत्र हटाइसकिएको छ वा अवस्थित छैन (ID: ${editId.value})। कृपया सूची पुन: लोड गर्नुहोस्।`,
+                                'error'
+                            );
+                            resetForm();
+                            loadLetters(searchInput.value);
+                            loadStats();
+                            setLoading(false);
+                            return;
+                        }
+
+                        // ── Proceed with update ─────────────────────────────────
+                        const { data: updated, error } = await supabaseClient
+                            .from('rotaract_verify')
+                            .update({
+                                fiscal_year: data.fiscal_year,
+                                ref_no: data.ref_no,
+                                date: data.date,
+                                letter_type: data.letter_type,
+                                to_address: data.to_address,
+                                subject: data.subject,
+                                title: data.title,
+                                body: data.body,
+                                club: data.club,
+                                issued_by: data.issued_by,
+                                signed_by: data.signed_by,
+                                designation: data.designation,
+                                letter_status: data.letter_status,
+                                verification_id: data.verification_id,
+                                updated_at: new Date().toISOString(),
+                            })
+                            .eq('id', editId.value)
+                            .select()
+                            .maybeSingle();
+
+                        if (error) throw error;
+
+                        if (!updated) {
+                            showToast(`⚠️ अद्यावधिक गर्दा त्रुटि: पत्र फेला परेन (ID: ${editId.value})।`, 'error');
+                            resetForm();
+                            loadLetters(searchInput.value);
+                            loadStats();
+                            setLoading(false);
+                            return;
+                        }
+
+                        showToast('✅ पत्र सफलतापूर्वक अद्यावधिक गरियो!', 'success');
+                    } else {
+                        // Insert
+                        const { data: inserted, error } = await supabaseClient
+                            .from('rotaract_verify')
+                            .insert({
+                                fiscal_year: data.fiscal_year,
+                                ref_no: data.ref_no,
+                                date: data.date,
+                                letter_type: data.letter_type,
+                                to_address: data.to_address,
+                                subject: data.subject,
+                                title: data.title,
+                                body: data.body,
+                                club: data.club,
+                                issued_by: data.issued_by,
+                                signed_by: data.signed_by,
+                                designation: data.designation,
+                                letter_status: data.letter_status,
+                                verification_id: data.verification_id,
+                            })
+                            .select()
+                            .maybeSingle();
+
+                        if (error) throw error;
+                        if (!inserted) throw new Error('पत्र घुसाउन असफल।');
+
+                        showToast('✅ नयाँ पत्र सफलतापूर्वक सिर्जना गरियो!', 'success');
+                    }
+
+                    // Refresh list and stats
+                    loadLetters(searchInput.value);
+                    loadStats();
+                    resetForm();
+
+                } catch (err) {
+                    console.error('❌ Save error:', err);
+                    showToast('⚠️ ' + (err.message || 'पत्र सुरक्षित गर्न असफल।'), 'error');
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            // Load letters
+            async function loadLetters(search = '') {
+                if (!supabaseClient) return;
+
+                try {
+                    let query = supabaseClient
+                        .from('rotaract_verify')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (search.trim()) {
+                        const s = `%${search.trim()}%`;
+                        query = query.or(
+                            `fiscal_year.ilike.${s},ref_no.ilike.${s},subject.ilike.${s},to_address.ilike.${s},title.ilike.${s},body.ilike.${s},letter_type.ilike.${s}`
+                        );
+                    }
+
+                    const { data, error } = await query;
+
+                    if (error) throw error;
+
+                    renderTable(data);
+
+                } catch (err) {
+                    console.error('Load error:', err);
+                    showToast('⚠️ पत्रहरू लोड गर्न असफल', 'error');
+                }
+            }
+
+            // Render table
+            function renderTable(letters) {
+                if (!letters || letters.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr><td colspan="6" class="no-records">
+                            <span class="icon-big">📭</span>
+                            <p>हालसम्म कुनै पत्र छैन।</p>
+                            <p style="font-size:0.8rem;color:var(--gray-400);">नयाँ पत्र सिर्जना गर्न फारम भर्नुहोस्।</p>
+                        </td></tr>
+                    `;
+                    listCount.textContent = '0';
+                    return;
+                }
+
+                listCount.textContent = letters.length;
+
+                let html = '';
+                letters.forEach(letter => {
+                    const statusClass = (letter.letter_status || 'Active').toLowerCase();
+                    const statusDisplay = letter.letter_status || 'Active';
+                    html += `
+                        <tr>
+                            <td><strong>${escapeHtml(letter.fiscal_year || '—')}</strong></td>
+                            <td>${escapeHtml(letter.ref_no || '—')}</td>
+                            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(letter.subject || '—')}</td>
+                            <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(letter.to_address || '—')}</td>
+                            <td><span class="status-badge ${statusClass}">${escapeHtml(statusDisplay)}</span></td>
+                            <td>
+                                <div class="actions">
+                                    <button class="btn-icon edit" data-id="${letter.id}" title="सम्पादन गर्नुहोस्">✏️</button>
+                                    <button class="btn-icon clone" data-id="${letter.id}" title="क्लोन गर्नुहोस्">📋</button>
+                                    <button class="btn-icon print" data-id="${letter.id}" title="प्रिन्ट गर्नुहोस्">🖨️</button>
+                                    <button class="btn-icon delete" data-id="${letter.id}" title="मेट्नुहोस्">🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableBody.innerHTML = html;
+
+                // ─── Attach event listeners ──────────────────────────────────────
+                tableBody.querySelectorAll('.edit').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        editLetter(id);
+                    });
+                });
+
+                tableBody.querySelectorAll('.clone').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        cloneLetter(id);
+                    });
+                });
+
+                tableBody.querySelectorAll('.print').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        printLetter(id);
+                    });
+                });
+
+                tableBody.querySelectorAll('.delete').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        if (confirm('के तपाईं यो पत्र मेट्न चाहनुहुन्छ? यो कार्य पछि फिर्ता गर्न सकिँदैन।')) {
+                            deleteLetter(id);
+                        }
+                    });
+                });
+            }
+
+            // Edit letter
+            async function editLetter(id) {
+                if (!supabaseClient) return;
+
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('rotaract_verify')
+                        .select('*')
+                        .eq('id', id)
+                        .single();
+
+                    if (error) throw error;
+
+                    setFormData(data);
+                    formTitle.textContent = '✏️ पत्र सम्पादन गर्नुहोस्';
+                    deleteBtn.style.display = 'inline-flex';
+                    document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' });
+
+                } catch (err) {
+                    console.error('Edit error:', err);
+                    showToast('⚠️ पत्र लोड गर्न असफल', 'error');
+                }
+            }
+
+            // Clone letter
+            async function cloneLetter(id) {
+                if (!supabaseClient) return;
+
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('rotaract_verify')
+                        .select('*')
+                        .eq('id', id)
+                        .single();
+
+                    if (error) throw error;
+
+                    setFormData(data);
+                    editId.value = '';
+                    verificationId.value = generateVerificationId(
+                        fiscalYear.value.trim() || '0000',
+                        refNo.value.trim() || '000'
+                    );
+                    formTitle.textContent = '📋 क्लोन गरिएको पत्र (नयाँ)';
+                    deleteBtn.style.display = 'none';
+                    document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' });
+                    showToast('✅ पत्र क्लोन गरियो। अब सुरक्षित गर्नुहोस्।', 'info');
+
+                } catch (err) {
+                    console.error('Clone error:', err);
+                    showToast('⚠️ क्लोन गर्न असफल', 'error');
+                }
+            }
+
+            // Print letter
+            async function printLetter(id) {
+                if (!supabaseClient) return;
+
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('rotaract_verify')
+                        .select('*')
+                        .eq('id', id)
+                        .single();
+
+                    if (error) throw error;
+
+                    renderPrintPreview(data);
+                    printModal.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+
+                } catch (err) {
+                    console.error('Print error:', err);
+                    showToast('⚠️ प्रिन्ट पूर्वावलोकन लोड गर्न असफल', 'error');
+                }
+            }
+
+            // Delete letter
+            async function deleteLetter(id) {
+                if (!supabaseClient) return;
+
+                try {
+                    const { error } = await supabaseClient
+                        .from('rotaract_verify')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+
+                    showToast('🗑️ पत्र मेटियो।', 'info');
+                    loadLetters(searchInput.value);
+                    loadStats();
+
+                    if (editId.value === id) {
+                        resetForm();
+                    }
+
+                } catch (err) {
+                    console.error('Delete error:', err);
+                    showToast('⚠️ पत्र मेट्न असफल', 'error');
+                }
+            }
+
+            // ─── Render Print Preview with QR Code ──────────────────────────────────
+            function renderPrintPreview(letter) {
+                const dateDisplay = letter.date ? new Date(letter.date).toLocaleDateString('ne-NP', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                }) : '—';
+
+                // Format date for display (YYYY/MM/DD)
+                const dateFormatted = letter.date || '—';
+
+                let sigHtml = '';
+                if (letter.signed_by) {
+                    sigHtml += `<div class="sig-line">${escapeHtml(letter.signed_by)}</div>`;
+                }
+                if (letter.designation) {
+                    sigHtml += `<div class="sig-sub">${escapeHtml(letter.designation)}</div>`;
+                }
+                if (letter.club) {
+                    sigHtml += `<div class="sig-sub">${escapeHtml(letter.club)}</div>`;
+                }
+
+                const vid = letter.verification_id || generateVerificationId(letter.fiscal_year || '0000', letter.ref_no ||
+                '0');
+
+                // QR Code URL: https://galkot.netlify.app/verify?vid=VID
+                const qrUrl = `https://galkot.netlify.app/verify?vid=${encodeURIComponent(vid)}`;
+
+                // Build the HTML – note: no meta footer (📋 सिफारिस, etc.)
+                const html = `
+                    <div class="letter-header">
+                        <div class="club-name">${escapeHtml(letter.club || 'Rotaract Club of Galkot Baglung')}</div>
+                        <div class="club-sub">${escapeHtml(letter.issued_by || 'Rotaract Club of Galkot Baglung')}</div>
+                    </div>
+
+                    <div class="letter-to">
+                        <span class="to-label">प्रति :</span>\n${escapeHtml(letter.to_address || '')}
+                    </div>
+
+                    <div class="letter-subject">
+                        विषय: ${escapeHtml(letter.subject || '')}
+                    </div>
+
+                    <div class="letter-body">
+                        ${escapeHtml(letter.body || '')}
+                    </div>
+
+                    <div class="letter-meta-line">
+                        <span class="fiscal-left">आ.व. ${escapeHtml(letter.fiscal_year || '—')}</span>
+                        <span class="ref-right">दर्ता नं. ${escapeHtml(letter.ref_no || '—')}</span>
+                    </div>
+
+                    <div class="letter-date-right">
+                        मिति: ${dateFormatted}
+                    </div>
+
+                    ${sigHtml ? `<div class="letter-signature">${sigHtml}</div>` : ''}
+
+                    <div class="qr-section">
+                        <div class="qr-label">🔍 स्क्यान गर्नुहोस् • Scan to Verify</div>
+                        <div class="qr-box" id="qrCodeContainer"></div>
+                        <div style="font-size:0.7rem;color:var(--gray-400);text-align:center;word-break:break-all;">
+                            ${escapeHtml(qrUrl)}
+                        </div>
+                    </div>
+                `;
+
+                printContent.innerHTML = html;
+
+                // ─── Generate QR Code ──────────────────────────────────────────────
+                setTimeout(() => {
+                    const qrContainer = document.getElementById('qrCodeContainer');
+                    if (qrContainer && typeof QRCode !== 'undefined') {
+                        qrContainer.innerHTML = '';
+                        new QRCode(qrContainer, {
+                            text: qrUrl,
+                            width: 140,
+                            height: 140,
+                            colorDark: '#0B1E30',
+                            colorLight: '#FFFFFF',
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    } else {
+                        console.warn('QRCode library not loaded or container missing');
+                        if (qrContainer) {
+                            qrContainer.innerHTML =
+                                `<div style="font-size:0.7rem;color:red;">QR library not loaded</div>`;
+                        }
+                    }
+                }, 100);
+            }
+
+            // ─── Load Stats ──────────────────────────────────────────────────────
+            async function loadStats() {
+                if (!supabaseClient) return;
+
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('rotaract_verify')
+                        .select('*');
+
+                    if (error) throw error;
+
+                    const total = data.length;
+                    const active = data.filter(r => (r.letter_status || 'Active') === 'Active').length;
+                    const currentFiscal = fiscalYear.value.trim() || '026/027';
+
+                    statTotal.textContent = total;
+                    statActive.textContent = active;
+                    statFiscal.textContent = currentFiscal;
+                    statUpdated.textContent = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric',
+                        year: 'numeric' });
+
+                } catch (err) {
+                    console.warn('Stats error:', err);
+                }
+            }
+
+            // ─── Utility ──────────────────────────────────────────────────────────
+            function escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // ─── Event Listeners ──────────────────────────────────────────────────
+
+            form.addEventListener('submit', saveLetter);
+
+            resetBtn.addEventListener('click', resetForm);
+
+            deleteBtn.addEventListener('click', function() {
+                const id = editId.value;
+                if (id && confirm('के तपाईं यो पत्र मेट्न चाहनुहुन्छ?')) {
+                    deleteLetter(id);
+                }
+            });
+
+            searchInput.addEventListener('input', function() {
+                loadLetters(this.value);
+            });
+
+            function updateVerificationId() {
+                const fiscal = fiscalYear.value.trim() || '0000';
+                const ref = refNo.value.trim() || '000';
+                if (!editId.value) {
+                    verificationId.value = generateVerificationId(fiscal, ref);
+                }
+            }
+
+            fiscalYear.addEventListener('input', updateVerificationId);
+            refNo.addEventListener('input', updateVerificationId);
+
+            // ─── Modal controls ──────────────────────────────────────────────────
+            function closeModal() {
+                printModal.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+
+            modalClose.addEventListener('click', closeModal);
+            modalCloseBtn.addEventListener('click', closeModal);
+            printModal.addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
+            });
+
+            // ─── Init ─────────────────────────────────────────────────────────────
+            if (!letterDate.value) {
+                letterDate.value = new Date().toISOString().split('T')[0];
+            }
+
+            updateVerificationId();
+            loadLetters();
+            loadStats();
+
+            console.log('✅ Rotaract Admin Panel v2.2 — ready.');
+
+            // ─── Expose for inline use ───────────────────────────────────────────
+            window.closeModal = closeModal;
+            window.printLetter = printLetter;
+
+        })();
+    </script>
+
+</body>
+</html>
