@@ -361,6 +361,7 @@
             line-height: 1.8;
             color: var(--gray-700);
             white-space: pre-wrap;
+            text-align: justify;
         }
 
         .letter-card .letter-body .to-line strong {
@@ -386,6 +387,7 @@
             font-size: 0.92rem;
             color: var(--gray-700);
             margin: 0.3rem 0;
+            text-align: justify;
         }
 
         .letter-card .letter-body .meta-line {
@@ -447,16 +449,6 @@
         .letter-card .letter-body .details-grid .value .status-badge.active {
             background: var(--success-bg);
             color: var(--success);
-        }
-
-        .letter-card .letter-body .details-grid .value .status-badge.pending {
-            background: #FFF3CD;
-            color: #856404;
-        }
-
-        .letter-card .letter-body .details-grid .value .status-badge.archived {
-            background: var(--gray-200);
-            color: var(--gray-500);
         }
 
         .letter-card .letter-signature {
@@ -970,17 +962,16 @@
                     letterContainer.innerHTML = `
                         <div class="no-data">
                             <span class="icon-big">📄</span>
-                            <p>क्षमा गर्नुहोस्, यो प्रमाणीकरण ID को कुनै पत्र फेला परेन।</p>
-                            <p class="sub-hint">कृपया सही लिङ्क प्रयोग गर्नुहोस् वा क्लबलाई सम्पर्क गर्नुहोस्।</p>
+                            <p>क्षमा गर्नुहोस्, यो प्रमाणीकरण ID को कुनै सक्रिय पत्र फेला परेन।</p>
+                            <p class="sub-hint">पत्र निष्क्रिय (Inactive) वा अवस्थित छैन। कृपया सही लिङ्क प्रयोग गर्नुहोस् वा क्लबलाई सम्पर्क गर्नुहोस्।</p>
                         </div>
                     `;
                     resultSection.classList.add('visible');
                     return;
                 }
 
-                // Build details grid
+                // Build details grid (only show Active status)
                 const details = [
-                    { label: 'शीर्षक (Title)', value: letter.title },
                     { label: 'पत्र प्रकार (Type)', value: letter.letter_type || 'सामान्य' },
                     { label: 'जारीकर्ता (Issued By)', value: letter.issued_by },
                 ];
@@ -988,12 +979,10 @@
                 if (letter.signed_by) details.push({ label: 'हस्ताक्षरकर्ता (Signed By)', value: letter.signed_by });
                 if (letter.designation) details.push({ label: 'पद (Designation)', value: letter.designation });
 
-                // Status badge
-                const statusDisplay = letter.letter_status || 'Active';
-                const statusClass = statusDisplay.toLowerCase();
+                // Only show status if it's Active (but we already filter)
                 details.push({
                     label: 'स्थिति (Status)',
-                    value: `<span class="status-badge ${statusClass}">${escapeHtml(statusDisplay)}</span>`
+                    value: `<span class="status-badge active">✅ Active</span>`
                 });
 
                 if (letter.created_at) {
@@ -1007,7 +996,6 @@
                             month: 'short', day: 'numeric' }) });
                 }
 
-                // Verification ID
                 const vid = letter.verification_id || `ROT-${letter.fiscal_year}-${letter.ref_no}`;
                 const qrUrl = `https://galkot.netlify.app/verify?vid=${encodeURIComponent(vid)}`;
 
@@ -1016,7 +1004,6 @@
                     <span class="value">${d.value}</span>
                 `).join('');
 
-                // Format date for display
                 const dateDisplay = letter.date || '—';
 
                 const html = `
@@ -1110,10 +1097,6 @@
                         });
                     } else {
                         console.warn('QRCode library not loaded');
-                        if (qrContainer) {
-                            qrContainer.innerHTML =
-                                `<div style="font-size:0.7rem;color:red;text-align:center;">QR library not loaded</div>`;
-                        }
                     }
                 }, 150);
             }
@@ -1158,10 +1141,12 @@
                 }
 
                 try {
+                    // 🔥 Only fetch letters with status 'Active'
                     const { data, error } = await supabaseClient
                         .from('rotaract_verify')
                         .select('*')
                         .eq('verification_id', vid)
+                        .eq('letter_status', 'Active')
                         .maybeSingle();
 
                     if (error) throw error;
@@ -1170,7 +1155,7 @@
                         showBanner('✅', '✅ VERIFIED DOCUMENT', 'This document is authentic and officially issued by Rotaract Club of Galkot Baglung.', 'success');
                         renderLetter(data);
                     } else {
-                        showBanner('❌', '❌ DOCUMENT NOT FOUND', 'This verification ID does not exist in our records.', 'error');
+                        showBanner('❌', '❌ DOCUMENT NOT FOUND', 'This document is either inactive, archived, or does not exist in our records.', 'error');
                         renderLetter(null);
                     }
 

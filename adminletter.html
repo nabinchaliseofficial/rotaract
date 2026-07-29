@@ -54,6 +54,56 @@
             padding: 1.5rem 1rem;
         }
 
+        /* ─── Access Gate ─────────────────────────────────────────────────── */
+        .access-gate {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+        }
+
+        .access-gate .access-gate-box {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .access-gate .spinner-big {
+            width: 42px;
+            height: 42px;
+            margin: 0 auto 1rem;
+            border: 4px solid rgba(255, 255, 255, 0.25);
+            border-top: 4px solid var(--white);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .access-gate .access-gate-text {
+            font-size: 0.9rem;
+            opacity: 0.85;
+        }
+
+        .access-gate .access-gate-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+
+        .access-gate .access-gate-link {
+            display: inline-block;
+            margin-top: 1.2rem;
+            color: var(--white);
+            background: rgba(255, 255, 255, 0.12);
+            padding: 0.5rem 1.6rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
         .app {
             max-width: 1280px;
             width: 100%;
@@ -263,8 +313,10 @@
             gap: 0.3rem;
         }
 
-        .form-grid .field label .required {
-            color: var(--error);
+        .form-grid .field label .required-star {
+            color: var(--magenta);
+            font-weight: 700;
+            font-size: 1rem;
         }
 
         .form-grid .field input,
@@ -287,6 +339,11 @@
         .form-grid .field textarea:focus {
             border-color: var(--magenta);
             box-shadow: 0 0 0 3px var(--magenta-glow);
+        }
+
+        .form-grid .field input:read-only {
+            background: var(--gray-100);
+            cursor: not-allowed;
         }
 
         .form-grid .field textarea {
@@ -685,16 +742,38 @@
         /* ─── Letter Print Styles ────────────────────────────────────────── */
         .letter-preview {
             font-family: 'Noto Sans Devanagari', 'Inter', serif;
-            padding: 1rem 0;
-            line-height: 1.8;
+            padding: 0.5rem 0;
+            line-height: 1.5;
             color: var(--gray-700);
+        }
+
+        .letter-preview .header-img {
+            text-align: center;
+            margin-bottom: 0.3rem;
+        }
+
+        .letter-preview .header-img img {
+            max-width: 100%;
+            max-height: 110px;
+            object-fit: contain;
+        }
+
+        .letter-preview .footer-img {
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        .letter-preview .footer-img img {
+            max-width: 100%;
+            max-height: 49px;
+            object-fit: contain;
         }
 
         .letter-preview .letter-header {
             text-align: center;
             border-bottom: 2px solid var(--gray-200);
-            padding-bottom: 0.8rem;
-            margin-bottom: 1.2rem;
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.6rem;
         }
 
         .letter-preview .letter-header .club-name {
@@ -703,34 +782,37 @@
             color: var(--blue-dark);
         }
 
-        .letter-preview .letter-header .club-sub {
-            font-size: 0.85rem;
-            color: var(--gray-500);
+        .letter-preview .letter-header .club-place {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            margin-top: 0.15rem;
         }
 
         .letter-preview .letter-to {
-            margin-bottom: 1rem;
-            white-space: pre-wrap;
-            line-height: 1.8;
+            margin-bottom: 0.6rem;
+            line-height: 1.5;
+            display: flex;
         }
 
-        .letter-preview .letter-to .to-label {
-            font-weight: 600;
+        .letter-preview .letter-to .to-value {
+            white-space: pre-wrap;
+            text-align: left;
         }
 
         .letter-preview .letter-subject {
             font-weight: 600;
             font-size: 1.05rem;
-            margin-bottom: 1.2rem;
+            margin-bottom: 0.6rem;
             color: var(--blue-dark);
             text-align: center;
         }
 
         .letter-preview .letter-body {
             white-space: pre-wrap;
-            margin-bottom: 1.2rem;
+            margin-bottom: 0.6rem;
             font-size: 0.95rem;
-            line-height: 1.8;
+            line-height: 1.5;
+            text-align: justify;
         }
 
         .letter-preview .letter-meta-line {
@@ -757,10 +839,34 @@
             margin-bottom: 1rem;
         }
 
+        /* New: आ.व.(द. नं.) on left, मिति on right — same line, spaced apart */
+        .letter-preview .ref-date-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: nowrap;
+            margin-top: 0;
+            margin-bottom: 0.7rem;
+            font-size: 0.9rem;
+            color: var(--gray-700);
+        }
+
+        .letter-preview .ref-date-row .ref-left,
+        .letter-preview .ref-date-row .date-right {
+            color: var(--gray-600);
+            white-space: nowrap;
+        }
+
         .letter-preview .letter-signature {
-            margin-top: 2rem;
-            border-top: 1px solid var(--gray-200);
-            padding-top: 1.2rem;
+            margin-top: 1rem;
+            padding-top: 0;
+            text-align: right;
+        }
+
+        .letter-preview .letter-signature .sig-dots {
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 0.2rem;
         }
 
         .letter-preview .letter-signature .sig-line {
@@ -773,13 +879,13 @@
         }
 
         .letter-preview .qr-section {
-            margin-top: 1.5rem;
-            padding-top: 1rem;
+            margin-top: 0.8rem;
+            padding-top: 0.6rem;
             border-top: 1px solid var(--gray-200);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.3rem;
+            gap: 0.2rem;
         }
 
         .letter-preview .qr-section .qr-label {
@@ -807,8 +913,16 @@
             height: 100% !important;
         }
 
+        .letter-preview .qr-section .qr-url {
+            display: none; /* hide the link text in print */
+        }
+
         /* ─── Print overrides ────────────────────────────────────────────── */
         @media print {
+            .letter-preview .letter-to .to-value {
+                text-align: left !important;
+            }
+
             .letter-preview .letter-subject {
                 text-align: center !important;
             }
@@ -831,18 +945,30 @@
                 height: 140px;
             }
 
-            /* Hide the meta footer that was previously shown */
-            .letter-preview .letter-meta-old {
-                display: none !important;
-            }
-
-            /* Ensure proper spacing */
             .letter-preview .letter-body {
                 page-break-after: avoid;
             }
 
             .letter-preview .letter-signature {
                 page-break-inside: avoid;
+            }
+
+            .letter-preview .qr-url {
+                display: none !important;
+            }
+
+            .letter-preview .header-img img {
+                max-height: 150px;
+            }
+            .letter-preview .footer-img img {
+                max-height: 49px;
+            }
+
+            .letter-preview .header-img {
+                page-break-after: avoid;
+            }
+            .letter-preview .footer-img {
+                page-break-before: avoid;
             }
         }
 
@@ -945,7 +1071,15 @@
 </head>
 <body>
 
-    <div class="app">
+    <!-- ═══ ACCESS GATE ═══ -->
+    <div id="accessGate" class="access-gate no-print">
+        <div class="access-gate-box">
+            <div class="spinner-big"></div>
+            <div class="access-gate-text">पहुँच जाँच गर्दै...</div>
+        </div>
+    </div>
+
+    <div class="app" id="appRoot" style="visibility:hidden;">
 
         <!-- ═══ HEADER ═══ -->
         <header class="app-header no-print">
@@ -966,6 +1100,7 @@
                     <span class="live-dot"></span>
                     <span>लाइभ • प्रमाणित</span>
                 </div>
+                <a href="index.html" style="color:rgba(255,255,255,0.7);font-size:0.75rem;text-decoration:none;border:1px solid rgba(255,255,255,0.15);padding:0.25rem 1rem;border-radius:30px;">🏠 गृह पृष्ठ</a>
                 <a href="verify.html" style="color:rgba(255,255,255,0.7);font-size:0.75rem;text-decoration:none;border:1px solid rgba(255,255,255,0.15);padding:0.25rem 1rem;border-radius:30px;">🔍 प्रमाणीकरण</a>
             </div>
         </header>
@@ -1005,17 +1140,17 @@
                     <input type="hidden" id="editId" value="" />
 
                     <div class="field">
-                        <label>आ.व. <span class="required">*</span></label>
+                        <label>आ.व. <span class="required-star">*</span></label>
                         <input type="text" id="fiscalYear" placeholder="जस्तै: 026/027" value="026/027" required />
                     </div>
 
                     <div class="field">
-                        <label>दर्ता नम्बर <span class="required">*</span></label>
-                        <input type="text" id="refNo" placeholder="जस्तै: 2" required />
+                        <label>दर्ता नम्बर <span class="required-star">*</span></label>
+                        <input type="text" id="refNo" placeholder="स्वत: जनरेट हुन्छ" readonly />
                     </div>
 
                     <div class="field">
-                        <label>मिति <span class="required">*</span></label>
+                        <label>मिति <span class="required-star">*</span></label>
                         <input type="date" id="letterDate" required />
                     </div>
 
@@ -1025,30 +1160,25 @@
                     </div>
 
                     <div class="field full">
-                        <label>प्रति (To Address) <span class="required">*</span></label>
+                        <label>प्रति (To Address) <span class="required-star">*</span></label>
                         <textarea id="toAddress" placeholder="जस्तै: श्री गलकोट नगरपालिका, गलकोट, बागलुङ" rows="3" required></textarea>
                         <span class="hint-text">धेरै लाइनमा लेख्न Enter थिच्नुहोस्</span>
                     </div>
 
                     <div class="field full">
-                        <label>विषय (Subject) <span class="required">*</span></label>
+                        <label>विषय (Subject) <span class="required-star">*</span></label>
                         <input type="text" id="subject" placeholder="पत्रको विषय" required />
                     </div>
 
                     <div class="field full">
-                        <label>शीर्षक (Title) <span class="required">*</span></label>
-                        <input type="text" id="title" placeholder="पत्रको शीर्षक" required />
-                    </div>
-
-                    <div class="field full">
-                        <label>सामग्री (Body) <span class="required">*</span></label>
+                        <label>सामग्री (Body) <span class="required-star">*</span></label>
                         <textarea id="body" placeholder="पत्रको मुख्य सामग्री यहाँ लेख्नुहोस्..." rows="5" required></textarea>
                         <span class="hint-text">पत्रको मुख्य विवरण, अनुरोध वा जानकारी</span>
                     </div>
 
                     <div class="field">
                         <label>क्लब</label>
-                        <input type="text" id="club" value="Rotaract Club of Galkot Baglung" />
+                        <input type="text" id="club" value="रोटर्याक्ट क्लब अफ गलकोट बागलुङ" readonly />
                     </div>
 
                     <div class="field">
@@ -1058,12 +1188,12 @@
 
                     <div class="field">
                         <label>हस्ताक्षरकर्ता</label>
-                        <input type="text" id="signedBy" placeholder="जस्तै: रो. नविन चालिसे" />
+                        <input type="text" id="signedBy" value="रो. नविन चालिसे" />
                     </div>
 
                     <div class="field">
                         <label>पद (Designation)</label>
-                        <input type="text" id="designation" placeholder="जस्तै: अध्यक्ष" />
+                        <input type="text" id="designation" value="अध्यक्ष, वर्ष २०२६/२७" />
                     </div>
 
                     <div class="field">
@@ -1134,7 +1264,7 @@
         <!-- ═══ FOOTER ═══ -->
         <footer class="app-footer no-print" style="background:var(--blue-dark);color:rgba(255,255,255,0.7);padding:1rem 2.5rem;font-size:0.75rem;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0.5rem;border-top:3px solid var(--magenta);">
             <span>© 2026 Rotaract Club of Galkot Baglung • RI District 3292</span>
-            <span style="opacity:0.5;">Admin Panel v2.2</span>
+            <span style="opacity:0.5;">Admin Panel v2.4</span>
         </footer>
 
     </div>
@@ -1171,7 +1301,6 @@
             const letterType = document.getElementById('letterType');
             const toAddress = document.getElementById('toAddress');
             const subject = document.getElementById('subject');
-            const title = document.getElementById('title');
             const body = document.getElementById('body');
             const club = document.getElementById('club');
             const issuedBy = document.getElementById('issuedBy');
@@ -1232,6 +1361,29 @@
                 return `ROT-${fiscal}-${ref}-${now}`;
             }
 
+            // ─── Get next ref number for fiscal year ─────────────────────────────
+            async function getNextRefNo(fiscal) {
+                if (!supabaseClient || !fiscal) return '1';
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('rotaract_verify')
+                        .select('ref_no')
+                        .eq('fiscal_year', fiscal.trim())
+                        .order('ref_no', { ascending: false })
+                        .limit(1);
+
+                    if (error) throw error;
+                    if (!data || data.length === 0) return '1';
+                    const lastRef = data[0].ref_no;
+                    const num = parseInt(lastRef, 10);
+                    if (isNaN(num)) return '1';
+                    return String(num + 1);
+                } catch (e) {
+                    console.warn('Error fetching next ref:', e);
+                    return '1';
+                }
+            }
+
             // ─── Set form data ────────────────────────────────────────────────────
             function setFormData(data) {
                 editId.value = data.id || '';
@@ -1241,12 +1393,11 @@
                 letterType.value = data.letter_type || '';
                 toAddress.value = data.to_address || '';
                 subject.value = data.subject || '';
-                title.value = data.title || '';
                 body.value = data.body || '';
-                club.value = data.club || 'Rotaract Club of Galkot Baglung';
+                club.value = data.club || 'रोटर्याक्ट क्लब अफ गलकोट बागलुङ';
                 issuedBy.value = data.issued_by || 'Rotaract Club of Galkot Baglung';
-                signedBy.value = data.signed_by || '';
-                designation.value = data.designation || '';
+                signedBy.value = data.signed_by || 'रो. नविन चालिसे';
+                designation.value = data.designation || 'अध्यक्ष, वर्ष २०२६/२७';
                 letterStatus.value = data.letter_status || 'Active';
                 verificationId.value = data.verification_id || '';
             }
@@ -1258,11 +1409,11 @@
                     ref_no: refNo.value.trim(),
                     date: letterDate.value,
                     letter_type: letterType.value.trim(),
+                    title: subject.value.trim() || letterType.value.trim() || 'पत्र',
                     to_address: toAddress.value.trim(),
                     subject: subject.value.trim(),
-                    title: title.value.trim(),
                     body: body.value.trim(),
-                    club: club.value.trim() || 'Rotaract Club of Galkot Baglung',
+                    club: club.value.trim() || 'रोटर्याक्ट क्लब अफ गलकोट बागलुङ',
                     issued_by: issuedBy.value.trim() || 'Rotaract Club of Galkot Baglung',
                     signed_by: signedBy.value.trim(),
                     designation: designation.value.trim(),
@@ -1281,7 +1432,6 @@
                 if (!data.date) { showToast('कृपया मिति चयन गर्नुहोस्।', 'error'); return false; }
                 if (!data.to_address) { showToast('कृपया प्रति (To Address) प्रविष्ट गर्नुहोस्।', 'error'); return false; }
                 if (!data.subject) { showToast('कृपया विषय प्रविष्ट गर्नुहोस्।', 'error'); return false; }
-                if (!data.title) { showToast('कृपया शीर्षक प्रविष्ट गर्नुहोस्।', 'error'); return false; }
                 if (!data.body) { showToast('कृपया सामग्री प्रविष्ट गर्नुहोस्।', 'error'); return false; }
                 return true;
             }
@@ -1298,30 +1448,31 @@
             }
 
             // ─── Reset form ──────────────────────────────────────────────────────
-            function resetForm() {
+            async function resetForm() {
                 editId.value = '';
                 formTitle.textContent = 'नयाँ पत्र सिर्जना गर्नुहोस्';
                 deleteBtn.style.display = 'none';
+                const fy = fiscalYear.value.trim() || '026/027';
+                const nextRef = await getNextRefNo(fy);
                 setFormData({
-                    fiscal_year: fiscalYear.value || '026/027',
-                    ref_no: '',
+                    fiscal_year: fy,
+                    ref_no: nextRef,
                     date: '',
                     letter_type: 'निवेदन',
                     to_address: '',
                     subject: '',
-                    title: '',
                     body: '',
-                    club: 'Rotaract Club of Galkot Baglung',
+                    club: 'रोटर्याक्ट क्लब अफ गलकोट बागलुङ',
                     issued_by: 'Rotaract Club of Galkot Baglung',
-                    signed_by: '',
-                    designation: '',
+                    signed_by: 'रो. नविन चालिसे',
+                    designation: 'अध्यक्ष, वर्ष २०२६/२७',
                     letter_status: 'Active',
                     verification_id: '',
                 });
-                verificationId.value = generateVerificationId(
-                    fiscalYear.value.trim() || '0000',
-                    '000'
-                );
+                // Set today's date
+                const today = new Date().toISOString().split('T')[0];
+                letterDate.value = today;
+                verificationId.value = generateVerificationId(fy, nextRef);
                 refNo.focus();
             }
 
@@ -1378,7 +1529,6 @@
                                 letter_type: data.letter_type,
                                 to_address: data.to_address,
                                 subject: data.subject,
-                                title: data.title,
                                 body: data.body,
                                 club: data.club,
                                 issued_by: data.issued_by,
@@ -1415,7 +1565,6 @@
                                 letter_type: data.letter_type,
                                 to_address: data.to_address,
                                 subject: data.subject,
-                                title: data.title,
                                 body: data.body,
                                 club: data.club,
                                 issued_by: data.issued_by,
@@ -1459,7 +1608,7 @@
                     if (search.trim()) {
                         const s = `%${search.trim()}%`;
                         query = query.or(
-                            `fiscal_year.ilike.${s},ref_no.ilike.${s},subject.ilike.${s},to_address.ilike.${s},title.ilike.${s},body.ilike.${s},letter_type.ilike.${s}`
+                            `fiscal_year.ilike.${s},ref_no.ilike.${s},subject.ilike.${s},to_address.ilike.${s},body.ilike.${s},letter_type.ilike.${s}`
                         );
                     }
 
@@ -1587,10 +1736,14 @@
 
                     setFormData(data);
                     editId.value = '';
-                    verificationId.value = generateVerificationId(
-                        fiscalYear.value.trim() || '0000',
-                        refNo.value.trim() || '000'
-                    );
+                    // Generate new ref and verification ID
+                    const fy = data.fiscal_year || fiscalYear.value.trim() || '026/027';
+                    const nextRef = await getNextRefNo(fy);
+                    refNo.value = nextRef;
+                    verificationId.value = generateVerificationId(fy, nextRef);
+                    // Set today's date
+                    const today = new Date().toISOString().split('T')[0];
+                    letterDate.value = today;
                     formTitle.textContent = '📋 क्लोन गरिएको पत्र (नयाँ)';
                     deleteBtn.style.display = 'none';
                     document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' });
@@ -1651,43 +1804,41 @@
                 }
             }
 
-            // ─── Render Print Preview with QR Code ──────────────────────────────────
+            // ─── Render Print Preview ──────────────────────────────────────────
             function renderPrintPreview(letter) {
-                const dateDisplay = letter.date ? new Date(letter.date).toLocaleDateString('ne-NP', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                }) : '—';
-
-                // Format date for display (YYYY/MM/DD)
+                // Format date
                 const dateFormatted = letter.date || '—';
 
-                let sigHtml = '';
-                if (letter.signed_by) {
-                    sigHtml += `<div class="sig-line">${escapeHtml(letter.signed_by)}</div>`;
-                }
-                if (letter.designation) {
-                    sigHtml += `<div class="sig-sub">${escapeHtml(letter.designation)}</div>`;
-                }
-                if (letter.club) {
-                    sigHtml += `<div class="sig-sub">${escapeHtml(letter.club)}</div>`;
-                }
-
+                // Build the HTML
                 const vid = letter.verification_id || generateVerificationId(letter.fiscal_year || '0000', letter.ref_no ||
                 '0');
-
-                // QR Code URL: https://galkot.netlify.app/verify?vid=VID
                 const qrUrl = `https://galkot.netlify.app/verify?vid=${encodeURIComponent(vid)}`;
 
-                // Build the HTML – note: no meta footer (📋 सिफारिस, etc.)
+                // Signature block
+                const sigHtml = `
+                    <div class="letter-signature">
+                        <div class="sig-dots">.................................</div>
+                        ${letter.signed_by ? `<div class="sig-line">${escapeHtml(letter.signed_by)}</div>` : ''}
+                        ${letter.designation ? `<div class="sig-sub">${escapeHtml(letter.designation)}</div>` : ''}
+                        <div class="sig-sub">रोटर्याक्ट क्लब अफ गलकोट बागलुङ</div>
+                    </div>
+                `;
+
                 const html = `
+                    <div class="header-img"><img src="clubheading.jpg" alt="Club Header" /></div>
+
                     <div class="letter-header">
-                        <div class="club-name">${escapeHtml(letter.club || 'Rotaract Club of Galkot Baglung')}</div>
-                        <div class="club-sub">${escapeHtml(letter.issued_by || 'Rotaract Club of Galkot Baglung')}</div>
+                        <div class="club-name">${escapeHtml(letter.club || 'रोटर्याक्ट क्लब अफ गलकोट बागलुङ')}</div>
+                        <div class="club-place">Galkot-3, Baglung</div>
+                    </div>
+
+                    <div class="ref-date-row">
+                        <div class="ref-left">आ.व. ${escapeHtml(letter.fiscal_year || '—')} (द. नं. ${escapeHtml(letter.ref_no || '—')})</div>
+                        <div class="date-right">मिति: ${dateFormatted}</div>
                     </div>
 
                     <div class="letter-to">
-                        <span class="to-label">प्रति :</span>\n${escapeHtml(letter.to_address || '')}
+                        <span class="to-value">${escapeHtml(letter.to_address || '')}</span>
                     </div>
 
                     <div class="letter-subject">
@@ -1698,29 +1849,20 @@
                         ${escapeHtml(letter.body || '')}
                     </div>
 
-                    <div class="letter-meta-line">
-                        <span class="fiscal-left">आ.व. ${escapeHtml(letter.fiscal_year || '—')}</span>
-                        <span class="ref-right">दर्ता नं. ${escapeHtml(letter.ref_no || '—')}</span>
-                    </div>
-
-                    <div class="letter-date-right">
-                        मिति: ${dateFormatted}
-                    </div>
-
-                    ${sigHtml ? `<div class="letter-signature">${sigHtml}</div>` : ''}
+                    ${sigHtml}
 
                     <div class="qr-section">
                         <div class="qr-label">🔍 स्क्यान गर्नुहोस् • Scan to Verify</div>
                         <div class="qr-box" id="qrCodeContainer"></div>
-                        <div style="font-size:0.7rem;color:var(--gray-400);text-align:center;word-break:break-all;">
-                            ${escapeHtml(qrUrl)}
-                        </div>
+                        <div class="qr-url">${escapeHtml(qrUrl)}</div>
                     </div>
+
+                    <div class="footer-img"><img src="footer.jpg" alt="Footer" /></div>
                 `;
 
                 printContent.innerHTML = html;
 
-                // ─── Generate QR Code ──────────────────────────────────────────────
+                // Generate QR code
                 setTimeout(() => {
                     const qrContainer = document.getElementById('qrCodeContainer');
                     if (qrContainer && typeof QRCode !== 'undefined') {
@@ -1734,11 +1876,7 @@
                             correctLevel: QRCode.CorrectLevel.H
                         });
                     } else {
-                        console.warn('QRCode library not loaded or container missing');
-                        if (qrContainer) {
-                            qrContainer.innerHTML =
-                                `<div style="font-size:0.7rem;color:red;">QR library not loaded</div>`;
-                        }
+                        console.warn('QRCode library not loaded');
                     }
                 }, 100);
             }
@@ -1794,16 +1932,15 @@
                 loadLetters(this.value);
             });
 
-            function updateVerificationId() {
-                const fiscal = fiscalYear.value.trim() || '0000';
-                const ref = refNo.value.trim() || '000';
+            // When fiscal year changes, update ref number (if not editing)
+            fiscalYear.addEventListener('change', async function() {
                 if (!editId.value) {
-                    verificationId.value = generateVerificationId(fiscal, ref);
+                    const fy = this.value.trim();
+                    const nextRef = await getNextRefNo(fy);
+                    refNo.value = nextRef;
+                    verificationId.value = generateVerificationId(fy, nextRef);
                 }
-            }
-
-            fiscalYear.addEventListener('input', updateVerificationId);
-            refNo.addEventListener('input', updateVerificationId);
+            });
 
             // ─── Modal controls ──────────────────────────────────────────────────
             function closeModal() {
@@ -1817,16 +1954,97 @@
                 if (e.target === this) closeModal();
             });
 
-            // ─── Init ─────────────────────────────────────────────────────────────
-            if (!letterDate.value) {
-                letterDate.value = new Date().toISOString().split('T')[0];
+            // ─── Access Control (admin-only) ──────────────────────────────────────
+            function showAccessDenied(message) {
+                const gate = document.getElementById('accessGate');
+                if (!gate) return;
+                gate.innerHTML = `
+                    <div class="access-gate-box">
+                        <div style="font-size:2.2rem;margin-bottom:0.6rem;">🔒</div>
+                        <div class="access-gate-title">पहुँच अस्वीकृत</div>
+                        <div class="access-gate-text">${message}</div>
+                        <a href="index.html" class="access-gate-link">🏠 गृह पृष्ठमा फर्कनुहोस्</a>
+                    </div>
+                `;
             }
 
-            updateVerificationId();
-            loadLetters();
-            loadStats();
+            function grantAccess() {
+                const gate = document.getElementById('accessGate');
+                const appRoot = document.getElementById('appRoot');
+                if (gate) gate.style.display = 'none';
+                if (appRoot) appRoot.style.visibility = 'visible';
+            }
 
-            console.log('✅ Rotaract Admin Panel v2.2 — ready.');
+            async function checkAdminAccess() {
+                if (!supabaseClient) {
+                    showAccessDenied('प्रमाणीकरण सेवा लोड हुन सकेन। कृपया पछि पुन: प्रयास गर्नुहोस्।');
+                    return false;
+                }
+
+                try {
+                    const { data: { session } } = await supabaseClient.auth.getSession();
+
+                    if (!session || !session.user) {
+                        window.location.href = 'index.html';
+                        return false;
+                    }
+
+                    const { data: roleRow, error } = await supabaseClient
+                        .from('user_roles')
+                        .select('role, status')
+                        .eq('user_id', session.user.id)
+                        .single();
+
+                    if (error || !roleRow) {
+                        showAccessDenied('तपाईंको खातासँग कुनै भूमिका (role) तोकिएको छैन। कृपया व्यवस्थापकलाई सम्पर्क गर्नुहोस्।');
+                        return false;
+                    }
+
+                    if (roleRow.status !== 'active') {
+                        showAccessDenied('तपाईंको खाता निष्क्रिय (inactive) छ।');
+                        return false;
+                    }
+
+                    if (roleRow.role !== 'admin') {
+                        showAccessDenied('यो पृष्ठ हेर्न Admin भूमिका आवश्यक छ।');
+                        return false;
+                    }
+
+                    grantAccess();
+                    return true;
+
+                } catch (e) {
+                    console.error('Access check failed:', e);
+                    showAccessDenied('पहुँच जाँच गर्दा त्रुटि भयो।');
+                    return false;
+                }
+            }
+
+            // ─── Init ─────────────────────────────────────────────────────────────
+            async function init() {
+                // Set today's date
+                const today = new Date().toISOString().split('T')[0];
+                letterDate.value = today;
+
+                // Generate first ref
+                const fy = fiscalYear.value.trim() || '026/027';
+                const nextRef = await getNextRefNo(fy);
+                refNo.value = nextRef;
+                verificationId.value = generateVerificationId(fy, nextRef);
+
+                // Load letters and stats
+                loadLetters();
+                loadStats();
+
+                console.log('✅ Rotaract Admin Panel v2.4 — ready.');
+            }
+
+            (async function start() {
+                const allowed = await checkAdminAccess();
+                if (allowed) {
+                    init();
+                }
+            })();
 
             // ─── Expose for inline use ───────────────────────────────────────────
             window.closeModal = closeModal;
