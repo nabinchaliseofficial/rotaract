@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rotaract Club - पत्र प्रमाणीकरण</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* ── Reset & Base ── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+            background: #f4f7fb;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        /* ── Container ── */
+        .app {
+            max-width: 920px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 20px 60px rgba(0, 20, 40, 0.10);
+            overflow: hidden;
+            transition: all 0.25s ease;
+        }
+
+        /* ── Header ── */
+        .app-header {
+            background: linear-gradient(135deg, #0b2a4a 0%, #1a4b74 100%);
+            padding: 2rem 2.5rem 1.8rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+        }
+
+        .app-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .app-header .logo-icon {
+            width: 52px;
+            height: 52px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255, 255, 255, 0.20);
+        }
+
+        .app-header .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            line-height: 1.2;
+        }
+
+        .app-header .logo-text span {
+            font-size: 0.8rem;
+            opacity: 0.75;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+        }
+
+        .app-header .badge {
+            margin-left: auto;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 0.4rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            backdrop-filter: blur(2px);
+        }
+
+        /* ── Search Section ── */
+        .search-section {
+            padding: 2rem 2.5rem 1.5rem;
+            background: #fafcff;
+            border-bottom: 1px solid #e9edf4;
+        }
+
+        .search-section .label-row {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+
+        .search-section .label-row h2 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #0b2a4a;
+            letter-spacing: -0.2px;
+        }
+
+        .search-section .label-row .hint {
+            font-size: 0.78rem;
+            color: #6b7a93;
+            font-weight: 400;
+        }
+
+        .search-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 1rem;
+            align-items: end;
+            margin-top: 0.75rem;
+        }
+
+        .search-grid .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .search-grid .field label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #4a5a72;
+        }
+
+        .search-grid .field input {
+            padding: 0.7rem 1rem;
+            border: 1.5px solid #dde3ec;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            background: #fff;
+            transition: border 0.2s, box-shadow 0.2s;
+            outline: none;
+            width: 100%;
+            color: #0b1e30;
+        }
+
+        .search-grid .field input:focus {
+            border-color: #1a4b74;
+            box-shadow: 0 0 0 4px rgba(26, 75, 116, 0.10);
+        }
+
+        .search-grid .field input::placeholder {
+            color: #aab6c9;
+            font-weight: 400;
+        }
+
+        .search-grid .btn-verify {
+            padding: 0.7rem 2rem;
+            background: linear-gradient(135deg, #0b2a4a, #1a4b74);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(26, 75, 116, 0.25);
+            white-space: nowrap;
+            height: 100%;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .search-grid .btn-verify:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(26, 75, 116, 0.30);
+        }
+
+        .search-grid .btn-verify:active {
+            transform: translateY(0);
+        }
+
+        .search-grid .btn-verify:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ── Message / Error ── */
+        .message {
+            margin-top: 1rem;
+            padding: 0.7rem 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            display: none;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .message.error {
+            display: flex;
+            background: #fef0ee;
+            color: #b13a2e;
+            border: 1px solid #fadcd7;
+        }
+
+        .message.success {
+            display: flex;
+            background: #eaf6ed;
+            color: #1e6b44;
+            border: 1px solid #c5e0d0;
+        }
+
+        .message .icon {
+            font-size: 1.2rem;
+        }
+
+        /* ── Result / Letter ── */
+        .result-section {
+            padding: 2rem 2.5rem 2.5rem;
+            display: none;
+            animation: fadeUp 0.4s ease;
+        }
+
+        .result-section.visible {
+            display: block;
+        }
+
+        @keyframes fadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Letter Card ── */
+        .letter-card {
+            background: #ffffff;
+            border: 1px solid #e9edf4;
+            border-radius: 18px;
+            padding: 2.2rem 2.5rem;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.03);
+            position: relative;
+        }
+
+        .letter-card .letter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-bottom: 2px solid #f0f3f8;
+            padding-bottom: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .letter-card .letter-header .org {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+        }
+
+        .letter-card .letter-header .org .name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #0b2a4a;
+            letter-spacing: -0.2px;
+        }
+
+        .letter-card .letter-header .org .sub {
+            font-size: 0.8rem;
+            color: #5d6f89;
+        }
+
+        .letter-card .letter-header .ref-badge {
+            background: #eef3fa;
+            padding: 0.4rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #1a4b74;
+            border: 1px solid #dce5ef;
+            white-space: nowrap;
+        }
+
+        .letter-card .letter-body {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .letter-card .letter-body .to-line {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #1e3146;
+        }
+
+        .letter-card .letter-body .to-line strong {
+            font-weight: 600;
+            color: #0b2a4a;
+        }
+
+        .letter-card .letter-body .subject {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #0b2a4a;
+            background: #f4f8fe;
+            padding: 0.7rem 1.2rem;
+            border-radius: 10px;
+            border-left: 4px solid #1a4b74;
+            line-height: 1.5;
+        }
+
+        .letter-card .letter-body .details-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.4rem 1.5rem;
+            margin-top: 0.2rem;
+            font-size: 0.9rem;
+            color: #1e3146;
+        }
+
+        .letter-card .letter-body .details-grid .label {
+            font-weight: 600;
+            color: #4a5a72;
+            white-space: nowrap;
+        }
+
+        .letter-card .letter-body .details-grid .value {
+            font-weight: 500;
+        }
+
+        .letter-card .letter-footer {
+            margin-top: 2rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid #eef2f8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: #5d6f89;
+        }
+
+        .letter-card .letter-footer .stamp {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #1a4b74;
+            font-weight: 500;
+        }
+
+        .letter-card .letter-footer .stamp .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #1a4b74;
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+
+        /* ── No Data ── */
+        .no-data {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: #6b7a93;
+        }
+
+        .no-data .icon-big {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .no-data p {
+            font-size: 0.95rem;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 700px) {
+            .app-header {
+                padding: 1.5rem 1.2rem;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.6rem;
+            }
+            .app-header .badge {
+                margin-left: 0;
+                align-self: flex-start;
+            }
+
+            .search-section {
+                padding: 1.5rem 1.2rem;
+            }
+            .search-grid {
+                grid-template-columns: 1fr;
+                gap: 0.8rem;
+            }
+            .search-grid .btn-verify {
+                width: 100%;
+                min-height: 48px;
+            }
+
+            .result-section {
+                padding: 1.2rem;
+            }
+            .letter-card {
+                padding: 1.5rem 1.2rem;
+            }
+            .letter-card .letter-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .letter-card .letter-body .details-grid {
+                grid-template-columns: 1fr;
+                gap: 0.2rem;
+            }
+            .letter-card .letter-footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .app-header .logo-text h1 {
+                font-size: 1.2rem;
+            }
+            .search-section .label-row h2 {
+                font-size: 0.95rem;
+            }
+            .letter-card .letter-body .subject {
+                font-size: 0.9rem;
+                padding: 0.6rem 1rem;
+            }
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f0f3f8;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #bcc9db;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0b1c9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app">
+
+        <!-- ─── HEADER ─── -->
+        <header class="app-header">
+            <div class="logo">
+                <div class="logo-icon">🔄</div>
+                <div class="logo-text">
+                    <h1>Rotaract Club</h1>
+                    <span>पत्र प्रमाणीकरण प्रणाली</span>
+                </div>
+            </div>
+            <div class="badge">✓ प्रमाणित</div>
+        </header>
+
+        <!-- ─── SEARCH ─── -->
+        <section class="search-section">
+            <div class="label-row">
+                <h2>🔍 पत्र खोज्नुहोस्</h2>
+                <span class="hint">आर्थिक वर्ष र दर्ता नम्बर प्रविष्ट गर्नुहोस्</span>
+            </div>
+
+            <form id="searchForm" class="search-grid" autocomplete="off">
+                <div class="field">
+                    <label for="fiscalYear">आर्थिक वर्ष (Fiscal Year)</label>
+                    <input
+                    type="text"
+                    id="fiscalYear"
+                    placeholder="जस्तै: 026/027"
+                    value="026/027"
+                    />
+                </div>
+                <div class="field">
+                    <label for="refNo">दर्ता नम्बर (Ref. No.)</label>
+                    <input
+                    type="text"
+                    id="refNo"
+                    placeholder="जस्तै: 2"
+                    value="2"
+                    />
+                </div>
+                <button type="submit" class="btn-verify" id="verifyBtn">
+                    <span>✓</span> प्रमाणित गर्नुहोस्
+                </button>
+            </form>
+
+            <div id="message" class="message">
+                <span class="icon">ⓘ</span>
+                <span id="messageText"></span>
+            </div>
+        </section>
+
+        <!-- ─── RESULT ─── -->
+        <section class="result-section" id="resultSection">
+
+            <!-- Letter will be injected here -->
+            <div id="letterContainer"></div>
+
+        </section>
+
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ─── DATA ────────────────────────────────────────────────────────
+            const letters = [{
+                fiscalYear: '026/027',
+                refNo: '2',
+                date: '2026/07/29 A.D.',
+                to: 'श्री ३ नं. वडा कार्यालय, गलकोट नगरपालिका, गलकोट, बागलुङ ।',
+                subject: 'क्लब दर्ताका लागि सिफारिस गरिदिनुहुन अनुरोध।',
+                title: 'क्लब दर्ता सिफारिस पत्र',
+                club: 'Rotaract Club of Galkot',
+                issuedBy: 'सचिव, Rotaract Club'
+            }, {
+                fiscalYear: '026/027',
+                refNo: '1',
+                date: '2026/07/15 A.D.',
+                to: 'जिल्ला प्रशासन कार्यालय, बागलुङ',
+                subject: 'वार्षिक कार्यक्रम स्वीकृतिका लागि अनुरोध।',
+                title: 'वार्षिक कार्यक्रम स्वीकृति पत्र',
+                club: 'Rotaract Club of Galkot',
+                issuedBy: 'अध्यक्ष, Rotaract Club'
+            }, {
+                fiscalYear: '025/026',
+                refNo: '3',
+                date: '2026/06/10 A.D.',
+                to: 'नेपाल रोटार्याक्ट जिल्ला समिति, काठमाडौं',
+                subject: 'जिल्ला सम्मेलनमा सहभागिताका लागि अनुरोध।',
+                title: 'जिल्ला सम्मेलन सहभागिता पत्र',
+                club: 'Rotaract Club of Galkot',
+                issuedBy: 'सचिव, Rotaract Club'
+            }];
+
+            // ─── DOM refs ──────────────────────────────────────────────────
+            const form = document.getElementById('searchForm');
+            const fiscalInput = document.getElementById('fiscalYear');
+            const refInput = document.getElementById('refNo');
+            const verifyBtn = document.getElementById('verifyBtn');
+            const messageEl = document.getElementById('message');
+            const messageText = document.getElementById('messageText');
+            const resultSection = document.getElementById('resultSection');
+            const letterContainer = document.getElementById('letterContainer');
+
+            // ─── Helpers ──────────────────────────────────────────────────
+            function showMessage(text, type) {
+                messageEl.className = 'message ' + type;
+                messageText.textContent = text;
+                // auto-hide after 5s
+                clearTimeout(window._msgTimeout);
+                window._msgTimeout = setTimeout(() => {
+                    messageEl.className = 'message';
+                }, 5000);
+            }
+
+            function hideMessage() {
+                messageEl.className = 'message';
+                clearTimeout(window._msgTimeout);
+            }
+
+            function renderLetter(letter) {
+                if (!letter) {
+                    letterContainer.innerHTML = `
+                        <div class="no-data">
+                            <span class="icon-big">📄</span>
+                            <p>क्षमा गर्नुहोस्, यो दर्ता नम्बरको कुनै पत्र फेला परेन।</p>
+                        </div>
+                    `;
+                    resultSection.classList.add('visible');
+                    return;
+                }
+
+                const html = `
+                    <div class="letter-card">
+                        <div class="letter-header">
+                            <div class="org">
+                                <span class="name">${letter.club}</span>
+                                <span class="sub">${letter.issuedBy}</span>
+                            </div>
+                            <div class="ref-badge">
+                                दर्ता नं. ${letter.refNo}  •  आ.व. ${letter.fiscalYear}
+                            </div>
+                        </div>
+
+                        <div class="letter-body">
+                            <div class="to-line">
+                                <strong>प्रति :</strong> ${letter.to}
+                            </div>
+
+                            <div class="subject">
+                                📌 विषय: ${letter.subject}
+                            </div>
+
+                            <div class="details-grid">
+                                <span class="label">शीर्षक</span>
+                                <span class="value">${letter.title}</span>
+
+                                <span class="label">मिति</span>
+                                <span class="value">${letter.date}</span>
+
+                                <span class="label">आ.व.</span>
+                                <span class="value">${letter.fiscalYear}</span>
+
+                                <span class="label">दर्ता नं.</span>
+                                <span class="value">${letter.refNo}</span>
+                            </div>
+                        </div>
+
+                        <div class="letter-footer">
+                            <span>यो पत्र प्रमाणीकरण प्रणालीबाट जाँच गरिएको हो ।</span>
+                            <span class="stamp">
+                                <span class="dot"></span>
+                                प्रमाणित
+                                <span class="dot"></span>
+                            </span>
+                        </div>
+                    </div>
+                `;
+
+                letterContainer.innerHTML = html;
+                resultSection.classList.add('visible');
+            }
+
+            function findLetter(fiscal, ref) {
+                // Normalise: trim, case-insensitive for ref, exact for fiscal
+                const f = fiscal.trim();
+                const r = ref.trim();
+                return letters.find(l =>
+                    l.fiscalYear === f &&
+                    l.refNo === r
+                );
+            }
+
+            // ─── Handle search ──────────────────────────────────────────
+            function handleSearch(e) {
+                e.preventDefault();
+                hideMessage();
+
+                const fiscal = fiscalInput.value.trim();
+                const ref = refInput.value.trim();
+
+                // Validation
+                if (!fiscal || !ref) {
+                    showMessage('कृपया आर्थिक वर्ष र दर्ता नम्बर दुवै प्रविष्ट गर्नुहोस् ।', 'error');
+                    resultSection.classList.remove('visible');
+                    return;
+                }
+
+                // Lookup
+                const letter = findLetter(fiscal, ref);
+
+                if (letter) {
+                    showMessage('✅ पत्र फेला पर्यो — प्रमाणीकरण सफल ।', 'success');
+                    renderLetter(letter);
+                } else {
+                    showMessage('❌ क्षमा गर्नुहोस्, यो आर्थिक वर्ष र दर्ता नम्बरको कुनै पत्र फेला परेन । कृपया पुनः प्रयास गर्नुहोस् ।',
+                        'error');
+                    resultSection.classList.remove('visible');
+                }
+            }
+
+            // ─── Preset demo: auto-load on page load ──────────────────
+            function autoLoadDemo() {
+                // The inputs already have values '026/027' and '2'
+                // Trigger search automatically after a tiny delay
+                setTimeout(() => {
+                    form.dispatchEvent(new Event('submit'));
+                }, 300);
+            }
+
+            // ─── Events ──────────────────────────────────────────────────
+            form.addEventListener('submit', handleSearch);
+
+            // ─── Init ────────────────────────────────────────────────────
+            autoLoadDemo();
+
+            // Expose for debugging (optional)
+            window._letters = letters;
+
+        })();
+    </script>
+
+</body>
+</html>
