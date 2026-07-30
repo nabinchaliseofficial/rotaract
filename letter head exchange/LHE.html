@@ -7,12 +7,14 @@
 <meta name="description" content="Submit a Letterhead Exchange (LHE) request with the Rotaract Club of Galkot Baglung, RI District 3292." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet" />
+
+<!-- Load Supabase WITHOUT defer -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+
 <style>
 /* ══════════════════════════════════════════════════════════════════════
    LHE Shared Design System
    Rotaract Club of Galkot Baglung — Letterhead Exchange
-   One stylesheet, reused by LHE.html, adminLHE.html, verifyLHE.html
-   and verifyonlyLHE.html, so every screen looks and behaves the same.
    ══════════════════════════════════════════════════════════════════════ */
 
 :root {
@@ -25,8 +27,7 @@
   --navy-mid: #163455;
   --navy-soft: #1F406B;
 
-  /* Seal / signature accent — echoes an official wax seal & the Rotary
-     gear wheel; used only for "verified" moments, never as UI chrome. */
+  /* Seal / signature accent */
   --seal-gold: #B8862E;
   --seal-gold-light: #F3E4C4;
 
@@ -770,7 +771,7 @@ tbody tr.row-enter { animation: fadeIn var(--base) var(--ease); }
   padding: 1rem 1.5rem 1.5rem;
 }
 
-/* Small confirm dialog (replaces window.confirm for a consistent feel) */
+/* Small confirm dialog */
 .confirm-box { padding: 1.6rem 1.6rem 1.3rem; max-width: 380px; text-align: center; }
 .confirm-box .confirm-icon { font-size: 2.2rem; margin-bottom: .5rem; }
 .confirm-box h3 { color: var(--navy); font-size: 1.02rem; margin-bottom: .4rem; }
@@ -827,7 +828,7 @@ tbody tr.row-enter { animation: fadeIn var(--base) var(--ease); }
 .login-loader.active { display: inline-block; }
 .login-btn.loading .login-text { display: none; }
 
-/* ─── Verify banner / seal (public verification page) ─────────────── */
+/* ─── Verify banner / seal ─────────────────────────────────────────────── */
 .verify-loading {
   display: flex; align-items: center; justify-content: center; gap: .8rem;
   padding: 2.5rem 1rem; color: var(--gray-500); font-size: .9rem;
@@ -852,13 +853,12 @@ tbody tr.row-enter { animation: fadeIn var(--base) var(--ease); }
 .verify-banner .banner-title { font-weight: 800; font-size: .92rem; }
 .verify-banner .banner-text { font-size: .8rem; opacity: .9; font-weight: 500; }
 
-/* Seal — the one signature element: a gear-toothed ring around a
-   checkmark, echoing both an official wax seal and the Rotary wheel. */
+/* Seal */
 .lhe-seal { width: 92px; height: 92px; flex-shrink: 0; }
 .lhe-seal .seal-ring { transform-origin: 50% 50%; animation: sealTurn 26s linear infinite; }
 @keyframes sealTurn { to { transform: rotate(360deg); } }
 
-/* ─── Letter document (shared across preview / print / public view) ─ */
+/* ─── Letter document ───────────────────────────────── */
 .letter-doc {
   font-family: var(--font-doc);
   background: var(--white);
@@ -987,33 +987,17 @@ tbody tr.row-enter { animation: fadeIn var(--base) var(--ease); }
   .section-title { font-size: 1.1rem; }
   .app-header .header-right { width: 100%; justify-content: space-between; }
 }
-
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js" defer></script>
+
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    LHE Shared Runtime
-   Rotaract Club of Galkot Baglung — Letterhead Exchange
-
-   One source of truth for: Supabase bootstrap, toasts, a confirm modal,
-   validation helpers, the verification-ID / ref-number generators, the
-   QR helper and — most importantly — the letter template, so the four
-   pages that render a letter (admin preview, admin print, staff verify,
-   public verify) can never drift out of sync with each other again.
-
-   Loaded as a plain script (no bundler); everything lives on `window.LHE`.
    ══════════════════════════════════════════════════════════════════════ */
 
 (function (global) {
   'use strict';
 
-  /* ─── Configuration ────────────────────────────────────────────────
-     Single place to change the club's own details, default signatures
-     and asset filenames. Previously this was copy-pasted with slightly
-     different values inside LHE.html, adminLHE.html, verifyLHE.html and
-     verifyonlyLHE.html — a change to one signer's name meant hunting
-     through four files. Now it means editing this one object.
-     ────────────────────────────────────────────────────────────────── */
+  /* ─── Configuration ──────────────────────────────────────────────── */
   const CONFIG = {
     supabaseUrl: 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co',
     supabaseAnonKey: 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv',
@@ -1037,7 +1021,6 @@ tbody tr.row-enter { animation: fadeIn var(--base) var(--ease); }
     signPlace: 'Galkot, Baglung',
     fiscalYear: '026/027',
 
-    // Base used to build the QR / share URL for a verified letter.
     verifyBaseUrl: 'https://galkot.netlify.app/verifyLHE.html',
 
     rotaryYears: ['2025-26', '2026-27', '2027-28'],
@@ -1068,7 +1051,7 @@ Thank you!`;
   }
 
   function generateVerificationId() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I ambiguity
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     const part = () => Array.from({ length: 4 }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join('');
     return `LHE-${part()}-${part()}`;
   }
@@ -1100,22 +1083,16 @@ Thank you!`;
       return String(value || '').trim().length <= max;
     },
     rid(value) {
-      // Rotary Districts are numeric, typically 4 digits (e.g. 3292, 9455).
       return /^[0-9]{3,5}$/.test(String(value || '').trim());
     },
     email(value) {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
     },
     name(value) {
-      // Letters, spaces, dots, apostrophes, hyphens — blocks stray HTML/script input.
       return /^[\p{L}\p{M}.'\-\s]{2,80}$/u.test(String(value || '').trim());
     }
   };
 
-  /**
-   * Marks a `.field` wrapper valid/invalid and shows/hides its `.field-error`.
-   * `wrapEl` is the `.field` div; `message` only needed when invalid.
-   */
   function setFieldState(wrapEl, valid, message) {
     if (!wrapEl) return;
     wrapEl.classList.toggle('invalid', !valid);
@@ -1164,7 +1141,7 @@ Thank you!`;
     return toast;
   }
 
-  /* ─── Confirm modal (replaces window.confirm) ─────────────────── */
+  /* ─── Confirm modal ─────────────────────────────────── */
 
   function confirmDialog({ title = 'Are you sure?', message = '', icon = '⚠️', confirmLabel = 'Confirm', cancelLabel = 'Cancel', danger = true } = {}) {
     return new Promise((resolve) => {
@@ -1200,7 +1177,6 @@ Thank you!`;
       function onKey(e) {
         if (e.key === 'Escape') close(false);
         if (e.key === 'Tab') {
-          // simple focus trap between the two buttons
           e.preventDefault();
           (document.activeElement === confirmBtn ? cancelBtn : confirmBtn).focus();
         }
@@ -1216,14 +1192,16 @@ Thank you!`;
 
   function createSupabaseClient() {
     try {
-      if (typeof global.supabase !== 'undefined' && global.supabase.createClient) {
-        return global.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
+      // Check if Supabase is available in window object
+      if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+        return window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
       }
       console.warn('⚠️ Supabase library not loaded.');
+      return null;
     } catch (e) {
       console.error('❌ Failed to init Supabase client:', e);
+      return null;
     }
-    return null;
   }
 
   async function getNextRefNo(supabaseClient) {
@@ -1245,11 +1223,6 @@ Thank you!`;
     }
   }
 
-  /**
-   * Builds the full `rotaract_lhe` row for a request being approved.
-   * `overrides` lets the admin form's own field values win over the
-   * shared defaults (fiscal year, signatures, sender info, body text).
-   */
   function buildLetterRecord(request, overrides = {}) {
     const vid = overrides.verification_id || request.verification_id || generateVerificationId();
     const today = new Date().toISOString().split('T')[0];
@@ -1288,7 +1261,7 @@ Thank you!`;
     return `${CONFIG.verifyBaseUrl}?vid=${encodeURIComponent(vid)}`;
   }
 
-  /* ─── The seal (signature visual element) ──────────────────────── */
+  /* ─── The seal ──────────────────────────────────────── */
 
   function sealSvg({ size = 92, verified = true } = {}) {
     const color = verified ? '#157A46' : '#B0392B';
@@ -1311,12 +1284,7 @@ Thank you!`;
       </svg>`;
   }
 
-  /* ─── Letter document renderer (the shared source of truth) ──────
-     Used by adminLHE.html (print modal), verifyonlyLHE.html (implicit,
-     via admin-style preview) and verifyLHE.html (public result). `mode`
-     toggles the small differences between an internal preview and the
-     public-facing verified page.
-     ────────────────────────────────────────────────────────────────── */
+  /* ─── Letter document renderer ────────────────────────────────────── */
 
   function renderLetterDoc(letter, { mode = 'public' } = {}) {
     const vid = letter.verification_id || '';
@@ -1440,6 +1408,7 @@ Thank you!`;
 })(window);
 
 </script>
+
 <style>
   /* Page-specific: the submission form is a single narrow card. */
   .success-state {
@@ -1571,7 +1540,22 @@ Thank you!`;
   'use strict';
 
   function boot() {
-    if (!window.LHE) { setTimeout(boot, 30); return; }
+    // Wait for LHE to be defined
+    if (!window.LHE) { 
+      setTimeout(boot, 50); 
+      return; 
+    }
+    
+    // Check if Supabase is available
+    if (typeof supabase === 'undefined' || !supabase.createClient) {
+      console.warn('Supabase not loaded yet, retrying...');
+      setTimeout(boot, 100);
+      return;
+    }
+
+    console.log('✅ Supabase library loaded');
+    console.log('✅ LHE library loaded');
+
     const { showToast, generateVerificationId, escapeHtml, sealSvg } = window.LHE;
 
     // ─── DOM refs ──────────────────────────────────────────────────
@@ -1599,7 +1583,24 @@ Thank you!`;
 
     successSeal.innerHTML = sealSvg({ size: 76 });
 
-    const supabaseClient = window.LHE.createSupabaseClient();
+    // Create Supabase client directly using window.supabase
+    let supabaseClient = null;
+    try {
+      if (window.supabase && window.supabase.createClient) {
+        supabaseClient = window.supabase.createClient(
+          'https://kbyfvqkfcxqgjjtfvvxf.supabase.co',
+          'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv'
+        );
+        console.log('✅ Supabase client created successfully');
+      } else {
+        console.error('❌ Supabase library not available');
+        showToast('Supabase library not available. Please refresh.', 'error');
+      }
+    } catch (err) {
+      console.error('❌ Failed to create Supabase client:', err);
+      showToast('Failed to connect. Please refresh.', 'error');
+    }
+
     let submitting = false;
 
     // ─── Field-level validation ────────────────────────────────────
@@ -1701,6 +1702,9 @@ Thank you!`;
 
     async function saveToDatabase(data) {
       if (!supabaseClient) throw new Error('Connection not ready. Please refresh and try again.');
+      
+      console.log('Saving to database with data:', data);
+      
       const { data: inserted, error } = await supabaseClient
         .from('rotaract_lhe_requests')
         .insert({
@@ -1711,12 +1715,16 @@ Thank you!`;
           sponsored_club: data.sponsoredClub || null,
           logo_url: data.logoUrl || null,
           verification_id: data.verificationId,
-          status: 'pending',
-          created_at: new Date().toISOString()
+          status: 'pending'
         })
         .select()
         .single();
-      if (error) throw error;
+        
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+      console.log('✅ Data saved successfully:', inserted);
       return inserted;
     }
 
@@ -1793,11 +1801,15 @@ Thank you!`;
 
     if (!supabaseClient) {
       showToast('Connection issue — please refresh the page.', 'error');
+    } else {
+      console.log('✅ Supabase client ready, you can submit the form.');
+      showToast('✅ Connected! You can submit your LHE request.', 'success', 3000);
     }
 
     presidentName.focus();
   }
 
+  // Start the boot process
   boot();
 })();
 </script>
