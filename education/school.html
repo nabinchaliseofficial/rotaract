@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Galkot Schools · clean table</title>
+  <!-- Font Awesome 6 (free) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(145deg, #f4f8fe 0%, #e9eff6 100%);
+      font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+      padding: 2rem 1.5rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      max-width: 1380px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(2px);
+      border-radius: 40px 40px 30px 30px;
+      padding: 2rem 1.8rem 2.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.20), inset 0 1px 2px rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+
+    /* header */
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      gap: 1rem 0.5rem;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #0b2b44;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header h1 i {
+      color: #2563eb;
+      background: white;
+      padding: 8px 14px;
+      border-radius: 60px;
+      box-shadow: 0 6px 14px -6px rgba(37, 99, 235, 0.3);
+      font-size: 1.7rem;
+    }
+
+    .search-wrapper {
+      display: flex;
+      align-items: center;
+      background: white;
+      padding: 0.2rem 0.2rem 0.2rem 1.2rem;
+      border-radius: 60px;
+      box-shadow: 0 8px 20px -10px rgba(0, 20, 40, 0.15);
+      border: 1px solid rgba(0, 0, 0, 0.03);
+      transition: all 0.2s;
+      min-width: 220px;
+    }
+
+    .search-wrapper:focus-within {
+      box-shadow: 0 8px 22px -6px #2563eb50;
+      border-color: #2563eb70;
+    }
+
+    .search-wrapper i {
+      color: #5b6f82;
+      font-size: 1rem;
+      margin-right: 6px;
+    }
+
+    .search-wrapper input {
+      border: none;
+      padding: 0.7rem 0.5rem 0.7rem 0;
+      font-size: 0.95rem;
+      background: transparent;
+      width: 200px;
+      outline: none;
+      color: #1e2f3f;
+      font-weight: 450;
+    }
+
+    .search-wrapper input::placeholder {
+      color: #9aabb8;
+      font-weight: 400;
+    }
+
+    .search-wrapper button {
+      background: #2563eb;
+      border: none;
+      color: white;
+      padding: 0.5rem 1.3rem;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: 0.15s;
+      letter-spacing: 0.3px;
+      box-shadow: 0 6px 12px -6px #1d4ed8;
+    }
+
+    .search-wrapper button:hover {
+      background: #1d4ed8;
+      transform: scale(0.97);
+    }
+
+    .stat-badge {
+      background: #e6edf5;
+      padding: 0.4rem 1.2rem;
+      border-radius: 40px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #1e3a5f;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-badge i {
+      color: #2563eb;
+    }
+
+    /* table card */
+    .table-responsive {
+      overflow-x: auto;
+      border-radius: 28px;
+      background: white;
+      padding: 0.1rem 0 0.1rem 0;
+      box-shadow: 0 8px 30px -14px rgba(0, 20, 40, 0.18);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      min-width: 780px;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #f0f5fc;
+      color: #1f3a5f;
+      font-weight: 600;
+      padding: 1rem 0.8rem;
+      text-align: left;
+      border-bottom: 2px solid #dce5ef;
+      letter-spacing: 0.3px;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+    }
+
+    td {
+      padding: 0.9rem 0.8rem;
+      border-bottom: 1px solid #e9eff5;
+      color: #1f2e3f;
+      vertical-align: middle;
+      background-color: white;
+      transition: background 0.1s;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: #f8fcff;
+    }
+
+    td:first-child {
+      font-weight: 500;
+      color: #0f2b44;
+    }
+
+    .school-name {
+      font-weight: 600;
+      color: #0b2b44;
+      letter-spacing: -0.2px;
+    }
+
+    .email-link {
+      color: #1f5b9e;
+      text-decoration: none;
+      font-weight: 450;
+      border-bottom: 1px dotted #b3c9e0;
+    }
+
+    .email-link:hover {
+      color: #0b3b7a;
+      border-bottom: 1px solid #2563eb;
+    }
+
+    .phone {
+      font-weight: 500;
+      color: #1f4b6e;
+      letter-spacing: 0.2px;
+    }
+
+    .empty-row td {
+      text-align: center;
+      padding: 3rem 0;
+      color: #5b6f82;
+      font-style: italic;
+      background: #fafdff;
+    }
+
+    .footer-note {
+      margin-top: 1.8rem;
+      display: flex;
+      justify-content: flex-end;
+      color: #3d5a78;
+      font-size: 0.85rem;
+      padding-right: 0.5rem;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-note i {
+      color: #2563eb;
+      margin-right: 4px;
+    }
+
+    @media (max-width: 700px) {
+      .container {
+        padding: 1.2rem 0.8rem;
+      }
+      .header h1 {
+        font-size: 1.5rem;
+        flex-wrap: wrap;
+      }
+      .search-wrapper {
+        width: 100%;
+      }
+      .search-wrapper input {
+        width: 100%;
+      }
+      .stat-badge {
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- header -->
+  <div class="header">
+    <h1>
+      <i class="fas fa-school"></i> 
+      Galkot · Schools
+    </h1>
+    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+      <span class="stat-badge" id="schoolCount">
+        <i class="fas fa-regular fa-building-columns"></i> 
+        <span id="countDisplay">64</span> schools
+      </span>
+      <div class="search-wrapper">
+        <i class="fas fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="Search school, address, phone..." />
+        <button id="clearBtn"><i class="fas fa-times-circle"></i> Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- table – Emergency toilet & Submitted By removed -->
+  <div class="table-responsive">
+    <table id="schoolTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>School Name</th>
+          <th>Email</th>
+          <th>Address</th>
+          <th>Phone</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <!-- rows injected via JS -->
+      </tbody>
+    </table>
+  </div>
+  <div class="footer-note">
+    <span><i class="fas fa-regular fa-circle-check"></i> data from Galkot schools · 2026</span>
+    <span><i class="fas fa-regular fa-phone"></i> contact information</span>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // -------- raw data (exactly as provided) --------
+    // columns: #, School, Email, Address, Emergency (ignored), Phone, Submitted (ignored)
+    const schoolsData = [
+      ["1", "Shree Bal Bikash Basic School", "bishnubasicschool@gamil.com", "Galkot-8", "9849050703"],
+      ["2", "Shree Balkalyan Basic School", "balkalyanschool168@gmail.com", "Galkot 9 Galyang", "9847660789"],
+      ["3", "Shree Bhagawati Basic School", "bhagawatibasic11@gmail.com", "Galkot 1 dudilabhati bhaise", "9848278725"],
+      ["4", "Shree Bhairab Secondary School", "bhairabsecondary9@gmail.com", "Galkot-9 Baglung", "9847640775"],
+      ["5", "Shree Bhujunge Basic School", "bhujungeps14@gmail.com", "Galkot-6", "9847655317"],
+      ["6", "Shree Bhume Basic School", "bsbhume233@gmail.com", "Galkot-4 Nuwakot", "9866048177"],
+      ["7", "Shree Bishnu Basic School", "bishnubasicschool@gmail.com", "Galkot-9", "9857665151"],
+      ["8", "Shree Chamuwa Basic School", "chamuwa.basicschool@gmail.com", "Galkot 4, Chamuwa Baglung", "9857631742"],
+      ["9", "Shree Chauraha Secondary School", "chauraha2019@gmail.com", "Galkot -1, Dudilabhati, Baglung", "9847662554"],
+      ["10", "Shree Chhichimra Pokhari Basic School", "chhichimra1122@gmail.com", "Galkot-11, Righa", "9868827971"],
+      ["11", "Shree Deepjyoti Basic School", "deepjyotibs8@gmail.com", "Galkot-7, Aangakhet, Bamiya, Baglung", "9857625445"],
+      ["12", "Shree Devalaya Basic School", "dewalaya.basic@gmail.com", "Galkot-1", "9847667975"],
+      ["13", "Shree Devkota Basic School", "devkotabasicschool36@gmail.com", "Galkot-8, Chalisetole", "9844412139"],
+      ["14", "Shree Dhaulagiri Basic School", "sushilagtm34@gmail.com", "Galkot-3", "9847654196"],
+      ["15", "Shree Dhustung Basic School", "gtusharma1@gmail.com", "Galkot-3", "9867772336"],
+      ["16", "Shree Dudilabhati English School", "dudilabhatienglishschool@gmail.com", "Galkot-1, Dudilabhati, Baglung", "9841904859"],
+      ["17", "Shree Ekata Residential Secondary School", "ekataboarding2043@gmail.com", "Galkot-5", "9857666856"],
+      ["18", "Shree Era Motherland Secondary Boarding School", "eramotherlandschool@gmail.com", "Galkot-2", "9847640773"],
+      ["19", "Shree Gaja Basic School", "gajaprimary99@gmail.com", "Galkot-1 Dudilabhati", "9847641189"],
+      ["20", "Shree Galkot Bed Bedang Vidyashram", "ramu31678@gmail.com", "Galkot-3", "9847639465"],
+      ["21", "Shree Galkot English Secondary School", "thapaamrit457@gmail.com", "Galkot-7", "9847652899"],
+      ["22", "Shree Galkot Modernized Academy", "galkotacademic.co.pvt.ltd@gmail.com", "Galkot-5, Harichaur", "9857620835"],
+      ["23", "Shree Galkot Secondary School", "info@galkot.edu.np", "Galkot-3", "9847638544"],
+      ["24", "Shree Gaudi Gaumukhi Basic School", "gaudigaumukhi@gmail.com", "Galkot-1", "9847639321"],
+      ["25", "Shree Ghumte Basic School", "ghumteschoolgalkot@gmail.com", "Galkot -5, Bhainse, Galkot, Baglung", "9843824216"],
+      ["26", "Shree Golden Future Secondary Boarding School", "goldenfuturegalkot053@gmail.com", "Galkot-4", "9857622364"],
+      ["27", "Shree Jai Santoshi Maa Basic School", "jaya.santoshi.school@gmail.com", "Galkot-3", "9847640872"],
+      ["28", "Shree Janahit Secondary School", "janahitsecondaryschool2021@gmail.com", "Galkot -07 , Malma", "9851171080"],
+      ["29", "Shree Janajagriti Secondary School", "jjagriti2014@gmail.com", "Galkot -8, Kandebas", "9857622695"],
+      ["30", "Shree Janata Basic School", "janatabs83@gmail.com", "Galkot-1", "9847718424"],
+      ["31", "Shree Jeewan Jyoti Basic School", "jwnjyti2032@gmail.com", "Galkot -3 Bohoraphant Baglung", "9867615121"],
+      ["32", "Shree Kalika Basic School", "kalikabs99@gmail.com", "Galkot-4 Deubuje", "9864275152"],
+      ["33", "Shree Kharuwa Secondary School", "kharuwamavi04@gmail.com", "Galkot-04,Baglung", "9856072276"],
+      ["34", "Shree Kimle Basic School", "kimlebasicschool@gmail.com", "Galkot 11 Righa", "`"],
+      ["35", "Shree Kotmaidan Basic School", "bhandariradhika182@gmail.com", "Galkot-3", "9847662859"],
+      ["36", "Shree Laxmi Narayan Basic School", "laxminarayanbs100@gmail.com", "Galkot-9", "9847640611"],
+      ["37", "Shree Madrasa Barkati Madina", "husinabanu715@gmail.com", "Galkot-6", "9769367265"],
+      ["38", "Shree Mahendra Secondary School", "remkarki83@gmail.com", "Galkot -2, Narethanti", "9857660134"],
+      ["39", "Shree Manewa Basic School", "basicmanewa1@gmail.com", "Galkot-11", "9860006998"],
+      ["40", "Shree Nava Bihani Primary School", "manrajneupane3@gmail.com", "Galkot-8", "9844837041"],
+      ["41", "Shree Nava Jyoti Basic School", "nawajyotibasicschool24@gmail.com", "Galkot-10", "9847640473"],
+      ["42", "Shree Navayubak Basic School", "navayoubak0005@gmail.com", "Galkot -2 Baglung", "9857640754"],
+      ["43", "Shree Nawa Pravat School", "nawapravat@gmail.com", "Galkot -3,Baglung", "9857626550"],
+      ["44", "Shree Neta Basic School", "netabasicschool@gmail.com", "Galkot- 7, Malma, Baglung", "9848094518"],
+      ["45", "Shree New Life Secondary Boarding School", "newlifebhss@gmail.com", "Galkot-6", "9857621022"],
+      ["46", "Shree Pandavkhani Basic School", "shreepandavkhanibasicschool@gmail.com", "Galkot-10", "9847357882"],
+      ["47", "Shree Pandavkhani Secondary School", "pandavkhaniss2018@gmail.com", "Galkot-10", "9857673529"],
+      ["48", "Shree Parwati Secondary School", "2010parwati@gmail.com", "Galkot-6, Charaudi", "9857623522"],
+      ["49", "Shree Pragati Basic School", "pragatibasicschool1578@gmail.com", "Galkot-7, Malma, Baglung", "9869720708"],
+      ["50", "Shree Prithvi Secondary school", "prithvimavi9@gmail.com", "Galkot -5 Harichaur", "9857630115"],
+      ["51", "Shree Ramkrishna Basic School", "basicschoolramkrishna@gmail.com", "Galkot-2", "9847640708"],
+      ["52", "Shree Ramuwa Basic School", "basicschoolramuwa@gmail.com", "Galkot-10", "9847608195"],
+      ["53", "Shree Ratna Laxmi Secondary School", "shreeratnalaxmischool@gmail.com", "Galkot-11 Righa, Baglung", "9857667924"],
+      ["54", "Shree Righa Phedi Primary School", "righaphedibasicschool9@gmail.com", "Galkot-11", "9847663818"],
+      ["55", "Shree Sahid Thirbam Basic School", "sahidthirbom53@gmail.com", "Galkot-5", "9847708605"],
+      ["56", "Shree Sambuddha Education Academy", "sambuddha123@gmail.com", "Galkot-6", "9857621121"],
+      ["57", "Shree Sano Righa Basic School", "bsanorigha2031@gmail.com", "Galkot-11,Righa, Baglung", "9817571848"],
+      ["58", "Shree Saraswati Secondary School", "mavisaraswati1@gmail.com, chokhalpurna@gmail.com", "Galkot-1", "9857622459"],
+      ["59", "Shree Saraswoti Basic School", "saraswotibasic8@gmail.com", "Galkot-11", "9846316094"],
+      ["60", "Shree Shiva secondary school", "abc.mahim@gmail.com", "Galkot -8, Baglung", "9855054348"],
+      ["61", "Shree Shivalaya Basic School", "Shivalayabasic9@gmail com", "Galkot-1", "9847640530"],
+      ["62", "Shree Siddha Basic School", "shreeshsushila5@gmail.com", "Galkot-5", "9847633427"],
+      ["63", "Shree Sirbare Basic School", "pundhan653017@gmail.com", "Galkot-1", "9847630527"],
+      ["64", "Shree Sitalpati Basic School", "shitalpati@gmail.com", "Galkot-2", "9847638414"]
+    ];
+
+    // -------- render --------
+    const tbody = document.getElementById('tableBody');
+    const countSpan = document.getElementById('countDisplay');
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearBtn');
+
+    function renderTable(filterText = '') {
+      const lowerFilter = filterText.toLowerCase().trim();
+      let filtered = schoolsData;
+
+      if (lowerFilter !== '') {
+        filtered = schoolsData.filter(row => {
+          // search all displayed fields: school, email, address, phone (skip index)
+          const searchable = row.slice(1).join(' ').toLowerCase();
+          return searchable.includes(lowerFilter);
+        });
+      }
+
+      countSpan.textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr class="empty-row"><td colspan="5"><i class="fas fa-search" style="margin-right: 10px;"></i> No schools match your search.</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      filtered.forEach(row => {
+        const [sno, school, email, address, phone] = row;
+        const displayPhone = (phone && phone.length > 0 && phone !== '`') ? phone : '—';
+        html += `<tr>
+          <td><strong>${sno}</strong></td>
+          <td class="school-name">${school}</td>
+          <td><a href="mailto:${email}" class="email-link" title="${email}">${email}</a></td>
+          <td>${address}</td>
+          <td class="phone">${displayPhone}</td>
+        </tr>`;
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    // -------- event binding --------
+    function handleSearch() {
+      renderTable(searchInput.value);
+    }
+
+    searchInput.addEventListener('input', handleSearch);
+
+    clearBtn.addEventListener('click', function() {
+      searchInput.value = '';
+      renderTable('');
+      searchInput.focus();
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        searchInput.value = '';
+        renderTable('');
+        searchInput.blur();
+      }
+    });
+
+    // initial render
+    renderTable('');
+  })();
+</script>
+</body>
+</html>

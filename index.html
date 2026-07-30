@@ -1254,6 +1254,9 @@
 
   <div class="footer-bottom">
     &copy; 2026 Rotaract Club of Galkot Baglung. All Rights Reserved. | RI District 3292
+    <span id="visitCounter" style="margin-left:10px; opacity:0.85;">
+      <i class="fas fa-eye" style="color:var(--gold);margin-right:6px;"></i>Visits: <span id="visitCount">…</span>
+    </span>
   </div>
 </footer>
 
@@ -1273,6 +1276,30 @@
     const SUPABASE_KEY =
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // ---------- REAL VISIT COUNTER ----------
+    (async function trackVisit() {
+      const countEl = document.getElementById('visitCount');
+      if (!countEl) return;
+      try {
+        // Only count once per browser session so refreshing the same tab
+        // doesn't inflate the number.
+        const alreadyCounted = sessionStorage.getItem('visitCounted');
+        if (!alreadyCounted) {
+          const { data, error } = await supabase.rpc('increment_visits');
+          if (error) throw error;
+          sessionStorage.setItem('visitCounted', '1');
+          countEl.textContent = (data ?? '—').toLocaleString();
+        } else {
+          const { data, error } = await supabase.rpc('get_visits');
+          if (error) throw error;
+          countEl.textContent = (data ?? '—').toLocaleString();
+        }
+      } catch (err) {
+        console.error('Visit counter error:', err);
+        countEl.textContent = '—';
+      }
+    })();
 
     // ---------- THEME ----------
     const themeToggle = document.getElementById('themeToggle');

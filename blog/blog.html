@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>Nabin Chalise · Blog</title>
+    <meta name="description" content="Personal blog of Nabin Chalise – Computer Operator & ICT Professional.">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%233b82f6'/></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // ============================================================
+        // ✅ SUPABASE CLIENT INITIALIZATION
+        // ============================================================
+        const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
+        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+        
+        console.log('✅ Supabase client initialized');
+
+        // ============================================================
+        // ✅ AUTH FUNCTIONS (Using user_roles table)
+        // ============================================================
+        
+        // Get current session
+        async function getSession() {
+            try {
+                const { data, error } = await supabaseClient.auth.getSession();
+                if (error) throw error;
+                return data.session;
+            } catch (error) {
+                console.error('Get session error:', error);
+                return null;
+            }
+        }
+
+        // Get current user with role from user_roles
+        async function getCurrentUser() {
+            try {
+                // First check if we have a session
+                const session = await getSession();
+                if (!session) return null;
+
+                // Get user from auth
+                const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+                if (userError || !user) return null;
+
+                // Get role from user_roles table
+                const { data: roleData, error: roleError } = await supabaseClient
+                    .from('user_roles')
+                    .select('role, status, email, full_name')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (roleError) {
+                    console.warn('User role not found:', roleError);
+                    return {
+                        id: user.id,
+                        email: user.email,
+                        role: 'viewer',
+                        status: 'active',
+                        full_name: user.user_metadata?.full_name || user.email
+                    };
+                }
+
+                return {
+                    id: user.id,
+                    email: roleData.email || user.email,
+                    role: roleData.role || 'viewer',
+                    status: roleData.status || 'active',
+                    full_name: roleData.full_name || user.user_metadata?.full_name || user.email
+                };
+            } catch (error) {
+                console.error('Get current user error:', error);
+                return null;
+            }
+        }
+
+        // Login function
+        async function login(email, password) {
+            try {
+                // Sign in with Supabase Auth
+                const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (authError) throw new Error(authError.message);
+                if (!authData.user) throw new Error('No user data returned');
+
+                // Check user role from user_roles table
+                const { data: roleData, error: roleError } = await supabaseClient
+                    .from('user_roles')
+                    .select('role, status, email, full_name')
+                    .eq('user_id', authData.user.id)
+                    .single();
+
+                if (roleError) {
+                    console.warn('User role not found, defaulting to viewer');
+                    const userInfo = {
+                        id: authData.user.id,
+                        email: authData.user.email,
+                        role: 'viewer',
+                        status: 'active',
+                        full_name: authData.user.user_metadata?.full_name || authData.user.email
+                    };
+                    
+                    // Store in localStorage
+                    localStorage.setItem('auth_user_id', userInfo.id);
+                    localStorage.setItem('auth_email', userInfo.email);
+                    localStorage.setItem('auth_role', userInfo.role);
+                    localStorage.setItem('auth_status', userInfo.status);
+                    localStorage.setItem('auth_full_name', userInfo.full_name);
+                    localStorage.setItem('auth_verified', 'true');
+                    
+                    return userInfo;
+                }
+
+                // Check if user is active
+                if (roleData.status !== 'active') {
+                    throw new Error('Your account is inactive. Please contact administrator.');
+                }
+
+                // Store user info in localStorage
+                const userInfo = {
+                    id: authData.user.id,
+                    email: roleData.email || authData.user.email,
+                    role: roleData.role,
+                    status: roleData.status,
+                    full_name: roleData.full_name || authData.user.user_metadata?.full_name || authData.user.email
+                };
+
+                localStorage.setItem('auth_user_id', userInfo.id);
+                localStorage.setItem('auth_email', userInfo.email);
+                localStorage.setItem('auth_role', userInfo.role);
+                localStorage.setItem('auth_status', userInfo.status);
+                localStorage.setItem('auth_full_name', userInfo.full_name);
+                localStorage.setItem('auth_verified', 'true');
+
+                return userInfo;
+            } catch (error) {
+                console.error('Login error:', error);
+                throw error;
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                await supabaseClient.auth.signOut();
+                localStorage.removeItem('auth_user_id');
+                localStorage.removeItem('auth_email');
+                localStorage.removeItem('auth_role');
+                localStorage.removeItem('auth_status');
+                localStorage.removeItem('auth_full_name');
+                localStorage.removeItem('auth_verified');
+                console.log('✅ Logged out successfully');
+                return true;
+            } catch (error) {
+                console.error('Logout error:', error);
+                throw error;
+            }
+        }
+
+        // Check if user is admin
+        function isAdmin() {
+            const role = localStorage.getItem('auth_role');
+            const verified = localStorage.getItem('auth_verified');
+            return verified === 'true' && role === 'admin';
+        }
+
+        // Update navbar based on auth status
+        async function updateNavbarAuth() {
+            const user = await getCurrentUser();
+            const loginBtn = document.getElementById('loginNavBtn');
+            const dashboardLink = document.getElementById('dashboardLink');
+
+            if (user) {
+                // User is logged in
+                loginBtn.textContent = `👤 ${user.role === 'admin' ? 'Admin' : user.full_name || user.email}`;
+                loginBtn.className = 'login-nav-btn logged-in';
+                loginBtn.onclick = async function() {
+                    if (confirm('Logout?')) {
+                        await logout();
+                        updateNavbarAuth();
+                        window.location.reload();
+                    }
+                };
+
+                // Show dashboard link for admin only
+                if (user.role === 'admin' && dashboardLink) {
+                    dashboardLink.style.display = 'inline';
+                } else if (dashboardLink) {
+                    dashboardLink.style.display = 'none';
+                }
+            } else {
+                // User is logged out
+                loginBtn.textContent = '🔐 Login';
+                loginBtn.className = 'login-nav-btn';
+                loginBtn.onclick = function() {
+                    openLoginModal();
+                };
+                if (dashboardLink) {
+                    dashboardLink.style.display = 'none';
+                }
+            }
+        }
+
+        // ============================================================
+        // ✅ END OF AUTH FUNCTIONS
+        // ============================================================
+    </script>
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            transition: background 0.25s, color 0.25s;
+            -webkit-font-smoothing: antialiased;
+        }
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-secondary: #475569;
+            --brand: #3b82f6;
+            --brand-hover: #1d4ed8;
+            --accent: #10b981;
+            --border: #e2e8f0;
+            --radius: 16px;
+            --radius-sm: 8px;
+            --shadow: 0 8px 30px rgba(0,0,0,0.06);
+            --sp: 8px;
+            --max-w: 1200px;
+        }
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+        .container { width: 100%; max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-height: 44px; padding: 8px 24px;
+            font-weight: 600; border-radius: 60px; border: none;
+            cursor: pointer; transition: 0.2s; text-decoration: none; gap: 8px;
+            font-size: 0.9rem;
+        }
+        .btn-primary { background: var(--brand); color: #fff; }
+        .btn-primary:hover { background: var(--brand-hover); transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(59,130,246,0.3); }
+        .btn-accent { background: var(--accent); color: #fff; }
+        .btn-accent:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(16,185,129,0.3); }
+        .btn-outline {
+            background: transparent; color: var(--text);
+            border: 1.5px solid var(--border);
+        }
+        .btn-outline:hover { border-color: var(--brand); color: var(--brand); transform: translateY(-2px); }
+        .btn-danger { background: #ef4444; color: #fff; }
+        .btn-danger:hover { background: #dc2626; transform: translateY(-2px); }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+        .reveal { opacity: 0; transform: translateY(24px); transition: 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        .blog-layout {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 32px;
+            align-items: start;
+            margin-top: 80px;
+            padding-bottom: 60px;
+        }
+        .main-blog { min-width: 0; }
+        .side-panel {
+            position: sticky;
+            top: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .blog-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px 28px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow);
+            transition: 0.3s ease;
+        }
+        .blog-card:hover { border-color: var(--brand); transform: translateY(-3px); box-shadow: 0 16px 40px rgba(59,130,246,0.08); }
+        .blog-meta { display: flex; gap: 16px; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px; flex-wrap: wrap; }
+        .blog-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+        .blog-title a { color: var(--text); text-decoration: none; }
+        .blog-title a:hover { color: var(--brand); }
+        .blog-excerpt { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 12px; }
+        .blog-content-full { 
+            color: var(--text); 
+            margin: 12px 0 16px;
+            line-height: 1.8;
+            font-size: 0.98rem;
+        }
+        .blog-content-full p { margin-bottom: 12px; }
+        .blog-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+        .blog-tags span { background: rgba(59,130,246,0.08); padding: 2px 12px; border-radius: 40px; font-size: 0.7rem; color: var(--brand); }
+        .blog-status {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .blog-status.draft { background: #fef3c7; color: #92400e; }
+        .blog-status.published { background: #d1fae5; color: #065f46; }
+        .blog-status.archived { background: #ede9fe; color: #5b21b6; }
+
+        .side-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 20px 18px;
+            box-shadow: var(--shadow);
+        }
+        .side-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        .side-card .bio { font-size: 0.9rem; color: var(--text-secondary); }
+        .side-card .bio strong { color: var(--text); }
+
+        .header-nav {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: rgba(var(--bg-rgb, 248,250,252), 0.85);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
+            transition: 0.2s;
+        }
+        [data-theme="dark"] .header-nav { --bg-rgb: 15,23,42; }
+        .nav-wrapper {
+            display: flex; align-items: center; justify-content: space-between;
+            min-height: 68px; gap: 12px;
+        }
+        .logo { font-weight: 700; font-size: 1.2rem; color: var(--brand); text-decoration: none; }
+        .nav-links { display: flex; align-items: center; list-style: none; gap: 24px; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-weight: 500; transition: 0.2s; cursor: pointer; }
+        .nav-links a:hover { color: var(--brand); }
+        .theme-toggle {
+            background: none; border: 1px solid var(--border); width: 40px; height: 40px;
+            border-radius: 50%; cursor: pointer; color: var(--text);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .theme-toggle .sun { display: block; }
+        .theme-toggle .moon { display: none; }
+        [data-theme="dark"] .theme-toggle .sun { display: none; }
+        [data-theme="dark"] .theme-toggle .moon { display: block; }
+        .menu-toggle {
+            background: none; border: 1px solid var(--border); width: 40px; height: 40px;
+            border-radius: 50%; cursor: pointer; display: none;
+            flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        .menu-toggle span { display: block; width: 18px; height: 2px; background: var(--text); transition: 0.2s; }
+        .menu-toggle[aria-expanded="true"] span:nth-child(1) { transform: rotate(45deg) translate(4px,4px); }
+        .menu-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+        .menu-toggle[aria-expanded="true"] span:nth-child(3) { transform: rotate(-45deg) translate(4px,-4px); }
+
+        @media (max-width: 900px) {
+            .blog-layout { grid-template-columns: 1fr; }
+            .side-panel { position: static; }
+        }
+        @media (max-width: 640px) {
+            .nav-links { display: none; }
+            .menu-toggle { display: flex; }
+            .nav-links.active { display: flex; flex-direction: column; position: fixed; top: 68px; right: 0; width: 220px; background: var(--surface); padding: 24px; border-left: 1px solid var(--border); gap: 16px; box-shadow: var(--shadow); }
+        }
+
+        .daily-quote-banner {
+            margin-top: 68px;
+            background: linear-gradient(135deg, rgba(59,130,246,0.05), rgba(16,185,129,0.03));
+            border-bottom: 1px solid var(--border);
+            padding: 12px 0;
+            text-align: center;
+            font-style: italic;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        .daily-quote-banner q { quotes: "“" "”" "‘" "’"; color: var(--text); }
+        .daily-quote-banner .meta { margin-left: 10px; font-size: 0.75rem; opacity: 0.6; }
+
+        footer { background: var(--surface); border-top: 1px solid var(--border); padding: 16px 0; text-align: center; font-size: 0.8rem; color: var(--text-secondary); }
+
+        .loading { text-align: center; padding: 40px; color: var(--text-secondary); }
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--brand);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .empty-state { text-align: center; padding: 50px 20px; color: var(--text-secondary); }
+        .empty-state .icon { font-size: 4rem; margin-bottom: 15px; }
+        .empty-state h3 { color: var(--text); margin-bottom: 8px; }
+
+        .single-post-back { margin-bottom: 20px; display: inline-block; }
+        .single-post .blog-title { font-size: 2rem; }
+        .single-post .blog-content-full { font-size: 1.05rem; }
+        .read-more-btn { 
+            background: none; border: none; color: var(--brand); font-weight: 600; 
+            cursor: pointer; padding: 4px 0; font-size: 0.9rem; 
+            transition: 0.2s;
+        }
+        .read-more-btn:hover { color: var(--brand-hover); text-decoration: underline; }
+
+        .home-btn-container {
+            display: inline-flex;
+            align-items: center;
+            perspective: 1000px;
+        }
+        .home-btn {
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #015491;
+            color: white;
+            text-decoration: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+            box-shadow: 0 3px 6px rgba(1, 84, 145, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: none;
+            font-family: inherit;
+            min-height: 36px;
+        }
+        .home-btn .icon {
+            display: inline-block;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .home-btn:hover {
+            background-color: #D70060;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(215, 0, 96, 0.35);
+        }
+        .home-btn:hover .icon {
+            transform: scale(1.15) rotate(-5deg);
+        }
+        .home-btn .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple-effect 0.45s linear;
+            pointer-events: none;
+        }
+        .home-btn.clicked-exit {
+            animation: exit-bounce 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        @keyframes ripple-effect {
+            to { transform: scale(4); opacity: 0; }
+        }
+        @keyframes exit-bounce {
+            0% { transform: scale(1); }
+            20% { transform: scale(0.92); background-color: #D70060; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-15px) scale(0.8); opacity: 0; box-shadow: 0 0 0 rgba(0,0,0,0); }
+        }
+
+        .login-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-modal-overlay.active {
+            display: flex;
+        }
+        .login-modal {
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 32px 28px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            animation: modalSlideUp 0.3s ease;
+        }
+        @keyframes modalSlideUp {
+            from { transform: translateY(30px) scale(0.96); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        .login-modal .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: 0.2s;
+        }
+        .login-modal .modal-close:hover { color: var(--text); transform: rotate(90deg); }
+        .login-modal h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .login-modal .sub {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+        }
+        .login-modal .form-group { margin-bottom: 14px; }
+        .login-modal .form-control {
+            width: 100%; min-height: 44px; padding: 10px 14px;
+            background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+            color: var(--text); font-family: inherit; font-size: 0.95rem;
+            transition: 0.2s;
+        }
+        .login-modal .form-control:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .login-modal .btn { width: 100%; margin-top: 4px; }
+        .login-modal .auth-status { margin-top: 12px; font-size: 0.85rem; font-weight: 500; display: none; }
+        .login-modal .auth-status.error { color: #ef4444; display: block; }
+        .login-modal .auth-status.success { color: #10b981; display: block; }
+
+        .login-nav-btn {
+            background: var(--brand);
+            color: #fff;
+            border: none;
+            padding: 6px 18px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            min-height: 36px;
+        }
+        .login-nav-btn:hover {
+            background: var(--brand-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59,130,246,0.3);
+        }
+        .login-nav-btn.logged-in {
+            background: var(--accent);
+        }
+        .login-nav-btn.logged-in:hover {
+            background: #059669;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .filter-tab {
+            padding: 6px 18px;
+            border-radius: 60px;
+            border: 1.5px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .filter-tab:hover {
+            border-color: var(--brand);
+            color: var(--brand);
+        }
+        .filter-tab.active {
+            background: var(--brand);
+            color: #fff;
+            border-color: var(--brand);
+        }
+        .filter-tab .count {
+            opacity: 0.6;
+            font-size: 0.75rem;
+            margin-left: 4px;
+        }
+
+        @media print {
+            .home-btn-container, .login-nav-btn { display: none !important; }
+        }
+
+        @media (max-width: 640px) {
+            .login-modal { padding: 24px 18px; }
+            .nav-wrapper .home-btn { padding: 4px 12px; font-size: 0.75rem; min-height: 30px; }
+            .nav-wrapper .home-btn .icon { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header-nav" id="navbar">
+        <nav class="container nav-wrapper" role="navigation" aria-label="Main navigation">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div class="home-btn-container">
+                    <a href="index.html" class="home-btn" id="interactiveHomeBtn">
+                        <span class="icon">🏠</span> HOME
+                    </a>
+                </div>
+                <a href="#" class="logo">Nabin Chalise · Blog</a>
+            </div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#blog">Latest Blog</a></li>
+                <li><a href="dashboard.html" id="dashboardLink" style="display:none;">📊 Dashboard</a></li>
+                <li><button class="login-nav-btn" id="loginNavBtn">🔐 Login</button></li>
+            </ul>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <svg class="sun" fill="currentColor" viewBox="0 0 20 20" width="20" height="20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 2.293a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zm4 4.707a1 1 0 011 1v1a1 1 0 11-2 0V10a1 1 0 011-1zm-2.293 4a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 14a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-4-2.293a1 1 0 010-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414 0zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm2.293-4a1 1 0 010-1.414l.707-.707a1 1 0 111.414 1.414l-.707.707a1 1 0 01-1.414 0zM10 5a5 5 0 100 10 5 5 0 000-10z"/></svg>
+                    <svg class="moon" fill="currentColor" viewBox="0 0 20 20" width="20" height="20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+                </button>
+                <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navLinks">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Login Modal -->
+    <div class="login-modal-overlay" id="loginModal">
+        <div class="login-modal">
+            <button class="modal-close" id="modalCloseBtn" aria-label="Close login">✕</button>
+            <h2>🔐 Admin Login</h2>
+            <p class="sub">Enter your credentials to access the dashboard.</p>
+            <form id="authForm" novalidate>
+                <div class="form-group">
+                    <input type="email" id="auth-email" class="form-control" placeholder="Email" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="auth-password" class="form-control" placeholder="Password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary" id="loginSubmitBtn">Authenticate</button>
+                <div id="authStatusMessage" class="auth-status" role="status"></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="daily-quote-banner" id="dailyQuoteBanner">
+        <span id="quoteDay" style="font-weight:600;color:var(--brand);margin-right:6px;">Day 1</span>
+        <q id="quoteText">The journey of a thousand miles begins with a single step.</q>
+        <span class="meta" id="quoteMeta">✨ wisdom</span>
+    </div>
+
+    <main class="container blog-layout" id="blog">
+        <div class="main-blog">
+            <div id="backToBlogWrapper" style="display:none; margin-bottom:16px;">
+                <a href="#" id="backToBlogLink" class="btn btn-outline" style="min-height:38px; padding:4px 20px;">← Back to Blog</a>
+            </div>
+
+            <div id="loadingState" class="loading">
+                <div class="spinner"></div>
+                <p>Loading posts...</p>
+            </div>
+            <div id="blogContent" style="display:none;">
+                <div class="filter-tabs" id="filterTabs">
+                    <button class="filter-tab active" data-filter="published">📖 Published <span class="count" id="countPublished">(0)</span></button>
+                    <button class="filter-tab" data-filter="archived">📦 Archived <span class="count" id="countArchived">(0)</span></button>
+                </div>
+                <div id="postsContainer"></div>
+                <div id="emptyState" class="empty-state" style="display:none;">
+                    <div class="icon">📝</div>
+                    <h3>No posts yet</h3>
+                    <p>Check back soon for new content!</p>
+                </div>
+            </div>
+        </div>
+
+        <aside class="side-panel">
+            <div class="side-card">
+                <h3>👤 About Nabin</h3>
+                <div class="bio">
+                    <p><strong>Nabin Chalise</strong> · Computer Operator &amp; ICT Professional</p>
+                    <p style="margin-top:6px;">📍 Galkot, Gandaki, Nepal</p>
+                    <p style="margin-top:8px;">Passionate about technology, philosophy, and community building.</p>
+                    <div style="margin-top:12px; display:flex; gap:6px; flex-wrap:wrap;">
+                        <a href="p/index.html" class="btn btn-outline" style="padding:4px 14px;min-height:32px;font-size:0.75rem;">ProDev</a>
+                        <a href="g/index.html" class="btn btn-outline" style="padding:4px 14px;min-height:32px;font-size:0.75rem;">Galkot</a>
+                        <a href="r/index.html" class="btn btn-outline" style="padding:4px 14px;min-height:32px;font-size:0.75rem;">ROTARACT</a>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <footer><div class="container"><p>&copy; 2026 Nabin Chalise · All rights reserved.</p></div></footer>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================================
+            //  THEME
+            // ============================================================
+            const themeToggle = document.getElementById('themeToggle');
+            const getTheme = () => localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            const applyTheme = (t) => {
+                document.documentElement.setAttribute('data-theme', t);
+                localStorage.setItem('theme', t);
+            };
+            applyTheme(getTheme());
+            themeToggle.addEventListener('click', () => {
+                const cur = document.documentElement.getAttribute('data-theme');
+                applyTheme(cur === 'dark' ? 'light' : 'dark');
+            });
+
+            // ============================================================
+            //  NAV
+            // ============================================================
+            const menuToggle = document.getElementById('menuToggle');
+            const navLinks = document.getElementById('navLinks');
+            menuToggle.addEventListener('click', () => {
+                const exp = menuToggle.getAttribute('aria-expanded') === 'true';
+                menuToggle.setAttribute('aria-expanded', !exp);
+                navLinks.classList.toggle('active');
+            });
+
+            // ============================================================
+            //  REVEAL
+            // ============================================================
+            const obs = new IntersectionObserver((entries) => {
+                entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('active'); obs.unobserve(e.target); } });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+            // ============================================================
+            //  DAILY QUOTE
+            // ============================================================
+            async function fetchQuote() {
+                const qText = document.getElementById('quoteText');
+                const qDay = document.getElementById('quoteDay');
+                const qMeta = document.getElementById('quoteMeta');
+                const fallbacks = [
+                    "The only way to do great work is to love what you do.",
+                    "In the middle of difficulty lies opportunity.",
+                    "Life is what happens when you're busy making other plans.",
+                    "The journey of a thousand miles begins with a single step.",
+                    "What we think, we become."
+                ];
+                try {
+                    const now = new Date();
+                    const start = new Date(now.getFullYear(), 0, 0);
+                    const diff = now - start;
+                    const dayOfYear = Math.floor(diff / (1000*60*60*24)) + 1;
+                    const { data, error } = await supabaseClient
+                        .from('spiritual_quotes')
+                        .select('day, quote, author')
+                        .eq('day', dayOfYear)
+                        .maybeSingle();
+                    if (error || !data) throw new Error('no quote');
+                    qText.textContent = data.quote;
+                    qDay.textContent = 'Day ' + data.day;
+                    qMeta.textContent = data.author ? '— ' + data.author : '✨ spiritual';
+                } catch (err) {
+                    const now = new Date();
+                    const start = new Date(now.getFullYear(), 0, 0);
+                    const diff = now - start;
+                    const day = Math.floor(diff / (1000*60*60*24));
+                    const idx = day % fallbacks.length;
+                    qText.textContent = fallbacks[idx];
+                    qDay.textContent = 'Day ' + (day + 1);
+                    qMeta.textContent = '✨ inspiration';
+                }
+            }
+            fetchQuote();
+
+            // ============================================================
+            //  ✅ AUTH LOGIN
+            // ============================================================
+            const authForm = document.getElementById('authForm');
+            const authStatus = document.getElementById('authStatusMessage');
+            const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+
+            authForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('auth-email').value.trim();
+                const password = document.getElementById('auth-password').value;
+
+                if (!email || !password) {
+                    authStatus.className = 'auth-status error';
+                    authStatus.textContent = '⚠️ Please enter both email and password.';
+                    authStatus.style.display = 'block';
+                    return;
+                }
+
+                authStatus.className = 'auth-status success';
+                authStatus.textContent = '⏳ Authenticating...';
+                authStatus.style.display = 'block';
+                loginSubmitBtn.disabled = true;
+                loginSubmitBtn.textContent = '⏳ Please wait...';
+
+                try {
+                    const result = await login(email, password);
+                    
+                    console.log('✅ Login successful:', result);
+
+                    // Check if user has admin role
+                    if (result.role !== 'admin') {
+                        authStatus.className = 'auth-status error';
+                        authStatus.textContent = '❌ Access denied. Only admin users can login.';
+                        authStatus.style.display = 'block';
+                        loginSubmitBtn.disabled = false;
+                        loginSubmitBtn.textContent = 'Authenticate';
+                        // Logout since not admin
+                        await logout();
+                        return;
+                    }
+
+                    authStatus.className = 'auth-status success';
+                    authStatus.textContent = `✅ Welcome ${result.full_name || result.email}! Redirecting...`;
+                    authStatus.style.display = 'block';
+
+                    // Update navbar
+                    await updateNavbarAuth();
+
+                    // Redirect to dashboard
+                    setTimeout(() => {
+                        closeLoginModal();
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+
+                } catch (err) {
+                    console.error('Login error:', err);
+                    authStatus.className = 'auth-status error';
+                    authStatus.textContent = '❌ ' + (err.message || 'Invalid credentials.');
+                    authStatus.style.display = 'block';
+                    loginSubmitBtn.disabled = false;
+                    loginSubmitBtn.textContent = 'Authenticate';
+                }
+            });
+
+            // ============================================================
+            //  ✅ MODAL CONTROLS
+            // ============================================================
+            const loginModal = document.getElementById('loginModal');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+            function openLoginModal(e) {
+                if (e) e.preventDefault();
+                console.log('🔐 Opening login modal');
+                loginModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                authStatus.className = 'auth-status';
+                authStatus.textContent = '';
+                authStatus.style.display = 'none';
+                document.getElementById('auth-email').value = '';
+                document.getElementById('auth-password').value = '';
+                loginSubmitBtn.disabled = false;
+                loginSubmitBtn.textContent = 'Authenticate';
+                document.getElementById('auth-email').focus();
+            }
+
+            function closeLoginModal() {
+                loginModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            // Make openLoginModal globally accessible for navbar
+            window.openLoginModal = openLoginModal;
+
+            modalCloseBtn.addEventListener('click', closeLoginModal);
+            loginModal.addEventListener('click', (e) => {
+                if (e.target === loginModal) closeLoginModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && loginModal.classList.contains('active')) closeLoginModal();
+            });
+
+            // ============================================================
+            //  ✅ UPDATE NAVBAR
+            // ============================================================
+            // Initialize navbar
+            updateNavbarAuth();
+
+            // Listen for storage changes
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'auth_verified' || e.key === 'auth_user_id' || e.key === 'auth_role') {
+                    updateNavbarAuth();
+                }
+            });
+
+            // ============================================================
+            //  BLOG POSTS
+            // ============================================================
+            let allPosts = [];
+            let currentSlug = null;
+            let currentFilter = 'published';
+
+            function escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            function getFilteredPosts(filter) {
+                const nonDraftPosts = allPosts.filter(p => p.status !== 'draft');
+                if (filter === 'all') {
+                    return nonDraftPosts;
+                }
+                return nonDraftPosts.filter(p => p.status === filter);
+            }
+
+            function updateFilterCounts() {
+                const nonDraftPosts = allPosts.filter(p => p.status !== 'draft');
+                const published = nonDraftPosts.filter(p => p.status === 'published').length;
+                const archived = nonDraftPosts.filter(p => p.status === 'archived').length;
+                document.getElementById('countPublished').textContent = `(${published})`;
+                document.getElementById('countArchived').textContent = `(${archived})`;
+            }
+
+            function renderPostList(posts) {
+                const container = document.getElementById('postsContainer');
+                const empty = document.getElementById('emptyState');
+                const backWrapper = document.getElementById('backToBlogWrapper');
+
+                backWrapper.style.display = 'none';
+                if (!posts || posts.length === 0) {
+                    empty.style.display = 'block';
+                    container.innerHTML = '';
+                    return;
+                }
+                empty.style.display = 'none';
+
+                container.innerHTML = posts.map(post => {
+                    const excerpt = post.excerpt || (post.content || '').substring(0, 160) + '...';
+                    const displayDate = post.published_at || post.created_at;
+                    return `
+                        <article class="blog-card reveal" data-slug="${escapeHtml(post.slug || '')}">
+                            <div class="blog-meta">
+                                <span>📅 ${displayDate ? new Date(displayDate).toLocaleDateString() : 'Date TBD'}</span>
+                                <span>⏱ ${Math.ceil((post.content || '').length / 1000)} min read</span>
+                                <span class="blog-status ${post.status || 'draft'}">${post.status || 'draft'}</span>
+                            </div>
+                            <h2 class="blog-title"><a href="#" class="post-link" data-slug="${escapeHtml(post.slug || '')}">${escapeHtml(post.title || 'Untitled')}</a></h2>
+                            ${post.featured_image ? `<img src="${escapeHtml(post.featured_image)}" alt="${escapeHtml(post.title || 'Blog post')}" style="width:100%; max-height:300px; object-fit:cover; border-radius:12px; margin-bottom:12px;" loading="lazy">` : ''}
+                            <p class="blog-excerpt">${escapeHtml(excerpt)}</p>
+                            ${(post.content || '').length > 160 ? `<button class="read-more-btn post-link" data-slug="${escapeHtml(post.slug || '')}">Read more →</button>` : ''}
+                            <div class="blog-tags">
+                                ${post.tags && post.tags.length > 0 ? post.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('') : '<span>uncategorized</span>'}
+                            </div>
+                        </article>
+                    `;
+                }).join('');
+
+                document.querySelectorAll('.post-link').forEach(el => {
+                    el.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const slug = el.dataset.slug;
+                        if (slug) showSinglePost(slug);
+                    });
+                });
+
+                document.querySelectorAll('.blog-card.reveal').forEach(el => obs.observe(el));
+            }
+
+            function renderSinglePost(post) {
+                const container = document.getElementById('postsContainer');
+                const empty = document.getElementById('emptyState');
+                const backWrapper = document.getElementById('backToBlogWrapper');
+                backWrapper.style.display = 'block';
+                empty.style.display = 'none';
+                
+                const displayDate = post.published_at || post.created_at;
+
+                container.innerHTML = `
+                    <article class="blog-card single-post reveal active">
+                        <div class="blog-meta">
+                            <span>📅 ${displayDate ? new Date(displayDate).toLocaleDateString() : 'Date TBD'}</span>
+                            <span>⏱ ${Math.ceil((post.content || '').length / 1000)} min read</span>
+                            <span class="blog-status ${post.status || 'draft'}">${post.status || 'draft'}</span>
+                        </div>
+                        ${post.featured_image ? `<img src="${escapeHtml(post.featured_image)}" alt="${escapeHtml(post.title || 'Blog post')}" style="width:100%; max-height:400px; object-fit:cover; border-radius:16px; margin-bottom:16px;" loading="lazy">` : ''}
+                        <h1 class="blog-title">${escapeHtml(post.title || 'Untitled')}</h1>
+                        <div class="blog-content-full">${post.content || ''}</div>
+                        <div class="blog-tags">
+                            ${post.tags && post.tags.length > 0 ? post.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('') : '<span>uncategorized</span>'}
+                        </div>
+                        ${post.views !== undefined ? `<div style="margin-top:16px; font-size:0.8rem; color:var(--text-secondary);">👁️ ${post.views} views</div>` : ''}
+                    </article>
+                `;
+                document.querySelector('.main-blog').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            function showSinglePost(slug) {
+                const post = allPosts.find(p => p.slug === slug && p.status !== 'draft');
+                if (!post) {
+                    showBlogList();
+                    return;
+                }
+                currentSlug = slug;
+                document.getElementById('filterTabs').style.display = 'none';
+                renderSinglePost(post);
+                if (history.pushState) {
+                    history.pushState(null, null, '#' + slug);
+                }
+            }
+
+            function showBlogList() {
+                currentSlug = null;
+                document.getElementById('filterTabs').style.display = 'flex';
+                const filtered = getFilteredPosts(currentFilter);
+                renderPostList(filtered);
+                if (history.pushState) {
+                    history.pushState(null, null, ' ');
+                }
+            }
+
+            // ===== FETCH POSTS =====
+            async function fetchBlogPosts() {
+                const loadingState = document.getElementById('loadingState');
+                const blogContent = document.getElementById('blogContent');
+
+                try {
+                    loadingState.style.display = 'block';
+                    blogContent.style.display = 'none';
+
+                    const { data, error } = await supabaseClient
+                        .from('blogs')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+
+                    allPosts = data || [];
+                    updateFilterCounts();
+                    loadingState.style.display = 'none';
+                    blogContent.style.display = 'block';
+
+                    const hash = window.location.hash.replace('#', '');
+                    if (hash) {
+                        const post = allPosts.find(p => p.slug === hash && p.status !== 'draft');
+                        if (post) {
+                            showSinglePost(hash);
+                            return;
+                        }
+                    }
+                    showBlogList();
+
+                } catch (err) {
+                    console.error('Fetch error:', err);
+                    loadingState.style.display = 'none';
+                    blogContent.style.display = 'block';
+                    document.getElementById('postsContainer').innerHTML = `<p style="color:#ef4444;text-align:center;">Failed to load posts: ${err.message}</p>`;
+                }
+            }
+
+            // ===== FILTER TABS =====
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    if (!currentSlug) {
+                        const filtered = getFilteredPosts(currentFilter);
+                        renderPostList(filtered);
+                    }
+                });
+            });
+
+            // ===== BACK TO BLOG =====
+            document.getElementById('backToBlogLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                showBlogList();
+            });
+
+            // ===== HANDLE HASH CHANGE =====
+            window.addEventListener('hashchange', () => {
+                const hash = window.location.hash.replace('#', '');
+                if (hash) {
+                    const post = allPosts.find(p => p.slug === hash && p.status !== 'draft');
+                    if (post) showSinglePost(hash);
+                } else {
+                    showBlogList();
+                }
+            });
+
+            // ===== HOME BUTTON with Click Animation =====
+            document.getElementById('interactiveHomeBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetUrl = this.getAttribute('href');
+                const button = this;
+
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                const rect = button.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                ripple.style.width = ripple.style.height = `${size}px`;
+                ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+                ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+                button.appendChild(ripple);
+
+                button.classList.add('clicked-exit');
+
+                setTimeout(() => {
+                    window.location.href = targetUrl;
+                }, 450);
+            });
+
+            // ============================================================
+            //  ✅ INIT
+            // ============================================================
+            // Load blog posts
+            fetchBlogPosts();
+
+        })();
+    </script>
+</body>
+</html>

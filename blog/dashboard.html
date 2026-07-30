@@ -7,8 +7,97 @@
     <link rel="preconnect" href="https://fonts.googleapis.com/">
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>    
-<style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // ============================================================
+        // ✅ SUPABASE CLIENT INITIALIZATION
+        // ============================================================
+        const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
+        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+        
+        console.log('✅ Supabase client initialized');
+
+        // ============================================================
+        // ✅ AUTH FUNCTIONS (Using user_roles table)
+        // ============================================================
+        
+        // Get current session
+        async function getSession() {
+            try {
+                const { data, error } = await supabaseClient.auth.getSession();
+                if (error) throw error;
+                return data.session;
+            } catch (error) {
+                console.error('Get session error:', error);
+                return null;
+            }
+        }
+
+        // Get current user with role from user_roles
+        async function getCurrentUser() {
+            try {
+                const session = await getSession();
+                if (!session) return null;
+
+                const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+                if (userError || !user) return null;
+
+                const { data: roleData, error: roleError } = await supabaseClient
+                    .from('user_roles')
+                    .select('role, status, email, full_name')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (roleError) {
+                    console.warn('User role not found:', roleError);
+                    return null;
+                }
+
+                if (roleData.status !== 'active') {
+                    console.warn('User is inactive');
+                    return null;
+                }
+
+                return {
+                    id: user.id,
+                    email: roleData.email || user.email,
+                    role: roleData.role,
+                    status: roleData.status,
+                    full_name: roleData.full_name || user.user_metadata?.full_name || user.email
+                };
+            } catch (error) {
+                console.error('Get current user error:', error);
+                return null;
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                await supabaseClient.auth.signOut();
+                localStorage.removeItem('auth_user_id');
+                localStorage.removeItem('auth_email');
+                localStorage.removeItem('auth_role');
+                localStorage.removeItem('auth_status');
+                localStorage.removeItem('auth_full_name');
+                localStorage.removeItem('auth_verified');
+                console.log('✅ Logged out successfully');
+                return true;
+            } catch (error) {
+                console.error('Logout error:', error);
+                throw error;
+            }
+        }
+
+        // ============================================================
+        // ✅ END OF AUTH FUNCTIONS
+        // ============================================================
+    </script>
+    
+    <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
@@ -506,361 +595,392 @@
     
     <div class="toast" id="toast"></div>
 
-    <!-- ============================================================ -->
-    <!-- ✅ AUTH.JS - Centralized Authentication -->
-    <!-- ============================================================ -->
-    <script src="auth.js"></script>
-    
-   <script>
-    (function() {
-        'use strict';
+    <script>
+        (function() {
+            'use strict';
 
-        // ============================================================
-        //  THEME
-        // ============================================================
-        const themeToggle = document.getElementById('themeToggle');
-        const getTheme = () => localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        const applyTheme = (t) => {
-            document.documentElement.setAttribute('data-theme', t);
-            localStorage.setItem('theme', t);
-        };
-        applyTheme(getTheme());
-        themeToggle.addEventListener('click', () => {
-            const cur = document.documentElement.getAttribute('data-theme');
-            applyTheme(cur === 'dark' ? 'light' : 'dark');
-        });
+            // ============================================================
+            //  THEME
+            // ============================================================
+            const themeToggle = document.getElementById('themeToggle');
+            const getTheme = () => localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            const applyTheme = (t) => {
+                document.documentElement.setAttribute('data-theme', t);
+                localStorage.setItem('theme', t);
+            };
+            applyTheme(getTheme());
+            themeToggle.addEventListener('click', () => {
+                const cur = document.documentElement.getAttribute('data-theme');
+                applyTheme(cur === 'dark' ? 'light' : 'dark');
+            });
 
-        // ============================================================
-        //  ✅ CHECK AUTH & ROLE - Using auth.js
-        // ============================================================
-        async function checkAuthAndRole() {
-            // Get user from centralized auth
-            const user = getCurrentUser();
+            // ============================================================
+            //  ✅ CHECK AUTH & ROLE
+            // ============================================================
+            async function checkAuthAndRole() {
+                const user = await getCurrentUser();
+                
+                console.log('🔍 Dashboard Auth Check:', user);
+                
+                if (!user) {
+                    document.getElementById('loginRequired').style.display = 'block';
+                    document.getElementById('accessDenied').style.display = 'none';
+                    document.getElementById('dashboardContent').style.display = 'none';
+                    return false;
+                }
+                
+                // Only admin can access dashboard
+                if (user.role === 'admin' && user.status === 'active') {
+                    document.getElementById('loginRequired').style.display = 'none';
+                    document.getElementById('accessDenied').style.display = 'none';
+                    document.getElementById('dashboardContent').style.display = 'block';
+                    return true;
+                } else {
+                    document.getElementById('loginRequired').style.display = 'none';
+                    document.getElementById('accessDenied').style.display = 'block';
+                    document.getElementById('dashboardContent').style.display = 'none';
+                    return false;
+                }
+            }
+
+            // ============================================================
+            //  ✅ LOGOUT
+            // ============================================================
+            document.getElementById('logoutBtn').addEventListener('click', async function() {
+                if (confirm('Are you sure you want to logout?')) {
+                    await logout();
+                    window.location.href = 'blog.html';
+                }
+            });
+
+            // ============================================================
+            //  DASHBOARD FUNCTIONALITY
+            // ============================================================
+            let currentPosts = [];
+            let filteredPosts = [];
+            let editingId = null;
             
-            console.log('🔍 Dashboard Auth Check:', user);
+            const postsTableBody = document.getElementById('postsTableBody');
+            const loadingState = document.getElementById('loadingState');
+            const tableContent = document.getElementById('tableContent');
+            const emptyState = document.getElementById('emptyState');
+            const modal = document.getElementById('postModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const postForm = document.getElementById('postForm');
+            const postId = document.getElementById('postId');
+            const postTitle = document.getElementById('postTitle');
+            const postSlug = document.getElementById('postSlug');
+            const postExcerpt = document.getElementById('postExcerpt');
+            const postContent = document.getElementById('postContent');
+            const postTags = document.getElementById('postTags');
+            const postStatus = document.getElementById('postStatus');
+            const postImage = document.getElementById('postImage');
+            const submitBtn = document.getElementById('submitBtn');
             
-            // If not logged in, show login required
-            if (!user) {
-                document.getElementById('loginRequired').style.display = 'block';
-                document.getElementById('accessDenied').style.display = 'none';
-                document.getElementById('dashboardContent').style.display = 'none';
-                return false;
+            const filterTitle = document.getElementById('filterTitle');
+            const filterStatus = document.getElementById('filterStatus');
+            const filterTags = document.getElementById('filterTags');
+            const filterViews = document.getElementById('filterViews');
+            const filterDate = document.getElementById('filterDate');
+            const filterActions = document.getElementById('filterActions');
+            
+            function showToast(message, type = 'success') {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.className = 'toast ' + type + ' show';
+                clearTimeout(toast._timeout);
+                toast._timeout = setTimeout(() => toast.classList.remove('show'), 3000);
             }
             
-            // Check if user has admin role AND is active
-            if (user.role === 'admin' && user.status === 'active') {
-                // Admin - show dashboard
-                document.getElementById('loginRequired').style.display = 'none';
-                document.getElementById('accessDenied').style.display = 'none';
-                document.getElementById('dashboardContent').style.display = 'block';
-                return true;
-            } else {
-                // Not admin - show access denied
-                document.getElementById('loginRequired').style.display = 'none';
-                document.getElementById('accessDenied').style.display = 'block';
-                document.getElementById('dashboardContent').style.display = 'none';
-                return false;
+            async function fetchPosts() {
+                try {
+                    loadingState.style.display = 'block';
+                    tableContent.style.display = 'none';
+                    
+                    const { data, error } = await supabaseClient
+                        .from('blogs')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    
+                    if (error) throw error;
+                    
+                    currentPosts = data || [];
+                    filteredPosts = [...currentPosts];
+                    renderPosts(filteredPosts);
+                    updateStats(currentPosts);
+                    
+                    loadingState.style.display = 'none';
+                    tableContent.style.display = 'block';
+                    
+                } catch (err) {
+                    console.error('Fetch error:', err);
+                    showToast('Failed to load posts: ' + err.message, 'error');
+                    loadingState.style.display = 'none';
+                    tableContent.style.display = 'block';
+                }
             }
-        }
-
-        // ============================================================
-        //  ✅ LOGOUT - Using auth.js
-        // ============================================================
-        document.getElementById('logoutBtn').addEventListener('click', async function() {
-            if (confirm('Are you sure you want to logout?')) {
-                await logout();
-                window.location.href = 'blog.html';
-            }
-        });
-
-        // ============================================================
-        //  DASHBOARD FUNCTIONALITY
-        // ============================================================
-        let currentPosts = [];
-        let filteredPosts = [];
-        let editingId = null;
-        
-        const postsTableBody = document.getElementById('postsTableBody');
-        const loadingState = document.getElementById('loadingState');
-        const tableContent = document.getElementById('tableContent');
-        const emptyState = document.getElementById('emptyState');
-        const modal = document.getElementById('postModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const postForm = document.getElementById('postForm');
-        const postId = document.getElementById('postId');
-        const postTitle = document.getElementById('postTitle');
-        const postSlug = document.getElementById('postSlug');
-        const postExcerpt = document.getElementById('postExcerpt');
-        const postContent = document.getElementById('postContent');
-        const postTags = document.getElementById('postTags');
-        const postStatus = document.getElementById('postStatus');
-        const postImage = document.getElementById('postImage');
-        const submitBtn = document.getElementById('submitBtn');
-        
-        const filterTitle = document.getElementById('filterTitle');
-        const filterStatus = document.getElementById('filterStatus');
-        const filterTags = document.getElementById('filterTags');
-        const filterViews = document.getElementById('filterViews');
-        const filterDate = document.getElementById('filterDate');
-        const filterActions = document.getElementById('filterActions');
-        
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = 'toast ' + type + ' show';
-            clearTimeout(toast._timeout);
-            toast._timeout = setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-        
-        async function fetchPosts() {
-            try {
-                loadingState.style.display = 'block';
-                tableContent.style.display = 'none';
+            
+            window.applyFilters = function() {
+                const titleVal = filterTitle.value.toLowerCase().trim();
+                const statusVal = filterStatus.value.toLowerCase().trim();
+                const tagsVal = filterTags.value.toLowerCase().trim();
+                const viewsVal = filterViews.value.toLowerCase().trim();
+                const dateVal = filterDate.value.toLowerCase().trim();
+                const actionsVal = filterActions.value.toLowerCase().trim();
                 
-                const { data, error } = await supabaseClient
-                    .from('blogs')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+                filteredPosts = currentPosts.filter(post => {
+                    if (titleVal && !(post.title || '').toLowerCase().includes(titleVal)) return false;
+                    if (statusVal && !(post.status || '').toLowerCase().includes(statusVal)) return false;
+                    if (tagsVal) {
+                        const tagString = (post.tags || []).join(' ').toLowerCase();
+                        if (!tagString.includes(tagsVal)) return false;
+                    }
+                    if (viewsVal && !String(post.views || 0).includes(viewsVal)) return false;
+                    if (dateVal) {
+                        const dateStr = post.published_at ? new Date(post.published_at).toLocaleDateString() : new Date(post.created_at).toLocaleDateString();
+                        if (!dateStr.toLowerCase().includes(dateVal)) return false;
+                    }
+                    if (actionsVal) {
+                        const actionText = 'Edit Delete';
+                        if (!actionText.toLowerCase().includes(actionsVal)) return false;
+                    }
+                    return true;
+                });
                 
-                if (error) throw error;
-                
-                currentPosts = data || [];
-                filteredPosts = [...currentPosts];
                 renderPosts(filteredPosts);
-                updateStats(currentPosts);
-                
-                loadingState.style.display = 'none';
-                tableContent.style.display = 'block';
-                
-            } catch (err) {
-                console.error('Fetch error:', err);
-                showToast('Failed to load posts: ' + err.message, 'error');
-                loadingState.style.display = 'none';
-                tableContent.style.display = 'block';
-            }
-        }
-        
-        window.applyFilters = function() {
-            const titleVal = filterTitle.value.toLowerCase().trim();
-            const statusVal = filterStatus.value.toLowerCase().trim();
-            const tagsVal = filterTags.value.toLowerCase().trim();
-            const viewsVal = filterViews.value.toLowerCase().trim();
-            const dateVal = filterDate.value.toLowerCase().trim();
-            const actionsVal = filterActions.value.toLowerCase().trim();
+            };
             
-            filteredPosts = currentPosts.filter(post => {
-                if (titleVal && !(post.title || '').toLowerCase().includes(titleVal)) return false;
-                if (statusVal && !(post.status || '').toLowerCase().includes(statusVal)) return false;
-                if (tagsVal) {
-                    const tagString = (post.tags || []).join(' ').toLowerCase();
-                    if (!tagString.includes(tagsVal)) return false;
+            function renderPosts(posts) {
+                if (!posts || posts.length === 0) {
+                    postsTableBody.innerHTML = '';
+                    emptyState.style.display = 'block';
+                    return;
                 }
-                if (viewsVal && !String(post.views || '').includes(viewsVal)) return false;
-                if (dateVal) {
-                    const dateStr = post.published_at ? new Date(post.published_at).toLocaleDateString() : new Date(post.created_at).toLocaleDateString();
-                    if (!dateStr.toLowerCase().includes(dateVal)) return false;
+                emptyState.style.display = 'none';
+                
+                postsTableBody.innerHTML = posts.map((post, index) => `
+                    <tr style="animation: fadeSlideUp 0.4s ease ${index * 0.03}s forwards; opacity: 0;">
+                        <td><strong>${escapeHtml(post.title || 'Untitled')}</strong></td>
+                        <td><span class="status-badge ${post.status || 'draft'}">${post.status || 'draft'}</span></td>
+                        <td>
+                            <div class="tags">
+                                ${post.tags && post.tags.length > 0 ? post.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('') : '—'}
+                            </div>
+                        </td>
+                        <td>${post.views || 0}</td>
+                        <td style="font-size:0.85rem;color:var(--text-secondary);">
+                            ${post.published_at ? new Date(post.published_at).toLocaleDateString() : new Date(post.created_at).toLocaleDateString()}
+                        </td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn btn-primary btn-sm" onclick="editPost('${post.id}')">✏️ Edit</button>
+                                <button class="btn btn-danger btn-sm" onclick="deletePost('${post.id}')">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+            
+            function updateStats(posts) {
+                const total = posts.length;
+                const published = posts.filter(p => p.status === 'published').length;
+                const drafts = posts.filter(p => p.status === 'draft').length;
+                const archived = posts.filter(p => p.status === 'archived').length;
+                const views = posts.reduce((sum, p) => sum + (p.views || 0), 0);
+                
+                animateNumber('totalPosts', total);
+                animateNumber('publishedPosts', published);
+                animateNumber('draftPosts', drafts);
+                animateNumber('archivedPosts', archived);
+                animateNumber('totalViews', views);
+            }
+            
+            function animateNumber(id, target) {
+                const el = document.getElementById(id);
+                const current = parseInt(el.textContent) || 0;
+                const duration = 600;
+                const startTime = performance.now();
+                
+                function update(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    const value = Math.round(current + (target - current) * eased);
+                    el.textContent = value;
+                    if (progress < 1) {
+                        requestAnimationFrame(update);
+                    }
                 }
-                if (actionsVal) {
-                    const actionText = 'Edit Delete';
-                    if (!actionText.toLowerCase().includes(actionsVal)) return false;
+                requestAnimationFrame(update);
+            }
+            
+            function escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            function generateSlug(text) {
+                return text
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .replace(/^-+/, '')
+                    .replace(/-+$/, '');
+            }
+            
+            document.getElementById('postTitle').addEventListener('input', function() {
+                const slugInput = document.getElementById('postSlug');
+                if (!slugInput.dataset.manuallyEdited) {
+                    slugInput.value = generateSlug(this.value);
                 }
-                return true;
             });
             
-            renderPosts(filteredPosts);
-        };
-        
-        function renderPosts(posts) {
-            if (!posts || posts.length === 0) {
-                postsTableBody.innerHTML = '';
-                emptyState.style.display = 'block';
-                return;
-            }
-            emptyState.style.display = 'none';
+            document.getElementById('postSlug').addEventListener('input', function() {
+                this.dataset.manuallyEdited = 'true';
+                this.value = this.value.toLowerCase().trim().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-');
+            });
             
-            postsTableBody.innerHTML = posts.map((post, index) => `
-                <tr style="animation: fadeSlideUp 0.4s ease ${index * 0.03}s forwards; opacity: 0;">
-                    <td><strong>${escapeHtml(post.title || 'Untitled')}</strong></td>
-                    <td><span class="status-badge ${post.status || 'draft'}">${post.status || 'draft'}</span></td>
-                    <td>
-                        <div class="tags">
-                            ${post.tags && post.tags.length > 0 ? post.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('') : '—'}
-                        </div>
-                    </td>
-                    <td>${post.views || 0}</td>
-                    <td style="font-size:0.85rem;color:var(--text-secondary);">
-                        ${post.published_at ? new Date(post.published_at).toLocaleDateString() : new Date(post.created_at).toLocaleDateString()}
-                    </td>
-                    <td>
-                        <div class="actions">
-                            <button class="btn btn-primary btn-sm" onclick="editPost('${post.id}')">✏️ Edit</button>
-                            <button class="btn btn-danger btn-sm" onclick="deletePost('${post.id}')">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        }
-        
-        function updateStats(posts) {
-            const total = posts.length;
-            const published = posts.filter(p => p.status === 'published').length;
-            const drafts = posts.filter(p => p.status === 'draft').length;
-            const archived = posts.filter(p => p.status === 'archived').length;
-            const views = posts.reduce((sum, p) => sum + (p.views || 0), 0);
+            window.openCreateModal = function() {
+                editingId = null;
+                modalTitle.textContent = '📝 Create New Post';
+                submitBtn.textContent = '💾 Save Post';
+                postForm.reset();
+                postId.value = '';
+                document.getElementById('postSlug').dataset.manuallyEdited = '';
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            };
             
-            animateNumber('totalPosts', total);
-            animateNumber('publishedPosts', published);
-            animateNumber('draftPosts', drafts);
-            animateNumber('archivedPosts', archived);
-            animateNumber('totalViews', views);
-        }
-        
-        function animateNumber(id, target) {
-            const el = document.getElementById(id);
-            const current = parseInt(el.textContent) || 0;
-            const duration = 600;
-            const startTime = performance.now();
-            
-            function update(currentTime) {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const eased = 1 - Math.pow(1 - progress, 3);
-                const value = Math.round(current + (target - current) * eased);
-                el.textContent = value;
-                if (progress < 1) {
-                    requestAnimationFrame(update);
-                }
-            }
-            requestAnimationFrame(update);
-        }
-        
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        window.openCreateModal = function() {
-            editingId = null;
-            modalTitle.textContent = '📝 Create New Post';
-            submitBtn.textContent = '💾 Save Post';
-            postForm.reset();
-            postId.value = '';
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        };
-        
-        window.editPost = function(id) {
-            const post = currentPosts.find(p => p.id == id);
-            if (!post) {
-                showToast('Post not found', 'error');
-                return;
-            }
-            
-            editingId = id;
-            modalTitle.textContent = '✏️ Edit Post';
-            submitBtn.textContent = '💾 Update Post';
-            postId.value = id;
-            postTitle.value = post.title || '';
-            postSlug.value = post.slug || '';
-            postExcerpt.value = post.excerpt || '';
-            postContent.value = post.content || '';
-            postTags.value = post.tags ? post.tags.join(', ') : '';
-            postStatus.value = post.status || 'draft';
-            postImage.value = post.featured_image || '';
-            
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        };
-        
-        window.closeModal = function() {
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-            postForm.reset();
-            editingId = null;
-        };
-        
-        postForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const id = postId.value;
-            const title = postTitle.value.trim();
-            const slug = postSlug.value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
-            const excerpt = postExcerpt.value.trim();
-            const content = postContent.value.trim();
-            const tags = postTags.value.split(',').map(t => t.trim()).filter(Boolean);
-            const status = postStatus.value;
-            const featured_image = postImage.value.trim();
-            
-            if (!title || !slug || !content) {
-                showToast('Title, Slug, and Content are required', 'error');
-                return;
-            }
-            
-            try {
-                const now = new Date().toISOString();
-                const data = { title, slug, excerpt, content, tags, status, featured_image, updated_at: now };
-                
-                if (status === 'published' && !id) data.published_at = now;
-                
-                let result;
-                if (id) {
-                    result = await supabaseClient.from('blogs').update(data).eq('id', id);
-                } else {
-                    data.created_at = now;
-                    if (status === 'published') data.published_at = now;
-                    result = await supabaseClient.from('blogs').insert([data]);
+            window.editPost = function(id) {
+                const post = currentPosts.find(p => p.id == id);
+                if (!post) {
+                    showToast('Post not found', 'error');
+                    return;
                 }
                 
-                if (result.error) throw result.error;
+                editingId = id;
+                modalTitle.textContent = '✏️ Edit Post';
+                submitBtn.textContent = '💾 Update Post';
+                postId.value = id;
+                postTitle.value = post.title || '';
+                postSlug.value = post.slug || '';
+                postSlug.dataset.manuallyEdited = 'true';
+                postExcerpt.value = post.excerpt || '';
+                postContent.value = post.content || '';
+                postTags.value = post.tags ? post.tags.join(', ') : '';
+                postStatus.value = post.status || 'draft';
+                postImage.value = post.featured_image || '';
                 
-                showToast(id ? '✅ Post updated successfully!' : '✅ Post created successfully!');
-                closeModal();
-                fetchPosts();
-                
-            } catch (err) {
-                console.error('Save error:', err);
-                showToast('Failed to save: ' + err.message, 'error');
-            }
-        });
-        
-        window.deletePost = async function(id = null) {
-            const postIdToDelete = id || postId.value;
-            if (!postIdToDelete) return;
-            if (!confirm('Are you sure you want to delete this post?')) return;
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            };
             
-            try {
-                const { error } = await supabaseClient.from('blogs').delete().eq('id', postIdToDelete);
-                if (error) throw error;
-                showToast('🗑️ Post deleted successfully');
-                if (id) { fetchPosts(); } else { closeModal(); fetchPosts(); }
-            } catch (err) {
-                console.error('Delete error:', err);
-                showToast('Failed to delete: ' + err.message, 'error');
+            window.closeModal = function() {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+                postForm.reset();
+                editingId = null;
+            };
+            
+            postForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const id = postId.value;
+                const title = postTitle.value.trim();
+                const slug = postSlug.value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-');
+                const excerpt = postExcerpt.value.trim();
+                const content = postContent.value.trim();
+                const tags = postTags.value.split(',').map(t => t.trim()).filter(Boolean);
+                const status = postStatus.value;
+                const featured_image = postImage.value.trim();
+                
+                if (!title || !slug || !content) {
+                    showToast('Title, Slug, and Content are required', 'error');
+                    return;
+                }
+                
+                try {
+                    const now = new Date().toISOString();
+                    const data = { 
+                        title, 
+                        slug, 
+                        excerpt, 
+                        content, 
+                        tags, 
+                        status, 
+                        featured_image,
+                        updated_at: now 
+                    };
+                    
+                    if (status === 'published') {
+                        data.published_at = now;
+                    } else if (!id) {
+                        data.published_at = null;
+                    }
+                    
+                    let result;
+                    if (id) {
+                        result = await supabaseClient.from('blogs').update(data).eq('id', id);
+                    } else {
+                        data.created_at = now;
+                        if (status === 'published') {
+                            data.published_at = now;
+                        }
+                        result = await supabaseClient.from('blogs').insert([data]);
+                    }
+                    
+                    if (result.error) throw result.error;
+                    
+                    showToast(id ? '✅ Post updated successfully!' : '✅ Post created successfully!');
+                    closeModal();
+                    fetchPosts();
+                    
+                } catch (err) {
+                    console.error('Save error:', err);
+                    showToast('Failed to save: ' + err.message, 'error');
+                }
+            });
+            
+            window.deletePost = async function(id = null) {
+                const postIdToDelete = id || postId.value;
+                if (!postIdToDelete) return;
+                if (!confirm('Are you sure you want to delete this post?')) return;
+                
+                try {
+                    const { error } = await supabaseClient.from('blogs').delete().eq('id', postIdToDelete);
+                    if (error) throw error;
+                    showToast('🗑️ Post deleted successfully');
+                    if (id) { fetchPosts(); } else { closeModal(); fetchPosts(); }
+                } catch (err) {
+                    console.error('Delete error:', err);
+                    showToast('Failed to delete: ' + err.message, 'error');
+                }
+            };
+            
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) closeModal();
+            });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeModal();
+            });
+            
+            // ============================================================
+            //  ✅ INIT
+            // ============================================================
+            async function init() {
+                const isAdmin = await checkAuthAndRole();
+                if (isAdmin) {
+                    fetchPosts();
+                }
             }
-        };
-        
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) closeModal();
-        });
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeModal();
-        });
-        
-        // ============================================================
-        //  ✅ INIT
-        // ============================================================
-        async function init() {
-            const isAdmin = await checkAuthAndRole();
-            if (isAdmin) {
-                fetchPosts();
-            }
-        }
-        
-        init();
-        
-    })();
-</script>
+            
+            init();
+            
+        })();
+    </script>
 </body>
 </html>
