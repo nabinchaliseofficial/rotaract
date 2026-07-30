@@ -1,914 +1,1805 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Rotaract Club - LHE Form</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
-    <style>
-        :root {
-            --magenta: #D91B5C;
-            --magenta-dark: #B5154C;
-            --magenta-light: #FCE4EC;
-            --magenta-glow: rgba(217, 27, 92, 0.12);
-            --blue-dark: #0B1E30;
-            --blue-mid: #1A3A5C;
-            --gray-100: #F8FAFC;
-            --gray-200: #E9EDF4;
-            --gray-300: #D0D9E8;
-            --gray-400: #8A9BB0;
-            --gray-500: #6B7A93;
-            --gray-600: #4A5A72;
-            --gray-700: #1E3146;
-            --white: #FFFFFF;
-            --success: #1E8B4C;
-            --success-bg: #E6F7EE;
-            --error: #B13A2E;
-            --error-bg: #FEF0EE;
-            --shadow-card: 0 20px 60px rgba(0, 20, 40, 0.08);
-            --radius-lg: 28px;
-            --radius-md: 16px;
-            --radius-sm: 12px;
-            --transition: 0.25s ease;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #F4F7FB;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem 1rem;
-        }
-
-        .app {
-            max-width: 720px;
-            width: 100%;
-            background: var(--white);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-card);
-            overflow: hidden;
-        }
-
-        /* ─── Header ──────────────────────────────────────────────────────────────── */
-        .app-header {
-            background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
-            padding: 1.5rem 2rem;
-            color: var(--white);
-            text-align: center;
-            border-bottom: 4px solid var(--magenta);
-        }
-
-        .app-header .logo-wrap {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .app-header .logo-wrap .logo-img {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--magenta);
-        }
-
-        .app-header h1 {
-            font-size: 1.2rem;
-            font-weight: 700;
-            letter-spacing: -0.3px;
-        }
-
-        .app-header .sub {
-            font-size: 0.8rem;
-            opacity: 0.8;
-            font-weight: 400;
-        }
-
-        .app-header .badge {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.10);
-            padding: 0.3rem 1.5rem;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            margin-top: 0.5rem;
-        }
-
-        .app-header .badge .live-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: #4ADE80;
-            border-radius: 50%;
-            animation: pulse-dot 1.8s ease-in-out infinite;
-            margin-right: 6px;
-        }
-
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.8); }
-        }
-
-        /* ─── Form ────────────────────────────────────────────────────────────────── */
-        .form-container {
-            padding: 2rem 2.5rem;
-        }
-
-        .form-container .form-title {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: var(--blue-dark);
-            margin-bottom: 0.3rem;
-        }
-
-        .form-container .form-subtitle {
-            font-size: 0.85rem;
-            color: var(--gray-500);
-            margin-bottom: 1.8rem;
-        }
-
-        .form-container .form-subtitle .highlight {
-            color: var(--magenta);
-            font-weight: 600;
-        }
-
-        .form-group {
-            margin-bottom: 1.2rem;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            color: var(--gray-500);
-            margin-bottom: 0.3rem;
-        }
-
-        .form-group label .required-star {
-            color: var(--magenta);
-            font-weight: 700;
-            font-size: 1rem;
-        }
-
-        .form-group label .hint {
-            font-weight: 400;
-            text-transform: none;
-            color: var(--gray-400);
-            font-size: 0.7rem;
-        }
-
-        .form-group input,
-        .form-group select {
-            padding: 0.65rem 0.9rem;
-            border: 1.5px solid var(--gray-200);
-            border-radius: var(--radius-sm);
-            font-size: 0.9rem;
-            font-family: inherit;
-            background: var(--white);
-            transition: border var(--transition), box-shadow var(--transition);
-            outline: none;
-            width: 100%;
-            color: var(--gray-700);
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            border-color: var(--magenta);
-            box-shadow: 0 0 0 3px var(--magenta-glow);
-        }
-
-        .form-group input:read-only {
-            background: var(--gray-100);
-            cursor: not-allowed;
-        }
-
-        /* ─── File Upload ────────────────────────────────────────────────────────── */
-        .form-group .file-upload-wrap {
-            position: relative;
-            border: 2px dashed var(--gray-300);
-            border-radius: var(--radius-sm);
-            padding: 1.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all var(--transition);
-            background: var(--gray-100);
-        }
-
-        .form-group .file-upload-wrap:hover {
-            border-color: var(--magenta);
-            background: var(--magenta-light);
-        }
-
-        .form-group .file-upload-wrap.dragover {
-            border-color: var(--magenta);
-            background: var(--magenta-light);
-        }
-
-        .form-group .file-upload-wrap .upload-icon {
-            font-size: 2.5rem;
-            display: block;
-            margin-bottom: 0.3rem;
-        }
-
-        .form-group .file-upload-wrap .upload-text {
-            font-size: 0.85rem;
-            color: var(--gray-500);
-        }
-
-        .form-group .file-upload-wrap .upload-text strong {
-            color: var(--magenta);
-        }
-
-        .form-group .file-upload-wrap input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .form-group .file-preview {
-            display: none;
-            margin-top: 0.5rem;
-            align-items: center;
-            gap: 0.8rem;
-            padding: 0.5rem 0.8rem;
-            background: var(--gray-100);
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--gray-200);
-        }
-
-        .form-group .file-preview.visible {
-            display: flex;
-        }
-
-        .form-group .file-preview img {
-            width: 48px;
-            height: 48px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid var(--gray-200);
-        }
-
-        .form-group .file-preview .file-name {
-            font-size: 0.8rem;
-            color: var(--gray-600);
-            flex: 1;
-            word-break: break-all;
-        }
-
-        .form-group .file-preview .file-remove {
-            background: none;
-            border: none;
-            color: var(--gray-400);
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 0 0.3rem;
-            transition: color var(--transition);
-        }
-
-        .form-group .file-preview .file-remove:hover {
-            color: var(--error);
-        }
-
-        /* ─── Form Actions ────────────────────────────────────────────────────────── */
-        .form-actions {
-            display: flex;
-            gap: 0.8rem;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .form-actions .btn {
-            padding: 0.7rem 2.2rem;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-weight: 600;
-            font-size: 0.9rem;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
-        }
-
-        .form-actions .btn-primary {
-            background: linear-gradient(135deg, var(--magenta), var(--magenta-dark));
-            color: var(--white);
-            box-shadow: 0 4px 16px rgba(217, 27, 92, 0.30);
-            flex: 1;
-            justify-content: center;
-        }
-
-        .form-actions .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 28px rgba(217, 27, 92, 0.35);
-        }
-
-        .form-actions .btn-secondary {
-            background: var(--gray-200);
-            color: var(--gray-600);
-        }
-
-        .form-actions .btn-secondary:hover {
-            background: var(--gray-300);
-        }
-
-        .form-actions .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .form-actions .btn .spinner-small {
-            display: none;
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top: 2px solid var(--white);
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-
-        .form-actions .btn.loading .spinner-small {
-            display: inline-block;
-        }
-        .form-actions .btn.loading .btn-text {
-            display: none;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ─── Success Message ────────────────────────────────────────────────────── */
-        .success-message {
-            display: none;
-            text-align: center;
-            padding: 2rem 2.5rem;
-        }
-
-        .success-message.visible {
-            display: block;
-            animation: fadeUp 0.4s ease;
-        }
-
-        @keyframes fadeUp {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        .success-message .success-icon {
-            font-size: 4rem;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-
-        .success-message h2 {
-            color: var(--blue-dark);
-            margin-bottom: 0.3rem;
-        }
-
-        .success-message p {
-            color: var(--gray-500);
-            font-size: 0.9rem;
-        }
-
-        .success-message .verification-id {
-            display: inline-block;
-            background: var(--gray-100);
-            padding: 0.3rem 1.2rem;
-            border-radius: 40px;
-            font-family: monospace;
-            font-size: 0.85rem;
-            color: var(--magenta);
-            margin-top: 0.5rem;
-            border: 1px solid var(--gray-200);
-        }
-
-        .success-message .btn-success-action {
-            margin-top: 1rem;
-            padding: 0.6rem 2rem;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-weight: 600;
-            font-size: 0.85rem;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all var(--transition);
-            background: linear-gradient(135deg, var(--magenta), var(--magenta-dark));
-            color: var(--white);
-            box-shadow: 0 4px 16px rgba(217, 27, 92, 0.30);
-        }
-
-        .success-message .btn-success-action:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 28px rgba(217, 27, 92, 0.35);
-        }
-
-        /* ─── Toast ────────────────────────────────────────────────────────────────── */
-        .toast-container {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            max-width: 380px;
-            width: 100%;
-        }
-
-        .toast {
-            padding: 0.8rem 1.2rem;
-            border-radius: var(--radius-sm);
-            font-size: 0.85rem;
-            font-weight: 500;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-            animation: slideUp 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            background: var(--white);
-            border-left: 4px solid;
-        }
-
-        .toast.success {
-            border-color: var(--success);
-            color: var(--success);
-        }
-
-        .toast.error {
-            border-color: var(--error);
-            color: var(--error);
-        }
-
-        .toast.info {
-            border-color: var(--blue-mid);
-            color: var(--blue-mid);
-        }
-
-        @keyframes slideUp {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ─── Footer ────────────────────────────────────────────────────────────────── */
-        .app-footer {
-            background: var(--blue-dark);
-            color: rgba(255, 255, 255, 0.7);
-            padding: 1rem 2.5rem;
-            font-size: 0.75rem;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            border-top: 3px solid var(--magenta);
-        }
-
-        .app-footer a {
-            color: rgba(255, 255, 255, 0.5);
-            text-decoration: none;
-            transition: color var(--transition);
-        }
-
-        .app-footer a:hover {
-            color: var(--white);
-        }
-
-        /* ─── Responsive ───────────────────────────────────────────────────────────── */
-        @media (max-width: 600px) {
-            .form-container {
-                padding: 1.2rem;
-            }
-            .success-message {
-                padding: 1.2rem;
-            }
-            .app-header {
-                padding: 1rem 1.2rem;
-            }
-            .app-header h1 {
-                font-size: 1rem;
-            }
-            .form-actions .btn {
-                flex: 1 1 100%;
-                justify-content: center;
-            }
-            .toast-container {
-                right: 0.5rem;
-                bottom: 0.5rem;
-                max-width: calc(100% - 1rem);
-            }
-        }
-
-        @media (max-width: 400px) {
-            body {
-                padding: 0.5rem;
-            }
-            .app {
-                border-radius: var(--radius-md);
-            }
-            .form-container .form-title {
-                font-size: 1.1rem;
-            }
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Letterhead Exchange Request — Rotaract Club of Galkot Baglung</title>
+<meta name="description" content="Submit a Letterhead Exchange (LHE) request with the Rotaract Club of Galkot Baglung, RI District 3292." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet" />
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   LHE Shared Design System
+   Rotaract Club of Galkot Baglung — Letterhead Exchange
+   One stylesheet, reused by LHE.html, adminLHE.html, verifyLHE.html
+   and verifyonlyLHE.html, so every screen looks and behaves the same.
+   ══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Brand */
+  --magenta: #D91B5C;
+  --magenta-dark: #B0143F;
+  --magenta-light: #FCE4EC;
+  --magenta-glow: rgba(217, 27, 92, .16);
+  --navy: #0B1E30;
+  --navy-mid: #163455;
+  --navy-soft: #1F406B;
+
+  /* Seal / signature accent — echoes an official wax seal & the Rotary
+     gear wheel; used only for "verified" moments, never as UI chrome. */
+  --seal-gold: #B8862E;
+  --seal-gold-light: #F3E4C4;
+
+  /* Neutrals */
+  --ink: #14202E;
+  --gray-900: #1E3146;
+  --gray-700: #3A4C63;
+  --gray-600: #4A5A72;
+  --gray-500: #6B7A93;
+  --gray-400: #8FA0B6;
+  --gray-300: #D3DCE8;
+  --gray-200: #E7ECF3;
+  --gray-100: #F4F7FB;
+  --gray-50: #FAFBFD;
+  --white: #FFFFFF;
+
+  /* Status */
+  --success: #157A46;
+  --success-bg: #E5F6EC;
+  --success-border: #B9E5CB;
+  --warning: #93650B;
+  --warning-bg: #FFF3DA;
+  --warning-border: #F2D693;
+  --error: #B0392B;
+  --error-bg: #FCEAE7;
+  --error-border: #F0C0B8;
+  --info: #1F4E82;
+  --info-bg: #E8F1FC;
+
+  /* Elevation */
+  --shadow-xs: 0 1px 2px rgba(11, 30, 48, .06);
+  --shadow-sm: 0 4px 14px rgba(11, 30, 48, .07);
+  --shadow-md: 0 12px 32px rgba(11, 30, 48, .10);
+  --shadow-lg: 0 24px 64px rgba(11, 30, 48, .14);
+  --shadow-btn: 0 6px 18px rgba(217, 27, 92, .28);
+
+  /* Shape */
+  --radius-xl: 26px;
+  --radius-lg: 18px;
+  --radius-md: 13px;
+  --radius-sm: 9px;
+  --radius-pill: 999px;
+
+  /* Motion */
+  --ease: cubic-bezier(.4, 0, .2, 1);
+  --fast: .15s;
+  --base: .25s;
+
+  /* Type */
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-doc: 'Source Serif 4', 'Georgia', serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font-ui);
+  background: linear-gradient(180deg, #EEF2F8 0%, #F4F7FB 260px);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; display: block; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* Consistent, visible keyboard focus everywhere */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2.5px solid var(--magenta);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─── Shell ────────────────────────────────────────────────────────── */
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.app {
+  width: 100%;
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: appIn .4s var(--ease);
+}
+
+.app--form { max-width: 720px; }
+.app--wide { max-width: 1080px; }
+.app--admin { max-width: 1440px; }
+
+@keyframes appIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Header ───────────────────────────────────────────────────────── */
+.app-header {
+  background: radial-gradient(120% 180% at 0% 0%, var(--navy-mid) 0%, var(--navy) 65%);
+  color: var(--white);
+  border-bottom: 4px solid var(--magenta);
+  padding: 1.1rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.app-header .logo-wrap { display: flex; align-items: center; gap: .9rem; min-width: 0; }
+
+.app-header .logo-img {
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--magenta);
+  flex-shrink: 0;
+  background: var(--white);
+}
+
+.app-header .club-info h1 {
+  font-size: .95rem;
+  font-weight: 700;
+  letter-spacing: .2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-header .club-info .sub {
+  font-size: .72rem;
+  opacity: .78;
+  margin-top: 1px;
+}
+
+.app-header .header-right {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  flex-wrap: wrap;
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .14);
+  padding: .32rem 1rem;
+  border-radius: var(--radius-pill);
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+
+.live-dot {
+  width: 7px; height: 7px;
+  background: #4ADE80;
+  border-radius: 50%;
+  animation: pulseDot 1.9s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .35; transform: scale(.75); }
+}
+
+.nav-links { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+.nav-links a, .nav-links button {
+  color: rgba(255, 255, 255, .82);
+  text-decoration: none;
+  font: inherit;
+  font-size: .74rem;
+  font-weight: 600;
+  padding: .38rem 1rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255, 255, 255, .18);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease), border-color var(--fast) var(--ease);
+}
+
+.nav-links a:hover, .nav-links button:hover {
+  background: rgba(255, 255, 255, .12);
+  border-color: rgba(255, 255, 255, .3);
+  color: var(--white);
+}
+
+.user-chip {
+  display: flex; align-items: center; gap: .5rem;
+  font-size: .74rem; color: rgba(255,255,255,.85);
+}
+
+.user-avatar {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--magenta);
+  color: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .72rem;
+  flex-shrink: 0;
+}
+
+/* ─── Stats dashboard ──────────────────────────────────────────────── */
+.stats-dash {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  background: var(--gray-200);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.stat-item {
+  background: var(--gray-50);
+  padding: .95rem 1.4rem;
+}
+
+.stat-item .stat-number {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.stat-item .stat-number .accent { color: var(--magenta); }
+
+.stat-item .stat-label {
+  font-size: .66rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--gray-500);
+  margin-top: .15rem;
+  display: block;
+}
+
+/* ─── Section / cards ──────────────────────────────────────────────── */
+.section-pad { padding: 1.6rem clamp(1.1rem, 3vw, 2rem); }
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -.2px;
+}
+
+.section-subtitle {
+  font-size: .85rem;
+  color: var(--gray-500);
+  margin-top: .3rem;
+  line-height: 1.5;
+}
+
+.section-subtitle .highlight { color: var(--magenta); font-weight: 700; }
+
+/* ─── Forms ────────────────────────────────────────────────────────── */
+.field { margin-bottom: 1.15rem; }
+.field.full { grid-column: 1 / -1; }
+
+.field > label {
+  display: flex;
+  align-items: baseline;
+  gap: .4rem;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: var(--gray-600);
+  margin-bottom: .38rem;
+}
+
+.field > label .required-star { color: var(--magenta); font-size: .95rem; }
+.field > label .hint { font-weight: 500; text-transform: none; color: var(--gray-400); font-size: .68rem; letter-spacing: 0; }
+
+.field .field-error {
+  display: none;
+  font-size: .72rem;
+  color: var(--error);
+  margin-top: .35rem;
+  font-weight: 500;
+}
+
+.field.invalid .field-error { display: block; }
+.field.invalid input,
+.field.invalid select,
+.field.invalid textarea { border-color: var(--error) !important; background: var(--error-bg); }
+
+.field .char-count {
+  font-size: .66rem;
+  color: var(--gray-400);
+  text-align: right;
+  margin-top: .25rem;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: .7rem .95rem;
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  font-size: .9rem;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--white);
+  transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease), background var(--fast) var(--ease);
+}
+
+textarea { resize: vertical; min-height: 90px; line-height: 1.55; }
+
+input::placeholder, textarea::placeholder { color: var(--gray-400); }
+
+input:hover, select:hover, textarea:hover { border-color: var(--gray-400); }
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--magenta);
+  box-shadow: 0 0 0 4px var(--magenta-glow);
+}
+
+input:read-only, input:disabled, textarea:disabled {
+  background: var(--gray-100);
+  color: var(--gray-500);
+  cursor: not-allowed;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1.1rem;
+}
+
+.form-section-title {
+  grid-column: 1 / -1;
+  font-size: .74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--magenta);
+  padding-bottom: .4rem;
+  margin: .3rem 0 .7rem;
+  border-bottom: 1.5px solid var(--gray-200);
+}
+
+.form-section-title:first-child { margin-top: 0; }
+
+/* ─── File upload ──────────────────────────────────────────────────── */
+.file-upload-wrap {
+  position: relative;
+  border: 2px dashed var(--gray-300);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  background: var(--gray-50);
+  transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
+}
+
+.file-upload-wrap:hover,
+.file-upload-wrap:focus-within,
+.file-upload-wrap.dragover {
+  border-color: var(--magenta);
+  background: var(--magenta-light);
+}
+
+.file-upload-wrap .upload-icon { font-size: 2.1rem; display: block; margin-bottom: .3rem; }
+.file-upload-wrap .upload-text { font-size: .84rem; color: var(--gray-600); }
+.file-upload-wrap .upload-text strong { color: var(--magenta); }
+.file-upload-wrap .upload-sub { font-size: .72rem; color: var(--gray-400); display: block; margin-top: .15rem; }
+
+.file-upload-wrap input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+
+.file-preview {
+  display: none;
+  margin-top: .6rem;
+  align-items: center;
+  gap: .8rem;
+  padding: .55rem .8rem;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  animation: fadeIn var(--base) var(--ease);
+}
+
+.file-preview.visible { display: flex; }
+
+.file-preview img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid var(--gray-200); background: var(--white); }
+.file-preview .file-meta { flex: 1; min-width: 0; }
+.file-preview .file-name { font-size: .8rem; color: var(--gray-700); font-weight: 600; word-break: break-all; }
+.file-preview .file-size { font-size: .7rem; color: var(--gray-400); }
+
+.file-preview .file-remove {
+  background: none; border: none; color: var(--gray-400); cursor: pointer;
+  font-size: 1.1rem; line-height: 1; padding: .3rem; border-radius: 50%;
+  transition: color var(--fast), background var(--fast);
+}
+.file-preview .file-remove:hover { color: var(--error); background: var(--error-bg); }
+
+/* Upload progress */
+.upload-progress {
+  display: none;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--gray-200);
+  overflow: hidden;
+  margin-top: .55rem;
+}
+.upload-progress.visible { display: block; }
+.upload-progress .bar {
+  height: 100%; width: 30%;
+  background: linear-gradient(90deg, var(--magenta), var(--magenta-dark));
+  border-radius: var(--radius-pill);
+  animation: indeterminate 1.1s ease-in-out infinite;
+}
+@keyframes indeterminate {
+  0% { transform: translateX(-100%); width: 40%; }
+  50% { width: 60%; }
+  100% { transform: translateX(250%); width: 40%; }
+}
+
+/* ─── Buttons ──────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  padding: .72rem 1.6rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: .87rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--fast) var(--ease), box-shadow var(--fast) var(--ease), background var(--fast) var(--ease), opacity var(--fast) var(--ease);
+  white-space: nowrap;
+}
+
+.btn:active { transform: translateY(0) scale(.98); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--magenta), var(--magenta-dark));
+  color: var(--white);
+  box-shadow: var(--shadow-btn);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(217, 27, 92, .35); }
+
+.btn-secondary { background: var(--gray-200); color: var(--gray-700); }
+.btn-secondary:hover { background: var(--gray-300); }
+
+.btn-success { background: var(--success); color: var(--white); box-shadow: 0 6px 18px rgba(21, 122, 70, .28); }
+.btn-success:hover { transform: translateY(-2px); }
+
+.btn-danger { background: var(--white); color: var(--error); border: 1.5px solid var(--error-border); }
+.btn-danger:hover { background: var(--error-bg); }
+
+.btn-ghost { background: transparent; color: var(--gray-600); border: 1.5px solid var(--gray-300); }
+.btn-ghost:hover { border-color: var(--magenta); color: var(--magenta); }
+
+.btn:disabled { opacity: .55; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+.btn .spinner-small {
+  display: none;
+  width: 16px; height: 16px;
+  border: 2.5px solid rgba(255, 255, 255, .35);
+  border-top-color: var(--white);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+.btn-ghost .spinner-small, .btn-secondary .spinner-small { border-color: rgba(0,0,0,.12); border-top-color: var(--gray-600); }
+.btn.loading .spinner-small { display: inline-block; }
+.btn.loading .btn-text { visibility: hidden; width: 0; overflow: hidden; }
+.btn.loading { pointer-events: none; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.form-actions { display: flex; gap: .7rem; flex-wrap: wrap; margin-top: 1.4rem; }
+.form-actions .btn-primary { flex: 1 1 220px; }
+
+/* ─── Search / filter bar ──────────────────────────────────────────── */
+.toolbar {
+  padding: 1rem clamp(1.1rem, 3vw, 2rem);
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+  display: flex;
+  gap: .8rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.search-input-wrap {
+  flex: 1 1 220px;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  background: var(--white);
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  padding: 0 .8rem;
+  transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+}
+
+.search-input-wrap:focus-within { border-color: var(--magenta); box-shadow: 0 0 0 4px var(--magenta-glow); }
+.search-input-wrap .search-icon { color: var(--gray-400); font-size: .9rem; flex-shrink: 0; }
+.search-input-wrap input { border: none; padding: .55rem 0; background: transparent; }
+.search-input-wrap input:focus { box-shadow: none; }
+.search-input-wrap .clear-search {
+  border: none; background: none; color: var(--gray-400); cursor: pointer; font-size: .95rem;
+  padding: .2rem; display: none; border-radius: 50%;
+}
+.search-input-wrap.has-value .clear-search { display: block; }
+.search-input-wrap .clear-search:hover { color: var(--error); }
+
+.filter-tabs { display: flex; gap: .35rem; flex-wrap: wrap; }
+
+.filter-tabs button {
+  padding: .4rem 1rem;
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius-pill);
+  background: var(--white);
+  font: inherit;
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--gray-500);
+  cursor: pointer;
+  transition: all var(--fast) var(--ease);
+}
+.filter-tabs button:hover { border-color: var(--magenta); color: var(--magenta); }
+.filter-tabs button.active { background: var(--magenta); color: var(--white); border-color: var(--magenta); }
+
+.btn-refresh {
+  padding: .4rem 1rem;
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius-pill);
+  background: var(--white);
+  font: inherit;
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--gray-500);
+  cursor: pointer;
+  transition: all var(--fast) var(--ease);
+  display: inline-flex; align-items: center; gap: .35rem;
+}
+.btn-refresh:hover { border-color: var(--navy-mid); color: var(--navy-mid); background: var(--info-bg); }
+.btn-refresh.spinning svg, .btn-refresh.spinning .icon { animation: spin .7s linear infinite; }
+
+/* ─── Table ────────────────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+
+thead { background: var(--gray-50); }
+thead th {
+  padding: .7rem .9rem;
+  text-align: left;
+  font-weight: 700;
+  color: var(--gray-500);
+  font-size: .65rem;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  white-space: nowrap;
+  border-bottom: 2px solid var(--gray-200);
+}
+
+tbody td {
+  padding: .7rem .9rem;
+  border-bottom: 1px solid var(--gray-100);
+  color: var(--gray-700);
+  vertical-align: middle;
+}
+
+tbody tr { transition: background var(--fast) var(--ease); }
+tbody tr:hover { background: var(--gray-50); }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr.row-enter { animation: fadeIn var(--base) var(--ease); }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .18rem .75rem;
+  border-radius: var(--radius-pill);
+  font-size: .64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+}
+.status-badge.pending { background: var(--warning-bg); color: var(--warning); }
+.status-badge.approved { background: var(--success-bg); color: var(--success); }
+.status-badge.rejected { background: var(--error-bg); color: var(--error); }
+
+.row-actions { display: flex; gap: .3rem; flex-wrap: wrap; }
+
+.btn-icon {
+  padding: .3rem .65rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: .68rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  transition: all var(--fast) var(--ease);
+  font-family: inherit;
+}
+.btn-icon:hover { background: var(--gray-200); color: var(--gray-900); }
+.btn-icon.verify { background: var(--success-bg); color: var(--success); }
+.btn-icon.verify:hover { background: #C7EAD5; }
+.btn-icon.verify:disabled { opacity: .55; cursor: not-allowed; }
+.btn-icon.delete:hover { background: var(--error-bg); color: var(--error); }
+.btn-icon.print:hover { background: var(--info-bg); color: var(--info); }
+
+/* ─── Empty / loading states ───────────────────────────────────────── */
+.empty-state, .error-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--gray-400);
+}
+.empty-state .icon-big, .error-state .icon-big { font-size: 2.6rem; display: block; margin-bottom: .6rem; }
+.empty-state p, .error-state p { font-size: .88rem; color: var(--gray-500); }
+.empty-state .empty-sub { font-size: .76rem; color: var(--gray-400); margin-top: .2rem; }
+
+.skeleton-row td { padding: .9rem; }
+.skeleton {
+  background: linear-gradient(90deg, var(--gray-200) 25%, var(--gray-100) 37%, var(--gray-200) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: 6px;
+  height: 14px;
+}
+@keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+/* ─── Toast ────────────────────────────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem; right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: .55rem;
+  max-width: 380px;
+  width: calc(100% - 2rem);
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  padding: .8rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: .84rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+  background: var(--white);
+  border-left: 4px solid;
+  color: var(--ink);
+  animation: toastIn .3s var(--ease);
+}
+.toast.leaving { opacity: 0; transform: translateX(16px); transition: all .25s var(--ease); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+.toast.success { border-color: var(--success); }
+.toast.error { border-color: var(--error); }
+.toast.info { border-color: var(--info); }
+.toast .toast-icon { flex-shrink: 0; }
+.toast .toast-close { margin-left: auto; background: none; border: none; cursor: pointer; color: var(--gray-400); font-size: .9rem; padding: 0 .2rem; }
+
+/* ─── Modal ────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(11, 30, 48, .55);
+  backdrop-filter: blur(2px);
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+  z-index: 9000;
+  overflow-y: auto;
+}
+.modal-overlay.open { display: flex; animation: fadeIn var(--base) var(--ease); }
+
+.modal-content {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  max-width: 760px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  animation: modalIn .3s var(--ease);
+}
+@keyframes modalIn { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+.modal-close {
+  position: absolute; top: .9rem; right: .9rem;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  font-size: 1rem;
+  cursor: pointer;
+  z-index: 2;
+  transition: background var(--fast), color var(--fast);
+}
+.modal-close:hover { background: var(--error-bg); color: var(--error); }
+
+.modal-actions {
+  display: flex; gap: .7rem; justify-content: flex-end; flex-wrap: wrap;
+  padding: 1rem 1.5rem 1.5rem;
+}
+
+/* Small confirm dialog (replaces window.confirm for a consistent feel) */
+.confirm-box { padding: 1.6rem 1.6rem 1.3rem; max-width: 380px; text-align: center; }
+.confirm-box .confirm-icon { font-size: 2.2rem; margin-bottom: .5rem; }
+.confirm-box h3 { color: var(--navy); font-size: 1.02rem; margin-bottom: .4rem; }
+.confirm-box p { color: var(--gray-500); font-size: .85rem; line-height: 1.5; }
+.confirm-box .modal-actions { padding: 1.2rem 0 0; justify-content: center; }
+
+/* ─── Login screen ─────────────────────────────────────────────────── */
+.login-overlay {
+  position: fixed; inset: 0; z-index: 99999;
+  background: radial-gradient(120% 140% at 20% 0%, var(--navy-mid) 0%, var(--navy) 70%);
+  display: none; align-items: center; justify-content: center; padding: 1.5rem;
+}
+.login-overlay.active { display: flex; }
+
+.login-box {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 2.2rem 2.2rem 1.8rem;
+  max-width: 400px; width: 100%;
+  box-shadow: 0 30px 90px rgba(0,0,0,.35);
+  animation: modalIn .35s var(--ease);
+}
+.login-box .login-logo { text-align: center; margin-bottom: 1.4rem; }
+.login-box .login-logo img { width: 58px; height: 58px; border-radius: 50%; border: 3px solid var(--magenta); object-fit: cover; margin: 0 auto; }
+.login-box .login-logo h2 { font-size: 1.05rem; color: var(--navy); margin-top: .6rem; }
+.login-box .login-logo p { font-size: .78rem; color: var(--gray-500); margin-top: .1rem; }
+
+.login-error {
+  display: none;
+  background: var(--error-bg); color: var(--error);
+  border-radius: var(--radius-sm);
+  padding: .6rem .8rem;
+  font-size: .78rem; font-weight: 600;
+  margin-bottom: .9rem;
+}
+.login-error.visible { display: block; animation: fadeIn var(--base) var(--ease); }
+
+.login-btn {
+  width: 100%;
+  padding: .78rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--magenta), var(--magenta-dark));
+  color: var(--white);
+  font: inherit; font-size: .9rem; font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+  box-shadow: var(--shadow-btn);
+  transition: transform var(--fast) var(--ease);
+}
+.login-btn:hover { transform: translateY(-1px); }
+.login-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.login-loader { display: none; width: 16px; height: 16px; border: 2.5px solid rgba(255,255,255,.35); border-top-color: var(--white); border-radius: 50%; animation: spin .7s linear infinite; }
+.login-loader.active { display: inline-block; }
+.login-btn.loading .login-text { display: none; }
+
+/* ─── Verify banner / seal (public verification page) ─────────────── */
+.verify-loading {
+  display: flex; align-items: center; justify-content: center; gap: .8rem;
+  padding: 2.5rem 1rem; color: var(--gray-500); font-size: .9rem;
+}
+.verify-loading .spinner { width: 26px; height: 26px; border: 3px solid var(--gray-200); border-top-color: var(--magenta); border-radius: 50%; animation: spin .8s linear infinite; }
+
+.verify-banner {
+  width: 100%;
+  padding: 1rem 1.3rem;
+  border-radius: var(--radius-md);
+  display: none;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-left: 5px solid;
+  animation: fadeIn var(--base) var(--ease);
+}
+.verify-banner.visible { display: flex; }
+.verify-banner.success { background: var(--success-bg); border-color: var(--success); color: var(--success); }
+.verify-banner.error { background: var(--error-bg); border-color: var(--error); color: var(--error); }
+.verify-banner .banner-icon { font-size: 1.9rem; flex-shrink: 0; }
+.verify-banner .banner-title { font-weight: 800; font-size: .92rem; }
+.verify-banner .banner-text { font-size: .8rem; opacity: .9; font-weight: 500; }
+
+/* Seal — the one signature element: a gear-toothed ring around a
+   checkmark, echoing both an official wax seal and the Rotary wheel. */
+.lhe-seal { width: 92px; height: 92px; flex-shrink: 0; }
+.lhe-seal .seal-ring { transform-origin: 50% 50%; animation: sealTurn 26s linear infinite; }
+@keyframes sealTurn { to { transform: rotate(360deg); } }
+
+/* ─── Letter document (shared across preview / print / public view) ─ */
+.letter-doc {
+  font-family: var(--font-doc);
+  background: var(--white);
+  color: #1B2A38;
+  padding: clamp(1.4rem, 4vw, 2.6rem);
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.letter-doc .header-img { text-align: center; margin-bottom: .8rem; }
+.letter-doc .header-img img { max-height: 96px; margin: 0 auto; }
+
+.letter-doc .letter-header { text-align: center; border-bottom: 2.5px solid var(--magenta); padding-bottom: .7rem; margin-bottom: .9rem; }
+.letter-doc .club-name { font-size: 1.15rem; font-weight: 700; color: var(--navy); font-family: var(--font-ui); letter-spacing: .2px; }
+.letter-doc .club-place { font-size: .78rem; color: var(--gray-500); margin-top: .15rem; font-family: var(--font-ui); }
+
+.letter-doc .ref-date-row {
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: .3rem;
+  font-size: .78rem; color: var(--gray-600); font-family: var(--font-ui); font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.letter-doc .letter-to { font-size: .92rem; margin-bottom: .8rem; }
+.letter-doc .letter-to .to-label { font-family: var(--font-ui); font-weight: 700; font-size: .68rem; text-transform: uppercase; letter-spacing: .4px; color: var(--gray-500); display: block; margin-bottom: .2rem; }
+
+.letter-doc .letter-subject {
+  font-weight: 700; font-family: var(--font-ui);
+  padding: .5rem .8rem; background: var(--magenta-light); color: var(--magenta-dark);
+  border-radius: var(--radius-sm); display: inline-block; margin-bottom: 1rem; font-size: .85rem;
+}
+
+.letter-doc .letter-body { font-size: .97rem; line-height: 1.75; white-space: pre-line; margin-bottom: 1.4rem; }
+
+.letter-doc .details-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: .6rem; background: var(--gray-50); border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md); padding: .9rem 1rem; margin-bottom: 1.4rem;
+  font-family: var(--font-ui);
+}
+.letter-doc .details-grid .detail-item .k { font-size: .64rem; text-transform: uppercase; letter-spacing: .4px; color: var(--gray-400); font-weight: 700; }
+.letter-doc .details-grid .detail-item .v { font-size: .84rem; color: var(--gray-700); font-weight: 600; margin-top: .1rem; }
+
+.letter-doc .letter-signature {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+  margin: 1.6rem 0 1rem; text-align: center; font-family: var(--font-ui);
+}
+.letter-doc .sig-label { font-size: .72rem; color: var(--gray-500); font-style: italic; margin-bottom: .3rem; }
+.letter-doc .sig-img { height: 42px; object-fit: contain; margin: .2rem auto; }
+.letter-doc .sig-name { font-weight: 700; color: var(--navy); font-size: .82rem; border-top: 1.5px solid var(--gray-300); padding-top: .3rem; margin-top: .3rem; }
+.letter-doc .sig-title { font-size: .68rem; color: var(--gray-500); margin-top: .1rem; }
+
+.letter-doc .letter-place { text-align: right; font-size: .8rem; color: var(--gray-500); font-family: var(--font-ui); margin-bottom: 1.4rem; }
+
+.letter-doc .letter-footer-wrap {
+  display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem;
+  flex-wrap: wrap; border-top: 1px dashed var(--gray-300); padding-top: 1.1rem;
+}
+.letter-doc .footer-img img { max-height: 46px; }
+.letter-doc .qr-section { text-align: center; font-family: var(--font-ui); }
+.letter-doc .qr-label { font-size: .68rem; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: .3px; margin-bottom: .3rem; }
+.letter-doc .qr-box { display: inline-block; padding: .4rem; background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); }
+.letter-doc .qr-url { font-size: .6rem; color: var(--gray-400); margin-top: .3rem; max-width: 150px; word-break: break-all; }
+
+.letter-doc .verified-stamp {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: var(--success-bg); color: var(--success);
+  font-family: var(--font-ui); font-weight: 800; font-size: .72rem;
+  padding: .3rem .9rem; border-radius: var(--radius-pill);
+  margin-bottom: 1rem; letter-spacing: .3px;
+}
+.letter-doc .dot-green { width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
+
+.letter-doc .letter-footer-area {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .7rem;
+  font-family: var(--font-ui); margin-top: 1.4rem; padding-top: 1rem; border-top: 1px solid var(--gray-200);
+}
+.letter-doc .footer-text { font-size: .72rem; color: var(--gray-400); }
+
+/* ─── Print ────────────────────────────────────────────────────────── */
+@media print {
+  .no-print { display: none !important; }
+  body { background: var(--white) !important; padding: 0 !important; }
+  .page { padding: 0 !important; }
+  .app, .modal-content { box-shadow: none !important; border-radius: 0 !important; }
+  .modal-overlay { position: static !important; background: none !important; padding: 0 !important; display: block !important; }
+  .letter-doc { max-width: 100% !important; }
+}
+
+/* ─── Footer ───────────────────────────────────────────────────────── */
+.app-footer {
+  background: var(--navy);
+  color: rgba(255, 255, 255, .65);
+  padding: .85rem clamp(1.1rem, 3vw, 2rem);
+  font-size: .7rem;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: .4rem;
+  border-top: 3px solid var(--magenta);
+}
+
+/* ─── Utility ──────────────────────────────────────────────────────── */
+.text-center { text-align: center; }
+.mt-1 { margin-top: .6rem; } .mt-2 { margin-top: 1.2rem; }
+
+/* ─── Responsive ───────────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .letter-doc .letter-signature { grid-template-columns: 1fr; gap: 1.2rem; }
+}
+
+@media (max-width: 700px) {
+  .app-header { padding: .95rem 1.1rem; }
+  .app-header .club-info h1 { font-size: .85rem; }
+  .stats-dash { grid-template-columns: repeat(2, 1fr); }
+  .section-pad { padding: 1.2rem; }
+  .toolbar { padding: .9rem 1.1rem; flex-direction: column; align-items: stretch; }
+  .search-input-wrap { min-width: 0; }
+  .form-actions .btn { flex: 1 1 100%; }
+  table { font-size: .74rem; }
+  thead th, tbody td { padding: .5rem .55rem; }
+  .toast-container { right: .6rem; bottom: .6rem; max-width: calc(100% - 1.2rem); }
+  .letter-doc .letter-footer-wrap { flex-direction: column; align-items: center; text-align: center; }
+}
+
+@media (max-width: 460px) {
+  .page { padding: .6rem; }
+  .app { border-radius: var(--radius-md); }
+  .section-title { font-size: 1.1rem; }
+  .app-header .header-right { width: 100%; justify-content: space-between; }
+}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js" defer></script>
+<script>
+/* ══════════════════════════════════════════════════════════════════════
+   LHE Shared Runtime
+   Rotaract Club of Galkot Baglung — Letterhead Exchange
+
+   One source of truth for: Supabase bootstrap, toasts, a confirm modal,
+   validation helpers, the verification-ID / ref-number generators, the
+   QR helper and — most importantly — the letter template, so the four
+   pages that render a letter (admin preview, admin print, staff verify,
+   public verify) can never drift out of sync with each other again.
+
+   Loaded as a plain script (no bundler); everything lives on `window.LHE`.
+   ══════════════════════════════════════════════════════════════════════ */
+
+(function (global) {
+  'use strict';
+
+  /* ─── Configuration ────────────────────────────────────────────────
+     Single place to change the club's own details, default signatures
+     and asset filenames. Previously this was copy-pasted with slightly
+     different values inside LHE.html, adminLHE.html, verifyLHE.html and
+     verifyonlyLHE.html — a change to one signer's name meant hunting
+     through four files. Now it means editing this one object.
+     ────────────────────────────────────────────────────────────────── */
+  const CONFIG = {
+    supabaseUrl: 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co',
+    supabaseAnonKey: 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv',
+
+    clubName: 'Rotaract Club of Galkot Baglung',
+    rid: '3292',
+    sponsoredClub: 'Rotaract Club of Baglung',
+    district: 'RI District 3292 • Nepal',
+    charterDate: '23 April 2021',
+
+    logoPath: 'rotaract.jpg',
+    headerImagePath: 'clubheading.jpg',
+    footerImagePath: 'footer.jpg',
+
+    signatures: {
+      president: { name: 'Rtr. Nabin Chalise', title: 'President RY 2026-27', image: 'presidentsign.jpg' },
+      secretary: { name: 'Rtr. Madan Subedi', title: 'Secretary RY 2026-27', image: 'secretarysign.jpg' },
+      chair: { name: 'Rtr. Anil Shrestha', title: 'International Service Chair (2026-27)', image: 'anilsign.jpg' }
+    },
+
+    signPlace: 'Galkot, Baglung',
+    fiscalYear: '026/027',
+
+    // Base used to build the QR / share URL for a verified letter.
+    verifyBaseUrl: 'https://galkot.netlify.app/verifyLHE.html',
+
+    rotaryYears: ['2025-26', '2026-27', '2027-28'],
+    defaultRotaryYear: '2026-27'
+  };
+
+  function defaultLetterBody(request) {
+    return `Dear ${request.president_name || 'President'},
+
+On behalf of ${CONFIG.clubName}, I extend our heartfelt congratulations and best wishes to you and your Board of Directors for a successful Rotary Year ${request.rotary_year || CONFIG.defaultRotaryYear}. May your tenure be filled with impactful service, inspiring leadership, and meaningful achievements.
+
+Since our charter on ${CONFIG.charterDate}, our club has remained committed to community service, youth empowerment, leadership development, and fellowship. We sincerely appreciate the contributions of ${request.club_name || 'your club'} to the Rotaract movement.
+
+Through this Letterhead Exchange, we celebrate the spirit of friendship and collaboration between our clubs. We look forward to building a strong and lasting relationship through service and fellowship.
+
+Wishing you and your club a successful Rotary Year ahead.
+
+Thank you!`;
+  }
+
+  /* ─── Small helpers ────────────────────────────────────────────── */
+
+  function escapeHtml(text) {
+    if (text === null || text === undefined || text === '') return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+  }
+
+  function generateVerificationId() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I ambiguity
+    const part = () => Array.from({ length: 4 }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join('');
+    return `LHE-${part()}-${part()}`;
+  }
+
+  function formatDate(value, opts) {
+    if (!value) return '—';
+    try {
+      return new Date(value).toLocaleDateString('en-US', opts || { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch (e) {
+      return String(value);
+    }
+  }
+
+  function debounce(fn, wait) {
+    let t;
+    return function debounced(...args) {
+      clearTimeout(t);
+      t = setTimeout(() => fn.apply(this, args), wait);
+    };
+  }
+
+  /* ─── Validation ───────────────────────────────────────────────── */
+
+  const validators = {
+    required(value) {
+      return String(value || '').trim().length > 0;
+    },
+    maxLen(value, max) {
+      return String(value || '').trim().length <= max;
+    },
+    rid(value) {
+      // Rotary Districts are numeric, typically 4 digits (e.g. 3292, 9455).
+      return /^[0-9]{3,5}$/.test(String(value || '').trim());
+    },
+    email(value) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+    },
+    name(value) {
+      // Letters, spaces, dots, apostrophes, hyphens — blocks stray HTML/script input.
+      return /^[\p{L}\p{M}.'\-\s]{2,80}$/u.test(String(value || '').trim());
+    }
+  };
+
+  /**
+   * Marks a `.field` wrapper valid/invalid and shows/hides its `.field-error`.
+   * `wrapEl` is the `.field` div; `message` only needed when invalid.
+   */
+  function setFieldState(wrapEl, valid, message) {
+    if (!wrapEl) return;
+    wrapEl.classList.toggle('invalid', !valid);
+    const errEl = wrapEl.querySelector('.field-error');
+    if (errEl && message) errEl.textContent = message;
+  }
+
+  /* ─── Toasts ───────────────────────────────────────────────────── */
+
+  let toastContainer = null;
+
+  function ensureToastContainer() {
+    if (toastContainer && document.body.contains(toastContainer)) return toastContainer;
+    toastContainer = document.getElementById('toastContainer');
+    if (!toastContainer) {
+      toastContainer = document.createElement('div');
+      toastContainer.id = 'toastContainer';
+      toastContainer.className = 'toast-container no-print';
+      document.body.appendChild(toastContainer);
+    }
+    toastContainer.setAttribute('role', 'status');
+    toastContainer.setAttribute('aria-live', 'polite');
+    return toastContainer;
+  }
+
+  const TOAST_ICONS = { success: '✅', error: '⚠️', info: 'ℹ️' };
+
+  function showToast(message, type = 'info', duration = 4200) {
+    const container = ensureToastContainer();
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+      <span class="toast-icon">${TOAST_ICONS[type] || TOAST_ICONS.info}</span>
+      <span class="toast-msg">${escapeHtml(message)}</span>
+      <button type="button" class="toast-close" aria-label="Dismiss notification">✕</button>
+    `;
+    container.appendChild(toast);
+
+    const remove = () => {
+      toast.classList.add('leaving');
+      setTimeout(() => toast.remove(), 260);
+    };
+    toast.querySelector('.toast-close').addEventListener('click', remove);
+    const timer = setTimeout(remove, duration);
+    toast.addEventListener('mouseenter', () => clearTimeout(timer));
+    return toast;
+  }
+
+  /* ─── Confirm modal (replaces window.confirm) ─────────────────── */
+
+  function confirmDialog({ title = 'Are you sure?', message = '', icon = '⚠️', confirmLabel = 'Confirm', cancelLabel = 'Cancel', danger = true } = {}) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay open';
+      overlay.setAttribute('role', 'alertdialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.innerHTML = `
+        <div class="modal-content confirm-box">
+          <div class="confirm-icon">${icon}</div>
+          <h3>${escapeHtml(title)}</h3>
+          <p>${escapeHtml(message)}</p>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" data-act="cancel">${escapeHtml(cancelLabel)}</button>
+            <button type="button" class="btn ${danger ? 'btn-danger' : 'btn-primary'}" data-act="confirm">${escapeHtml(confirmLabel)}</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      document.body.style.overflow = 'hidden';
+
+      const previouslyFocused = document.activeElement;
+      const confirmBtn = overlay.querySelector('[data-act="confirm"]');
+      const cancelBtn = overlay.querySelector('[data-act="cancel"]');
+      confirmBtn.focus();
+
+      function close(result) {
+        document.body.style.overflow = '';
+        overlay.remove();
+        document.removeEventListener('keydown', onKey);
+        if (previouslyFocused && previouslyFocused.focus) previouslyFocused.focus();
+        resolve(result);
+      }
+      function onKey(e) {
+        if (e.key === 'Escape') close(false);
+        if (e.key === 'Tab') {
+          // simple focus trap between the two buttons
+          e.preventDefault();
+          (document.activeElement === confirmBtn ? cancelBtn : confirmBtn).focus();
+        }
+      }
+      confirmBtn.addEventListener('click', () => close(true));
+      cancelBtn.addEventListener('click', () => close(false));
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(false); });
+      document.addEventListener('keydown', onKey);
+    });
+  }
+
+  /* ─── Supabase bootstrap ───────────────────────────────────────── */
+
+  function createSupabaseClient() {
+    try {
+      if (typeof global.supabase !== 'undefined' && global.supabase.createClient) {
+        return global.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
+      }
+      console.warn('⚠️ Supabase library not loaded.');
+    } catch (e) {
+      console.error('❌ Failed to init Supabase client:', e);
+    }
+    return null;
+  }
+
+  async function getNextRefNo(supabaseClient) {
+    if (!supabaseClient) return 'LHE_1';
+    try {
+      const { data, error } = await supabaseClient
+        .from('rotaract_lhe')
+        .select('ref_no')
+        .order('ref_no', { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      if (!data || data.length === 0) return 'LHE_1';
+      const match = String(data[0].ref_no || '').match(/LHE_(\d+)/);
+      const num = match ? parseInt(match[1], 10) : NaN;
+      return Number.isNaN(num) ? 'LHE_1' : `LHE_${num + 1}`;
+    } catch (e) {
+      console.warn('Could not fetch next ref number, defaulting to LHE_1:', e);
+      return 'LHE_1';
+    }
+  }
+
+  /**
+   * Builds the full `rotaract_lhe` row for a request being approved.
+   * `overrides` lets the admin form's own field values win over the
+   * shared defaults (fiscal year, signatures, sender info, body text).
+   */
+  function buildLetterRecord(request, overrides = {}) {
+    const vid = overrides.verification_id || request.verification_id || generateVerificationId();
+    const today = new Date().toISOString().split('T')[0];
+    const sig = CONFIG.signatures;
+    return {
+      ref_no: overrides.ref_no,
+      fiscal_year: overrides.fiscal_year || CONFIG.fiscalYear,
+      date: overrides.date || today,
+      letter_type: 'LHE',
+      sender_club_name: overrides.sender_club_name || CONFIG.clubName,
+      sender_rid: overrides.sender_rid || CONFIG.rid,
+      sender_sponsored_club: overrides.sender_sponsored_club || CONFIG.sponsoredClub,
+      sender_logo_url: CONFIG.logoPath,
+      recipient_name: request.president_name || '',
+      recipient_position: `President, RY ${request.rotary_year || CONFIG.defaultRotaryYear}`,
+      recipient_club_name: request.club_name || '',
+      recipient_rid: request.rid || '',
+      recipient_sponsored_club: request.sponsored_club || '',
+      recipient_logo_url: request.logo_url || '',
+      subject: overrides.subject || 'Letterhead Exchange',
+      body: overrides.body || defaultLetterBody(request),
+      message: overrides.message || '',
+      president_name: overrides.president_name || sig.president.name,
+      president_signature_url: sig.president.image,
+      secretary_name: overrides.secretary_name || sig.secretary.name,
+      secretary_signature_url: sig.secretary.image,
+      international_chair_name: overrides.international_chair_name || sig.chair.name,
+      international_chair_signature_url: sig.chair.image,
+      sign_place: overrides.sign_place || CONFIG.signPlace,
+      letter_status: 'Active',
+      verification_id: vid
+    };
+  }
+
+  function verifyUrlFor(vid) {
+    return `${CONFIG.verifyBaseUrl}?vid=${encodeURIComponent(vid)}`;
+  }
+
+  /* ─── The seal (signature visual element) ──────────────────────── */
+
+  function sealSvg({ size = 92, verified = true } = {}) {
+    const color = verified ? '#157A46' : '#B0392B';
+    const label = verified ? 'VERIFIED' : 'NOT FOUND';
+    return `
+      <svg class="lhe-seal" viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="${label} seal">
+        <g class="seal-ring">
+          ${Array.from({ length: 20 }).map((_, i) => {
+            const a = (i / 20) * Math.PI * 2;
+            const x1 = 50 + Math.cos(a) * 44, y1 = 50 + Math.sin(a) * 44;
+            const x2 = 50 + Math.cos(a) * 49, y2 = 50 + Math.sin(a) * 49;
+            return `<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}" stroke="${color}" stroke-width="2.6" stroke-linecap="round"/>`;
+          }).join('')}
+        </g>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="${color}" stroke-width="2"/>
+        <circle cx="50" cy="50" r="35" fill="${verified ? '#E5F6EC' : '#FCEAE7'}" />
+        ${verified
+          ? `<path d="M36 51 L46 61 L65 40" fill="none" stroke="${color}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`
+          : `<path d="M40 40 L60 60 M60 40 L40 60" stroke="${color}" stroke-width="5" stroke-linecap="round"/>`}
+      </svg>`;
+  }
+
+  /* ─── Letter document renderer (the shared source of truth) ──────
+     Used by adminLHE.html (print modal), verifyonlyLHE.html (implicit,
+     via admin-style preview) and verifyLHE.html (public result). `mode`
+     toggles the small differences between an internal preview and the
+     public-facing verified page.
+     ────────────────────────────────────────────────────────────────── */
+
+  function renderLetterDoc(letter, { mode = 'public' } = {}) {
+    const vid = letter.verification_id || '';
+    const qrUrl = verifyUrlFor(vid);
+    const dateDisplay = formatDate(letter.date, { year: 'numeric', month: 'long', day: 'numeric' });
+
+    const detailsHtml = mode === 'public' ? `
+      <div class="detail-item"><div class="k">Recipient RID</div><div class="v">${escapeHtml(letter.recipient_rid || '—')}</div></div>
+      <div class="detail-item"><div class="k">Recipient Club</div><div class="v">${escapeHtml(letter.recipient_club_name || '—')}</div></div>
+      <div class="detail-item"><div class="k">Verification ID</div><div class="v">${escapeHtml(vid || '—')}</div></div>
+      <div class="detail-item"><div class="k">Issued</div><div class="v">${dateDisplay}</div></div>
+    ` : '';
+
+    const stamp = mode === 'public'
+      ? `<div class="verified-stamp">${sealSvg({ size: 22 })}<span>VERIFIED LHE DOCUMENT</span></div>`
+      : '';
+
+    return `
+      ${letter.sender_logo_url === CONFIG.logoPath ? `<div class="header-img"><img src="${CONFIG.headerImagePath}" alt="" onerror="this.parentElement.style.display='none'" /></div>` : ''}
+
+      ${stamp}
+
+      <div class="letter-header">
+        <div class="club-name">${escapeHtml(letter.sender_club_name || CONFIG.clubName)}</div>
+        <div class="club-place">RID ${escapeHtml(letter.sender_rid || CONFIG.rid)}${letter.sender_sponsored_club ? ' • Sponsored: ' + escapeHtml(letter.sender_sponsored_club) : ''}</div>
+      </div>
+
+      <div class="ref-date-row">
+        <span>F.Y. ${escapeHtml(letter.fiscal_year || '—')} (Ref. ${escapeHtml(letter.ref_no || '—')})</span>
+        <span>Date: ${dateDisplay}</span>
+      </div>
+
+      <div class="letter-to">
+        <span class="to-label">To</span>
+        ${escapeHtml(letter.recipient_name || '—')}, ${escapeHtml(letter.recipient_position || '—')}, ${escapeHtml(letter.recipient_club_name || '—')}
+      </div>
+
+      <div class="letter-subject">${escapeHtml(letter.subject || 'Letterhead Exchange')}</div>
+
+      <div class="letter-body">${escapeHtml(letter.body || '')}</div>
+      ${letter.message ? `<div class="letter-body" style="margin-top:-1rem;">${escapeHtml(letter.message)}</div>` : ''}
+
+      ${detailsHtml ? `<div class="details-grid">${detailsHtml}</div>` : ''}
+
+      <div class="letter-signature">
+        <div>
+          <div class="sig-name">${escapeHtml(letter.secretary_name || CONFIG.signatures.secretary.name)}</div>
+          <img src="${escapeHtml(letter.secretary_signature_url || CONFIG.signatures.secretary.image)}" alt="" class="sig-img" onerror="this.style.display='none'" />
+          <div class="sig-title">${escapeHtml(CONFIG.signatures.secretary.title)}</div>
+        </div>
+        <div>
+          <div class="sig-label">Yours in Rotaract</div>
+          <div class="sig-name">${escapeHtml(letter.international_chair_name || CONFIG.signatures.chair.name)}</div>
+          <img src="${escapeHtml(letter.international_chair_signature_url || CONFIG.signatures.chair.image)}" alt="" class="sig-img" onerror="this.style.display='none'" />
+          <div class="sig-title">${escapeHtml(CONFIG.signatures.chair.title)}</div>
+        </div>
+        <div>
+          <div class="sig-name">${escapeHtml(letter.president_name || CONFIG.signatures.president.name)}</div>
+          <img src="${escapeHtml(letter.president_signature_url || CONFIG.signatures.president.image)}" alt="" class="sig-img" onerror="this.style.display='none'" />
+          <div class="sig-title">${escapeHtml(CONFIG.signatures.president.title)}</div>
+        </div>
+      </div>
+
+      <div class="letter-place">${escapeHtml(letter.sign_place || CONFIG.signPlace)}</div>
+
+      <div class="letter-footer-wrap">
+        <div class="footer-img"><img src="${CONFIG.footerImagePath}" alt="" onerror="this.parentElement.style.display='none'" /></div>
+        <div class="qr-section">
+          <div class="qr-label">Scan to verify</div>
+          <div class="qr-box" id="qrCodeContainer" data-qr-url="${escapeHtml(qrUrl)}"></div>
+          <div class="qr-url">${escapeHtml(qrUrl)}</div>
+        </div>
+      </div>
+
+      ${mode === 'public' ? `
+      <div class="letter-footer-area">
+        <span class="footer-text">This LHE document has been verified through our system.</span>
+      </div>` : ''}
+    `;
+  }
+
+  function renderQrInto(containerEl, url, size) {
+    if (!containerEl) return;
+    if (typeof global.QRCode === 'undefined') {
+      containerEl.innerHTML = '<span style="font-size:.7rem;color:var(--gray-400);">QR unavailable offline</span>';
+      return;
+    }
+    containerEl.innerHTML = '';
+    // eslint-disable-next-line no-new
+    new global.QRCode(containerEl, {
+      text: url,
+      width: size || 130,
+      height: size || 130,
+      colorDark: '#0B1E30',
+      colorLight: '#FFFFFF',
+      correctLevel: global.QRCode.CorrectLevel.H
+    });
+  }
+
+  /* ─── Export ───────────────────────────────────────────────────── */
+
+  global.LHE = {
+    CONFIG,
+    escapeHtml,
+    generateVerificationId,
+    formatDate,
+    debounce,
+    validators,
+    setFieldState,
+    showToast,
+    confirmDialog,
+    createSupabaseClient,
+    getNextRefNo,
+    buildLetterRecord,
+    verifyUrlFor,
+    sealSvg,
+    renderLetterDoc,
+    renderQrInto,
+    defaultLetterBody
+  };
+})(window);
+
+</script>
+<style>
+  /* Page-specific: the submission form is a single narrow card. */
+  .success-state {
+    display: none;
+    text-align: center;
+    padding: 2.4rem 2rem 2.6rem;
+  }
+  .success-state.visible { display: block; animation: fadeIn .4s var(--ease); }
+  .success-state .success-seal { margin: 0 auto .8rem; }
+  .success-state h2 { color: var(--navy); font-size: 1.25rem; margin-bottom: .4rem; }
+  .success-state p { color: var(--gray-500); font-size: .88rem; }
+  .success-state .vid-chip {
+    display: inline-block; margin-top: .8rem; padding: .4rem 1.3rem;
+    background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: var(--radius-pill);
+    font-family: 'Source Serif 4', serif; font-size: .92rem; letter-spacing: .5px; color: var(--magenta-dark); font-weight: 600;
+  }
+  .success-state .vid-note { margin-top: .9rem; font-size: .76rem; color: var(--gray-400); }
+</style>
 </head>
 <body>
 
-    <div class="app">
+<div class="page">
+  <main class="app app--form">
 
-        <!-- ─── HEADER ────────────────────────────────────────────────────────────── -->
-        <header class="app-header">
-            <div class="logo-wrap">
-                <img src="rotaract.jpg" alt="Rotaract Logo" class="logo-img" onerror="this.style.display='none'" />
-                <div>
-                    <h1>ROTARACT CLUB OF GALKOT BAGLUNG</h1>
-                    <div class="sub">RI District 3292 • Nepal</div>
-                </div>
-            </div>
-            <div class="badge">
-                <span class="live-dot"></span>
-                Letterhead Exchange Registration
-            </div>
-        </header>
+    <header class="app-header">
+      <div class="logo-wrap">
+        <img src="rotaract.jpg" alt="Rotaract Club of Galkot Baglung logo" class="logo-img" onerror="this.style.display='none'" />
+        <div class="club-info">
+          <h1>ROTARACT CLUB OF GALKOT BAGLUNG</h1>
+          <div class="sub">RI District 3292 • Nepal</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="live-badge"><span class="live-dot" aria-hidden="true"></span>LHE Registration</span>
+      </div>
+    </header>
 
-        <!-- ─── FORM ────────────────────────────────────────────────────────────────── -->
-        <div class="form-container" id="formContainer">
-            <div class="form-title">📄 Letterhead Exchange</div>
-            <div class="form-subtitle">
-                Please fill in your club details for <span class="highlight">LHE</span> (Letterhead Exchange) with Rotaract Club of Galkot Baglung
-            </div>
+    <div class="section-pad" id="formContainer">
+      <h2 class="section-title">Letterhead Exchange request</h2>
+      <p class="section-subtitle">
+        Fill in your club's details for an <span class="highlight">LHE (Letterhead Exchange)</span> with Rotaract Club of Galkot Baglung. Fields marked <span style="color:var(--magenta);font-weight:700;">*</span> are required.
+      </p>
 
-            <form id="lheForm" novalidate>
-                <!-- President's Name -->
-                <div class="form-group">
-                    <label>President's Name <span class="required-star">*</span></label>
-                    <input type="text" id="presidentName" placeholder="e.g., Rtr. Kanhaiya Gupta" required autofocus />
-                </div>
+      <form id="lheForm" novalidate aria-label="Letterhead Exchange request form">
 
-                <!-- Rotary Year -->
-                <div class="form-group">
-                    <label>Rotary Year <span class="required-star">*</span></label>
-                    <select id="rotaryYear" required>
-                        <option value="2026-27" selected>2026-27</option>
-                        <option value="2025-26">2025-26</option>
-                        <option value="2027-28">2027-28</option>
-                    </select>
-                </div>
-
-                <!-- Club/Organization Name -->
-                <div class="form-group">
-                    <label>Club / Organization Name <span class="required-star">*</span></label>
-                    <input type="text" id="clubName" placeholder="e.g., Rotaract Club of Birgunj" required />
-                </div>
-
-                <!-- RID -->
-                <div class="form-group">
-                    <label>RID (Rotary International District) <span class="required-star">*</span></label>
-                    <input type="text" id="rid" placeholder="e.g., 9655" required />
-                </div>
-
-                <!-- Sponsored Club (Optional) -->
-                <div class="form-group">
-                    <label>Sponsored Club <span class="hint">(if any)</span></label>
-                    <input type="text" id="sponsoredClub" placeholder="e.g., Rotaract Club of ..." />
-                </div>
-
-                <!-- Club Logo Upload -->
-                <div class="form-group">
-                    <label>Club Logo <span class="hint">(PNG, JPG, SVG - Max 2MB)</span></label>
-                    <div class="file-upload-wrap" id="uploadWrap">
-                        <span class="upload-icon">🖼️</span>
-                        <div class="upload-text">
-                            <strong>Click to upload</strong> or drag &amp; drop<br />
-                            <span style="font-size:0.75rem;color:var(--gray-400);">PNG, JPG, SVG up to 2MB</span>
-                        </div>
-                        <input type="file" id="logoUpload" accept="image/png,image/jpeg,image/svg+xml" />
-                    </div>
-                    <div class="file-preview" id="filePreview">
-                        <img id="previewImage" src="" alt="Logo Preview" />
-                        <span class="file-name" id="fileName">logo.png</span>
-                        <button type="button" class="file-remove" id="removeFile">✕</button>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary" id="submitBtn">
-                        <span class="spinner-small"></span>
-                        <span class="btn-text">📤 Submit LHE Request</span>
-                    </button>
-                    <button type="reset" class="btn btn-secondary" id="resetBtn">🔄 Reset</button>
-                </div>
-            </form>
+        <div class="field" data-field="presidentName">
+          <label for="presidentName">President's name <span class="required-star">*</span></label>
+          <input type="text" id="presidentName" name="presidentName" placeholder="e.g., Rtr. Kanhaiya Gupta" maxlength="80" autocomplete="name" required aria-describedby="presidentName-err" />
+          <p class="field-error" id="presidentName-err">Please enter the president's full name.</p>
         </div>
 
-        <!-- ─── SUCCESS MESSAGE ────────────────────────────────────────────────────── -->
-        <div class="success-message" id="successMessage">
-            <span class="success-icon">✅</span>
-            <h2>LHE Request Submitted!</h2>
-            <p>Your Letterhead Exchange request has been received successfully.</p>
-            <div class="verification-id" id="verificationIdDisplay">LHE-XXXX-XXXX</div>
-            <p style="margin-top:0.8rem;font-size:0.8rem;color:var(--gray-400);">
-                The verification ID will be used to track your LHE document.
-            </p>
-            <button class="btn-success-action" onclick="location.reload()">
-                📝 Submit Another
-            </button>
+        <div class="field" data-field="rotaryYear">
+          <label for="rotaryYear">Rotary year <span class="required-star">*</span></label>
+          <select id="rotaryYear" name="rotaryYear" required>
+            <option value="2026-27" selected>2026-27</option>
+            <option value="2025-26">2025-26</option>
+            <option value="2027-28">2027-28</option>
+          </select>
         </div>
 
-        <!-- ─── FOOTER ────────────────────────────────────────────────────────────────── -->
-        <footer class="app-footer">
-            <span>© 2026 Rotaract Club of Galkot Baglung • RI District 3292</span>
-            <span style="opacity:0.5;">LHE Registration v1.0</span>
-        </footer>
+        <div class="field" data-field="clubName">
+          <label for="clubName">Club / organization name <span class="required-star">*</span></label>
+          <input type="text" id="clubName" name="clubName" placeholder="e.g., Rotaract Club of Birgunj" maxlength="120" required aria-describedby="clubName-err" />
+          <p class="field-error" id="clubName-err">Please enter your club or organization name.</p>
+        </div>
+
+        <div class="field" data-field="rid">
+          <label for="rid">RID <span class="hint">Rotary International District</span> <span class="required-star">*</span></label>
+          <input type="text" id="rid" name="rid" placeholder="e.g., 9455" inputmode="numeric" maxlength="5" required aria-describedby="rid-err" />
+          <p class="field-error" id="rid-err">Enter a valid district number (3–5 digits).</p>
+        </div>
+
+        <div class="field" data-field="sponsoredClub">
+          <label for="sponsoredClub">Sponsored club <span class="hint">(if any)</span></label>
+          <input type="text" id="sponsoredClub" name="sponsoredClub" placeholder="e.g., Rotaract Club of …" maxlength="120" />
+        </div>
+
+        <div class="field">
+          <label for="logoUpload">Club logo <span class="hint">PNG, JPG or SVG, up to 2MB</span></label>
+          <div class="file-upload-wrap" id="uploadWrap">
+            <span class="upload-icon" aria-hidden="true">🖼️</span>
+            <div class="upload-text"><strong>Click to upload</strong> or drag &amp; drop</div>
+            <span class="upload-sub">PNG, JPG or SVG up to 2MB</span>
+            <input type="file" id="logoUpload" name="logoUpload" accept="image/png,image/jpeg,image/svg+xml" aria-label="Club logo file" />
+          </div>
+          <div class="file-preview" id="filePreview">
+            <img id="previewImage" src="" alt="" />
+            <div class="file-meta">
+              <div class="file-name" id="fileName">logo.png</div>
+              <div class="file-size" id="fileSize"></div>
+            </div>
+            <button type="button" class="file-remove" id="removeFile" aria-label="Remove selected logo">✕</button>
+          </div>
+          <div class="upload-progress" id="uploadProgress"><div class="bar"></div></div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <span class="spinner-small" aria-hidden="true"></span>
+            <span class="btn-text">📤 Submit LHE request</span>
+          </button>
+          <button type="reset" class="btn btn-secondary" id="resetBtn">Reset</button>
+        </div>
+      </form>
     </div>
 
-    <!-- ─── TOAST CONTAINER ────────────────────────────────────────────────────────── -->
-    <div class="toast-container" id="toastContainer"></div>
+    <div class="success-state" id="successState" role="status" aria-live="polite">
+      <div class="success-seal" id="successSeal"></div>
+      <h2>LHE request submitted</h2>
+      <p>Your Letterhead Exchange request has been received. We'll review it and get back to you.</p>
+      <div class="vid-chip" id="verificationIdDisplay">LHE-XXXX-XXXX</div>
+      <p class="vid-note">Keep this verification ID — it's used to track and later verify your LHE document.</p>
+      <div class="form-actions" style="justify-content:center;">
+        <button class="btn btn-primary" id="submitAnotherBtn" type="button">📝 Submit another request</button>
+      </div>
+    </div>
 
-    <script>
-        (function() {
-            'use strict';
+    <footer class="app-footer no-print">
+      <span>© 2026 Rotaract Club of Galkot Baglung • RI District 3292</span>
+      <span style="opacity:.6;">LHE Registration</span>
+    </footer>
+  </main>
+</div>
 
-            // ─── Supabase Config ──────────────────────────────────────────────────
-            const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
-            const SUPABASE_ANON_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
+<div class="toast-container" id="toastContainer"></div>
 
-            // ─── DOM Refs ──────────────────────────────────────────────────────────
-            const form = document.getElementById('lheForm');
-            const presidentName = document.getElementById('presidentName');
-            const rotaryYear = document.getElementById('rotaryYear');
-            const clubName = document.getElementById('clubName');
-            const rid = document.getElementById('rid');
-            const sponsoredClub = document.getElementById('sponsoredClub');
-            const logoUpload = document.getElementById('logoUpload');
-            const filePreview = document.getElementById('filePreview');
-            const previewImage = document.getElementById('previewImage');
-            const fileName = document.getElementById('fileName');
-            const removeFile = document.getElementById('removeFile');
-            const uploadWrap = document.getElementById('uploadWrap');
-            const submitBtn = document.getElementById('submitBtn');
-            const resetBtn = document.getElementById('resetBtn');
-            const formContainer = document.getElementById('formContainer');
-            const successMessage = document.getElementById('successMessage');
-            const verificationIdDisplay = document.getElementById('verificationIdDisplay');
-            const toastContainer = document.getElementById('toastContainer');
+<script>
+(function () {
+  'use strict';
 
-            let supabaseClient = null;
-            let uploadedFileUrl = '';
-            let uploadedFileName = '';
+  function boot() {
+    if (!window.LHE) { setTimeout(boot, 30); return; }
+    const { showToast, generateVerificationId, escapeHtml, sealSvg } = window.LHE;
 
-            // ─── Init Supabase ─────────────────────────────────────────────────────
-            try {
-                if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
-                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                    console.log('✅ Supabase client initialized.');
-                } else {
-                    console.warn('⚠️ Supabase library not loaded.');
-                }
-            } catch (e) {
-                console.error('❌ Failed to init Supabase:', e);
-            }
+    // ─── DOM refs ──────────────────────────────────────────────────
+    const form = document.getElementById('lheForm');
+    const presidentName = document.getElementById('presidentName');
+    const rotaryYear = document.getElementById('rotaryYear');
+    const clubName = document.getElementById('clubName');
+    const rid = document.getElementById('rid');
+    const sponsoredClub = document.getElementById('sponsoredClub');
+    const logoUpload = document.getElementById('logoUpload');
+    const filePreview = document.getElementById('filePreview');
+    const previewImage = document.getElementById('previewImage');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const removeFile = document.getElementById('removeFile');
+    const uploadWrap = document.getElementById('uploadWrap');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const submitBtn = document.getElementById('submitBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const formContainer = document.getElementById('formContainer');
+    const successState = document.getElementById('successState');
+    const verificationIdDisplay = document.getElementById('verificationIdDisplay');
+    const submitAnotherBtn = document.getElementById('submitAnotherBtn');
+    const successSeal = document.getElementById('successSeal');
 
-            // ─── Toast ─────────────────────────────────────────────────────────────
-            function showToast(message, type = 'info') {
-                const toast = document.createElement('div');
-                toast.className = `toast ${type}`;
-                const icons = { success: '✅', error: '❌', info: 'ℹ️' };
-                toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${message}`;
-                toastContainer.appendChild(toast);
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    toast.style.transform = 'translateX(20px)';
-                    setTimeout(() => toast.remove(), 300);
-                }, 4000);
-            }
+    successSeal.innerHTML = sealSvg({ size: 76 });
 
-            // ─── Generate Verification ID ─────────────────────────────────────────
-            function generateVerificationId() {
-                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                let result = 'LHE-';
-                for (let i = 0; i < 4; i++) {
-                    result += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                result += '-';
-                for (let i = 0; i < 4; i++) {
-                    result += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                return result;
-            }
+    const supabaseClient = window.LHE.createSupabaseClient();
+    let submitting = false;
 
-            // ─── File Upload to Supabase Storage ──────────────────────────────────
-            async function uploadLogo(file) {
-                if (!supabaseClient) throw new Error('Supabase client not initialized.');
+    // ─── Field-level validation ────────────────────────────────────
+    function fieldWrap(el) { return el.closest('.field'); }
 
-                const fileExt = file.name.split('.').pop();
-                const fileName = `lhe_logos/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+    function validateField(el, rules) {
+      const wrap = fieldWrap(el);
+      const value = el.value.trim();
+      let valid = true;
+      for (const rule of rules) {
+        if (!rule.test(value)) { valid = false; break; }
+      }
+      window.LHE.setFieldState(wrap, valid);
+      return valid;
+    }
 
-                const { data, error } = await supabaseClient.storage
-                    .from('lhe-logos')
-                    .upload(fileName, file, {
-                        cacheControl: '3600',
-                        upsert: false
-                    });
+    const rules = {
+      presidentName: [{ test: (v) => window.LHE.validators.required(v) }, { test: (v) => window.LHE.validators.maxLen(v, 80) }],
+      clubName: [{ test: (v) => window.LHE.validators.required(v) }, { test: (v) => window.LHE.validators.maxLen(v, 120) }],
+      rid: [{ test: (v) => window.LHE.validators.rid(v) }]
+    };
 
-                if (error) throw error;
+    [presidentName, clubName, rid].forEach((el) => {
+      el.addEventListener('blur', () => validateField(el, rules[el.id]));
+      el.addEventListener('input', () => {
+        if (fieldWrap(el).classList.contains('invalid')) validateField(el, rules[el.id]);
+      });
+    });
 
-                const { data: urlData } = supabaseClient.storage
-                    .from('lhe-logos')
-                    .getPublicUrl(fileName);
+    function validateAll() {
+      const results = [presidentName, clubName, rid].map((el) => validateField(el, rules[el.id]));
+      return results.every(Boolean);
+    }
 
-                return urlData.publicUrl;
-            }
+    function firstInvalid() {
+      return [presidentName, clubName, rid].find((el) => fieldWrap(el).classList.contains('invalid'));
+    }
 
-            // ─── Save to Database ──────────────────────────────────────────────────
-            async function saveToDatabase(data) {
-                if (!supabaseClient) throw new Error('Supabase client not initialized.');
+    // ─── File selection / drag & drop ─────────────────────────────
+    function formatBytes(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      return (bytes / 1024).toFixed(0) + ' KB';
+    }
 
-                const { data: inserted, error } = await supabaseClient
-                    .from('rotaract_lhe_requests')
-                    .insert({
-                        president_name: data.presidentName,
-                        rotary_year: data.rotaryYear,
-                        club_name: data.clubName,
-                        rid: data.rid,
-                        sponsored_club: data.sponsoredClub || null,
-                        logo_url: data.logoUrl || null,
-                        verification_id: data.verificationId,
-                        status: 'pending',
-                        created_at: new Date().toISOString()
-                    })
-                    .select()
-                    .single();
+    function handleFile(file) {
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) {
+        showToast('Logo must be smaller than 2MB.', 'error');
+        logoUpload.value = '';
+        return;
+      }
+      const validTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
+      if (!validTypes.includes(file.type)) {
+        showToast('Please upload a PNG, JPG or SVG image.', 'error');
+        logoUpload.value = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImage.src = e.target.result;
+        fileName.textContent = file.name;
+        fileSize.textContent = formatBytes(file.size);
+        filePreview.classList.add('visible');
+      };
+      reader.readAsDataURL(file);
+    }
 
-                if (error) throw error;
-                return inserted;
-            }
+    logoUpload.addEventListener('change', function () { handleFile(this.files[0]); });
 
-            // ─── Handle File Selection ────────────────────────────────────────────
-            logoUpload.addEventListener('change', function(e) {
-                const file = this.files[0];
-                if (!file) return;
+    removeFile.addEventListener('click', () => {
+      logoUpload.value = '';
+      filePreview.classList.remove('visible');
+      previewImage.src = '';
+    });
 
-                if (file.size > 2 * 1024 * 1024) {
-                    showToast('Logo size must be less than 2MB.', 'error');
-                    this.value = '';
-                    return;
-                }
+    ['dragover', 'dragenter'].forEach((evt) =>
+      uploadWrap.addEventListener(evt, (e) => { e.preventDefault(); uploadWrap.classList.add('dragover'); })
+    );
+    ['dragleave', 'dragend'].forEach((evt) =>
+      uploadWrap.addEventListener(evt, (e) => { e.preventDefault(); uploadWrap.classList.remove('dragover'); })
+    );
+    uploadWrap.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadWrap.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length) { logoUpload.files = files; handleFile(files[0]); }
+    });
 
-                const validTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
-                if (!validTypes.includes(file.type)) {
-                    showToast('Please upload PNG, JPG, or SVG image.', 'error');
-                    this.value = '';
-                    return;
-                }
+    // ─── Upload + save ─────────────────────────────────────────────
+    async function uploadLogo(file) {
+      if (!supabaseClient) throw new Error('Connection not ready. Please refresh and try again.');
+      const fileExt = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const safeName = `lhe_logos/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${fileExt}`;
+      const { error } = await supabaseClient.storage.from('lhe-logos').upload(safeName, file, { cacheControl: '3600', upsert: false });
+      if (error) throw error;
+      const { data: urlData } = supabaseClient.storage.from('lhe-logos').getPublicUrl(safeName);
+      return urlData.publicUrl;
+    }
 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImage.src = e.target.result;
-                    fileName.textContent = file.name;
-                    filePreview.classList.add('visible');
-                    uploadedFileName = file.name;
-                };
-                reader.readAsDataURL(file);
-            });
+    async function saveToDatabase(data) {
+      if (!supabaseClient) throw new Error('Connection not ready. Please refresh and try again.');
+      const { data: inserted, error } = await supabaseClient
+        .from('rotaract_lhe_requests')
+        .insert({
+          president_name: data.presidentName,
+          rotary_year: data.rotaryYear,
+          club_name: data.clubName,
+          rid: data.rid,
+          sponsored_club: data.sponsoredClub || null,
+          logo_url: data.logoUrl || null,
+          verification_id: data.verificationId,
+          status: 'pending',
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return inserted;
+    }
 
-            removeFile.addEventListener('click', function() {
-                logoUpload.value = '';
-                filePreview.classList.remove('visible');
-                previewImage.src = '';
-                uploadedFileName = '';
-                uploadedFileUrl = '';
-            });
+    function setLoading(loading) {
+      submitBtn.classList.toggle('loading', loading);
+      submitBtn.disabled = loading;
+      resetBtn.disabled = loading;
+    }
 
-            // Drag and drop support
-            uploadWrap.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                this.classList.add('dragover');
-            });
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      if (submitting) return;
 
-            uploadWrap.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                this.classList.remove('dragover');
-            });
+      if (!validateAll()) {
+        showToast('Please correct the highlighted fields.', 'error');
+        const invalid = firstInvalid();
+        if (invalid) invalid.focus();
+        return;
+      }
 
-            uploadWrap.addEventListener('drop', function(e) {
-                e.preventDefault();
-                this.classList.remove('dragover');
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    logoUpload.files = files;
-                    logoUpload.dispatchEvent(new Event('change'));
-                }
-            });
+      submitting = true;
+      setLoading(true);
+      const file = logoUpload.files[0];
+      if (file) uploadProgress.classList.add('visible');
 
-            // ─── Set Loading ──────────────────────────────────────────────────────
-            function setLoading(loading) {
-                if (loading) {
-                    submitBtn.classList.add('loading');
-                    submitBtn.disabled = true;
-                } else {
-                    submitBtn.classList.remove('loading');
-                    submitBtn.disabled = false;
-                }
-            }
+      try {
+        let logoUrl = '';
+        if (file) logoUrl = await uploadLogo(file);
 
-            // ─── Form Submit ──────────────────────────────────────────────────────
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
+        const verificationId = generateVerificationId();
+        await saveToDatabase({
+          presidentName: presidentName.value.trim(),
+          rotaryYear: rotaryYear.value,
+          clubName: clubName.value.trim(),
+          rid: rid.value.trim(),
+          sponsoredClub: sponsoredClub.value.trim(),
+          logoUrl,
+          verificationId
+        });
 
-                const name = presidentName.value.trim();
-                const year = rotaryYear.value;
-                const club = clubName.value.trim();
-                const ridVal = rid.value.trim();
-                const file = logoUpload.files[0];
+        verificationIdDisplay.textContent = verificationId;
+        formContainer.style.display = 'none';
+        successState.classList.add('visible');
+        successState.setAttribute('tabindex', '-1');
+        successState.focus();
+        showToast('LHE request submitted successfully!', 'success');
+      } catch (err) {
+        console.error('Submission error:', err);
+        showToast(err.message || 'Failed to submit. Please try again.', 'error');
+      } finally {
+        submitting = false;
+        setLoading(false);
+        uploadProgress.classList.remove('visible');
+      }
+    });
 
-                if (!name) {
-                    showToast('Please enter President\'s Name.', 'error');
-                    presidentName.focus();
-                    return;
-                }
-                if (!club) {
-                    showToast('Please enter Club/Organization Name.', 'error');
-                    clubName.focus();
-                    return;
-                }
-                if (!ridVal) {
-                    showToast('Please enter RID (Rotary International District).', 'error');
-                    rid.focus();
-                    return;
-                }
+    resetBtn.addEventListener('click', () => {
+      setTimeout(() => {
+        filePreview.classList.remove('visible');
+        previewImage.src = '';
+        [presidentName, clubName, rid].forEach((el) => window.LHE.setFieldState(fieldWrap(el), true));
+        presidentName.focus();
+      }, 0);
+    });
 
-                setLoading(true);
+    submitAnotherBtn.addEventListener('click', () => {
+      form.reset();
+      filePreview.classList.remove('visible');
+      previewImage.src = '';
+      formContainer.style.display = 'block';
+      successState.classList.remove('visible');
+      presidentName.focus();
+    });
 
-                try {
-                    let logoUrl = '';
+    if (!supabaseClient) {
+      showToast('Connection issue — please refresh the page.', 'error');
+    }
 
-                    if (file) {
-                        logoUrl = await uploadLogo(file);
-                        uploadedFileUrl = logoUrl;
-                    }
+    presidentName.focus();
+  }
 
-                    const verificationId = generateVerificationId();
-
-                    await saveToDatabase({
-                        presidentName: name,
-                        rotaryYear: year,
-                        clubName: club,
-                        rid: ridVal,
-                        sponsoredClub: sponsoredClub.value.trim(),
-                        logoUrl: logoUrl,
-                        verificationId: verificationId
-                    });
-
-                    verificationIdDisplay.textContent = verificationId;
-                    formContainer.style.display = 'none';
-                    successMessage.classList.add('visible');
-
-                    showToast('✅ LHE Request submitted successfully!', 'success');
-
-                } catch (err) {
-                    console.error('❌ Submission error:', err);
-                    showToast('⚠️ ' + (err.message || 'Failed to submit. Please try again.'), 'error');
-                } finally {
-                    setLoading(false);
-                }
-            });
-
-            // ─── Reset Form ──────────────────────────────────────────────────────
-            resetBtn.addEventListener('click', function() {
-                form.reset();
-                filePreview.classList.remove('visible');
-                previewImage.src = '';
-                uploadedFileName = '';
-                uploadedFileUrl = '';
-                formContainer.style.display = 'block';
-                successMessage.classList.remove('visible');
-                presidentName.focus();
-            });
-
-            // ─── Init ──────────────────────────────────────────────────────────────
-            console.log('✅ LHE Public Form ready.');
-
-            // Auto-focus first field
-            presidentName.focus();
-
-        })();
-    </script>
-
+  boot();
+})();
+</script>
 </body>
 </html>
