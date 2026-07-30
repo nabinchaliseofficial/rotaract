@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rotaract Club - LHE Verification & Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+    <style>
+        :root {
+            --magenta: #D91B5C;
+            --magenta-dark: #B5154C;
+            --magenta-light: #FCE4EC;
+            --magenta-glow: rgba(217, 27, 92, 0.12);
+            --blue-dark: #0B1E30;
+            --blue-mid: #1A3A5C;
+            --gray-100: #F8FAFC;
+            --gray-200: #E9EDF4;
+            --gray-300: #D0D9E8;
+            --gray-400: #8A9BB0;
+            --gray-500: #6B7A93;
+            --gray-600: #4A5A72;
+            --gray-700: #1E3146;
+            --white: #FFFFFF;
+            --success: #1E8B4C;
+            --success-bg: #E6F7EE;
+            --error: #B13A2E;
+            --error-bg: #FEF0EE;
+            --warning: #856404;
+            --warning-bg: #FFF3CD;
+            --shadow-card: 0 20px 60px rgba(0, 20, 40, 0.08);
+            --radius-lg: 28px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --transition: 0.25s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #F4F7FB;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem 1rem;
+        }
+
+        .app {
+            max-width: 1000px;
+            width: 100%;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+        }
+
+        /* ─── Header ──────────────────────────────────────────────────────────────── */
+        .app-header {
+            background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+            padding: 1rem 2rem;
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-bottom: 4px solid var(--magenta);
+        }
+
+        .app-header .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .app-header .logo-wrap .logo-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--magenta);
+        }
+
+        .app-header .club-info h1 {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .app-header .club-info .sub {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+
+        .app-header .badge {
+            background: rgba(255, 255, 255, 0.10);
+            padding: 0.3rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .app-header .badge .live-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #4ADE80;
+            border-radius: 50%;
+            animation: pulse-dot 1.8s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .app-header .nav-links {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+        }
+
+        .app-header .nav-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.75rem;
+            padding: 0.25rem 1rem;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.15);
+            transition: all var(--transition);
+        }
+
+        .app-header .nav-links a:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--white);
+        }
+
+        /* ─── Stats ────────────────────────────────────────────────────────────────── */
+        .stats-dash {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            padding: 1rem 2rem;
+            background: var(--gray-100);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .stat-item .stat-number {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--blue-dark);
+        }
+        .stat-item .stat-number .accent {
+            color: var(--magenta);
+        }
+        .stat-item .stat-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--gray-500);
+        }
+
+        /* ─── Status Section ──────────────────────────────────────────────────────── */
+        .status-section {
+            padding: 1rem 2rem;
+            background: var(--gray-100);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-bar .search-input-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--white);
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            padding: 0.3rem 0.8rem;
+            transition: border var(--transition);
+            min-width: 200px;
+        }
+
+        .search-bar .search-input-wrap:focus-within {
+            border-color: var(--magenta);
+        }
+
+        .search-bar .search-input-wrap input {
+            border: none;
+            outline: none;
+            padding: 0.4rem 0;
+            font-size: 0.85rem;
+            font-family: inherit;
+            background: transparent;
+            width: 100%;
+            color: var(--gray-700);
+        }
+
+        .search-bar .search-input-wrap .search-icon {
+            color: var(--gray-400);
+        }
+
+        .search-bar .filter-tabs {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+
+        .search-bar .filter-tabs button {
+            padding: 0.3rem 1rem;
+            border: 1.5px solid var(--gray-200);
+            border-radius: 30px;
+            background: var(--white);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--gray-500);
+            cursor: pointer;
+            transition: all var(--transition);
+            font-family: inherit;
+        }
+
+        .search-bar .filter-tabs button:hover {
+            border-color: var(--magenta);
+            color: var(--magenta);
+        }
+
+        .search-bar .filter-tabs button.active {
+            background: var(--magenta);
+            color: var(--white);
+            border-color: var(--magenta);
+        }
+
+        .search-bar .btn-refresh {
+            padding: 0.3rem 1rem;
+            border: 1.5px solid var(--gray-200);
+            border-radius: 30px;
+            background: var(--white);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--gray-500);
+            cursor: pointer;
+            transition: all var(--transition);
+            font-family: inherit;
+        }
+
+        .search-bar .btn-refresh:hover {
+            border-color: var(--blue-mid);
+            color: var(--blue-mid);
+            background: #E8F0FE;
+        }
+
+        /* ─── Table ────────────────────────────────────────────────────────────────── */
+        .table-wrap {
+            overflow-x: auto;
+            background: var(--white);
+            padding: 0 2rem 2rem;
+        }
+
+        .table-wrap table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .table-wrap table thead {
+            background: var(--gray-100);
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .table-wrap table thead th {
+            padding: 0.6rem 0.8rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gray-600);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .table-wrap table tbody td {
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid var(--gray-100);
+            color: var(--gray-700);
+            vertical-align: middle;
+        }
+
+        .table-wrap table tbody tr:hover {
+            background: var(--gray-100);
+        }
+
+        .table-wrap table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-wrap table .status-badge {
+            display: inline-block;
+            padding: 0.1rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .table-wrap table .status-badge.pending {
+            background: var(--warning-bg);
+            color: var(--warning);
+        }
+
+        .table-wrap table .status-badge.approved {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .table-wrap table .status-badge.rejected {
+            background: var(--error-bg);
+            color: var(--error);
+        }
+
+        .table-wrap table .actions {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+
+        .table-wrap table .actions .btn-icon {
+            padding: 0.2rem 0.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all var(--transition);
+            background: transparent;
+            color: var(--gray-500);
+            font-family: inherit;
+        }
+
+        .table-wrap table .actions .btn-icon:hover {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .table-wrap table .actions .btn-icon.verify {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .table-wrap table .actions .btn-icon.verify:hover {
+            background: #C5E0D0;
+        }
+
+        .table-wrap table .actions .btn-icon.verify:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .table-wrap table .actions .btn-icon.delete:hover {
+            background: var(--error-bg);
+            color: var(--error);
+        }
+
+        .no-records {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--gray-400);
+        }
+
+        .no-records .icon-big {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        /* ─── Toast ────────────────────────────────────────────────────────────────── */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: 380px;
+            width: 100%;
+        }
+
+        .toast {
+            padding: 0.8rem 1.2rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            animation: slideUp 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: var(--white);
+            border-left: 4px solid;
+        }
+
+        .toast.success {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .toast.error {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .toast.info {
+            border-color: var(--blue-mid);
+            color: var(--blue-mid);
+        }
+
+        @keyframes slideUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ─── Footer ────────────────────────────────────────────────────────────────── */
+        .app-footer {
+            background: var(--blue-dark);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 0.8rem 2rem;
+            font-size: 0.7rem;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            border-top: 3px solid var(--magenta);
+        }
+
+        /* ─── Responsive ───────────────────────────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .app-header {
+                padding: 0.8rem 1rem;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .app-header .nav-links {
+                flex-wrap: wrap;
+            }
+            .stats-dash {
+                padding: 0.8rem 1rem;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.4rem;
+            }
+            .status-section {
+                padding: 0.8rem 1rem;
+            }
+            .search-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-bar .search-input-wrap {
+                min-width: auto;
+            }
+            .table-wrap {
+                padding: 0 1rem 1rem;
+            }
+            .table-wrap table {
+                font-size: 0.7rem;
+            }
+            .table-wrap table thead th,
+            .table-wrap table tbody td {
+                padding: 0.4rem 0.4rem;
+            }
+            .toast-container {
+                right: 0.5rem;
+                bottom: 0.5rem;
+                max-width: calc(100% - 1rem);
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+            .app {
+                border-radius: var(--radius-md);
+            }
+            .table-wrap table .actions .btn-icon {
+                font-size: 0.6rem;
+                padding: 0.15rem 0.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app">
+
+        <!-- ─── HEADER ────────────────────────────────────────────────────────────── -->
+        <header class="app-header">
+            <div class="logo-wrap">
+                <img src="rotaract.jpg" alt="Rotaract Logo" class="logo-img" onerror="this.style.display='none'" />
+                <div class="club-info">
+                    <h1>ROTARACT CLUB OF GALKOT BAGLUNG</h1>
+                    <div class="sub">RI District 3292 • Nepal • 🔐 LHE Verification</div>
+                </div>
+            </div>
+            <div class="badge">
+                <span class="live-dot"></span>
+                <span>Live • Verified</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">🏠 Home</a>
+            </div>
+        </header>
+
+        <!-- ─── STATS ────────────────────────────────────────────────────────────────── -->
+        <section class="stats-dash">
+            <div class="stat-item">
+                <span class="stat-number" id="statTotal">—</span>
+                <span class="stat-label">📚 Total Requests</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="statPending">—</span>
+                <span class="stat-label">⏳ Pending</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="statVerified">—</span>
+                <span class="stat-label">✅ Verified</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="statUpdated">—</span>
+                <span class="stat-label">🕐 Updated</span>
+            </div>
+        </section>
+
+        <!-- ─── SEARCH & FILTER ────────────────────────────────────────────────────── -->
+        <section class="status-section">
+            <div class="search-bar">
+                <div class="search-input-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search by club or president..." />
+                </div>
+                <div class="filter-tabs">
+                    <button class="active" data-filter="all">All</button>
+                    <button data-filter="pending">⏳ Pending</button>
+                    <button data-filter="verified">✅ Verified</button>
+                </div>
+                <button class="btn-refresh" id="refreshBtn">🔄 Refresh</button>
+            </div>
+        </section>
+
+        <!-- ─── TABLE ────────────────────────────────────────────────────────────────── -->
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Club</th>
+                        <th>President</th>
+                        <th>RID</th>
+                        <th>RY</th>
+                        <th>Status</th>
+                        <th style="min-width:140px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="6" class="no-records">
+                            <span class="icon-big">📭</span>
+                            <p>No LHE requests found.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ─── FOOTER ────────────────────────────────────────────────────────────────── -->
+        <footer class="app-footer">
+            <span>© 2026 Rotaract Club of Galkot Baglung • RI District 3292</span>
+            <span style="opacity:0.5;">LHE Verify v1.0</span>
+        </footer>
+    </div>
+
+    <!-- ─── TOAST CONTAINER ────────────────────────────────────────────────────────── -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
+            const SUPABASE_ANON_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
+
+            // ─── DOM Refs ──────────────────────────────────────────────────────────
+            const tableBody = document.getElementById('tableBody');
+            const searchInput = document.getElementById('searchInput');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const statTotal = document.getElementById('statTotal');
+            const statPending = document.getElementById('statPending');
+            const statVerified = document.getElementById('statVerified');
+            const statUpdated = document.getElementById('statUpdated');
+            const toastContainer = document.getElementById('toastContainer');
+
+            let supabaseClient = null;
+            let currentFilter = 'all';
+            let allRequests = [];
+
+            // ─── Init Supabase ─────────────────────────────────────────────────────
+            try {
+                if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    console.log('✅ Supabase client initialized.');
+                }
+            } catch (e) {
+                console.error('❌ Failed to init Supabase:', e);
+            }
+
+            // ─── Toast ─────────────────────────────────────────────────────────────
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+                toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${message}`;
+                toastContainer.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000);
+            }
+
+            // ─── Generate Verification ID ─────────────────────────────────────────
+            function generateVerificationId() {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let result = 'LHE-';
+                for (let i = 0; i < 4; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                result += '-';
+                for (let i = 0; i < 4; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return result;
+            }
+
+            // ─── Get next ref number ──────────────────────────────────────────────
+            async function getNextRefNo() {
+                if (!supabaseClient) return 'LHE_1';
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('rotaract_lhe')
+                        .select('ref_no')
+                        .order('ref_no', { ascending: false })
+                        .limit(1);
+
+                    if (error) throw error;
+                    if (!data || data.length === 0) return 'LHE_1';
+
+                    const lastRef = data[0].ref_no;
+                    const match = lastRef.match(/LHE_(\d+)/);
+                    if (!match) return 'LHE_1';
+                    const num = parseInt(match[1], 10);
+                    if (isNaN(num)) return 'LHE_1';
+                    return `LHE_${num + 1}`;
+                } catch (e) {
+                    console.warn('Error fetching next ref:', e);
+                    return 'LHE_1';
+                }
+            }
+
+            // ─── Load Requests ─────────────────────────────────────────────────────
+            async function loadRequests(search = '') {
+                if (!supabaseClient) return;
+
+                try {
+                    let query = supabaseClient
+                        .from('rotaract_lhe_requests')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (search.trim()) {
+                        const s = `%${search.trim()}%`;
+                        query = query.or(
+                            `club_name.ilike.${s},president_name.ilike.${s},rid.ilike.${s},sponsored_club.ilike.${s}`
+                        );
+                    }
+
+                    if (currentFilter !== 'all') {
+                        query = query.eq('status', currentFilter === 'verified' ? 'approved' : 'pending');
+                    }
+
+                    const { data, error } = await query;
+
+                    if (error) throw error;
+
+                    allRequests = data || [];
+                    renderTable(allRequests);
+                    loadStats();
+
+                } catch (err) {
+                    console.error('Load error:', err);
+                    showToast('⚠️ Failed to load requests.', 'error');
+                }
+            }
+
+            // ─── Render Table ─────────────────────────────────────────────────────
+            function renderTable(requests) {
+                if (!requests || requests.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr><td colspan="6" class="no-records">
+                            <span class="icon-big">📭</span>
+                            <p>No LHE requests found.</p>
+                        </td></tr>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                requests.forEach(req => {
+                    const statusClass = req.status || 'pending';
+                    const statusDisplay = req.status === 'approved' ? 'Verified' : 
+                                       req.status === 'rejected' ? 'Rejected' : 'Pending';
+                    const isVerified = req.status === 'approved';
+                    
+                    html += `
+                        <tr>
+                            <td><strong>${escapeHtml(req.club_name || '—')}</strong></td>
+                            <td>${escapeHtml(req.president_name || '—')}</td>
+                            <td>${escapeHtml(req.rid || '—')}</td>
+                            <td>${escapeHtml(req.rotary_year || '—')}</td>
+                            <td><span class="status-badge ${statusClass}">${escapeHtml(statusDisplay)}</span></td>
+                            <td>
+                                <div class="actions">
+                                    <button class="btn-icon verify" data-id="${req.id}" ${isVerified ? 'disabled' : ''} title="${isVerified ? 'Already Verified' : 'Verify & Generate LHE'}">
+                                        ${isVerified ? '✅ Verified' : '🔍 Verify'}
+                                    </button>
+                                    <button class="btn-icon delete" data-id="${req.id}" title="Delete">🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableBody.innerHTML = html;
+
+                // Attach event listeners
+                tableBody.querySelectorAll('.verify').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        if (!this.disabled) {
+                            verifyRequest(this.dataset.id);
+                        }
+                    });
+                });
+
+                tableBody.querySelectorAll('.delete').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        if (confirm('Are you sure you want to delete this request?')) {
+                            deleteRequest(this.dataset.id);
+                        }
+                    });
+                });
+            }
+
+            // ─── Load Stats ──────────────────────────────────────────────────────
+            async function loadStats() {
+                if (!supabaseClient) return;
+
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('rotaract_lhe_requests')
+                        .select('*');
+
+                    if (error) throw error;
+
+                    const total = data.length;
+                    const pending = data.filter(r => r.status === 'pending').length;
+                    const verified = data.filter(r => r.status === 'approved').length;
+
+                    statTotal.textContent = total;
+                    statPending.textContent = pending;
+                    statVerified.textContent = verified;
+                    statUpdated.textContent = new Date().toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+
+                } catch (err) {
+                    console.warn('Stats error:', err);
+                }
+            }
+
+            // ─── Verify Request ────────────────────────────────────────────────────
+            async function verifyRequest(id) {
+                if (!supabaseClient) return;
+
+                try {
+                    // Get the request data
+                    const { data: request, error: fetchError } = await supabaseClient
+                        .from('rotaract_lhe_requests')
+                        .select('*')
+                        .eq('id', id)
+                        .single();
+
+                    if (fetchError) throw fetchError;
+
+                    if (!request) {
+                        showToast('⚠️ Request not found.', 'error');
+                        return;
+                    }
+
+                    if (request.status === 'approved') {
+                        showToast('ℹ️ This request is already verified.', 'info');
+                        return;
+                    }
+
+                    // Generate LHE letter data
+                    const fy = '026/027';
+                    const nextRef = await getNextRefNo();
+                    const vid = generateVerificationId();
+                    const today = new Date().toISOString().split('T')[0];
+
+                    // Default sender details
+                    const senderClub = 'Rotaract Club of Galkot Baglung';
+                    const senderRid = '3292';
+                    const senderSponsored = 'Rotaract Club of Baglung';
+
+                    // Signature names
+                    const presidentName = 'Rtr. Nabin Chalise';
+                    const secretaryName = 'Rtr. Madan Subedi';
+                    const chairName = 'Rtr. Anil Shrestha';
+                    const signPlace = 'Galkot, Baglung';
+
+                    // Build body
+                    const bodyText = `Dear ${request.president_name || 'President'},
+
+On behalf of the Rotaract Club of Galkot Baglung, I extend our heartfelt congratulations and best wishes to you and your Board of Directors for a successful Rotary Year ${request.rotary_year || '2026–27'}. May your tenure be filled with impactful service, inspiring leadership, and meaningful achievements.
+
+Since our charter on 23 April 2021, our club has remained committed to community service, youth empowerment, leadership development, and fellowship. We sincerely appreciate the contributions of the ${request.club_name || 'your club'} to the Rotaract movement.
+
+Through this Letterhead Exchange, we celebrate the spirit of friendship and collaboration between our clubs. We look forward to building a strong and lasting relationship through service and fellowship.
+
+Wishing you and your club a successful Rotary Year ahead.
+
+Thank you!`;
+
+                    const lheData = {
+                        ref_no: nextRef,
+                        fiscal_year: fy,
+                        date: today,
+                        letter_type: 'LHE',
+                        sender_club_name: senderClub,
+                        sender_rid: senderRid,
+                        sender_sponsored_club: senderSponsored,
+                        sender_logo_url: 'rotaract.jpg',
+                        recipient_name: request.president_name || '',
+                        recipient_position: `President, RY ${request.rotary_year || '2026-27'}`,
+                        recipient_club_name: request.club_name || '',
+                        recipient_rid: request.rid || '',
+                        recipient_sponsored_club: request.sponsored_club || '',
+                        recipient_logo_url: request.logo_url || '',
+                        subject: 'Letterhead Exchange',
+                        body: bodyText,
+                        message: '',
+                        president_name: presidentName,
+                        president_signature_url: 'presidentsign.jpg',
+                        secretary_name: secretaryName,
+                        secretary_signature_url: 'secretarysign.jpg',
+                        international_chair_name: chairName,
+                        international_chair_signature_url: 'anilsign.jpg',
+                        sign_place: signPlace,
+                        letter_status: 'Active',
+                        verification_id: vid
+                    };
+
+                    // Insert into rotaract_lhe
+                    const { data: inserted, error: insertError } = await supabaseClient
+                        .from('rotaract_lhe')
+                        .insert(lheData)
+                        .select()
+                        .single();
+
+                    if (insertError) throw insertError;
+
+                    // Update request status to approved
+                    const { error: updateError } = await supabaseClient
+                        .from('rotaract_lhe_requests')
+                        .update({
+                            status: 'approved',
+                            verification_id: vid,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', id);
+
+                    if (updateError) throw updateError;
+
+                    showToast('✅ LHE request verified successfully!', 'success');
+
+                    // Open verification page to show the generated letter
+                    window.open(`verifyLHE.html?vid=${vid}`, '_blank');
+
+                    // Refresh
+                    loadRequests(searchInput.value);
+
+                } catch (err) {
+                    console.error('Verify error:', err);
+                    showToast('⚠️ ' + (err.message || 'Failed to verify request.'), 'error');
+                }
+            }
+
+            // ─── Delete Request ────────────────────────────────────────────────────
+            async function deleteRequest(id) {
+                if (!supabaseClient) return;
+
+                try {
+                    // First check if there's a related LHE letter
+                    const { data: request } = await supabaseClient
+                        .from('rotaract_lhe_requests')
+                        .select('verification_id')
+                        .eq('id', id)
+                        .single();
+
+                    // Delete the request
+                    const { error } = await supabaseClient
+                        .from('rotaract_lhe_requests')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+
+                    // Also delete related LHE letter if exists
+                    if (request && request.verification_id) {
+                        await supabaseClient
+                            .from('rotaract_lhe')
+                            .delete()
+                            .eq('verification_id', request.verification_id);
+                    }
+
+                    showToast('🗑️ Request deleted successfully.', 'info');
+                    loadRequests(searchInput.value);
+
+                } catch (err) {
+                    console.error('Delete error:', err);
+                    showToast('⚠️ Failed to delete request.', 'error');
+                }
+            }
+
+            // ─── Utility ──────────────────────────────────────────────────────────
+            function escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // ─── Event Listeners ──────────────────────────────────────────────────
+
+            searchInput.addEventListener('input', function() {
+                loadRequests(this.value);
+            });
+
+            refreshBtn.addEventListener('click', function() {
+                loadRequests(searchInput.value);
+                showToast('🔄 Refreshed!', 'info');
+            });
+
+            // Filter tabs
+            document.querySelectorAll('.filter-tabs button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-tabs button').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    loadRequests(searchInput.value);
+                });
+            });
+
+            // ─── Init ──────────────────────────────────────────────────────────────
+
+            async function init() {
+                // Check if Supabase is available
+                if (!supabaseClient) {
+                    showToast('⚠️ Supabase connection failed. Please refresh.', 'error');
+                    return;
+                }
+
+                loadRequests();
+                console.log('✅ LHE Verify Only ready.');
+            }
+
+            init();
+
+        })();
+    </script>
+
+</body>
+</html>

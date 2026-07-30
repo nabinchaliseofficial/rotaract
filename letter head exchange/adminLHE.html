@@ -1,0 +1,2475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rotaract Club - Admin LHE Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --magenta: #D91B5C;
+            --magenta-dark: #B5154C;
+            --magenta-light: #FCE4EC;
+            --magenta-glow: rgba(217, 27, 92, 0.15);
+            --blue-dark: #0B1E30;
+            --blue-mid: #1A3A5C;
+            --gray-100: #F8FAFC;
+            --gray-200: #E9EDF4;
+            --gray-300: #D0D9E8;
+            --gray-400: #8A9BB0;
+            --gray-500: #6B7A93;
+            --gray-600: #4A5A72;
+            --gray-700: #1E3146;
+            --white: #FFFFFF;
+            --success: #1E8B4C;
+            --success-bg: #E6F7EE;
+            --error: #B13A2E;
+            --error-bg: #FEF0EE;
+            --warning: #856404;
+            --warning-bg: #FFF3CD;
+            --shadow-card: 0 20px 60px rgba(0, 20, 40, 0.08);
+            --shadow-btn: 0 4px 16px rgba(217, 27, 92, 0.30);
+            --radius-lg: 28px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --transition: 0.25s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #F4F7FB;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem 1rem;
+        }
+
+        .app {
+            max-width: 1400px;
+            width: 100%;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+        }
+
+        /* ─── Login Screen ────────────────────────────────────────────────────────── */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .login-overlay.active {
+            display: flex;
+        }
+
+        .login-box {
+            background: var(--white);
+            border-radius: var(--radius-md);
+            padding: 2.5rem 2.5rem 2rem;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-box .login-logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-box .login-logo img {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 3px solid var(--magenta);
+            object-fit: cover;
+        }
+
+        .login-box .login-logo h2 {
+            font-size: 1.1rem;
+            color: var(--blue-dark);
+            margin-top: 0.5rem;
+        }
+
+        .login-box .login-logo p {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+        }
+
+        .login-box .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .login-box .form-group label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--gray-500);
+            margin-bottom: 0.2rem;
+        }
+
+        .login-box .form-group input {
+            width: 100%;
+            padding: 0.65rem 0.9rem;
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: border var(--transition), box-shadow var(--transition);
+            outline: none;
+        }
+
+        .login-box .form-group input:focus {
+            border-color: var(--magenta);
+            box-shadow: 0 0 0 3px var(--magenta-glow);
+        }
+
+        .login-box .login-btn {
+            width: 100%;
+            padding: 0.7rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.9rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all var(--transition);
+            background: linear-gradient(135deg, var(--magenta), var(--magenta-dark));
+            color: var(--white);
+            box-shadow: var(--shadow-btn);
+        }
+
+        .login-box .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(217, 27, 92, 0.35);
+        }
+
+        .login-box .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .login-box .login-error {
+            color: var(--error);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            display: none;
+            text-align: center;
+        }
+
+        .login-box .login-error.visible {
+            display: block;
+        }
+
+        .login-box .login-loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            margin: 0 auto;
+            border: 3px solid var(--gray-200);
+            border-top: 3px solid var(--magenta);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .login-box .login-loader.active {
+            display: block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ─── Header ──────────────────────────────────────────────────────────────── */
+        .app-header {
+            background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+            padding: 1rem 2rem;
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-bottom: 4px solid var(--magenta);
+        }
+
+        .app-header .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .app-header .logo-wrap .logo-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--magenta);
+        }
+
+        .app-header .club-info h1 {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .app-header .club-info .sub {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+
+        .app-header .badge-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .app-header .badge {
+            background: rgba(255, 255, 255, 0.10);
+            padding: 0.3rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .app-header .badge .live-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #4ADE80;
+            border-radius: 50%;
+            animation: pulse-dot 1.8s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .app-header .nav-links {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .app-header .nav-links a,
+        .app-header .nav-links button {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.75rem;
+            padding: 0.25rem 1rem;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.15);
+            transition: all var(--transition);
+            background: transparent;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .app-header .nav-links a:hover,
+        .app-header .nav-links button:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--white);
+        }
+
+        .app-header .user-info {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .app-header .user-info .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--magenta);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: var(--white);
+        }
+
+        /* ─── Stats ────────────────────────────────────────────────────────────────── */
+        .stats-dash {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            padding: 1rem 2rem;
+            background: var(--gray-100);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .stat-item .stat-number {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--blue-dark);
+        }
+        .stat-item .stat-number .accent {
+            color: var(--magenta);
+        }
+        .stat-item .stat-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--gray-500);
+        }
+
+        /* ─── Admin Layout ────────────────────────────────────────────────────────── */
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 0;
+            background: var(--gray-100);
+        }
+
+        @media (max-width: 920px) {
+            .admin-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ─── Form Panel ──────────────────────────────────────────────────────────── */
+        .form-panel {
+            padding: 1.5rem 2rem;
+            background: var(--white);
+            border-right: 1px solid var(--gray-200);
+            max-height: 700px;
+            overflow-y: auto;
+        }
+
+        .form-panel .panel-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--blue-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-panel .panel-title .magenta {
+            color: var(--magenta);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem 1rem;
+        }
+
+        .form-grid .full {
+            grid-column: 1 / -1;
+        }
+
+        .form-grid .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .form-grid .field label {
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--gray-500);
+        }
+
+        .form-grid .field label .required-star {
+            color: var(--magenta);
+        }
+
+        .form-grid .field input,
+        .form-grid .field select,
+        .form-grid .field textarea {
+            padding: 0.4rem 0.7rem;
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-family: inherit;
+            background: var(--white);
+            transition: border var(--transition), box-shadow var(--transition);
+            outline: none;
+            width: 100%;
+            color: var(--gray-700);
+        }
+
+        .form-grid .field input:focus,
+        .form-grid .field select:focus,
+        .form-grid .field textarea:focus {
+            border-color: var(--magenta);
+            box-shadow: 0 0 0 3px var(--magenta-glow);
+        }
+
+        .form-grid .field input:read-only {
+            background: var(--gray-100);
+            cursor: not-allowed;
+        }
+
+        .form-grid .field textarea {
+            resize: vertical;
+            min-height: 50px;
+            line-height: 1.5;
+        }
+
+        .form-grid .field .logo-preview {
+            max-width: 80px;
+            max-height: 80px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gray-200);
+            padding: 4px;
+            object-fit: contain;
+            background: var(--white);
+        }
+
+        .form-section-title {
+            grid-column: 1 / -1;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--blue-dark);
+            padding-top: 0.3rem;
+            border-top: 2px solid var(--gray-200);
+            margin-top: 0.3rem;
+        }
+
+        .form-section-title:first-of-type {
+            border-top: none;
+            margin-top: 0;
+            padding-top: 0;
+        }
+
+        .form-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 0.6rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .form-actions .btn {
+            padding: 0.5rem 1.4rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.78rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .form-actions .btn-primary {
+            background: linear-gradient(135deg, var(--magenta), var(--magenta-dark));
+            color: var(--white);
+            box-shadow: var(--shadow-btn);
+        }
+
+        .form-actions .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(217, 27, 92, 0.35);
+        }
+
+        .form-actions .btn-secondary {
+            background: var(--gray-200);
+            color: var(--gray-600);
+        }
+
+        .form-actions .btn-secondary:hover {
+            background: var(--gray-300);
+        }
+
+        .form-actions .btn-danger {
+            background: var(--error-bg);
+            color: var(--error);
+            border: 1px solid #FADCD7;
+        }
+
+        .form-actions .btn-danger:hover {
+            background: #FDE0DC;
+        }
+
+        .form-actions .btn-success {
+            background: var(--success-bg);
+            color: var(--success);
+            border: 1px solid #C5E0D0;
+        }
+
+        .form-actions .btn-success:hover {
+            background: #C5E0D0;
+        }
+
+        .form-actions .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .form-actions .btn .spinner-small {
+            display: none;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid var(--white);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .form-actions .btn.loading .spinner-small {
+            display: inline-block;
+        }
+        .form-actions .btn.loading .btn-text {
+            display: none;
+        }
+
+        /* ─── List Panel ──────────────────────────────────────────────────────────── */
+        .list-panel {
+            padding: 1.5rem 2rem;
+            background: var(--gray-100);
+            overflow: hidden;
+        }
+
+        .list-panel .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .list-panel .panel-header .panel-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--blue-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .list-panel .panel-header .panel-title .count {
+            background: var(--magenta-light);
+            color: var(--magenta-dark);
+            padding: 0.05rem 0.7rem;
+            border-radius: 40px;
+            font-size: 0.7rem;
+        }
+
+        .list-panel .panel-header .filter-tabs {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+
+        .list-panel .panel-header .filter-tabs button {
+            padding: 0.2rem 0.8rem;
+            border: 1.5px solid var(--gray-200);
+            border-radius: 30px;
+            background: var(--white);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--gray-500);
+            cursor: pointer;
+            transition: all var(--transition);
+            font-family: inherit;
+        }
+
+        .list-panel .panel-header .filter-tabs button:hover {
+            border-color: var(--magenta);
+            color: var(--magenta);
+        }
+
+        .list-panel .panel-header .filter-tabs button.active {
+            background: var(--magenta);
+            color: var(--white);
+            border-color: var(--magenta);
+        }
+
+        .list-panel .panel-header .search-box {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--white);
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            padding: 0.2rem 0.7rem;
+            transition: border var(--transition);
+        }
+
+        .list-panel .panel-header .search-box:focus-within {
+            border-color: var(--magenta);
+        }
+
+        .list-panel .panel-header .search-box input {
+            border: none;
+            outline: none;
+            padding: 0.3rem 0;
+            font-size: 0.78rem;
+            font-family: inherit;
+            background: transparent;
+            width: 140px;
+            color: var(--gray-700);
+        }
+
+        .list-panel .panel-header .search-box .search-icon {
+            color: var(--gray-400);
+            font-size: 0.8rem;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            background: var(--white);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gray-200);
+        }
+
+        .table-wrap table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+
+        .table-wrap table thead {
+            background: var(--gray-100);
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .table-wrap table thead th {
+            padding: 0.5rem 0.8rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gray-600);
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .table-wrap table tbody td {
+            padding: 0.5rem 0.8rem;
+            border-bottom: 1px solid var(--gray-100);
+            color: var(--gray-700);
+            vertical-align: middle;
+        }
+
+        .table-wrap table tbody tr:hover {
+            background: var(--gray-100);
+        }
+
+        .table-wrap table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-wrap table .status-badge {
+            display: inline-block;
+            padding: 0.05rem 0.6rem;
+            border-radius: 30px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .table-wrap table .status-badge.pending {
+            background: var(--warning-bg);
+            color: var(--warning);
+        }
+
+        .table-wrap table .status-badge.approved {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .table-wrap table .status-badge.rejected {
+            background: var(--error-bg);
+            color: var(--error);
+        }
+
+        .table-wrap table .actions {
+            display: flex;
+            gap: 0.2rem;
+            flex-wrap: wrap;
+        }
+
+        .table-wrap table .actions .btn-icon {
+            padding: 0.15rem 0.4rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all var(--transition);
+            background: transparent;
+            color: var(--gray-500);
+        }
+
+        .table-wrap table .actions .btn-icon:hover {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .table-wrap table .actions .btn-icon.edit:hover {
+            background: var(--magenta-light);
+            color: var(--magenta);
+        }
+
+        .table-wrap table .actions .btn-icon.accept:hover {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .table-wrap table .actions .btn-icon.delete:hover {
+            background: var(--error-bg);
+            color: var(--error);
+        }
+
+        .table-wrap table .actions .btn-icon.print:hover {
+            background: #E8F0FE;
+            color: var(--blue-mid);
+        }
+
+        .no-records {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            color: var(--gray-400);
+        }
+
+        .no-records .icon-big {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        /* ─── Toast ────────────────────────────────────────────────────────────────── */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: 380px;
+            width: 100%;
+        }
+
+        .toast {
+            padding: 0.8rem 1.2rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            animation: slideUp 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: var(--white);
+            border-left: 4px solid;
+        }
+
+        .toast.success {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .toast.error {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .toast.info {
+            border-color: var(--blue-mid);
+            color: var(--blue-mid);
+        }
+
+        @keyframes slideUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ─── Modal ────────────────────────────────────────────────────────────────── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: var(--radius-md);
+            max-width: 1000px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem 2.5rem;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+            position: relative;
+        }
+
+        .modal-content .modal-close {
+            position: sticky;
+            top: 0;
+            float: right;
+            background: var(--gray-100);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-500);
+            transition: all var(--transition);
+            z-index: 10;
+        }
+
+        .modal-content .modal-close:hover {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .modal-content .modal-actions {
+            display: flex;
+            gap: 0.6rem;
+            margin-top: 1.2rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid var(--gray-200);
+            flex-wrap: wrap;
+        }
+
+        .modal-content .modal-actions .btn {
+            padding: 0.5rem 1.4rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.78rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .modal-content .modal-actions .btn-primary {
+            background: linear-gradient(135deg, var(--magenta), var(--magenta-dark));
+            color: var(--white);
+        }
+
+        .modal-content .modal-actions .btn-secondary {
+            background: var(--gray-200);
+            color: var(--gray-600);
+        }
+
+        /* ─── Letter Preview ──────────────────────────────────────────────────────── */
+        .letter-preview {
+            font-family: 'Inter', serif;
+            line-height: 1.6;
+            color: var(--gray-700);
+            padding: 0.5rem;
+        }
+
+        .letter-preview .header-img {
+            text-align: center;
+            margin-bottom: 0.3rem;
+        }
+
+        .letter-preview .header-img img {
+            max-width: 100%;
+            max-height: 100px;
+            object-fit: contain;
+        }
+
+        .letter-preview .letter-header {
+            text-align: center;
+            border-bottom: 2px solid var(--gray-200);
+            padding-bottom: 0.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .letter-preview .letter-header .club-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--blue-dark);
+        }
+
+        .letter-preview .letter-header .club-place {
+            font-size: 0.8rem;
+            color: var(--gray-600);
+        }
+
+        .letter-preview .ref-date-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: nowrap;
+            margin-bottom: 0.4rem;
+            font-size: 0.85rem;
+            color: var(--gray-700);
+        }
+
+        .letter-preview .letter-to {
+            margin-bottom: 0.4rem;
+            line-height: 1.5;
+            display: flex;
+            font-size: 0.9rem;
+        }
+
+        .letter-preview .letter-to .to-value {
+            white-space: pre-wrap;
+            text-align: left;
+        }
+
+        .letter-preview .letter-subject {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.4rem;
+            color: var(--blue-dark);
+            text-align: center;
+        }
+
+        .letter-preview .letter-body {
+            white-space: pre-wrap;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            text-align: justify;
+        }
+
+        .letter-preview .letter-signature {
+            margin-top: 1rem;
+            padding-top: 0;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .letter-preview .letter-signature .sig-block {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .letter-preview .letter-signature .sig-block .sig-img {
+            max-height: 55px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 0.15rem;
+        }
+
+        .letter-preview .letter-signature .sig-block .sig-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .letter-preview .letter-signature .sig-block .sig-title {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        .letter-preview .letter-signature .sig-center {
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .letter-preview .letter-signature .sig-center .sig-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .letter-preview .letter-signature .sig-center .sig-img {
+            max-height: 55px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 0.15rem;
+        }
+
+        .letter-preview .letter-signature .sig-center .sig-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .letter-preview .letter-signature .sig-center .sig-title {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        .letter-preview .letter-signature .sig-right {
+            text-align: right;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .letter-preview .letter-signature .sig-right .sig-img {
+            max-height: 55px;
+            object-fit: contain;
+            display: block;
+            margin: 0 0 0.15rem auto;
+        }
+
+        .letter-preview .letter-signature .sig-right .sig-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .letter-preview .letter-signature .sig-right .sig-title {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        .letter-preview .letter-footer-wrap {
+            margin-top: 0.6rem;
+            padding-top: 0.4rem;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .letter-preview .letter-footer-wrap .footer-img {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .letter-preview .letter-footer-wrap .footer-img img {
+            max-height: 55px;
+            object-fit: contain;
+        }
+
+        .letter-preview .letter-footer-wrap .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.15rem;
+        }
+
+        .letter-preview .letter-footer-wrap .qr-section .qr-label {
+            font-size: 0.6rem;
+            color: var(--gray-400);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .letter-preview .letter-footer-wrap .qr-section .qr-box {
+            width: 100px;
+            height: 100px;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+        }
+
+        .letter-preview .letter-footer-wrap .qr-section .qr-box canvas,
+        .letter-preview .letter-footer-wrap .qr-section .qr-box img {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .letter-preview .letter-footer-wrap .qr-section .qr-url {
+            display: none;
+        }
+
+        .letter-preview .letter-place {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--gray-500);
+            margin-top: 0.3rem;
+        }
+
+        /* ─── Footer ────────────────────────────────────────────────────────────────── */
+        .app-footer {
+            background: var(--blue-dark);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 0.8rem 2rem;
+            font-size: 0.7rem;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            border-top: 3px solid var(--magenta);
+        }
+
+        /* ─── Responsive ───────────────────────────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .app-header {
+                padding: 0.8rem 1rem;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .app-header .badge-wrap {
+                flex-wrap: wrap;
+            }
+            .app-header .nav-links {
+                flex-wrap: wrap;
+            }
+            .stats-dash {
+                padding: 0.8rem 1rem;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.4rem;
+            }
+            .form-panel {
+                padding: 1rem;
+                border-right: none;
+                border-bottom: 1px solid var(--gray-200);
+                max-height: none;
+                overflow-y: visible;
+            }
+            .list-panel {
+                padding: 1rem;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-grid .full {
+                grid-column: 1;
+            }
+            .list-panel .panel-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .list-panel .panel-header .search-box input {
+                width: 100%;
+            }
+            .modal-content {
+                padding: 1.2rem;
+                margin: 0.5rem;
+            }
+            .toast-container {
+                right: 0.5rem;
+                bottom: 0.5rem;
+                max-width: calc(100% - 1rem);
+            }
+            .table-wrap table {
+                font-size: 0.65rem;
+            }
+            .table-wrap table thead th,
+            .table-wrap table tbody td {
+                padding: 0.3rem 0.4rem;
+            }
+            .letter-preview .letter-signature {
+                flex-direction: column;
+                align-items: stretch !important;
+            }
+            .letter-preview .letter-signature .sig-block,
+            .letter-preview .letter-signature .sig-center,
+            .letter-preview .letter-signature .sig-right {
+                text-align: center !important;
+            }
+            .letter-preview .letter-signature .sig-right .sig-img {
+                margin: 0 auto 0.15rem !important;
+            }
+            .letter-preview .letter-footer-wrap {
+                flex-direction: column;
+                align-items: center;
+            }
+            .login-box {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+            .app {
+                border-radius: var(--radius-md);
+            }
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .modal-overlay {
+                position: static !important;
+                background: none !important;
+                backdrop-filter: none !important;
+                padding: 0 !important;
+            }
+            .modal-content {
+                box-shadow: none !important;
+                max-height: none !important;
+                padding: 1rem !important;
+            }
+            .modal-content .modal-close,
+            .modal-content .modal-actions {
+                display: none !important;
+            }
+            body {
+                padding: 0 !important;
+                background: white !important;
+            }
+            .app {
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+            .letter-preview .letter-footer-wrap .qr-section .qr-box {
+                width: 140px !important;
+                height: 140px !important;
+            }
+            .letter-preview .header-img img {
+                max-height: 120px !important;
+            }
+            .letter-preview .letter-footer-wrap .footer-img img {
+                max-height: 60px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ─── LOGIN OVERLAY ──────────────────────────────────────────────────────────── -->
+    <div class="login-overlay active" id="loginOverlay">
+        <div class="login-box">
+            <div class="login-logo">
+                <img src="/rotaract logo.jpg" alt="Rotaract Logo" onerror="this.style.display='none'" />
+                <h2>LHE Admin Panel</h2>
+                <p>Rotaract Club of Galkot Baglung</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="admin@example.com" required />
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required />
+                </div>
+                <div class="login-error" id="loginError">Invalid email or password.</div>
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <span class="login-loader" id="loginLoader"></span>
+                    <span class="login-text">Sign In</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ─── MAIN APP ────────────────────────────────────────────────────────────────── -->
+    <div class="app" id="appRoot" style="display:none;">
+
+        <!-- Header -->
+        <header class="app-header no-print">
+            <div class="logo-wrap">
+                <img src="rotaract.jpg" alt="Rotaract Logo" class="logo-img" onerror="this.style.display='none'" />
+                <div class="club-info">
+                    <h1>ROTARACT CLUB OF GALKOT BAGLUNG</h1>
+                    <div class="sub">RI District 3292 • Nepal • 📋 LHE Management</div>
+                </div>
+            </div>
+            <div class="badge-wrap">
+                <div class="badge">
+                    <span class="live-dot"></span>
+                    <span>Live</span>
+                </div>
+                <div class="user-info">
+                    <span class="user-avatar" id="userAvatar">A</span>
+                    <span id="userEmail">admin@example.com</span>
+                </div>
+                <div class="nav-links">
+                    <button id="logoutBtn">🚪 Logout</button>
+                    <a href="LHE.html">📝 New Request</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats -->
+        <section class="stats-dash no-print">
+            <div class="stat-item">
+                <span class="stat-number" id="statTotal">—</span>
+                <span class="stat-label">📚 Total Requests</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="statPending">—</span>
+                <span class="stat-label">⏳ Pending</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="statApproved">—</span>
+                <span class="stat-label">✅ Approved</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="statUpdated">—</span>
+                <span class="stat-label">🕐 Last Update</span>
+            </div>
+        </section>
+
+        <!-- Admin Layout -->
+        <div class="admin-layout">
+
+            <!-- Form Panel -->
+            <section class="form-panel no-print" id="formPanel">
+                <div class="panel-title">
+                    <span class="magenta">✏️</span>
+                    <span id="formTitle">Edit LHE Request</span>
+                </div>
+
+                <form id="lheForm" class="form-grid">
+                    <input type="hidden" id="editId" value="" />
+
+                    <!-- Request Details -->
+                    <div class="form-section-title">📋 Request Details</div>
+                    <div class="field">
+                        <label>President's Name <span class="required-star">*</span></label>
+                        <input type="text" id="presidentName" required />
+                    </div>
+                    <div class="field">
+                        <label>Rotary Year <span class="required-star">*</span></label>
+                        <select id="rotaryYear" required>
+                            <option value="2025-26">2025-26</option>
+                            <option value="2026-27" selected>2026-27</option>
+                            <option value="2027-28">2027-28</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Club Name <span class="required-star">*</span></label>
+                        <input type="text" id="clubName" required />
+                    </div>
+                    <div class="field">
+                        <label>RID <span class="required-star">*</span></label>
+                        <input type="text" id="rid" required />
+                    </div>
+                    <div class="field full">
+                        <label>Sponsored Club</label>
+                        <input type="text" id="sponsoredClub" placeholder="(if any)" />
+                    </div>
+                    <div class="field full">
+                        <label>Club Logo</label>
+                        <div id="logoPreviewContainer">
+                            <img id="logoPreview" class="logo-preview" style="display:none;" />
+                            <span id="logoPlaceholder" style="font-size:0.75rem;color:var(--gray-400);">No logo uploaded</span>
+                        </div>
+                        <input type="hidden" id="logoUrl" />
+                    </div>
+
+                    <!-- LHE Letter Fields -->
+                    <div class="form-section-title">📄 LHE Letter Details</div>
+                    <div class="field">
+                        <label>Fiscal Year <span class="required-star">*</span></label>
+                        <input type="text" id="fiscalYear" value="026/027" required />
+                    </div>
+                    <div class="field">
+                        <label>Reference Number</label>
+                        <input type="text" id="refNo" readonly />
+                    </div>
+                    <div class="field">
+                        <label>Date <span class="required-star">*</span></label>
+                        <input type="date" id="letterDate" required />
+                    </div>
+                    <div class="field">
+                        <label>Status</label>
+                        <select id="letterStatus">
+                            <option value="Active">Active</option>
+                            <option value="Archived">Archived</option>
+                        </select>
+                    </div>
+
+                    <div class="field full">
+                        <label>Subject</label>
+                        <input type="text" id="subject" value="Letterhead Exchange" />
+                    </div>
+                    <div class="field full">
+                        <label>Body <span class="required-star">*</span></label>
+                        <textarea id="body" rows="4" required></textarea>
+                    </div>
+
+                    <!-- Sender -->
+                    <div class="form-section-title">📤 Sender (Your Club)</div>
+                    <div class="field">
+                        <label>Club Name</label>
+                        <input type="text" id="senderClubName" value="Rotaract Club of Galkot Baglung" />
+                    </div>
+                    <div class="field">
+                        <label>RID</label>
+                        <input type="text" id="senderRid" value="3292" />
+                    </div>
+                    <div class="field full">
+                        <label>Sponsored Club</label>
+                        <input type="text" id="senderSponsored" value="Rotaract Club of Baglung" />
+                    </div>
+
+                    <!-- Signatures -->
+                    <div class="form-section-title">✍️ Signatures</div>
+                    <div class="field">
+                        <label>President <span class="required-star">*</span></label>
+                        <input type="text" id="presidentSignName" value="Rtr. Nabin Chalise" required />
+                    </div>
+                    <div class="field">
+                        <label>Secretary <span class="required-star">*</span></label>
+                        <input type="text" id="secretaryName" value="Rtr. Madan Subedi" required />
+                    </div>
+                    <div class="field">
+                        <label>International Chair <span class="required-star">*</span></label>
+                        <input type="text" id="chairName" value="Rtr. Anil Shrestha" required />
+                    </div>
+                    <div class="field">
+                        <label>Place</label>
+                        <input type="text" id="signPlace" value="Galkot, Baglung" />
+                    </div>
+
+                    <div class="field">
+                        <label>Request Status</label>
+                        <select id="requestStatus">
+                            <option value="pending">⏳ Pending</option>
+                            <option value="approved">✅ Approved</option>
+                            <option value="rejected">❌ Rejected</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Verification ID</label>
+                        <input type="text" id="verificationId" readonly />
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="saveBtn">
+                            <span class="spinner-small"></span>
+                            <span class="btn-text">💾 Update Request</span>
+                        </button>
+                        <button type="button" class="btn btn-success" id="acceptBtn">
+                            ✅ Accept & Verify
+                        </button>
+                        <button type="button" class="btn btn-danger" id="deleteBtn" style="display:none;">
+                            🗑️ Delete
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="resetBtn">🔄 Reset</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- List Panel -->
+            <section class="list-panel no-print" id="listPanel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        📋 LHE Requests
+                        <span class="count" id="listCount">0</span>
+                    </div>
+                    <div class="filter-tabs">
+                        <button class="active" data-filter="all">All</button>
+                        <button data-filter="pending">⏳ Pending</button>
+                        <button data-filter="approved">✅ Approved</button>
+                        <button data-filter="rejected">❌ Rejected</button>
+                    </div>
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Search..." />
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Club</th>
+                                <th>President</th>
+                                <th>RID</th>
+                                <th>RY</th>
+                                <th>Status</th>
+                                <th style="min-width:140px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr>
+                                <td colspan="6" class="no-records">
+                                    <span class="icon-big">📭</span>
+                                    <p>No LHE requests found.</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer no-print">
+            <span>© 2026 Rotaract Club of Galkot Baglung • RI District 3292</span>
+            <span style="opacity:0.5;">LHE Admin v2.0</span>
+        </footer>
+    </div>
+
+    <!-- Print Modal -->
+    <div class="modal-overlay" id="printModal">
+        <div class="modal-content">
+            <button class="modal-close no-print" id="modalClose">✕</button>
+            <div id="printContent" class="letter-preview"></div>
+            <div class="modal-actions no-print">
+                <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
+                <button class="btn btn-secondary" id="modalCloseBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container no-print" id="toastContainer"></div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
+            const SUPABASE_ANON_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
+
+            // ─── DOM Refs ──────────────────────────────────────────────────────────
+            const loginOverlay = document.getElementById('loginOverlay');
+            const loginForm = document.getElementById('loginForm');
+            const loginEmail = document.getElementById('loginEmail');
+            const loginPassword = document.getElementById('loginPassword');
+            const loginBtn = document.getElementById('loginBtn');
+            const loginLoader = document.getElementById('loginLoader');
+            const loginError = document.getElementById('loginError');
+            const appRoot = document.getElementById('appRoot');
+            const userEmail = document.getElementById('userEmail');
+            const userAvatar = document.getElementById('userAvatar');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            const form = document.getElementById('lheForm');
+            const editId = document.getElementById('editId');
+            const presidentName = document.getElementById('presidentName');
+            const rotaryYear = document.getElementById('rotaryYear');
+            const clubName = document.getElementById('clubName');
+            const rid = document.getElementById('rid');
+            const sponsoredClub = document.getElementById('sponsoredClub');
+            const logoPreview = document.getElementById('logoPreview');
+            const logoPlaceholder = document.getElementById('logoPlaceholder');
+            const logoUrl = document.getElementById('logoUrl');
+            const fiscalYear = document.getElementById('fiscalYear');
+            const refNo = document.getElementById('refNo');
+            const letterDate = document.getElementById('letterDate');
+            const letterStatus = document.getElementById('letterStatus');
+            const subject = document.getElementById('subject');
+            const body = document.getElementById('body');
+            const senderClubName = document.getElementById('senderClubName');
+            const senderRid = document.getElementById('senderRid');
+            const senderSponsored = document.getElementById('senderSponsored');
+            const presidentSignName = document.getElementById('presidentSignName');
+            const secretaryName = document.getElementById('secretaryName');
+            const chairName = document.getElementById('chairName');
+            const signPlace = document.getElementById('signPlace');
+            const requestStatus = document.getElementById('requestStatus');
+            const verificationId = document.getElementById('verificationId');
+
+            const saveBtn = document.getElementById('saveBtn');
+            const acceptBtn = document.getElementById('acceptBtn');
+            const deleteBtn = document.getElementById('deleteBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const formTitle = document.getElementById('formTitle');
+            const tableBody = document.getElementById('tableBody');
+            const listCount = document.getElementById('listCount');
+            const searchInput = document.getElementById('searchInput');
+            const statTotal = document.getElementById('statTotal');
+            const statPending = document.getElementById('statPending');
+            const statApproved = document.getElementById('statApproved');
+            const statUpdated = document.getElementById('statUpdated');
+            const toastContainer = document.getElementById('toastContainer');
+
+            const printModal = document.getElementById('printModal');
+            const printContent = document.getElementById('printContent');
+            const modalClose = document.getElementById('modalClose');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+            let supabaseClient = null;
+            let currentUser = null;
+            let currentFilter = 'all';
+            let allRequests = [];
+
+            // ─── Init Supabase ─────────────────────────────────────────────────────
+            try {
+                if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    console.log('✅ Supabase client initialized.');
+                }
+            } catch (e) {
+                console.error('❌ Failed to init Supabase:', e);
+            }
+
+            // ─── Toast ─────────────────────────────────────────────────────────────
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+                toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${message}`;
+                toastContainer.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000);
+            }
+
+            // ─── Authentication ────────────────────────────────────────────────────
+            async function checkSession() {
+                if (!supabaseClient) return false;
+
+                try {
+                    const { data: { session }, error } = await supabaseClient.auth.getSession();
+                    if (error) throw error;
+
+                    if (session && session.user) {
+                        currentUser = session.user;
+                        return true;
+                    }
+                    return false;
+                } catch (e) {
+                    console.error('Session check error:', e);
+                    return false;
+                }
+            }
+
+            async function checkAdminRole(userId) {
+                if (!supabaseClient || !userId) return false;
+
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('user_roles')
+                        .select('role, status')
+                        .eq('user_id', userId)
+                        .maybeSingle();
+
+                    if (error) throw error;
+
+                    if (data && data.role === 'admin' && data.status === 'active') {
+                        return true;
+                    }
+                    return false;
+                } catch (e) {
+                    console.error('Role check error:', e);
+                    return false;
+                }
+            }
+
+            async function handleLogin(e) {
+                e.preventDefault();
+
+                const email = loginEmail.value.trim();
+                const password = loginPassword.value.trim();
+
+                if (!email || !password) {
+                    loginError.textContent = 'Please enter email and password.';
+                    loginError.classList.add('visible');
+                    return;
+                }
+
+                loginBtn.disabled = true;
+                loginLoader.classList.add('active');
+                loginError.classList.remove('visible');
+
+                try {
+                    if (!supabaseClient) throw new Error('Supabase client not initialized.');
+
+                    const { data, error } = await supabaseClient.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+
+                    if (error) throw error;
+
+                    if (data.user) {
+                        const isAdmin = await checkAdminRole(data.user.id);
+                        if (!isAdmin) {
+                            await supabaseClient.auth.signOut();
+                            loginError.textContent = 'Access denied. Admin role required.';
+                            loginError.classList.add('visible');
+                            loginBtn.disabled = false;
+                            loginLoader.classList.remove('active');
+                            return;
+                        }
+
+                        currentUser = data.user;
+                        showToast('✅ Welcome, Admin!', 'success');
+                        showApp();
+                    }
+                } catch (err) {
+                    console.error('Login error:', err);
+                    loginError.textContent = err.message || 'Invalid email or password.';
+                    loginError.classList.add('visible');
+                } finally {
+                    loginBtn.disabled = false;
+                    loginLoader.classList.remove('active');
+                }
+            }
+
+            async function handleLogout() {
+                if (!supabaseClient) return;
+
+                try {
+                    await supabaseClient.auth.signOut();
+                    currentUser = null;
+                    showLogin();
+                    showToast('👋 Logged out successfully.', 'info');
+                } catch (e) {
+                    console.error('Logout error:', e);
+                }
+            }
+
+            function showApp() {
+                loginOverlay.classList.remove('active');
+                appRoot.style.display = 'block';
+                userEmail.textContent = currentUser?.email || 'Admin';
+                userAvatar.textContent = (currentUser?.email || 'A')[0].toUpperCase();
+                loadRequests();
+                loadStats();
+            }
+
+            function showLogin() {
+                loginOverlay.classList.add('active');
+                appRoot.style.display = 'none';
+                loginEmail.value = '';
+                loginPassword.value = '';
+                loginError.classList.remove('visible');
+            }
+
+            // ─── Generate Verification ID ─────────────────────────────────────────
+            function generateVerificationId() {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let result = 'LHE-';
+                for (let i = 0; i < 4; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                result += '-';
+                for (let i = 0; i < 4; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return result;
+            }
+
+            // ─── Get next ref number (LHE_1, LHE_2, etc.) ──────────────────────
+            async function getNextRefNo() {
+                if (!supabaseClient) return 'LHE_1';
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('rotaract_lhe')
+                        .select('ref_no')
+                        .order('ref_no', { ascending: false })
+                        .limit(1);
+
+                    if (error) throw error;
+                    if (!data || data.length === 0) return 'LHE_1';
+                    
+                    const lastRef = data[0].ref_no;
+                    const match = lastRef.match(/LHE_(\d+)/);
+                    if (!match) return 'LHE_1';
+                    const num = parseInt(match[1], 10);
+                    if (isNaN(num)) return 'LHE_1';
+                    return `LHE_${num + 1}`;
+                } catch (e) {
+                    console.warn('Error fetching next ref:', e);
+                    return 'LHE_1';
+                }
+            }
+
+            // ─── Load Requests ─────────────────────────────────────────────────────
+            async function loadRequests(search = '') {
+                if (!supabaseClient) return;
+
+                try {
+                    let query = supabaseClient
+                        .from('rotaract_lhe_requests')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (search.trim()) {
+                        const s = `%${search.trim()}%`;
+                        query = query.or(
+                            `club_name.ilike.${s},president_name.ilike.${s},rid.ilike.${s},sponsored_club.ilike.${s}`
+                        );
+                    }
+
+                    if (currentFilter !== 'all') {
+                        query = query.eq('status', currentFilter);
+                    }
+
+                    const { data, error } = await query;
+
+                    if (error) throw error;
+
+                    allRequests = data || [];
+                    renderTable(allRequests);
+
+                } catch (err) {
+                    console.error('Load error:', err);
+                    showToast('⚠️ Failed to load requests.', 'error');
+                }
+            }
+
+            // ─── Render Table ─────────────────────────────────────────────────────
+            function renderTable(requests) {
+                if (!requests || requests.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr><td colspan="6" class="no-records">
+                            <span class="icon-big">📭</span>
+                            <p>No LHE requests found.</p>
+                        </td></tr>
+                    `;
+                    listCount.textContent = '0';
+                    return;
+                }
+
+                listCount.textContent = requests.length;
+
+                let html = '';
+                requests.forEach(req => {
+                    const statusClass = req.status || 'pending';
+                    const statusDisplay = req.status ? req.status.charAt(0).toUpperCase() + req.status.slice(1) : 'Pending';
+                    html += `
+                        <tr>
+                            <td><strong>${escapeHtml(req.club_name || '—')}</strong></td>
+                            <td>${escapeHtml(req.president_name || '—')}</td>
+                            <td>${escapeHtml(req.rid || '—')}</td>
+                            <td>${escapeHtml(req.rotary_year || '—')}</td>
+                            <td><span class="status-badge ${statusClass}">${escapeHtml(statusDisplay)}</span></td>
+                            <td>
+                                <div class="actions">
+                                    <button class="btn-icon edit" data-id="${req.id}" title="Edit">✏️</button>
+                                    ${req.status !== 'approved' ? `<button class="btn-icon accept" data-id="${req.id}" title="Accept & Verify">✅</button>` : ''}
+                                    <button class="btn-icon print" data-id="${req.id}" title="Print LHE Letter">🖨️</button>
+                                    <button class="btn-icon delete" data-id="${req.id}" title="Delete">🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableBody.innerHTML = html;
+
+                // Attach event listeners
+                tableBody.querySelectorAll('.edit').forEach(btn => {
+                    btn.addEventListener('click', function() { editRequest(this.dataset.id); });
+                });
+                tableBody.querySelectorAll('.accept').forEach(btn => {
+                    btn.addEventListener('click', function() { acceptRequest(this.dataset.id); });
+                });
+                tableBody.querySelectorAll('.print').forEach(btn => {
+                    btn.addEventListener('click', function() { printLheLetter(this.dataset.id); });
+                });
+                tableBody.querySelectorAll('.delete').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        if (confirm('Are you sure you want to delete this request?')) {
+                            deleteRequest(this.dataset.id);
+                        }
+                    });
+                });
+            }
+
+            // ─── Load Stats ──────────────────────────────────────────────────────
+            async function loadStats() {
+                if (!supabaseClient) return;
+
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('rotaract_lhe_requests')
+                        .select('*');
+
+                    if (error) throw error;
+
+                    const total = data.length;
+                    const pending = data.filter(r => r.status === 'pending').length;
+                    const approved = data.filter(r => r.status === 'approved').length;
+
+                    statTotal.textContent = total;
+                    statPending.textContent = pending;
+                    statApproved.textContent = approved;
+                    statUpdated.textContent = new Date().toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+
+                } catch (err) {
+                    console.warn('Stats error:', err);
+                }
+            }
+
+            // ─── Edit Request ──────────────────────────────────────────────────────
+            async function editRequest(id) {
+                if (!supabaseClient) return;
+
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('rotaract_lhe_requests')
+                        .select('*')
+                        .eq('id', id)
+                        .single();
+
+                    if (error) throw error;
+
+                    // Populate form with request data
+                    editId.value = data.id;
+                    presidentName.value = data.president_name || '';
+                    rotaryYear.value = data.rotary_year || '2026-27';
+                    clubName.value = data.club_name || '';
+                    rid.value = data.rid || '';
+                    sponsoredClub.value = data.sponsored_club || '';
+                    logoUrl.value = data.logo_url || '';
+                    requestStatus.value = data.status || 'pending';
+                    verificationId.value = data.verification_id || generateVerificationId();
+
+                    // Show logo preview
+                    if (data.logo_url) {
+                        logoPreview.src = data.logo_url;
+                        logoPreview.style.display = 'block';
+                        logoPlaceholder.style.display = 'none';
+                    } else {
+                        logoPreview.style.display = 'none';
+                        logoPlaceholder.style.display = 'inline';
+                    }
+
+                    // Auto-generate ref number and date
+                    const nextRef = await getNextRefNo();
+                    refNo.value = nextRef;
+                    const today = new Date().toISOString().split('T')[0];
+                    letterDate.value = today;
+
+                    formTitle.textContent = '✏️ Edit LHE Request';
+                    deleteBtn.style.display = 'inline-flex';
+                    acceptBtn.style.display = 'inline-flex';
+                    document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' });
+
+                } catch (err) {
+                    console.error('Edit error:', err);
+                    showToast('⚠️ Failed to load request.', 'error');
+                }
+            }
+
+            // ─── Print LHE Letter ──────────────────────────────────────────────────
+            async function printLheLetter(id) {
+                if (!supabaseClient) return;
+
+                try {
+                    const { data: request, error: fetchError } = await supabaseClient
+                        .from('rotaract_lhe_requests')
+                        .select('*')
+                        .eq('id', id)
+                        .single();
+
+                    if (fetchError) throw fetchError;
+
+                    if (!request) {
+                        showToast('⚠️ Request not found.', 'error');
+                        return;
+                    }
+
+                    let letterData = null;
+                    if (request.verification_id) {
+                        const { data: existing, error: existError } = await supabaseClient
+                            .from('rotaract_lhe')
+                            .select('*')
+                            .eq('verification_id', request.verification_id)
+                            .maybeSingle();
+
+                        if (!existError && existing) {
+                            letterData = existing;
+                        }
+                    }
+
+                    // If no letter exists, create one
+                    if (!letterData) {
+                        const fy = fiscalYear.value.trim() || '026/027';
+                        const nextRef = await getNextRefNo();
+                        const vid = request.verification_id || generateVerificationId();
+                        const today = new Date().toISOString().split('T')[0];
+
+                        const lheData = {
+                            ref_no: nextRef,
+                            fiscal_year: fy,
+                            date: today,
+                            letter_type: 'LHE',
+                            sender_club_name: senderClubName.value.trim() || 'Rotaract Club of Galkot Baglung',
+                            sender_rid: senderRid.value.trim() || '3292',
+                            sender_sponsored_club: senderSponsored.value.trim() || 'Rotaract Club of Baglung',
+                            sender_logo_url: 'rotaract.jpg',
+                            recipient_name: request.president_name || '',
+                            recipient_position: `President, RY ${request.rotary_year || '2026-27'}`,
+                            recipient_club_name: request.club_name || '',
+                            recipient_rid: request.rid || '',
+                            recipient_sponsored_club: request.sponsored_club || '',
+                            recipient_logo_url: request.logo_url || '',
+                            subject: 'Letterhead Exchange',
+                            body: body.value.trim() || `Dear ${request.president_name || 'President'},
+
+On behalf of the Rotaract Club of Galkot Baglung, I extend our heartfelt congratulations and best wishes to you and your Board of Directors for a successful Rotary Year ${request.rotary_year || '2026–27'}. May your tenure be filled with impactful service, inspiring leadership, and meaningful achievements.
+
+Since our charter on 23 April 2021, our club has remained committed to community service, youth empowerment, leadership development, and fellowship. We sincerely appreciate the contributions of the ${request.club_name || 'your club'} to the Rotaract movement.
+
+Through this Letterhead Exchange, we celebrate the spirit of friendship and collaboration between our clubs. We look forward to building a strong and lasting relationship through service and fellowship.
+
+Wishing you and your club a successful Rotary Year ahead.
+
+Thank you!`,
+                            message: '',
+                            president_name: presidentSignName.value.trim() || 'Rtr. Nabin Chalise',
+                            president_signature_url: '/presidentsign.jpg',
+                            secretary_name: secretaryName.value.trim() || 'Rtr. Madan Subedi',
+                            secretary_signature_url: '/secretarysign.jpg',
+                            international_chair_name: chairName.value.trim() || 'Rtr. Anil Shrestha',
+                            international_chair_signature_url: '/anilsign.jpg',
+                            sign_place: signPlace.value.trim() || 'Galkot, Baglung',
+                            letter_status: 'Active',
+                            verification_id: vid
+                        };
+
+                        const { data: inserted, error: insertError } = await supabaseClient
+                            .from('rotaract_lhe')
+                            .insert(lheData)
+                            .select()
+                            .single();
+
+                        if (insertError) throw insertError;
+                        letterData = inserted;
+
+                        if (!request.verification_id) {
+                            await supabaseClient
+                                .from('rotaract_lhe_requests')
+                                .update({ verification_id: vid })
+                                .eq('id', id);
+                        }
+                    }
+
+                    renderPrintPreview(letterData);
+                    printModal.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+
+                } catch (err) {
+                    console.error('Print error:', err);
+                    showToast('⚠️ ' + (err.message || 'Failed to load letter for printing.'), 'error');
+                }
+            }
+
+            // ─── Accept Request ────────────────────────────────────────────────────
+            async function acceptRequest(id) {
+                if (!supabaseClient) return;
+
+                try {
+                    const { data: request, error: fetchError } = await supabaseClient
+                        .from('rotaract_lhe_requests')
+                        .select('*')
+                        .eq('id', id)
+                        .single();
+
+                    if (fetchError) throw fetchError;
+
+                    if (!request) {
+                        showToast('⚠️ Request not found.', 'error');
+                        return;
+                    }
+
+                    if (request.status === 'approved') {
+                        showToast('ℹ️ This request is already approved.', 'info');
+                        if (request.verification_id) {
+                            window.open(`verifyLHE.html?vid=${request.verification_id}`, '_blank');
+                        }
+                        return;
+                    }
+
+                    const fy = fiscalYear.value.trim() || '026/027';
+                    const nextRef = await getNextRefNo();
+                    const vid = generateVerificationId();
+                    const today = new Date().toISOString().split('T')[0];
+
+                    const lheData = {
+                        ref_no: nextRef,
+                        fiscal_year: fy,
+                        date: today,
+                        letter_type: 'LHE',
+                        sender_club_name: senderClubName.value.trim() || 'Rotaract Club of Galkot Baglung',
+                        sender_rid: senderRid.value.trim() || '3292',
+                        sender_sponsored_club: senderSponsored.value.trim() || 'Rotaract Club of Baglung',
+                        sender_logo_url: 'rotaract.jpg',
+                        recipient_name: request.president_name || '',
+                        recipient_position: `President, RY ${request.rotary_year || '2026-27'}`,
+                        recipient_club_name: request.club_name || '',
+                        recipient_rid: request.rid || '',
+                        recipient_sponsored_club: request.sponsored_club || '',
+                        recipient_logo_url: request.logo_url || '',
+                        subject: 'Letterhead Exchange',
+                        body: body.value.trim() || `Dear ${request.president_name || 'President'},
+
+On behalf of the Rotaract Club of Galkot Baglung, I extend our heartfelt congratulations and best wishes to you and your Board of Directors for a successful Rotary Year ${request.rotary_year || '2026–27'}. May your tenure be filled with impactful service, inspiring leadership, and meaningful achievements.
+
+Since our charter on 23 April 2021, our club has remained committed to community service, youth empowerment, leadership development, and fellowship. We sincerely appreciate the contributions of the ${request.club_name || 'your club'} to the Rotaract movement.
+
+Through this Letterhead Exchange, we celebrate the spirit of friendship and collaboration between our clubs. We look forward to building a strong and lasting relationship through service and fellowship.
+
+Wishing you and your club a successful Rotary Year ahead.
+
+Thank you!`,
+                        message: '',
+                        president_name: presidentSignName.value.trim() || 'Rtr. Nabin Chalise',
+                        president_signature_url: 'presidentsign.jpg',
+                        secretary_name: secretaryName.value.trim() || 'Rtr. Madan Subedi',
+                        secretary_signature_url: 'secretarysign.jpg',
+                        international_chair_name: chairName.value.trim() || 'Rtr. Anil Shrestha',
+                        international_chair_signature_url: 'anilsign.jpg',
+                        sign_place: signPlace.value.trim() || 'Galkot, Baglung',
+                        letter_status: 'Active',
+                        verification_id: vid
+                    };
+
+                    const { data: inserted, error: insertError } = await supabaseClient
+                        .from('rotaract_lhe')
+                        .insert(lheData)
+                        .select()
+                        .single();
+
+                    if (insertError) throw insertError;
+
+                    const { error: updateError } = await supabaseClient
+                        .from('rotaract_lhe_requests')
+                        .update({
+                            status: 'approved',
+                            verification_id: vid,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', id);
+
+                    if (updateError) throw updateError;
+
+                    showToast('✅ LHE request approved and verified!', 'success');
+
+                    window.open(`verifyLHE.html?vid=${vid}`, '_blank');
+
+                    loadRequests(searchInput.value);
+                    loadStats();
+                    resetForm();
+
+                } catch (err) {
+                    console.error('Accept error:', err);
+                    showToast('⚠️ ' + (err.message || 'Failed to accept request.'), 'error');
+                }
+            }
+
+            // ─── Delete Request ────────────────────────────────────────────────────
+            async function deleteRequest(id) {
+                if (!supabaseClient) return;
+
+                try {
+                    const { data: request } = await supabaseClient
+                        .from('rotaract_lhe_requests')
+                        .select('verification_id')
+                        .eq('id', id)
+                        .single();
+
+                    const { error } = await supabaseClient
+                        .from('rotaract_lhe_requests')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+
+                    if (request && request.verification_id) {
+                        await supabaseClient
+                            .from('rotaract_lhe')
+                            .delete()
+                            .eq('verification_id', request.verification_id);
+                    }
+
+                    showToast('🗑️ Request and related LHE letter deleted.', 'info');
+                    loadRequests(searchInput.value);
+                    loadStats();
+
+                    if (editId.value === id) {
+                        resetForm();
+                    }
+
+                } catch (err) {
+                    console.error('Delete error:', err);
+                    showToast('⚠️ Failed to delete request.', 'error');
+                }
+            }
+
+            // ─── Save/Update Form ──────────────────────────────────────────────────
+            async function saveForm(e) {
+                e.preventDefault();
+                const id = editId.value;
+
+                if (!id) {
+                    showToast('⚠️ No request selected for editing.', 'error');
+                    return;
+                }
+
+                const data = {
+                    president_name: presidentName.value.trim(),
+                    rotary_year: rotaryYear.value,
+                    club_name: clubName.value.trim(),
+                    rid: rid.value.trim(),
+                    sponsored_club: sponsoredClub.value.trim(),
+                    logo_url: logoUrl.value,
+                    status: requestStatus.value,
+                    verification_id: verificationId.value || generateVerificationId(),
+                    updated_at: new Date().toISOString()
+                };
+
+                if (!data.president_name || !data.club_name || !data.rid) {
+                    showToast('⚠️ Please fill in all required fields.', 'error');
+                    return;
+                }
+
+                saveBtn.classList.add('loading');
+                saveBtn.disabled = true;
+
+                try {
+                    if (!supabaseClient) throw new Error('Supabase client not initialized.');
+
+                    const { error } = await supabaseClient
+                        .from('rotaract_lhe_requests')
+                        .update(data)
+                        .eq('id', id);
+
+                    if (error) throw error;
+
+                    showToast('✅ Request updated successfully!', 'success');
+                    loadRequests(searchInput.value);
+                    loadStats();
+                    resetForm();
+
+                } catch (err) {
+                    console.error('Save error:', err);
+                    showToast('⚠️ ' + (err.message || 'Failed to update request.'), 'error');
+                } finally {
+                    saveBtn.classList.remove('loading');
+                    saveBtn.disabled = false;
+                }
+            }
+
+            // ─── Reset Form ──────────────────────────────────────────────────────
+            function resetForm() {
+                editId.value = '';
+                formTitle.textContent = 'Edit LHE Request';
+                deleteBtn.style.display = 'none';
+                acceptBtn.style.display = 'none';
+                presidentName.value = '';
+                rotaryYear.value = '2026-27';
+                clubName.value = '';
+                rid.value = '';
+                sponsoredClub.value = '';
+                logoPreview.style.display = 'none';
+                logoPlaceholder.style.display = 'inline';
+                logoUrl.value = '';
+                requestStatus.value = 'pending';
+                verificationId.value = '';
+            }
+
+            // ─── Render Print Preview ──────────────────────────────────────────────
+            function renderPrintPreview(letter) {
+                const dateFormatted = letter.date ? new Date(letter.date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                }) : '—';
+
+                const vid = letter.verification_id || generateVerificationId();
+                const qrUrl = `https://galkot.netlify.app/verifyLHE.html?vid=${encodeURIComponent(vid)}`;
+
+                const sigHtml = `
+                    <div class="letter-signature">
+                        <div class="sig-block">
+                            <div class="sig-name">${escapeHtml(letter.secretary_name || 'Secretary')}</div>
+                            <img src="${escapeHtml(letter.secretary_signature_url || 'secretarysign.jpg')}" alt="Secretary Signature" class="sig-img" onerror="this.style.display='none'" />
+                            <div class="sig-title">Secretary RY 2026-27</div>
+                        </div>
+                        <div class="sig-center">
+                            <div class="sig-label">Yours in Rotaract</div>
+                            <div class="sig-name">${escapeHtml(letter.international_chair_name || 'International Chair')}</div>
+                            <img src="${escapeHtml(letter.international_chair_signature_url || 'anilsign.jpg')}" alt="Chair Signature" class="sig-img" onerror="this.style.display='none'" />
+                            <div class="sig-title">International Service Chair (2026-27)</div>
+                        </div>
+                        <div class="sig-right">
+                            <div class="sig-name">${escapeHtml(letter.president_name || 'President')}</div>
+                            <img src="${escapeHtml(letter.president_signature_url || 'presidentsign.jpg')}" alt="President Signature" class="sig-img" onerror="this.style.display='none'" />
+                            <div class="sig-title">President RY 2026-27</div>
+                        </div>
+                    </div>
+                `;
+
+                const html = `
+                    <div class="header-img"><img src="clubheading.jpg" alt="Club Header" onerror="this.style.display='none'" /></div>
+
+                    <div class="letter-header">
+                        <div class="club-name">${escapeHtml(letter.sender_club_name || 'Rotaract Club of Galkot Baglung')}</div>
+                        <div class="club-place">RID ${escapeHtml(letter.sender_rid || '3292')} ${letter.sender_sponsored_club ? '• Sponsored: ' + escapeHtml(letter.sender_sponsored_club) : ''}</div>
+                    </div>
+
+                    <div class="ref-date-row">
+                        <div class="ref-left">F.Y. ${escapeHtml(letter.fiscal_year || '—')} (Ref. ${escapeHtml(letter.ref_no || '—')})</div>
+                        <div class="date-right">Date: ${dateFormatted}</div>
+                    </div>
+
+                    <div class="letter-to">
+                        <span class="to-value">${escapeHtml(letter.recipient_name || '—')}, ${escapeHtml(letter.recipient_position || '—')}, ${escapeHtml(letter.recipient_club_name || '—')}</span>
+                    </div>
+
+                    <div class="letter-subject">
+                        ${escapeHtml(letter.subject || 'Letterhead Exchange')}
+                    </div>
+
+                    <div class="letter-body">
+                        ${escapeHtml(letter.body || '')}
+                    </div>
+
+                    ${sigHtml}
+
+                    <div class="letter-place">
+                        ${escapeHtml(letter.sign_place || 'Galkot, Baglung')}
+                    </div>
+
+                    <div class="letter-footer-wrap">
+                        <div class="footer-img">
+                            <img src="footer.jpg" alt="Footer" onerror="this.style.display='none'" />
+                        </div>
+                        <div class="qr-section">
+                            <div class="qr-label">🔍 Scan to Verify</div>
+                            <div class="qr-box" id="qrCodeContainer"></div>
+                            <div class="qr-url">${escapeHtml(qrUrl)}</div>
+                        </div>
+                    </div>
+                `;
+
+                printContent.innerHTML = html;
+
+                setTimeout(() => {
+                    const qrContainer = document.getElementById('qrCodeContainer');
+                    if (qrContainer && typeof QRCode !== 'undefined') {
+                        qrContainer.innerHTML = '';
+                        new QRCode(qrContainer, {
+                            text: qrUrl,
+                            width: 120,
+                            height: 120,
+                            colorDark: '#0B1E30',
+                            colorLight: '#FFFFFF',
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    }
+                }, 150);
+            }
+
+            // ─── Utility ──────────────────────────────────────────────────────────
+            function escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // ─── Event Listeners ──────────────────────────────────────────────────
+
+            loginForm.addEventListener('submit', handleLogin);
+            logoutBtn.addEventListener('click', handleLogout);
+
+            form.addEventListener('submit', saveForm);
+
+            resetBtn.addEventListener('click', resetForm);
+
+            deleteBtn.addEventListener('click', function() {
+                const id = editId.value;
+                if (id && confirm('Are you sure you want to delete this request?')) {
+                    deleteRequest(id);
+                }
+            });
+
+            acceptBtn.addEventListener('click', function() {
+                const id = editId.value;
+                if (id) {
+                    acceptRequest(id);
+                }
+            });
+
+            searchInput.addEventListener('input', function() {
+                loadRequests(this.value);
+            });
+
+            // Filter tabs
+            document.querySelectorAll('.filter-tabs button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-tabs button').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    loadRequests(searchInput.value);
+                });
+            });
+
+            // Modal controls
+            function closeModal() {
+                printModal.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+
+            modalClose.addEventListener('click', closeModal);
+            modalCloseBtn.addEventListener('click', closeModal);
+            printModal.addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
+            });
+
+            // ─── Init ──────────────────────────────────────────────────────────────
+
+            async function init() {
+                const hasSession = await checkSession();
+
+                if (hasSession && currentUser) {
+                    const isAdmin = await checkAdminRole(currentUser.id);
+                    if (isAdmin) {
+                        showApp();
+                        return;
+                    } else {
+                        await supabaseClient.auth.signOut();
+                    }
+                }
+
+                showLogin();
+            }
+
+            init();
+
+            // Expose for inline use
+            window.closeModal = closeModal;
+
+            console.log('✅ LHE Admin v2.0 ready.');
+
+        })();
+    </script>
+
+</body>
+</html>
