@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Partners & Sponsors Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-gray-800">
+                        <i class="fas fa-handshake text-blue-600"></i>
+                        Partners & Sponsors
+                    </h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="userEmail" class="text-gray-600"></span>
+                    <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Debug Info -->
+        <div id="debugInfo" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 hidden">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-bug text-yellow-400"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-yellow-700" id="debugMessage"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add/Edit Form -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4" id="formTitle">Add New Partner/Sponsor</h2>
+            <form id="partnerForm" class="space-y-4">
+                <input type="hidden" id="editId" />
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                        <input type="text" id="name" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                        <select id="category" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="partner">Partner</option>
+                            <option value="sponsor">Sponsor</option>
+                            <option value="media">Media Partner</option>
+                            <option value="official">Official Partner</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
+                        <input type="url" id="website"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
+                        <input type="number" id="displayOrder" value="0"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Logo Image *</label>
+                    <input type="file" id="logoFile" accept="image/*"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+                    <div id="currentLogo" class="mt-2"></div>
+                </div>
+
+                <div class="flex items-center">
+                    <input type="checkbox" id="isActive" checked class="mr-2" />
+                    <label class="text-sm font-medium text-gray-700">Active</label>
+                </div>
+
+                <div class="flex space-x-4">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                    <button type="reset" onclick="resetForm()" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Total</span>
+                    <span class="text-2xl font-bold text-blue-600" id="totalCount">0</span>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Partners</span>
+                    <span class="text-2xl font-bold text-green-600" id="partnerCount">0</span>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Sponsors</span>
+                    <span class="text-2xl font-bold text-purple-600" id="sponsorCount">0</span>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Active</span>
+                    <span class="text-2xl font-bold text-green-600" id="activeCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold">All Partners & Sponsors</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Logo</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="partnersTableBody" class="divide-y divide-gray-200">
+                        <!-- Data will be rendered here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase Configuration
+        const supabaseUrl = 'YOUR_SUPABASE_URL';
+        const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Show debug message
+        function showDebug(message, isError = false) {
+            const debugDiv = document.getElementById('debugInfo');
+            const debugMsg = document.getElementById('debugMessage');
+            debugDiv.classList.remove('hidden');
+            if (isError) {
+                debugDiv.className = 'bg-red-50 border-l-4 border-red-400 p-4 mb-4';
+                debugMsg.className = 'text-sm text-red-700';
+            } else {
+                debugDiv.className = 'bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4';
+                debugMsg.className = 'text-sm text-yellow-700';
+            }
+            debugMsg.textContent = message;
+        }
+
+        // Check authentication
+        async function checkAuth() {
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) {
+                    showDebug('Auth error: ' + error.message, true);
+                    return;
+                }
+                if (!session) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                document.getElementById('userEmail').textContent = session.user.email;
+                showDebug('Authenticated as: ' + session.user.email);
+                loadPartners();
+            } catch (error) {
+                showDebug('Check auth error: ' + error.message, true);
+            }
+        }
+
+        // Load all partners
+        async function loadPartners() {
+            try {
+                showDebug('Loading partners...');
+                const { data, error } = await supabase
+                    .from('partners_sponsors')
+                    .select('*')
+                    .order('display_order', { ascending: true });
+
+                if (error) {
+                    showDebug('Error loading: ' + error.message, true);
+                    throw error;
+                }
+
+                showDebug('Loaded ' + (data ? data.length : 0) + ' partners');
+                renderTable(data || []);
+                updateStats(data || []);
+            } catch (error) {
+                console.error('Error loading partners:', error);
+                showDebug('Failed to load partners: ' + error.message, true);
+            }
+        }
+
+        // Render table
+        function renderTable(partners) {
+            const tbody = document.getElementById('partnersTableBody');
+            if (!partners || partners.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                            No partners or sponsors found. Add one!
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = partners.map(partner => `
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-4">
+                        <img src="${partner.logo_url}" alt="${partner.name}" 
+                             class="w-16 h-16 object-contain rounded-lg border" 
+                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23f3f4f6%22/%3E%3Ctext x=%2250%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%239ca3af%22 font-size=%2212%22%3ENo Image%3C/text%3E%3C/svg%3E'" />
+                    </td>
+                    <td class="px-6 py-4 font-medium">${partner.name}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 rounded-full text-xs ${getCategoryColor(partner.category)}">
+                            ${partner.category}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">${partner.display_order}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 rounded-full text-xs ${partner.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${partner.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex space-x-2">
+                            <button onclick="editPartner(${partner.id})" 
+                                    class="text-blue-600 hover:text-blue-800 transition">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deletePartner(${partner.id})" 
+                                    class="text-red-600 hover:text-red-800 transition">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Get category color
+        function getCategoryColor(category) {
+            const colors = {
+                'partner': 'bg-blue-100 text-blue-800',
+                'sponsor': 'bg-purple-100 text-purple-800',
+                'media': 'bg-green-100 text-green-800',
+                'official': 'bg-yellow-100 text-yellow-800'
+            };
+            return colors[category] || 'bg-gray-100 text-gray-800';
+        }
+
+        // Update stats
+        function updateStats(partners) {
+            document.getElementById('totalCount').textContent = partners.length;
+            document.getElementById('partnerCount').textContent = partners.filter(p => p.category === 'partner').length;
+            document.getElementById('sponsorCount').textContent = partners.filter(p => p.category === 'sponsor' || p.category === 'media' || p.category === 'official').length;
+            document.getElementById('activeCount').textContent = partners.filter(p => p.is_active).length;
+        }
+
+        // Upload logo
+        async function uploadLogo(file) {
+            try {
+                const fileName = `${Date.now()}_${file.name}`;
+                showDebug('Uploading logo: ' + fileName);
+                
+                const { data, error } = await supabase.storage
+                    .from('partner-logos')
+                    .upload(`public/${fileName}`, file);
+
+                if (error) {
+                    showDebug('Upload error: ' + error.message, true);
+                    throw error;
+                }
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('partner-logos')
+                    .getPublicUrl(`public/${fileName}`);
+
+                showDebug('Logo uploaded successfully');
+                return publicUrl;
+            } catch (error) {
+                showDebug('Upload failed: ' + error.message, true);
+                throw error;
+            }
+        }
+
+        // Save partner (Create/Update)
+        document.getElementById('partnerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const editId = document.getElementById('editId').value;
+                const name = document.getElementById('name').value;
+                const category = document.getElementById('category').value;
+                const website = document.getElementById('website').value;
+                const displayOrder = parseInt(document.getElementById('displayOrder').value);
+                const isActive = document.getElementById('isActive').checked;
+                const logoFile = document.getElementById('logoFile').files[0];
+
+                showDebug('Saving partner: ' + name);
+
+                let logoUrl = document.getElementById('currentLogo').dataset.currentLogo || '';
+
+                // Upload new logo if provided
+                if (logoFile) {
+                    logoUrl = await uploadLogo(logoFile);
+                }
+
+                if (!logoUrl) {
+                    showDebug('Logo is required!', true);
+                    alert('Please select a logo image.');
+                    return;
+                }
+
+                const partnerData = {
+                    name,
+                    category,
+                    website: website || null,
+                    display_order: displayOrder,
+                    is_active: isActive,
+                    logo_url: logoUrl,
+                    updated_at: new Date().toISOString()
+                };
+
+                showDebug('Saving data: ' + JSON.stringify(partnerData));
+
+                let result;
+                if (editId) {
+                    // Update
+                    result = await supabase
+                        .from('partners_sponsors')
+                        .update(partnerData)
+                        .eq('id', editId);
+                } else {
+                    // Insert
+                    partnerData.created_at = new Date().toISOString();
+                    result = await supabase
+                        .from('partners_sponsors')
+                        .insert([partnerData]);
+                }
+
+                if (result.error) {
+                    showDebug('Database error: ' + result.error.message, true);
+                    throw result.error;
+                }
+
+                showDebug('Saved successfully!');
+                resetForm();
+                loadPartners();
+                alert(editId ? 'Partner updated successfully!' : 'Partner added successfully!');
+            } catch (error) {
+                console.error('Error saving partner:', error);
+                showDebug('Failed to save: ' + error.message, true);
+                alert('Failed to save partner: ' + error.message);
+            }
+        });
+
+        // Edit partner
+        async function editPartner(id) {
+            try {
+                showDebug('Loading partner: ' + id);
+                const { data, error } = await supabase
+                    .from('partners_sponsors')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                if (error) {
+                    showDebug('Load error: ' + error.message, true);
+                    throw error;
+                }
+
+                document.getElementById('editId').value = data.id;
+                document.getElementById('name').value = data.name;
+                document.getElementById('category').value = data.category;
+                document.getElementById('website').value = data.website || '';
+                document.getElementById('displayOrder').value = data.display_order;
+                document.getElementById('isActive').checked = data.is_active;
+                document.getElementById('formTitle').textContent = 'Edit Partner/Sponsor';
+
+                // Show current logo
+                const currentLogoDiv = document.getElementById('currentLogo');
+                currentLogoDiv.innerHTML = `
+                    <p class="text-sm text-gray-600 mb-1">Current Logo:</p>
+                    <img src="${data.logo_url}" alt="${data.name}" class="w-24 h-24 object-contain border rounded-lg" />
+                `;
+                currentLogoDiv.dataset.currentLogo = data.logo_url;
+
+                showDebug('Loaded partner for editing');
+                document.getElementById('partnerForm').scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                console.error('Error loading partner:', error);
+                showDebug('Failed to load partner: ' + error.message, true);
+                alert('Failed to load partner details: ' + error.message);
+            }
+        }
+
+        // Delete partner
+        async function deletePartner(id) {
+            if (!confirm('Are you sure you want to delete this partner/sponsor?')) return;
+
+            try {
+                showDebug('Deleting partner: ' + id);
+                // First get the partner to delete the logo
+                const { data, error: fetchError } = await supabase
+                    .from('partners_sponsors')
+                    .select('logo_url')
+                    .eq('id', id)
+                    .single();
+
+                if (fetchError) throw fetchError;
+
+                // Delete from database
+                const { error: deleteError } = await supabase
+                    .from('partners_sponsors')
+                    .delete()
+                    .eq('id', id);
+
+                if (deleteError) throw deleteError;
+
+                showDebug('Deleted successfully');
+                loadPartners();
+                alert('Partner deleted successfully!');
+            } catch (error) {
+                console.error('Error deleting partner:', error);
+                showDebug('Delete failed: ' + error.message, true);
+                alert('Failed to delete partner: ' + error.message);
+            }
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('partnerForm').reset();
+            document.getElementById('editId').value = '';
+            document.getElementById('formTitle').textContent = 'Add New Partner/Sponsor';
+            document.getElementById('currentLogo').innerHTML = '';
+            document.getElementById('currentLogo').dataset.currentLogo = '';
+            document.getElementById('displayOrder').value = 0;
+            document.getElementById('logoFile').value = '';
+            showDebug('Form reset');
+        }
+
+        // Logout
+        async function logout() {
+            try {
+                await supabase.auth.signOut();
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Error logging out:', error);
+                showDebug('Logout error: ' + error.message, true);
+            }
+        }
+
+        // Initialize
+        checkAuth();
+    </script>
+</body>
+</html>

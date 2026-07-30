@@ -686,6 +686,84 @@
       .recognition-card .award-title { font-size: 1.3rem; }
     }
 
+    /* ===== PAST PRESIDENTS & ADVISORS ===== */
+    .pp-section { padding: 70px 20px 80px; background: var(--bg-light); transition: background 0.6s ease; }
+    .pp-section .section-header { text-align: center; margin-bottom: 40px; }
+    .pp-section .section-header h2 {
+      font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--primary), var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .pp-section .section-header p { color: var(--text-secondary); font-size: 1rem; }
+    .pp-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 28px; }
+    .pp-card {
+      background: var(--bg-white); border-radius: var(--radius-lg); padding: 30px 20px 26px;
+      text-align: center; border: 1px solid rgba(226, 232, 240, 0.4); box-shadow: var(--shadow-sm);
+      transition: all 0.4s ease;
+    }
+    .pp-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--gold); }
+    .pp-card .avatar { width: 112px; height: 112px; border-radius: 50%; margin: 0 auto 16px; overflow: hidden; border: 3px solid var(--gold); }
+    .pp-card .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .pp-card .name { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .pp-card .role-title { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--primary); margin-bottom: 8px; }
+    .pp-card .tenure { font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); background: var(--bg-light); display: inline-block; padding: 3px 16px; border-radius: 20px; }
+    .pp-card .badge-role {
+      display: inline-block; margin-top: 12px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.3px; color: var(--text-primary); background: rgba(212, 175, 55, 0.12);
+      padding: 4px 14px; border-radius: 20px; border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    /* ===== NATIONAL / INTERNATIONAL PARTNERSHIPS ===== */
+    .partnership-section { padding: 70px 20px 80px; background: var(--bg-white); transition: background 0.6s ease; }
+    .partnership-section .section-header { text-align: center; margin-bottom: 40px; }
+    .partnership-section .section-header h2 { font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text-primary); }
+    .partnership-section .section-header p { color: var(--text-secondary); font-size: 1rem; }
+    .partnership-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
+    .partnership-card {
+      background: var(--bg-light); border-radius: var(--radius-lg); padding: 26px 22px; text-align: center;
+      border: 1px solid rgba(226, 232, 240, 0.4); box-shadow: var(--shadow-sm); transition: all 0.4s ease;
+    }
+    .partnership-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
+    .partnership-card .logo {
+      width: 88px; height: 88px; border-radius: 50%; margin: 0 auto 14px; overflow: hidden;
+      background: var(--bg-white); border: 3px solid var(--primary); display: flex; align-items: center; justify-content: center;
+    }
+    .partnership-card .logo img { width: 100%; height: 100%; object-fit: cover; }
+    .partnership-card .club-name { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+    .partnership-card .sponsored { font-size: 0.8rem; color: var(--gold); font-weight: 600; margin-bottom: 6px; }
+    .partnership-card .meta { font-size: 0.75rem; color: var(--text-muted); }
+    .partnership-card .rid-badge { display: inline-block; margin-top: 10px; font-size: 0.68rem; font-weight: 600; color: var(--text-primary); background: rgba(217, 26, 92, 0.08); padding: 4px 14px; border-radius: 20px; }
+
+    /* ===== OUR PARTNERS & SPONSORS ===== */
+    .partners-section { padding: 60px 20px 80px; background: var(--bg-light); transition: background 0.6s ease; }
+    .partners-section .section-header { text-align: center; margin-bottom: 36px; }
+    .partners-section .section-header h2 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text-primary); }
+    .partners-section .section-header p { color: var(--text-secondary); font-size: 1rem; }
+    .partners-grid { max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 28px; }
+    .partner-card {
+      background: var(--bg-white); border-radius: var(--radius-md); padding: 18px 22px; display: flex;
+      align-items: center; gap: 14px; border: 1px solid rgba(226, 232, 240, 0.4); box-shadow: var(--shadow-sm);
+      transition: all 0.3s ease; text-decoration: none;
+    }
+    .partner-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--gold); }
+    .partner-card .logo { width: 56px; height: 56px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: var(--bg-light); display: flex; align-items: center; justify-content: center; }
+    .partner-card .logo img { width: 100%; height: 100%; object-fit: contain; }
+    .partner-card .p-name { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); }
+    .partner-card .p-type { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+
+    .pp-empty, .partnership-loading, .partnership-empty, .partners-loading, .partners-empty {
+      text-align: center; padding: 30px 0; font-size: 1rem; color: var(--text-muted); grid-column: 1 / -1; width: 100%;
+    }
+    .partnership-error, .partners-error {
+      text-align: center; padding: 30px 0; font-size: 1rem; color: #EF4444; grid-column: 1 / -1; width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      .pp-section .section-header h2, .partnership-section .section-header h2 { font-size: 1.9rem; }
+      .pp-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 18px; }
+      .partnership-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    }
+
     /* ===== BIRTHDAY POPUP ===== */
     .birthday-popup-overlay {
       position: fixed;
@@ -1028,6 +1106,9 @@
     <li><a href="#board">Board <span class="nav-indicator"></span></a></li>
     <li><a href="#members">Members <span class="nav-indicator"></span></a></li>
     <li><a href="#recognition">Recognition <span class="nav-indicator"></span></a></li>
+    <li><a href="#past-presidents">Past Presidents <span class="nav-indicator"></span></a></li>
+    <li><a href="#partnerships">Partnerships <span class="nav-indicator"></span></a></li>
+    <li><a href="#partners-sponsors">Partners <span class="nav-indicator"></span></a></li>
     <li><a href="#about">About <span class="nav-indicator"></span></a></li>
     <li><a href="loginminutes.html">Secretary <span class="nav-indicator"></span></a></li>
     <li><a href="#" id="adminLoginNavBtn">Admin <span class="nav-indicator"></span></a></li>
@@ -1181,6 +1262,88 @@
   </div>
 </section>
 
+<!-- ===== PAST PRESIDENTS & ADVISORS ===== -->
+<section class="pp-section" id="past-presidents">
+  <div class="section-header">
+    <h2><i class="fas fa-crown" style="color:var(--gold);margin-right:12px;"></i>Past Presidents &amp; Advisors</h2>
+    <p>Honoring the leaders who guided our club through the years</p>
+  </div>
+  <div class="pp-grid">
+    <div class="pp-card">
+      <div class="avatar">
+        <img src="images/kamalkharel.jpg" alt="RTR. Kamal Kharel" loading="lazy"
+             onerror="this.src='https://ui-avatars.com/api/?name=Kamal+Kharel&background=D91A5C&color=fff&size=224'">
+      </div>
+      <div class="name">RTR. Kamal Kharel</div>
+      <div class="role-title">Past President / Club Advisor</div>
+      <div class="tenure">2023 – 24</div><br>
+      <span class="badge-role"><i class="fas fa-star" style="margin-right:6px;color:var(--gold);"></i>Club Advisor</span>
+    </div>
+    <div class="pp-card">
+      <div class="avatar">
+        <img src="images/anilshrestha.jpg" alt="RTR. Anil Shrestha" loading="lazy"
+             onerror="this.src='https://ui-avatars.com/api/?name=Anil+Shrestha&background=D91A5C&color=fff&size=224'">
+      </div>
+      <div class="name">RTR. Anil Shrestha</div>
+      <div class="role-title">PP / ISD / Advisor</div>
+      <div class="tenure">2021 – 22</div><br>
+      <span class="badge-role"><i class="fas fa-handshake" style="margin-right:6px;color:var(--gold);"></i>ISD &amp; Advisor</span>
+    </div>
+    <div class="pp-card">
+      <div class="avatar">
+        <img src="images/ishorgautam.jpg" alt="RTR. Ishor Gautam" loading="lazy"
+             onerror="this.src='https://ui-avatars.com/api/?name=Ishor+Gautam&background=D91A5C&color=fff&size=224'">
+      </div>
+      <div class="name">RTR. Ishor Gautam</div>
+      <div class="role-title">Past President</div>
+      <div class="tenure">2022 – 23</div><br>
+      <span class="badge-role"><i class="fas fa-gavel" style="margin-right:6px;color:var(--gold);"></i>Past President</span>
+    </div>
+    <div class="pp-card">
+      <div class="avatar">
+        <img src="images/laxmipun.jpg" alt="RTR. Laxmi Pun" loading="lazy"
+             onerror="this.src='https://ui-avatars.com/api/?name=Laxmi+Pun&background=D91A5C&color=fff&size=224'">
+      </div>
+      <div class="name">RTR. Laxmi Pun</div>
+      <div class="role-title">PP / Rotaract Learning Facilitator</div>
+      <div class="tenure">2024 – 25</div><br>
+      <span class="badge-role"><i class="fas fa-graduation-cap" style="margin-right:6px;color:var(--gold);"></i>Learning Facilitator</span>
+    </div>
+    <div class="pp-card">
+      <div class="avatar">
+        <img src="images/nabinsubedi.jpg" alt="RTR. Nabin Subedi" loading="lazy"
+             onerror="this.src='https://ui-avatars.com/api/?name=Nabin+Subedi&background=D91A5C&color=fff&size=224'">
+      </div>
+      <div class="name">RTR. Nabin Subedi</div>
+      <div class="role-title">Past President</div>
+      <div class="tenure">2025 – 26</div><br>
+      <span class="badge-role"><i class="fas fa-arrow-right" style="margin-right:6px;color:var(--gold);"></i>President Elect</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== NATIONAL / INTERNATIONAL PARTNERSHIPS ===== -->
+<section class="partnership-section" id="partnerships">
+  <div class="section-header">
+    <h2>🌍 National / International Partnerships</h2>
+    <p>Approved club-to-club partnership &amp; sponsorship endorsements</p>
+  </div>
+  <div class="partnership-grid" id="partnershipGrid">
+    <div class="partnership-loading"><i class="fas fa-spinner fa-spin"></i> Loading partnerships...</div>
+  </div>
+</section>
+
+<!-- ===== OUR PARTNERS & SPONSORS ===== -->
+<section class="partners-section" id="partners-sponsors">
+  <div class="section-header">
+    <h2><i class="fas fa-handshake" style="color:var(--primary);margin-right:10px;"></i>Our Partners &amp; Sponsors</h2>
+    <p>Organizations supporting our mission of service</p>
+  </div>
+  <div class="partners-grid" id="partnersGrid">
+    <div class="partners-loading"><i class="fas fa-spinner fa-spin"></i> Loading partners...</div>
+  </div>
+</section>
+
 <!-- ===== BIRTHDAY POPUP ===== -->
 <div id="birthdayPopup" class="birthday-popup-overlay" role="dialog" aria-modal="true" aria-labelledby="popupName" aria-hidden="true">
   <div class="birthday-popup" id="popupContent">
@@ -1255,6 +1418,9 @@
         <li><a href="#board">Board</a></li>
         <li><a href="#members">Members</a></li>
         <li><a href="#recognition">Recognition</a></li>
+        <li><a href="#past-presidents">Past Presidents</a></li>
+        <li><a href="#partnerships">Partnerships</a></li>
+        <li><a href="#partners-sponsors">Partners &amp; Sponsors</a></li>
         <li><a href="#about">About</a></li>
       </ul>
     </div>
@@ -1709,6 +1875,95 @@
     }
 
     renderMembersMarquee();
+
+    // ---------- helper: escape text before injecting into HTML ----------
+    function escapeHtml(str) {
+      return String(str ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    // ---------- NATIONAL / INTERNATIONAL PARTNERSHIPS (rotaract_lhe_requests) ----------
+    async function renderPartnerships() {
+      const grid = document.getElementById('partnershipGrid');
+      if (!grid) return;
+      try {
+        const { data, error } = await supabase
+          .from('rotaract_lhe_requests')
+          .select('president_name, rotary_year, club_name, rid, sponsored_club, logo_url, verification_id, status, created_at')
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          grid.innerHTML = `<div class="partnership-empty"><i class="fas fa-globe"></i> No approved partnerships yet.</div>`;
+          return;
+        }
+
+        grid.innerHTML = data.map(p => {
+          const club = escapeHtml(p.club_name || 'Club');
+          const logo = p.logo_url || '';
+          const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.club_name || 'RC')}&background=1D2A44&color=fff&size=176`;
+          return `
+            <div class="partnership-card">
+              <div class="logo">
+                <img src="${logo || fallback}" alt="${club}" loading="lazy"
+                     onerror="this.src='${fallback}'">
+              </div>
+              <div class="club-name">${club}</div>
+              ${p.sponsored_club ? `<div class="sponsored"><i class="fas fa-hand-holding-heart"></i> Sponsors ${escapeHtml(p.sponsored_club)}</div>` : ''}
+              <div class="meta">${escapeHtml(p.president_name || '')}${p.president_name ? ' · ' : ''}R.Y. ${escapeHtml(p.rotary_year || '')}</div>
+              <span class="rid-badge">RID ${escapeHtml(p.rid || 'N/A')}</span>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Failed to load partnerships:', err);
+        grid.innerHTML = `<div class="partnership-error"><i class="fas fa-triangle-exclamation"></i> Failed to load partnerships.</div>`;
+      }
+    }
+    renderPartnerships();
+
+    // ---------- OUR PARTNERS & SPONSORS (partners_sponsors) ----------
+    async function renderPartnersSponsors() {
+      const grid = document.getElementById('partnersGrid');
+      if (!grid) return;
+      try {
+        const { data, error } = await supabase
+          .from('partners_sponsors')
+          .select('name, logo_url, website_url, type, status, display_order')
+          .eq('status', 'active')
+          .order('display_order', { ascending: true });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          grid.innerHTML = `<div class="partners-empty"><i class="fas fa-handshake"></i> No partners added yet.</div>`;
+          return;
+        }
+
+        grid.innerHTML = data.map(p => {
+          const name = escapeHtml(p.name || 'Partner');
+          const logo = p.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name || 'P')}&background=D4AF37&color=fff&size=112`;
+          const tag = p.website_url ? 'a' : 'div';
+          const hrefAttr = p.website_url ? `href="${escapeHtml(p.website_url)}" target="_blank" rel="noopener"` : '';
+          return `
+            <${tag} class="partner-card" ${hrefAttr}>
+              <div class="logo"><img src="${logo}" alt="${name}" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(p.name || 'P')}&background=D4AF37&color=fff&size=112'"></div>
+              <div>
+                <div class="p-name">${name}</div>
+                ${p.type ? `<div class="p-type">${escapeHtml(p.type)}</div>` : ''}
+              </div>
+            </${tag}>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Failed to load partners & sponsors:', err);
+        grid.innerHTML = `<div class="partners-error"><i class="fas fa-triangle-exclamation"></i> Failed to load partners.</div>`;
+      }
+    }
+    renderPartnersSponsors();
 
     // ---------- RECOGNITION ----------
     const leaderContainer = document.getElementById('leaderWinners');

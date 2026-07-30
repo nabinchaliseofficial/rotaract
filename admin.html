@@ -1104,7 +1104,8 @@ footer.app-footer{ padding:1.5rem 2.2rem 2.5rem; color:var(--text-faint); font-s
         course_inquiries:        { label: 'New course inquiry',     icon: 'fa-graduation-cap',   nameField: 'full_name' },
         member_registrations:    { label: 'New membership sign-up', icon: 'fa-user-plus',        nameField: 'full_name' },
         rotaract_galkot_members: { label: 'New Rotaract member',    icon: 'fa-users',            nameField: 'full_name' },
-        project_applications:    { label: 'New project application', icon: 'fa-diagram-project', nameField: 'applicant_name' }
+        project_applications:    { label: 'New project application', icon: 'fa-diagram-project', nameField: 'applicant_name' },
+        page_visits:             { label: 'New website visit',      icon: 'fa-globe',            nameField: null, isVisit: true }
     };
 
     let notifList = [];
@@ -1143,11 +1144,14 @@ footer.app-footer{ padding:1.5rem 2.2rem 2.5rem; color:var(--text-faint); font-s
         const stack = $('toastStack');
         const card = document.createElement('div');
         card.className = 'toast-card';
+        const nameLine = name
+            ? `From <b>${escapeHtml(name)}</b>`
+            : 'Someone just visited your site';
         card.innerHTML = `
             <div class="t-icon"><i class="fa-solid ${def.icon}"></i></div>
             <div class="t-body">
                 <div class="t-title">${escapeHtml(def.label)}</div>
-                <div class="t-name">From <b>${escapeHtml(name)}</b></div>
+                <div class="t-name">${nameLine}</div>
                 <div class="t-meta">${new Date().toLocaleTimeString()}</div>
             </div>
             <button class="t-close" type="button" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></button>
@@ -1187,7 +1191,7 @@ footer.app-footer{ padding:1.5rem 2.2rem 2.5rem; color:var(--text-faint); font-s
             <div class="notif-row">
                 <div class="ni-icon"><i class="fa-solid ${n.icon}"></i></div>
                 <div class="ni-body">
-                    <div class="ni-title">${escapeHtml(n.label)} — <b>${escapeHtml(n.name)}</b></div>
+                    <div class="ni-title">${escapeHtml(n.label)}${n.name ? ' — <b>' + escapeHtml(n.name) + '</b>' : ''}</div>
                     <div class="ni-sub">${escapeHtml(n.table)}</div>
                     <div class="ni-time">${timeAgo(n.time)}</div>
                 </div>
@@ -1197,7 +1201,9 @@ footer.app-footer{ padding:1.5rem 2.2rem 2.5rem; color:var(--text-faint); font-s
     function notifyFormEvent(table, record) {
         const def = NOTIFY_TABLES[table];
         if (!def) return;
-        const name = (record && (record[def.nameField] || record.full_name || record.applicant_name)) || 'Someone';
+        const name = def.isVisit
+            ? null
+            : (record && (record[def.nameField] || record.full_name || record.applicant_name)) || 'Someone';
         notifList.unshift({ label: def.label, icon: def.icon, name, table, time: new Date() });
         if (notifList.length > 50) notifList.pop();
         notifUnread++;
@@ -1207,7 +1213,7 @@ footer.app-footer{ padding:1.5rem 2.2rem 2.5rem; color:var(--text-faint); font-s
         bumpBell();
         playNotifChime();
         if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
-            try { new Notification(def.label, { body: name }); } catch (_) {}
+            try { new Notification(def.label, { body: name || 'Someone just visited your site' }); } catch (_) {}
         }
     }
 
@@ -1701,7 +1707,7 @@ footer.app-footer{ padding:1.5rem 2.2rem 2.5rem; color:var(--text-faint); font-s
     }
 
     function subscribeAll() {
-        const tables = ['inquiries', 'members', 'member_registrations', 'blogs', 'upcoming_projects', 'approved_applications', 'project_applications', 'course_inquiries', 'rotaract_galkot_members'];
+        const tables = ['inquiries', 'members', 'member_registrations', 'blogs', 'upcoming_projects', 'approved_applications', 'project_applications', 'course_inquiries', 'rotaract_galkot_members', 'page_visits'];
         for (const table of tables) {
             try {
                 supabase.channel(`rt-${table}`)
