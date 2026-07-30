@@ -797,6 +797,33 @@
       font-size: 0.8rem;
       color: rgba(255, 255, 255, 0.4);
     }
+    .visitor-stats {
+      max-width: 1200px;
+      margin: 10px auto 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+    }
+    .visitor-stat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 50px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.7);
+      white-space: nowrap;
+    }
+    .visitor-stat i { color: var(--gold); font-size: 0.9rem; }
+    .visitor-stat-value { font-weight: 700; color: #fff; }
+    .visitor-stat-label { opacity: 0.75; }
+    @media (max-width: 640px) {
+      .visitor-stats { gap: 8px; }
+      .visitor-stat { padding: 8px 12px; font-size: 0.72rem; }
+    }
     @media (max-width: 1024px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 30px; } }
     @media (max-width: 640px) { .footer-grid { grid-template-columns: 1fr; gap: 24px; } }
 
@@ -1252,11 +1279,31 @@
     </div>
   </div>
 
+  <div class="visitor-stats" id="visitorStats">
+    <div class="visitor-stat">
+      <i class="fas fa-users"></i>
+      <span class="visitor-stat-value" id="statTotal">…</span>
+      <span class="visitor-stat-label">Total Visitors</span>
+    </div>
+    <div class="visitor-stat">
+      <i class="fas fa-fire"></i>
+      <span class="visitor-stat-value" id="statToday">…</span>
+      <span class="visitor-stat-label">Today's Visitors</span>
+    </div>
+    <div class="visitor-stat">
+      <i class="fas fa-calendar-week"></i>
+      <span class="visitor-stat-value" id="statWeek">…</span>
+      <span class="visitor-stat-label">This Week's Visitors</span>
+    </div>
+    <div class="visitor-stat">
+      <i class="fas fa-calendar-alt"></i>
+      <span class="visitor-stat-value" id="statMonth">…</span>
+      <span class="visitor-stat-label">This Month's Visitors</span>
+    </div>
+  </div>
+
   <div class="footer-bottom">
     &copy; 2026 Rotaract Club of Galkot Baglung. All Rights Reserved. | RI District 3292
-    <span id="visitCounter" style="margin-left:10px; opacity:0.85;">
-      <i class="fas fa-eye" style="color:var(--gold);margin-right:6px;"></i>Visits: <span id="visitCount">…</span>
-    </span>
   </div>
 </footer>
 
@@ -1277,27 +1324,41 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // ---------- REAL VISIT COUNTER ----------
+    // ---------- REAL VISITOR STATS (Total / Today / Week / Month) ----------
     (async function trackVisit() {
-      const countEl = document.getElementById('visitCount');
-      if (!countEl) return;
+      const els = {
+        total: document.getElementById('statTotal'),
+        today: document.getElementById('statToday'),
+        week: document.getElementById('statWeek'),
+        month: document.getElementById('statMonth')
+      };
+      if (!els.total) return;
+
+      const fmt = n => (typeof n === 'number' ? n.toLocaleString() : '—');
+
+      const renderStats = (stats) => {
+        els.total.textContent = fmt(stats?.total);
+        els.today.textContent = fmt(stats?.today);
+        els.week.textContent = fmt(stats?.week);
+        els.month.textContent = fmt(stats?.month);
+      };
+
       try {
-        // Only count once per browser session so refreshing the same tab
-        // doesn't inflate the number.
+        // Only record one visit per browser session so refreshing the
+        // same tab doesn't inflate the numbers.
         const alreadyCounted = sessionStorage.getItem('visitCounted');
         if (!alreadyCounted) {
-          const { data, error } = await supabase.rpc('increment_visits');
-          if (error) throw error;
+          const { error: insertError } = await supabase.rpc('record_visit');
+          if (insertError) throw insertError;
           sessionStorage.setItem('visitCounted', '1');
-          countEl.textContent = (data ?? '—').toLocaleString();
-        } else {
-          const { data, error } = await supabase.rpc('get_visits');
-          if (error) throw error;
-          countEl.textContent = (data ?? '—').toLocaleString();
         }
+
+        const { data, error } = await supabase.rpc('get_visit_stats');
+        if (error) throw error;
+        renderStats(data);
       } catch (err) {
-        console.error('Visit counter error:', err);
-        countEl.textContent = '—';
+        console.error('Visitor stats error:', err);
+        Object.values(els).forEach(el => { if (el) el.textContent = '—'; });
       }
     })();
 
