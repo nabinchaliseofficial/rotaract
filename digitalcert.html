@@ -1,3 +1,250 @@
-Certificates
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Certificate Verification</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Mukta', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid #d4af37;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+        h1 {
+            color: #d4af37;
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        .subtitle {
+            color: rgba(255,255,255,0.7);
+            text-align: center;
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+        .search-box {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 1rem;
+            font-family: 'Mukta', sans-serif;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .search-box input:focus {
+            border-color: #d4af37;
+        }
+        .search-box input::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+        .search-box button {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #ffd76a, #d4af37);
+            color: #1a1a2e;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-family: 'Mukta', sans-serif;
+        }
+        .search-box button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+        }
+        .result {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .result.visible { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .result .field {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 1.05rem;
+        }
+        .result .field:last-child { border-bottom: none; }
+        .result .label { color: rgba(255,255,255,0.6); font-weight: 600; }
+        .result .value { color: #fff; font-weight: 400; text-align: right; word-break: break-word; }
+        .result .value.verified { color: #4caf50; font-weight: 700; }
+        .result .value.not-verified { color: #f44336; font-weight: 700; }
+        .error {
+            color: #f44336;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+        .error.visible { display: block; }
+        .loading {
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+            display: none;
+        }
+        .loading.visible { display: block; }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.85rem;
+        }
+        @media (max-width: 480px) {
+            .container { padding: 20px; }
+            h1 { font-size: 1.8rem; }
+            .search-box button { padding: 12px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 प्रमाणपत्र प्रमाणीकरण</h1>
+        <p class="subtitle">कृपया आफ्नो प्रमाणपत्र ID प्रविष्ट गर्नुहोस्</p>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Credential ID or Student Name" autofocus>
+            <button onclick="searchCertificate()">🔍 खोज्नुहोस्</button>
+        </div>
+        <div class="loading" id="loading">⏳ खोजी भइरहेको छ ...</div>
+        <div class="error" id="error">❌ कुनै प्रमाणपत्र फेला परेन ।</div>
+        <div class="result" id="result">
+            <div class="field"><span class="label">प्रमाणपत्र ID</span><span class="value" id="credId">-</span></div>
+            <div class="field"><span class="label">शीर्षक</span><span class="value" id="title">-</span></div>
+            <div class="field"><span class="label">जारीकर्ता</span><span class="value" id="issuer">-</span></div>
+            <div class="field"><span class="label">विवरण</span><span class="value" id="desc">-</span></div>
+            <div class="field"><span class="label">जारी मिति</span><span class="value" id="issued">-</span></div>
+            <div class="field"><span class="label">म्याद समाप्ति</span><span class="value" id="expiry">-</span></div>
+            <div class="field"><span class="label">स्थिति</span><span class="value" id="status">-</span></div>
+        </div>
+        <div class="footer">Rotaract Club of Galkot · Digital Certification</div>
+    </div>
 
-Membership Card  Birthday Wishes
+    <script>
+        const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const searchInput = document.getElementById('searchInput');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const result = document.getElementById('result');
+
+        searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchCertificate(); });
+
+        async function searchCertificate() {
+            const query = searchInput.value.trim();
+            if (!query) {
+                alert('कृपया प्रमाणपत्र ID वा नाम प्रविष्ट गर्नुहोस्।');
+                return;
+            }
+
+            loading.classList.add('visible');
+            error.classList.remove('visible');
+            result.classList.remove('visible');
+
+            try {
+                // First try certifications by credential_id
+                let { data, error: err } = await supabase
+                    .from('certifications')
+                    .select('*')
+                    .eq('credential_id', query)
+                    .maybeSingle();
+
+                if (data) {
+                    displayCertificate(data);
+                    return;
+                }
+
+                // If not found, try course_records by student_name (maybe certificate number stored as 'certificate')
+                let { data: courseData, error: courseErr } = await supabase
+                    .from('course_records')
+                    .select('*')
+                    .ilike('student_name', `%${query}%`)
+                    .maybeSingle();
+
+                if (courseData && courseData.certificate) {
+                    // Assume certificate column holds the credential ID or a boolean, we map to a display
+                    const certDisplay = {
+                        credential_id: courseData.certificate || 'N/A',
+                        title: `Certificate for ${courseData.student_name}`,
+                        issuer: 'Rotaract Galkot',
+                        description: `Course: ${courseData.course}, Grade: ${courseData.grade}`,
+                        issued_date: courseData.issue_date || courseData.created_at,
+                        expiry_date: null,
+                        status: 'Valid'
+                    };
+                    displayCertificate(certDisplay);
+                    return;
+                }
+
+                // Not found
+                loading.classList.remove('visible');
+                error.classList.add('visible');
+                error.textContent = '❌ कुनै प्रमाणपत्र फेला परेन ।';
+
+            } catch (e) {
+                loading.classList.remove('visible');
+                error.classList.add('visible');
+                error.textContent = '⚠️ डाटा लोड गर्न असफल। पुन: प्रयास गर्नुहोस्।';
+                console.error(e);
+            }
+        }
+
+        function displayCertificate(data) {
+            loading.classList.remove('visible');
+            result.classList.add('visible');
+            document.getElementById('credId').textContent = data.credential_id || data.credential_id || 'N/A';
+            document.getElementById('title').textContent = data.title || 'N/A';
+            document.getElementById('issuer').textContent = data.issuer || 'Rotaract Galkot';
+            document.getElementById('desc').textContent = data.description || 'N/A';
+            document.getElementById('issued').textContent = data.issued_date ? new Date(data.issued_date).toLocaleDateString('ne-NP') : 'N/A';
+            document.getElementById('expiry').textContent = data.expiry_date ? new Date(data.expiry_date).toLocaleDateString('ne-NP') : 'N/A';
+            const statusEl = document.getElementById('status');
+            const now = new Date();
+            const expiry = data.expiry_date ? new Date(data.expiry_date) : null;
+            if (expiry && expiry < now) {
+                statusEl.textContent = '⛔ म्याद गुज्रिएको';
+                statusEl.className = 'value not-verified';
+            } else {
+                statusEl.textContent = '✅ प्रमाणित';
+                statusEl.className = 'value verified';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -166,70 +166,6 @@
             border-bottom: 3px solid #e0e0e0;
             padding-bottom: 25px;
         }
-        .live-preview-panel {
-            position: sticky;
-            top: 10px;
-            z-index: 20;
-            margin-bottom: 25px;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.25);
-        }
-        .live-preview-label {
-            background: linear-gradient(135deg, #d32f2f, #b71c1c);
-            color: white;
-            padding: 8px 16px;
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-        .live-preview-box {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            color: #fff;
-            padding: 28px 20px;
-            text-align: center;
-            min-height: 160px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .live-preview-logo {
-            max-height: 60px;
-            max-width: 160px;
-            margin-bottom: 8px;
-            border-radius: 6px;
-        }
-        .live-preview-meeting {
-            font-weight: 800;
-            font-size: 1.6rem;
-            line-height: 1.2;
-        }
-        .live-preview-sub {
-            font-size: 1rem;
-            opacity: 0.9;
-        }
-        .live-preview-org {
-            font-size: 1.05rem;
-            color: #d4af37;
-            font-weight: 600;
-        }
-        .live-preview-datetime {
-            font-size: 0.85rem;
-            opacity: 0.85;
-            margin-top: 6px;
-        }
-        .live-preview-notice {
-            margin-top: 10px;
-            font-size: 0.8rem;
-            background: rgba(255,255,255,0.1);
-            padding: 5px 14px;
-            border-radius: 20px;
-        }
-        @media (max-width: 600px) {
-            .live-preview-panel { position: static; }
-            .live-preview-meeting { font-size: 1.2rem; }
-        }
         .table-wrapper {
             overflow-x: auto;
             margin-top: 15px;
@@ -766,19 +702,8 @@
 
             <h2>✏️ Banner Update Form</h2>
 
-            <div class="live-preview-panel" id="livePreviewPanel">
-                <div class="live-preview-label">👁️ Live Preview <span style="font-weight:400; font-size:0.75rem; opacity:0.8;">(Save नगरी हेर्नुहोस्)</span></div>
-                <div class="live-preview-box" id="livePreviewBox">
-                    <img id="previewLogo" class="live-preview-logo" style="display:none;" alt="Logo">
-                    <div class="live-preview-meeting" id="previewMeetingName">बैठकको नाम</div>
-                    <div class="live-preview-sub" id="previewSubMeeting"></div>
-                    <div class="live-preview-org" id="previewOrganizedBy">आयोजकको नाम</div>
-                    <div class="live-preview-datetime">
-                        <span id="previewDate">मिति: --</span> &nbsp;|&nbsp; <span id="previewTime">समय: --</span>
-                    </div>
-                    <div class="live-preview-notice" id="previewNotice">कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।</div>
-                </div>
-            </div>
+            <!-- Live Preview Panel REMOVED -->
+
             <input type="hidden" id="recordId" value="1">
 
             <!-- Font Size Controls -->
@@ -1103,8 +1028,6 @@
             const hour12 = parseInt(hour);
             document.getElementById('timeText').value =
                 `बैठक सुरु समय: ${toNepaliDigits(hour12)}:${toNepaliDigits(minute.padStart(2, '0'))} बजे`;
-
-            if (typeof updateLivePreview === 'function') updateLivePreview();
         }
 
         function setTodayDate() {
@@ -1185,8 +1108,6 @@
             status.textContent = noticeEnabled ? 'ON' : 'OFF';
             status.className = 'toggle-status ' + (noticeEnabled ? 'on' : 'off');
 
-            // Persist immediately so banner.html gets it via realtime,
-            // without waiting for the full "Update" form save.
             const recordId = document.getElementById('recordId').value;
             const msgEl = document.getElementById('updateMsg');
             if (!recordId) return;
@@ -1204,7 +1125,6 @@
             toggle.style.pointerEvents = '';
 
             if (error) {
-                // Revert UI if the save failed
                 noticeEnabled = toggle.classList.toggle('active');
                 status.textContent = noticeEnabled ? 'ON' : 'OFF';
                 status.className = 'toggle-status ' + (noticeEnabled ? 'on' : 'off');
@@ -1537,7 +1457,6 @@
             document.getElementById('bgUrlDisplay').textContent = '✅ ' + url;
             document.getElementById('bgStatus').textContent = '✅ अपलोड भएको';
             document.getElementById('bgStatus').className = 'file-status uploaded';
-            updateLivePreview();
 
             const msgEl = document.getElementById('updateMsg');
             const galleryMsgEl = document.getElementById('galleryMsg');
@@ -1930,7 +1849,6 @@
             document.getElementById('logoutBtn').classList.toggle('hidden', !bannerAdminLoginOn);
             loadSavedData();
             loadGallery();
-            updateLivePreview();
         }
 
         // ============================================================
@@ -2278,7 +2196,6 @@
             document.getElementById('updateMsg').innerText = '📝 एडिट मोड: ID ' + item.id;
             document.getElementById('updateMsg').className = 'msg info';
 
-            updateLivePreview();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -2490,59 +2407,8 @@
         }
 
         // ============================================================
-        // ===== LIVE PREVIEW (no save required) =====
+        // ===== LOCAL IMAGE PREVIEW (no save required) =====
         // ============================================================
-        function updateLivePreview() {
-            const meetingName = document.getElementById('meetingName').value.trim() || 'बैठकको नाम';
-            const subMeetingName = document.getElementById('subMeetingName').value.trim();
-            const organizedBy = document.getElementById('organizedBy').value.trim() || 'आयोजकको नाम';
-            const noticeText = document.getElementById('noticeText').value.trim() || 'कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।';
-            const dateText = document.getElementById('dateText').value || 'मिति: --';
-            const timeText = document.getElementById('timeText').value || 'समय: --';
-
-            const meetingNameFontSize = parseFloat(document.getElementById('meetingNameFontSize').value) || 4.5;
-            const subMeetingFontSize = parseFloat(document.getElementById('subMeetingFontSize').value) || 2.5;
-            const organizedByFontSize = parseFloat(document.getElementById('organizedByFontSize').value) || 2.8;
-
-            const previewMeeting = document.getElementById('previewMeetingName');
-            previewMeeting.textContent = meetingName;
-            previewMeeting.style.fontSize = Math.min(meetingNameFontSize, 3) + 'rem'; // capped so the preview box stays readable
-
-            const previewSub = document.getElementById('previewSubMeeting');
-            previewSub.textContent = subMeetingName;
-            previewSub.style.display = subMeetingName ? 'block' : 'none';
-            previewSub.style.fontSize = Math.min(subMeetingFontSize, 1.6) + 'rem';
-
-            const previewOrg = document.getElementById('previewOrganizedBy');
-            previewOrg.textContent = organizedBy;
-            previewOrg.style.fontSize = Math.min(organizedByFontSize, 1.8) + 'rem';
-
-            document.getElementById('previewDate').textContent = dateText;
-            document.getElementById('previewTime').textContent = timeText;
-            document.getElementById('previewNotice').textContent = noticeText;
-
-            const logoImg = document.getElementById('previewLogo');
-            const logoSrc = document.getElementById('logoPreview').src;
-            if (logoSrc && document.getElementById('logoPreview').style.display !== 'none') {
-                logoImg.src = logoSrc;
-                logoImg.style.display = 'block';
-            } else {
-                logoImg.style.display = 'none';
-            }
-
-            const bgSrc = document.getElementById('bgPreview').src;
-            const box = document.getElementById('livePreviewBox');
-            if (bgSrc && document.getElementById('bgPreview').style.display !== 'none') {
-                box.style.backgroundImage = `linear-gradient(rgba(10,10,25,0.55), rgba(10,10,25,0.55)), url('${bgSrc}')`;
-                box.style.backgroundSize = 'cover';
-                box.style.backgroundPosition = 'center';
-            } else {
-                box.style.backgroundImage = '';
-            }
-        }
-
-        // Local instant preview when a new file is chosen (feeds both the
-        // upload preview and the live preview, without needing to upload/save first)
         function wireLocalImagePreview(fileInputId, previewImgId) {
             document.getElementById(fileInputId).addEventListener('change', function (e) {
                 const file = e.target.files[0];
@@ -2552,20 +2418,12 @@
                     const img = document.getElementById(previewImgId);
                     img.src = ev.target.result;
                     img.style.display = 'block';
-                    updateLivePreview();
                 };
                 reader.readAsDataURL(file);
             });
         }
         wireLocalImagePreview('bgFile', 'bgPreview');
         wireLocalImagePreview('logoFile', 'logoPreview');
-
-        // Live preview updates as the admin types / changes settings — no save needed
-        ['meetingName', 'subMeetingName', 'organizedBy', 'noticeText',
-         'meetingNameFontSize', 'subMeetingFontSize', 'organizedByFontSize'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.addEventListener('input', updateLivePreview);
-        });
 
         // Event listeners for date/time update
         document.getElementById('nepaliHour').addEventListener('change', updateNepaliDateDisplay);

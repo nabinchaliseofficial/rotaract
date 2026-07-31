@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Next Event Countdown · Rotaract Galkot Baglung</title>
+    <meta name="description" content="Countdown to the next Rotaract Club of Galkot Baglung event. Admin can update event details." />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cinzel:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+
+    <style>
+        /* ===== VARIABLES (matching index) ===== */
+        :root {
+            --primary: #D91A5C;
+            --primary-dark: #A61042;
+            --primary-light: #FDE8F0;
+            --secondary: #1D2A44;
+            --secondary-light: #2D3A5A;
+            --gold: #D4AF37;
+            --gold-light: #F4E08A;
+            --dark: #0B1120;
+            --dark-card: #111827;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-muted: #94A3B8;
+            --bg-light: #F8FAFC;
+            --bg-white: #FFFFFF;
+            --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.12);
+            --shadow-xl: 0 30px 80px rgba(0, 0, 0, 0.16);
+            --radius-sm: 12px;
+            --radius-md: 20px;
+            --radius-lg: 28px;
+            --radius-xl: 36px;
+            --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --glass-bg: rgba(255, 255, 255, 0.12);
+            --glass-border: rgba(255, 255, 255, 0.15);
+        }
+
+        [data-theme="dark"] {
+            --bg-light: #0B1120;
+            --bg-white: #111827;
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.6s ease, color 0.6s ease;
+        }
+
+        /* ===== NAVBAR (minimal) ===== */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0 2rem;
+            height: 68px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px) saturate(1.4);
+            border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+            transition: all 0.3s ease;
+        }
+        [data-theme="dark"] .navbar {
+            background: rgba(11, 17, 32, 0.92);
+            border-bottom-color: rgba(255, 255, 255, 0.05);
+        }
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .navbar-brand img {
+            height: 36px;
+            width: auto;
+            border-radius: 8px;
+        }
+        .navbar-brand span {
+            background: linear-gradient(135deg, var(--primary), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .nav-actions button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nav-actions button:hover {
+            background: rgba(217, 26, 92, 0.1);
+            color: var(--primary);
+        }
+        .theme-toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            border-radius: 12px;
+            background: rgba(226, 232, 240, 0.5);
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            flex-shrink: 0;
+        }
+        .theme-toggle .thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        [data-theme="dark"] .theme-toggle {
+            background: var(--primary);
+        }
+        [data-theme="dark"] .theme-toggle .thumb {
+            left: 22px;
+            background: var(--gold);
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 40px;
+            transition: all 0.3s ease;
+        }
+        .back-link:hover {
+            background: rgba(217, 26, 92, 0.08);
+            color: var(--primary);
+        }
+        [data-theme="dark"] .back-link:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* ===== MAIN COUNTDOWN ===== */
+        .countdown-main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px 60px;
+            background: linear-gradient(135deg, var(--dark) 0%, #1a1a2e 50%, var(--secondary) 100%);
+            position: relative;
+            overflow: hidden;
+            min-height: calc(100vh - 68px);
+        }
+        .countdown-main::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(217, 26, 92, 0.08), transparent 60%),
+                radial-gradient(circle at 80% 50%, rgba(212, 175, 55, 0.06), transparent 50%);
+            pointer-events: none;
+        }
+        .countdown-card {
+            position: relative;
+            z-index: 2;
+            max-width: 720px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(24px) saturate(1.6);
+            -webkit-backdrop-filter: blur(24px) saturate(1.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-xl);
+            padding: 48px 40px 40px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+            text-align: center;
+        }
+        .countdown-badge {
+            display: inline-block;
+            padding: 6px 20px;
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 50px;
+            color: var(--gold);
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .countdown-card h1 {
+            font-size: clamp(1.6rem, 4vw, 2.8rem);
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+        }
+        .countdown-card .sub {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+            margin-bottom: 28px;
+        }
+        .countdown-card .event-name {
+            font-size: clamp(1.4rem, 3vw, 2rem);
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+            min-height: 2.8rem;
+        }
+        .countdown-card .event-name .highlight {
+            background: linear-gradient(135deg, var(--gold-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .countdown-card .event-date {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.95rem;
+            margin-bottom: 32px;
+        }
+        .countdown-card .event-date i {
+            color: var(--gold);
+            margin-right: 6px;
+        }
+
+        .countdown-timer-grid {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+        }
+        .countdown-unit-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            min-width: 80px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.3s ease;
+        }
+        .countdown-unit-box:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        .countdown-unit-box .num {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2.2rem, 5vw, 3.4rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--gold-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+        .countdown-unit-box .label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 4px;
+        }
+        .countdown-status {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.95rem;
+        }
+        .countdown-status .live {
+            color: #10B981;
+            font-weight: 700;
+        }
+        .countdown-status .past {
+            color: #EF4444;
+            font-weight: 700;
+        }
+
+        /* ===== ADMIN PANEL ===== */
+        .admin-panel {
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .admin-panel .admin-label {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        .admin-panel .admin-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 40px;
+            background: rgba(212, 175, 55, 0.12);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            color: var(--gold);
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .admin-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            text-align: left;
+        }
+        .admin-form .full-width {
+            grid-column: 1 / -1;
+        }
+        .admin-form label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 4px;
+            letter-spacing: 0.3px;
+        }
+        .admin-form input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.06);
+            color: #fff;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .admin-form input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+        }
+        .admin-form input::placeholder {
+            color: rgba(255, 255, 255, 0.25);
+        }
+        .admin-form .btn-row {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            box-shadow: 0 8px 30px rgba(217, 26, 92, 0.25);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(217, 26, 92, 0.35);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), #B8960F);
+            color: #fff;
+            box-shadow: 0 8px 30px rgba(212, 175, 55, 0.25);
+        }
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(212, 175, 55, 0.35);
+        }
+        .btn-gold:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .btn-outline-light {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+        }
+        .btn-outline-light:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #fff;
+        }
+        .btn-danger-outline {
+            background: transparent;
+            color: #EF4444;
+            border: 2px solid rgba(239, 68, 68, 0.3);
+        }
+        .btn-danger-outline:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #EF4444;
+        }
+        .admin-form .form-error {
+            grid-column: 1 / -1;
+            color: #EF4444;
+            font-size: 0.85rem;
+            min-height: 1.2em;
+            font-weight: 500;
+        }
+        .admin-form .form-success {
+            grid-column: 1 / -1;
+            color: #10B981;
+            font-size: 0.85rem;
+            min-height: 1.2em;
+            font-weight: 500;
+        }
+        .admin-form .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        .admin-form .btn.loading .btn-text {
+            visibility: hidden;
+            position: absolute;
+        }
+        .admin-form .btn.loading .spinner {
+            display: inline-block;
+        }
+        .admin-form .btn.loading {
+            position: relative;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .admin-login-trigger {
+            margin-top: 16px;
+        }
+        .admin-login-trigger .btn {
+            background: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .admin-login-trigger .btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+
+        /* ===== ADMIN LOGIN OVERLAY ===== */
+        .admin-login-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        .admin-login-overlay.active {
+            display: flex;
+        }
+        .admin-login-card {
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            padding: 40px 32px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
+            transform: scale(0.92) translateY(20px);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: center;
+            position: relative;
+        }
+        [data-theme="dark"] .admin-login-card {
+            background: var(--dark-card);
+        }
+        .admin-login-overlay.active .admin-login-card {
+            transform: scale(1) translateY(0);
+        }
+        .admin-login-card .popup-close {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.6rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+        .admin-login-card .popup-close:hover {
+            color: var(--text-primary);
+            background: rgba(226, 232, 240, 0.5);
+        }
+        .admin-login-card .login-badge {
+            display: inline-block;
+            padding: 4px 16px;
+            background: rgba(217, 26, 92, 0.1);
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .admin-login-card h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .admin-login-card .sub {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+        .admin-login-card form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            text-align: left;
+        }
+        .admin-login-card .field label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .admin-login-card .field input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid rgba(226, 232, 240, 0.8);
+            background: transparent;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .admin-login-card .field input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(217, 26, 92, 0.12);
+        }
+        .admin-login-card .pass-wrap {
+            position: relative;
+        }
+        .admin-login-card .pass-wrap input {
+            padding-right: 44px;
+        }
+        .admin-login-card .toggle-pass {
+            position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 6px 8px;
+            color: var(--text-muted);
+        }
+        .admin-login-card .form-error {
+            color: var(--primary);
+            font-size: 0.85rem;
+            min-height: 1.1em;
+            font-weight: 500;
+        }
+        .admin-login-card .submit-btn {
+            margin-top: 4px;
+            position: relative;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s ease, transform 0.15s ease;
+        }
+        .admin-login-card .submit-btn:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        .admin-login-card .submit-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .admin-login-card .submit-btn .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        .admin-login-card .submit-btn.loading .btn-text {
+            visibility: hidden;
+            position: absolute;
+        }
+        .admin-login-card .submit-btn.loading .spinner {
+            display: inline-block;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer-mini {
+            background: var(--dark);
+            color: rgba(255, 255, 255, 0.3);
+            padding: 20px;
+            text-align: center;
+            font-size: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .footer-mini a {
+            color: var(--gold);
+            text-decoration: none;
+        }
+        .footer-mini a:hover {
+            text-decoration: underline;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 640px) {
+            .navbar {
+                padding: 0 12px;
+                height: 60px;
+            }
+            .navbar-brand {
+                font-size: 0.95rem;
+            }
+            .navbar-brand img {
+                height: 30px;
+            }
+            .back-link span {
+                display: none;
+            }
+            .countdown-card {
+                padding: 28px 16px 24px;
+            }
+            .countdown-timer-grid {
+                gap: 8px;
+            }
+            .countdown-unit-box {
+                min-width: 60px;
+                padding: 12px 10px;
+            }
+            .countdown-unit-box .num {
+                font-size: 1.8rem;
+            }
+            .admin-form {
+                grid-template-columns: 1fr;
+            }
+            .admin-form .full-width {
+                grid-column: 1;
+            }
+            .admin-form .btn-row {
+                flex-direction: column;
+            }
+            .admin-form .btn-row .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .admin-login-card {
+                padding: 28px 20px;
+            }
+        }
+        @media (max-width: 400px) {
+            .countdown-unit-box {
+                min-width: 48px;
+                padding: 8px 6px;
+            }
+            .countdown-unit-box .num {
+                font-size: 1.4rem;
+            }
+            .countdown-unit-box .label {
+                font-size: 0.5rem;
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar" id="navbar">
+        <a href="index.html" class="navbar-brand">
+            <img src="rotaract-logo.jpg" alt="Rotaract Logo" onerror="this.style.display='none'">
+            <span>Rotaract</span>
+        </a>
+        <div class="nav-actions">
+            <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> <span>Back to Dashboard</span></a>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+                <span class="thumb"></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ===== MAIN COUNTDOWN ===== -->
+    <main class="countdown-main" id="countdownMain">
+        <div class="countdown-card" id="countdownCard">
+            <!-- Badge -->
+            <div class="countdown-badge">
+                <i class="fas fa-clock"></i> R.Y. 2026-27 · Countdown
+            </div>
+
+            <h1>Next Event</h1>
+            <div class="sub">Stay tuned for our upcoming service initiative</div>
+
+            <!-- Event Name -->
+            <div class="event-name" id="eventNameDisplay">
+                <span class="highlight">Loading event…</span>
+            </div>
+
+            <!-- Event Date -->
+            <div class="event-date" id="eventDateDisplay">
+                <i class="fas fa-calendar-alt"></i> <span id="eventDateText">—</span>
+            </div>
+
+            <!-- Timer -->
+            <div class="countdown-timer-grid" id="countdownTimerGrid">
+                <div class="countdown-unit-box">
+                    <span class="num" id="cdDays">00</span>
+                    <span class="label">Days</span>
+                </div>
+                <div class="countdown-unit-box">
+                    <span class="num" id="cdHours">00</span>
+                    <span class="label">Hrs</span>
+                </div>
+                <div class="countdown-unit-box">
+                    <span class="num" id="cdMins">00</span>
+                    <span class="label">Min</span>
+                </div>
+                <div class="countdown-unit-box">
+                    <span class="num" id="cdSecs">00</span>
+                    <span class="label">Sec</span>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="countdown-status" id="countdownStatus">
+                <span id="statusText">⏳ Loading…</span>
+            </div>
+
+            <!-- ===== ADMIN PANEL ===== -->
+            <div class="admin-panel" id="adminPanel">
+                <!-- Not logged in -->
+                <div id="adminNotLoggedIn" class="admin-login-trigger">
+                    <button class="btn btn-outline-light" id="adminLoginBtn">
+                        <i class="fas fa-lock"></i> Admin Login
+                    </button>
+                    <div style="margin-top:8px;font-size:0.7rem;color:rgba(255,255,255,0.2);">
+                        Sign in to update the next event
+                    </div>
+                </div>
+
+                <!-- Logged in as admin -->
+                <div id="adminLoggedIn" style="display:none;">
+                    <div class="admin-badge">
+                        <i class="fas fa-shield-alt"></i> Admin · <span id="adminEmailDisplay">—</span>
+                    </div>
+                    <div class="admin-label"><i class="fas fa-pen"></i> Update Next Event</div>
+
+                    <form class="admin-form" id="adminEventForm">
+                        <div class="full-width">
+                            <label for="eventNameInput">Event Name</label>
+                            <input type="text" id="eventNameInput" placeholder="e.g. Community Service Project" required />
+                        </div>
+                        <div>
+                            <label for="eventDateInput">Date &amp; Time</label>
+                            <input type="datetime-local" id="eventDateInput" required />
+                        </div>
+                        <div style="display:flex;align-items:flex-end;">
+                            <label style="opacity:0;pointer-events:none;">_</label>
+                            <button type="button" class="btn btn-outline-light" id="setNowBtn" style="width:100%;">
+                                <i class="fas fa-clock"></i> Now
+                            </button>
+                        </div>
+
+                        <div class="form-error" id="adminFormError"></div>
+                        <div class="form-success" id="adminFormSuccess"></div>
+
+                        <div class="btn-row">
+                            <button type="submit" class="btn btn-gold" id="updateEventBtn">
+                                <span class="btn-text"><i class="fas fa-save"></i> Update Event</span>
+                                <span class="spinner"></span>
+                            </button>
+                            <button type="button" class="btn btn-danger-outline" id="adminLogoutBtn">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ===== ADMIN LOGIN OVERLAY ===== -->
+    <div class="admin-login-overlay" id="adminLoginPopup" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle" aria-hidden="true">
+        <div class="admin-login-card">
+            <button class="popup-close" id="adminLoginClose" aria-label="Close admin login">&times;</button>
+            <div class="login-badge">🛡️ Admin Access</div>
+            <h2 id="adminLoginTitle">Admin Login</h2>
+            <div class="sub">Sign in to update the next event</div>
+
+            <form id="adminLoginForm" autocomplete="off" novalidate>
+                <div class="field">
+                    <label for="adminEmail">Email</label>
+                    <input type="email" id="adminEmail" placeholder="you@example.com" required autocomplete="username">
+                </div>
+                <div class="field">
+                    <label for="adminPassword">Password</label>
+                    <div class="pass-wrap">
+                        <input type="password" id="adminPassword" placeholder="••••••••" required autocomplete="current-password">
+                        <button type="button" class="toggle-pass" id="toggleAdminPass" aria-label="Show password">👁</button>
+                    </div>
+                </div>
+                <div class="form-error" id="adminLoginError" role="alert"></div>
+                <button type="submit" class="submit-btn" id="adminSubmitBtn">
+                    <span class="btn-text">Sign In</span>
+                    <span class="spinner" aria-hidden="true"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer-mini">
+        &copy; 2026 Rotaract Club of Galkot Baglung &middot; RI District 3292 &middot;
+        <a href="index.html">Back to Dashboard</a>
+    </footer>
+
+    <script>
+        // ================================================================
+        // NEXT EVENT COUNTDOWN — Full Admin + Supabase
+        // ================================================================
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // ---------- CONFIG ----------
+            const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+            const SUPABASE_KEY =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            // ---------- DOM REFS ----------
+            const eventNameDisplay = document.getElementById('eventNameDisplay');
+            const eventDateText = document.getElementById('eventDateText');
+            const cdDays = document.getElementById('cdDays');
+            const cdHours = document.getElementById('cdHours');
+            const cdMins = document.getElementById('cdMins');
+            const cdSecs = document.getElementById('cdSecs');
+            const statusText = document.getElementById('statusText');
+
+            // Admin panel
+            const adminNotLoggedIn = document.getElementById('adminNotLoggedIn');
+            const adminLoggedIn = document.getElementById('adminLoggedIn');
+            const adminEmailDisplay = document.getElementById('adminEmailDisplay');
+            const adminLoginBtn = document.getElementById('adminLoginBtn');
+            const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+            const adminEventForm = document.getElementById('adminEventForm');
+            const eventNameInput = document.getElementById('eventNameInput');
+            const eventDateInput = document.getElementById('eventDateInput');
+            const setNowBtn = document.getElementById('setNowBtn');
+            const updateEventBtn = document.getElementById('updateEventBtn');
+            const adminFormError = document.getElementById('adminFormError');
+            const adminFormSuccess = document.getElementById('adminFormSuccess');
+
+            // Login overlay
+            const adminLoginPopup = document.getElementById('adminLoginPopup');
+            const adminLoginClose = document.getElementById('adminLoginClose');
+            const adminLoginForm = document.getElementById('adminLoginForm');
+            const adminEmail = document.getElementById('adminEmail');
+            const adminPassword = document.getElementById('adminPassword');
+            const adminLoginError = document.getElementById('adminLoginError');
+            const adminSubmitBtn = document.getElementById('adminSubmitBtn');
+            const toggleAdminPass = document.getElementById('toggleAdminPass');
+
+            // Theme
+            const themeToggle = document.getElementById('themeToggle');
+
+            // ---------- STATE ----------
+            let currentEvent = null; // { name, date_time }
+            let countdownInterval = null;
+            let isAdmin = false;
+            let adminUser = null;
+
+            // ---------- THEME ----------
+            const savedTheme = localStorage.getItem('theme') ||
+                (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', savedTheme);
+
+            themeToggle?.addEventListener('click', () => {
+                const current = document.documentElement.getAttribute('data-theme');
+                const next = current === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                localStorage.setItem('theme', next);
+            });
+
+            // ---------- UTILITY ----------
+            function pad(n) { return String(n).padStart(2, '0'); }
+
+            function formatDateForInput(date) {
+                if (!date) return '';
+                const d = new Date(date);
+                if (isNaN(d.getTime())) return '';
+                return d.toISOString().slice(0, 16);
+            }
+
+            function formatDateDisplay(dateStr) {
+                if (!dateStr) return '—';
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return '—';
+                return d.toLocaleString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            function normalizeDateInput(val) {
+                if (!val) return null;
+                const d = new Date(val);
+                return isNaN(d.getTime()) ? null : d.toISOString();
+            }
+
+            // ---------- FETCH EVENT FROM SUPABASE ----------
+            async function fetchEvent() {
+                try {
+                    const { data, error } = await supabase
+                        .from('next_event')
+                        .select('name, date_time, updated_at')
+                        .maybeSingle();
+
+                    if (error) throw error;
+
+                    if (data) {
+                        currentEvent = data;
+                    } else {
+                        // No record yet — create a default one
+                        const defaultEvent = {
+                            name: 'Community Service Project',
+                            date_time: new Date(Date.now() + 7 * 86400000).toISOString() // 7 days from now
+                        };
+                        const { data: inserted, error: insError } = await supabase
+                            .from('next_event')
+                            .insert([defaultEvent])
+                            .select()
+                            .maybeSingle();
+
+                        if (insError) throw insError;
+                        currentEvent = inserted || defaultEvent;
+                    }
+
+                    renderEvent();
+                } catch (err) {
+                    console.error('Fetch event error:', err);
+                    // Fallback: use hardcoded default
+                    const fallback = {
+                        name: 'Community Service Project',
+                        date_time: new Date(Date.now() + 7 * 86400000).toISOString()
+                    };
+                    currentEvent = fallback;
+                    renderEvent();
+                }
+            }
+
+            // ---------- RENDER EVENT + COUNTDOWN ----------
+            function renderEvent() {
+                if (!currentEvent) return;
+                const name = currentEvent.name || 'Upcoming Event';
+                const dateStr = currentEvent.date_time;
+
+                // Display name
+                eventNameDisplay.innerHTML = `<span class="highlight">${escapeHtml(name)}</span>`;
+
+                // Display date
+                eventDateText.textContent = formatDateDisplay(dateStr);
+
+                // Populate admin form if logged in
+                if (isAdmin) {
+                    eventNameInput.value = name;
+                    eventDateInput.value = formatDateForInput(dateStr);
+                }
+
+                // Start countdown
+                startCountdown(dateStr);
+            }
+
+            // ---------- COUNTDOWN LOGIC ----------
+            function startCountdown(targetDateStr) {
+                if (countdownInterval) clearInterval(countdownInterval);
+
+                function update() {
+                    const target = new Date(targetDateStr);
+                    const now = Date.now();
+                    const diff = target.getTime() - now;
+
+                    if (diff <= 0) {
+                        cdDays.textContent = '00';
+                        cdHours.textContent = '00';
+                        cdMins.textContent = '00';
+                        cdSecs.textContent = '00';
+                        statusText.innerHTML = '<span class="live">🎉 Event is live! Join us now!</span>';
+                        return;
+                    }
+
+                    const days = Math.floor(diff / 86400000);
+                    const hours = Math.floor((diff % 86400000) / 3600000);
+                    const mins = Math.floor((diff % 3600000) / 60000);
+                    const secs = Math.floor((diff % 60000) / 1000);
+
+                    cdDays.textContent = pad(days);
+                    cdHours.textContent = pad(hours);
+                    cdMins.textContent = pad(mins);
+                    cdSecs.textContent = pad(secs);
+
+                    if (days > 0) {
+                        statusText.textContent = `⏳ ${days} day${days > 1 ? 's' : ''} to go — get ready!`;
+                    } else if (hours > 0) {
+                        statusText.textContent = `⏳ ${hours} hour${hours > 1 ? 's' : ''} to go — almost there!`;
+                    } else if (mins > 0) {
+                        statusText.textContent = `⏳ ${mins} minute${mins > 1 ? 's' : ''} to go — it's happening!`;
+                    } else {
+                        statusText.textContent = '⏳ Seconds away!';
+                    }
+                }
+
+                update();
+                countdownInterval = setInterval(update, 1000);
+            }
+
+            // ---------- UPDATE EVENT (admin) ----------
+            async function updateEvent(name, dateTime) {
+                adminFormError.textContent = '';
+                adminFormSuccess.textContent = '';
+
+                if (!name || !dateTime) {
+                    adminFormError.textContent = 'Please fill in both fields.';
+                    return false;
+                }
+
+                const isoDate = normalizeDateInput(dateTime);
+                if (!isoDate) {
+                    adminFormError.textContent = 'Please enter a valid date and time.';
+                    return false;
+                }
+
+                updateEventBtn.classList.add('loading');
+                updateEventBtn.disabled = true;
+
+                try {
+                    const payload = { name: name.trim(), date_time: isoDate };
+
+                    const { data, error } = await supabase
+                        .from('next_event')
+                        .upsert([payload], { onConflict: 'id' })
+                        .select()
+                        .maybeSingle();
+
+                    if (error) throw error;
+
+                    currentEvent = data || payload;
+                    renderEvent();
+                    adminFormSuccess.textContent = '✅ Event updated successfully!';
+                    adminFormError.textContent = '';
+                    return true;
+                } catch (err) {
+                    console.error('Update event error:', err);
+                    adminFormError.textContent = err.message || 'Failed to update event.';
+                    return false;
+                } finally {
+                    updateEventBtn.classList.remove('loading');
+                    updateEventBtn.disabled = false;
+                }
+            }
+
+            // ---------- ADMIN AUTH ----------
+            async function checkAdminSession() {
+                try {
+                    const { data: { user }, error } = await supabase.auth.getUser();
+                    if (error || !user) {
+                        setAdminSession(null);
+                        return;
+                    }
+                    const isAdminUser = await verifyAdmin(user);
+                    if (isAdminUser) {
+                        setAdminSession(user);
+                    } else {
+                        setAdminSession(null);
+                        if (user) {
+                            await supabase.auth.signOut();
+                        }
+                    }
+                } catch (_) {
+                    setAdminSession(null);
+                }
+            }
+
+            async function verifyAdmin(user) {
+                try {
+                    const { data, error } = await supabase
+                        .from('user_roles')
+                        .select('role, status')
+                        .eq('user_id', user.id)
+                        .maybeSingle();
+
+                    if (error || !data) return false;
+                    return data.role === 'admin' && data.status === 'active';
+                } catch (_) {
+                    return false;
+                }
+            }
+
+            function setAdminSession(user) {
+                if (user) {
+                    isAdmin = true;
+                    adminUser = user;
+                    adminEmailDisplay.textContent = user.email || 'Admin';
+                    adminNotLoggedIn.style.display = 'none';
+                    adminLoggedIn.style.display = 'block';
+                    // populate form
+                    if (currentEvent) {
+                        eventNameInput.value = currentEvent.name || '';
+                        eventDateInput.value = formatDateForInput(currentEvent.date_time);
+                    }
+                } else {
+                    isAdmin = false;
+                    adminUser = null;
+                    adminNotLoggedIn.style.display = 'block';
+                    adminLoggedIn.style.display = 'none';
+                }
+            }
+
+            // ---------- LOGIN / LOGOUT ----------
+            async function handleAdminLogin(email, password) {
+                adminLoginError.textContent = '';
+                adminSubmitBtn.classList.add('loading');
+                adminSubmitBtn.disabled = true;
+
+                try {
+                    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                    if (error) throw error;
+
+                    const isAdminUser = await verifyAdmin(data.user);
+                    if (!isAdminUser) {
+                        await supabase.auth.signOut();
+                        adminLoginError.textContent = 'This account does not have admin access.';
+                        return;
+                    }
+
+                    setAdminSession(data.user);
+                    adminLoginPopup.classList.remove('active');
+                    document.body.style.overflow = '';
+                    adminLoginError.textContent = '';
+                } catch (err) {
+                    console.error('Login error:', err);
+                    adminLoginError.textContent = mapAuthError(err);
+                } finally {
+                    adminSubmitBtn.classList.remove('loading');
+                    adminSubmitBtn.disabled = false;
+                }
+            }
+
+            async function handleAdminLogout() {
+                try {
+                    await supabase.auth.signOut();
+                    setAdminSession(null);
+                    adminFormError.textContent = '';
+                    adminFormSuccess.textContent = '';
+                } catch (err) {
+                    console.error('Logout error:', err);
+                }
+            }
+
+            function mapAuthError(err) {
+                const msg = (err?.message || '').toLowerCase();
+                if (msg.includes('invalid login credentials')) return 'Incorrect email or password.';
+                if (msg.includes('email not confirmed')) return 'Please confirm your email address.';
+                if (msg.includes('user not found')) return 'No account found with that email.';
+                if (msg.includes('too many') || msg.includes('rate limit')) return 'Too many attempts — please wait.';
+                if (err instanceof TypeError || msg.includes('network') || msg.includes('failed to fetch')) {
+                    return 'Network error — check your internet connection.';
+                }
+                return err?.message || 'Could not sign in. Please try again.';
+            }
+
+            // ---------- UI HELPERS ----------
+            function escapeHtml(str) {
+                return String(str ?? '').replace(/[&<>"']/g, c => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                } [c]));
+            }
+
+            // ---------- EVENT LISTENERS ----------
+
+            // Admin login button
+            adminLoginBtn?.addEventListener('click', () => {
+                adminLoginPopup.classList.add('active');
+                adminLoginPopup.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+                adminEmail.focus();
+                adminLoginError.textContent = '';
+            });
+
+            // Admin login close
+            adminLoginClose?.addEventListener('click', () => {
+                adminLoginPopup.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+            adminLoginPopup?.addEventListener('click', (e) => {
+                if (e.target === adminLoginPopup) {
+                    adminLoginPopup.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && adminLoginPopup.classList.contains('active')) {
+                    adminLoginPopup.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Toggle password visibility
+            toggleAdminPass?.addEventListener('click', () => {
+                const isPass = adminPassword.type === 'password';
+                adminPassword.type = isPass ? 'text' : 'password';
+                toggleAdminPass.textContent = isPass ? '🙈' : '👁';
+            });
+
+            // Admin login form submit
+            adminLoginForm?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = adminEmail.value.trim();
+                const password = adminPassword.value;
+                if (!email || !password) {
+                    adminLoginError.textContent = 'Please fill in both fields.';
+                    return;
+                }
+                handleAdminLogin(email, password);
+            });
+
+            // Admin logout
+            adminLogoutBtn?.addEventListener('click', handleAdminLogout);
+
+            // "Set to Now" button
+            setNowBtn?.addEventListener('click', () => {
+                const now = new Date();
+                now.setMinutes(now.getMinutes() + 2); // small buffer so countdown shows some seconds
+                eventDateInput.value = now.toISOString().slice(0, 16);
+            });
+
+            // Admin event update form
+            adminEventForm?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = eventNameInput.value.trim();
+                const dateTime = eventDateInput.value;
+                await updateEvent(name, dateTime);
+            });
+
+            // ---------- INIT ----------
+            async function init() {
+                await fetchEvent();
+                await checkAdminSession();
+
+                // If admin is logged in and we have event data, populate form
+                if (isAdmin && currentEvent) {
+                    eventNameInput.value = currentEvent.name || '';
+                    eventDateInput.value = formatDateForInput(currentEvent.date_time);
+                }
+            }
+
+            init();
+
+            // ---------- PERIODIC SESSION CHECK ----------
+            setInterval(() => {
+                checkAdminSession();
+            }, 60000); // every minute
+
+            console.log('🚀 Next Event Countdown — Admin ready');
+        });
+    </script>
+
+</body>
+</html>

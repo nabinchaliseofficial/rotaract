@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verify Member | Rotaract Club of Galkot Baglung</title>
+<meta name="description" content="Verify the membership status of a Rotaract Club of Galkot Baglung member." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --primary: #D91A5C;
+    --primary-dark: #A61042;
+    --primary-light: #FDE8F0;
+    --secondary: #1D2A44;
+    --secondary-light: #2D3A5A;
+    --gold: #D4AF37;
+    --gold-light: #F4E08A;
+    --dark: #0B1120;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+    --bg-light: #F8FAFC;
+    --bg-white: #FFFFFF;
+    --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.12);
+    --radius-sm: 12px;
+    --radius-md: 20px;
+    --radius-lg: 28px;
+    --transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-light);
+    color: var(--text-primary);
+    min-height: 100vh;
+  }
+  a { text-decoration: none; }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 28px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; color: var(--text-primary); font-weight: 800; font-size: 1.05rem; }
+  .brand img { height: 36px; width: auto; border-radius: 8px; }
+  .brand span { background: linear-gradient(135deg, var(--primary), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .back-link { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.85rem; color: var(--text-secondary); transition: var(--transition); }
+  .back-link:hover { color: var(--primary); }
+
+  .hero {
+    padding: 70px 20px 30px;
+    text-align: center;
+    background: radial-gradient(circle at 50% 0%, rgba(29, 42, 68, 0.06), transparent 60%);
+  }
+  .hero-icon {
+    width: 64px; height: 64px; margin: 0 auto 18px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
+    border-radius: 18px;
+    box-shadow: var(--shadow-md);
+  }
+  .hero-icon i { color: var(--gold-light); font-size: 1.5rem; }
+  .hero h1 { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 900; letter-spacing: -1px; margin-bottom: 10px; }
+  .hero h1 span { color: var(--primary); }
+  .hero p { max-width: 560px; margin: 0 auto; color: var(--text-secondary); font-size: 1rem; line-height: 1.6; }
+
+  /* ===== SEARCH ===== */
+  .search-wrap { max-width: 560px; margin: 36px auto 0; padding: 0 20px; }
+  .search-box {
+    display: flex; gap: 10px;
+    background: var(--bg-white);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 50px;
+    padding: 6px 6px 6px 22px;
+    box-shadow: var(--shadow-sm);
+  }
+  .search-box input {
+    flex: 1; border: none; outline: none; font-size: 0.95rem;
+    font-family: inherit; background: transparent; color: var(--text-primary);
+  }
+  .search-box input::placeholder { color: var(--text-muted); }
+  .search-box button {
+    border: none; cursor: pointer;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff; font-weight: 700; font-size: 0.85rem;
+    padding: 12px 24px; border-radius: 50px;
+    display: flex; align-items: center; gap: 8px;
+    transition: var(--transition);
+  }
+  .search-box button:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  .search-hint { text-align: center; font-size: 0.78rem; color: var(--text-muted); margin-top: 10px; }
+
+  /* ===== RESULTS LIST (multiple matches) ===== */
+  .match-list { max-width: 560px; margin: 20px auto 0; padding: 0 20px; display: flex; flex-direction: column; gap: 10px; }
+  .match-row {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg-white);
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: left;
+  }
+  .match-row:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); }
+  .match-row img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+  .match-row .mname { font-weight: 700; font-size: 0.9rem; }
+  .match-row .mrole { font-size: 0.75rem; color: var(--text-muted); }
+
+  /* ===== VERIFICATION CARD ===== */
+  .card-wrap { max-width: 460px; margin: 40px auto 90px; padding: 0 20px; }
+  .id-card {
+    position: relative;
+    background: linear-gradient(160deg, var(--secondary) 0%, var(--dark) 100%);
+    border-radius: var(--radius-lg);
+    padding: 32px 28px 26px;
+    color: #fff;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+  .id-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 85% 0%, rgba(212, 175, 55, 0.18), transparent 55%);
+    pointer-events: none;
+  }
+  .id-card-top { display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1; }
+  .id-card-top .club-tag { font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold-light); }
+  .status-pill { font-size: 0.68rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .status-pill.active { background: rgba(34, 197, 94, 0.18); color: #4ADE80; border: 1px solid rgba(74, 222, 128, 0.4); }
+  .status-pill.inactive { background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(248, 113, 113, 0.4); }
+
+  .id-card-body { display: flex; gap: 18px; align-items: center; margin-top: 22px; position: relative; z-index: 1; }
+  .id-card-body img { width: 78px; height: 78px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(212, 175, 55, 0.5); }
+  .id-card-body .mname { font-size: 1.25rem; font-weight: 800; }
+  .id-card-body .mrole { font-size: 0.85rem; color: rgba(255, 255, 255, 0.65); margin-top: 2px; }
+
+  .id-card-meta {
+    margin-top: 22px; position: relative; z-index: 1;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px 10px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.15);
+    padding-top: 18px;
+  }
+  .id-card-meta .field-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255, 255, 255, 0.45); margin-bottom: 3px; }
+  .id-card-meta .field-value { font-size: 0.88rem; font-weight: 600; }
+
+  .verified-seal {
+    position: absolute; bottom: -18px; right: -18px;
+    width: 100px; height: 100px; opacity: 0.08;
+    border: 6px solid var(--gold);
+    border-radius: 50%;
+  }
+
+  .state-box {
+    text-align: center; padding: 40px 20px; color: var(--text-muted);
+    background: var(--bg-white); border-radius: var(--radius-md);
+    border: 1px dashed rgba(15, 23, 42, 0.12); max-width: 460px; margin: 30px auto 90px;
+  }
+  .state-box i { font-size: 2rem; margin-bottom: 12px; display: block; color: var(--primary); }
+  .state-box.error i { color: #EF4444; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="brand">
+    <img src="rotaract-logo.jpg" alt="Rotaract Logo" onerror="this.style.display='none'">
+    <span>Rotaract</span>
+  </a>
+  <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+</div>
+
+<section class="hero">
+  <div class="hero-icon"><i class="fas fa-id-badge"></i></div>
+  <h1>Verify <span>Member</span></h1>
+  <p>Confirm whether someone is a genuine, active member of the Rotaract Club of Galkot Baglung.</p>
+
+  <div class="search-wrap">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Name, Rotary ID, or email" autocomplete="off" />
+      <button id="searchBtn"><i class="fas fa-magnifying-glass"></i> Verify</button>
+    </div>
+    <div class="search-hint">Try a full name, partial name, Rotary ID, or email address.</div>
+  </div>
+</section>
+
+<div id="matchList" class="match-list"></div>
+<div id="resultArea"></div>
+
+<script>
+  const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const searchInput = document.getElementById('searchInput');
+  const searchBtn = document.getElementById('searchBtn');
+  const matchList = document.getElementById('matchList');
+  const resultArea = document.getElementById('resultArea');
+
+  function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  function renderState(html) {
+    matchList.innerHTML = '';
+    resultArea.innerHTML = html;
+  }
+
+  function photoFor(m) {
+    const name = m.name || 'Member';
+    const photo = m.photo_url || m.photo || m.profile_image || '';
+    const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1D2A44&color=fff&size=200`;
+    return photo || fallback;
+  }
+
+  function renderCard(m) {
+    matchList.innerHTML = '';
+    const isActive = (m.status || '').toLowerCase() === 'active';
+    const name = escapeHtml(m.name || 'Member');
+    const photo = photoFor(m);
+    resultArea.innerHTML = `
+      <div class="card-wrap">
+        <div class="id-card">
+          <div class="verified-seal"></div>
+          <div class="id-card-top">
+            <span class="club-tag">Rotaract · Galkot Baglung</span>
+            <span class="status-pill ${isActive ? 'active' : 'inactive'}">
+              <i class="fas ${isActive ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
+              ${isActive ? 'Active Member' : 'Not Active'}
+            </span>
+          </div>
+          <div class="id-card-body">
+            <img src="${photo}" alt="${name}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(m.name || 'Member')}&background=1D2A44&color=fff&size=200'">
+            <div>
+              <div class="mname">${name}</div>
+              <div class="mrole">${escapeHtml(m.designation || 'Member')}</div>
+            </div>
+          </div>
+          <div class="id-card-meta">
+            <div>
+              <div class="field-label">Rotary ID</div>
+              <div class="field-value">${escapeHtml(m.rotary_id || 'N/A')}</div>
+            </div>
+            <div>
+              <div class="field-label">Profession</div>
+              <div class="field-value">${escapeHtml(m.profession || 'N/A')}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderMatchList(members) {
+    resultArea.innerHTML = '';
+    matchList.innerHTML = members.map((m, i) => `
+      <button class="match-row" data-index="${i}">
+        <img src="${photoFor(m)}" alt="${escapeHtml(m.name || 'Member')}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(m.name || 'Member')}&background=1D2A44&color=fff&size=100'">
+        <div>
+          <div class="mname">${escapeHtml(m.name || 'Member')}</div>
+          <div class="mrole">${escapeHtml(m.designation || 'Member')}</div>
+        </div>
+      </button>
+    `).join('');
+
+    matchList.querySelectorAll('.match-row').forEach(row => {
+      row.addEventListener('click', () => renderCard(members[Number(row.dataset.index)]));
+    });
+  }
+
+  async function verifyMember() {
+    const q = searchInput.value.trim();
+    if (!q) {
+      renderState(`<div class="state-box"><i class="fas fa-keyboard"></i> Enter a name, Rotary ID, or email to verify.</div>`);
+      return;
+    }
+
+    renderState(`<div class="state-box"><i class="fas fa-spinner fa-spin"></i> Verifying…</div>`);
+
+    try {
+      const { data, error } = await supabase
+        .from('members')
+        .select('name, rotary_id, designation, profession, email, status, photo_url, photo, profile_image')
+        .or(`name.ilike.%${q}%,rotary_id.ilike.%${q}%,email.ilike.%${q}%`)
+        .limit(10);
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        renderState(`<div class="state-box error"><i class="fas fa-user-slash"></i> No member found matching "${escapeHtml(q)}".</div>`);
+        return;
+      }
+
+      if (data.length === 1) {
+        renderCard(data[0]);
+      } else {
+        renderMatchList(data);
+      }
+    } catch (err) {
+      console.error('Member verification failed:', err);
+      renderState(`<div class="state-box error"><i class="fas fa-triangle-exclamation"></i> Couldn't complete verification right now. Please try again shortly.</div>`);
+    }
+  }
+
+  searchBtn.addEventListener('click', verifyMember);
+  searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') verifyMember(); });
+</script>
+
+</body>
+</html>

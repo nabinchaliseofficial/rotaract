@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>कार्यक्रम सुरुवात नियन्त्रण</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100vh;
+            font-family: 'Mukta', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .start-btn {
+            font-family: 'Mukta', 'Segoe UI', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #1a1a2e;
+            background: linear-gradient(135deg, #ffd76a, #d4af37);
+            border: none;
+            padding: 26px 60px;
+            border-radius: 18px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            letter-spacing: 1px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 14px 38px rgba(212, 175, 55, 0.55);
+        }
+
+        .start-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .start-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            .start-btn {
+                font-size: 1.15rem;
+                padding: 18px 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="start-btn" id="startProgramBtn" onclick="triggerProgramStart()">🎬 कार्यक्रमको सुरुवात गर्नुहोस्</button>
+    <p class="status-msg" id="statusMsg"></p>
+
+    <script>
+        // ===== SUPABASE CONFIGURATION =====
+        const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let chiefGuestModeEnabled = true;
+
+        // ===== CHIEF GUEST MODE (controlled from adminminutes.html) =====
+        async function loadChiefGuestMode() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('app_settings')
+                    .select('setting_value')
+                    .eq('setting_key', 'chief_guest_mode')
+                    .maybeSingle();
+
+                if (error) {
+                    console.error('Error fetching chief guest mode:', error);
+                    return;
+                }
+
+                chiefGuestModeEnabled = data ? (data.setting_value === 'true' || data.setting_value === true) : true;
+                updateButtonState();
+            } catch (err) {
+                console.error('Error in loadChiefGuestMode:', err);
+            }
+        }
+
+        function updateButtonState() {
+            const btn = document.getElementById('startProgramBtn');
+            const statusMsg = document.getElementById('statusMsg');
+
+            if (chiefGuestModeEnabled) {
+                btn.disabled = false;
+                statusMsg.textContent = '';
+            } else {
+                btn.disabled = true;
+                statusMsg.textContent = '🔴 Chief Guest Mode बन्द छ (Admin ले खोल्नुपर्छ)';
+            }
+        }
+
+        function setupChiefGuestRealtime() {
+            supabaseClient
+                .channel('cg-chief-guest-mode-changes')
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'app_settings',
+                    filter: 'setting_key=eq.chief_guest_mode'
+                }, () => {
+                    loadChiefGuestMode();
+                })
+                .subscribe();
+        }
+
+        // ===== TRIGGER LIVE PROGRAM START (real-time on banner.html) =====
+        async function triggerProgramStart() {
+            if (!chiefGuestModeEnabled) return;
+
+            const btn = document.getElementById('startProgramBtn');
+            const statusMsg = document.getElementById('statusMsg');
+
+            btn.disabled = true;
+            statusMsg.textContent = '⏳ पठाइँदैछ...';
+
+            // Uses a SECURITY DEFINER function so this works without an admin login.
+            const { error } = await supabaseClient.rpc('trigger_program_start');
+
+            if (error) {
+                console.error('trigger_program_start error:', error);
+                statusMsg.textContent = '❌ असफल: ' + error.message;
+                btn.disabled = !chiefGuestModeEnabled;
+                return;
+            }
+
+            statusMsg.textContent = '✅ सुरुवात संकेत पठाइयो!';
+            setTimeout(() => { if (chiefGuestModeEnabled) statusMsg.textContent = ''; }, 3000);
+
+            btn.disabled = !chiefGuestModeEnabled;
+
+            window.open('banner.html', '_blank');
+        }
+
+        loadChiefGuestMode();
+        setupChiefGuestRealtime();
+    </script>
+</body>
+</html>

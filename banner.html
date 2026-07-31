@@ -11,19 +11,22 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1a2e">
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://kbyfvqkfcxqgjjtfvvxf.supabase.co" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* all existing styles (unchanged) */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body, html {
+        body,
+        html {
             width: 100%;
             height: 100vh;
             height: calc(var(--vh, 1vh) * 100);
@@ -70,9 +73,9 @@
             width: 50%;
             height: 100%;
             background:
-                repeating-linear-gradient(90deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 2px, transparent 2px, transparent 34px),
+                repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.18) 0px, rgba(0, 0, 0, 0.18) 2px, transparent 2px, transparent 34px),
                 linear-gradient(135deg, #8a0f0f 0%, #5c0808 45%, #8a0f0f 100%);
-            box-shadow: inset -30px 0 60px rgba(0,0,0,0.45);
+            box-shadow: inset -30px 0 60px rgba(0, 0, 0, 0.45);
             transition: transform 3.2s cubic-bezier(0.65, 0, 0.35, 1);
             z-index: 2;
         }
@@ -147,8 +150,13 @@
         }
 
         @media (max-width: 480px) {
-            .start-screen h1 { font-size: 1.1rem; }
-            .start-btn { font-size: 1.15rem; padding: 16px 34px; }
+            .start-screen h1 {
+                font-size: 1.1rem;
+            }
+            .start-btn {
+                font-size: 1.15rem;
+                padding: 16px 34px;
+            }
         }
 
         .header-section {
@@ -168,7 +176,7 @@
             background: rgba(255, 255, 255, 0.9);
             padding: 10px 20px;
             border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(5px);
             border: 2px solid #d4af37;
         }
@@ -215,11 +223,11 @@
             font-size: calc(var(--meeting-title-size, 4.5rem) * var(--font-scale, 1));
             font-weight: 800;
             color: #d32f2f;
-            text-shadow: 3px 3px 0px rgba(255,255,255,0.8), 
-                        -3px -3px 0px rgba(255,255,255,0.8),
-                        3px -3px 0px rgba(255,255,255,0.8),
-                        -3px 3px 0px rgba(255,255,255,0.8),
-                        0px 0px 20px rgba(255,255,255,0.5);
+            text-shadow: 3px 3px 0px rgba(255, 255, 255, 0.8),
+                -3px -3px 0px rgba(255, 255, 255, 0.8),
+                3px -3px 0px rgba(255, 255, 255, 0.8),
+                -3px 3px 0px rgba(255, 255, 255, 0.8),
+                0px 0px 20px rgba(255, 255, 255, 0.5);
             letter-spacing: 2px;
             line-height: 1.3;
             white-space: normal;
@@ -232,10 +240,10 @@
             font-size: calc(var(--sub-meeting-title-size, 2.5rem) * var(--font-scale, 1));
             font-weight: 700;
             color: #e65100;
-            text-shadow: 2px 2px 0px rgba(255,255,255,0.7), 
-                        -2px -2px 0px rgba(255,255,255,0.7),
-                        2px -2px 0px rgba(255,255,255,0.7),
-                        -2px 2px 0px rgba(255,255,255,0.7);
+            text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.7),
+                -2px -2px 0px rgba(255, 255, 255, 0.7),
+                2px -2px 0px rgba(255, 255, 255, 0.7),
+                -2px 2px 0px rgba(255, 255, 255, 0.7);
             letter-spacing: 1px;
             line-height: 1.2;
             white-space: normal;
@@ -248,10 +256,10 @@
             font-size: calc(var(--organized-by-size, 2.8rem) * var(--font-scale, 1));
             font-weight: 700;
             color: #b71c1c;
-            text-shadow: 2px 2px 0px rgba(255,255,255,0.8), 
-                        -2px -2px 0px rgba(255,255,255,0.8),
-                        2px -2px 0px rgba(255,255,255,0.8),
-                        -2px 2px 0px rgba(255,255,255,0.8);
+            text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.8),
+                -2px -2px 0px rgba(255, 255, 255, 0.8),
+                2px -2px 0px rgba(255, 255, 255, 0.8),
+                -2px 2px 0px rgba(255, 255, 255, 0.8);
             margin-top: 5px;
         }
 
@@ -353,7 +361,7 @@
             flex-shrink: 0;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 50%;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(5px);
             border: 2px solid #d4af37;
             transition: border-color 0.3s ease;
@@ -413,8 +421,12 @@
         }
 
         @keyframes scrollNotice {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-100%); }
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
         }
 
         .footer-section {
@@ -437,7 +449,7 @@
             border-radius: 10px;
             backdrop-filter: blur(5px);
             border: 2px solid #d4af37;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         .footer-section .nepali-date-display {
@@ -620,9 +632,9 @@
             position: absolute;
             bottom: 20px;
             left: 20px;
-            color: rgba(255,255,255,0.7);
+            color: rgba(255, 255, 255, 0.7);
             font-size: 0.8rem;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             padding: 5px 12px;
             border-radius: 20px;
             z-index: 1000;
@@ -640,11 +652,191 @@
         }
 
         @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.3;
+            }
+            100% {
+                opacity: 1;
+            }
         }
 
+        /* ===== ANTHEM POPUP (MODAL) ===== */
+        .anthem-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 7000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .anthem-modal.visible {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .anthem-modal-content {
+            background: rgba(26, 26, 46, 0.95);
+            border: 2px solid #d4af37;
+            border-radius: 24px;
+            padding: 30px 40px 40px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            position: relative;
+            text-align: center;
+        }
+
+        .anthem-modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            line-height: 1;
+            padding: 0 4px;
+        }
+
+        .anthem-modal-close:hover {
+            color: #fff;
+        }
+
+        .anthem-modal-title {
+            font-family: 'Mukta', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #d4af37;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .anthem-player-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .anthem-play-pause-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 2px solid #d4af37;
+            background: rgba(212, 175, 55, 0.15);
+            color: #d4af37;
+            font-size: 2.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+        }
+
+        .anthem-play-pause-btn:hover {
+            background: rgba(212, 175, 55, 0.3);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+        }
+
+        .anthem-play-pause-btn:active {
+            transform: scale(0.95);
+        }
+
+        .anthem-progress-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .anthem-progress-bar {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            outline: none;
+            transition: background 0.2s;
+        }
+
+        .anthem-progress-bar::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #d4af37;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            border: none;
+        }
+
+        .anthem-progress-bar::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #d4af37;
+            cursor: pointer;
+            border: none;
+        }
+
+        .anthem-time {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .anthem-error {
+            color: #f44336;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .anthem-error.visible {
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .anthem-modal-content {
+                padding: 20px 24px 30px;
+            }
+            .anthem-play-pause-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1.8rem;
+            }
+            .anthem-modal-title {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* responsive adjustments (unchanged) */
         @media (max-width: 1024px) {
             .meeting-title {
                 font-size: calc(var(--meeting-title-size, 4.5rem) * var(--font-scale, 1) * 0.78);
@@ -838,6 +1030,7 @@
 </head>
 <body>
 
+    <!-- Start Screen (unchanged) -->
     <div class="start-screen" id="startScreen">
         <div class="curtain curtain-left" id="curtainLeft"></div>
         <div class="curtain curtain-right" id="curtainRight"></div>
@@ -859,8 +1052,9 @@
         })();
     </script>
 
+    <!-- Main Banner -->
     <div class="banner-container" id="bannerBg">
-        
+
         <div class="center-logo-container" onclick="openInPageOverlay(event, 'centerLogo')" style="cursor:pointer;" title="Admin Panel">
             <img id="centerLogo" src="" alt="Logo" data-url="https://nabinchalise.com.np/adminbanner" fetchpriority="high" decoding="async">
         </div>
@@ -901,7 +1095,8 @@
 
         <div class="footer-section">
             <span class="footer-left-group">
-                <button class="anthem-play-btn" id="anthemPlayBtn" onclick="toggleNationalAnthem()" title="राष्ट्रिय गान" aria-label="राष्ट्रिय गान">▶</button>
+                <!-- Anthem Play Button (footer) -->
+                <button class="anthem-play-btn" id="anthemPlayBtn" onclick="openAnthemModal()" title="राष्ट्रिय गान" aria-label="राष्ट्रिय गान">▶</button>
                 <span class="nepali-date-display" id="dateDisplay">
                     <span id="dateText">मिति: --</span>
                 </span>
@@ -919,12 +1114,14 @@
         </div>
     </div>
 
+    <!-- Open Link Button (existing) -->
     <a href="#" class="open-link-btn" id="openLinkBtn" onclick="return openInPageOverlay(event, 'openLinkBtn')">🔗 Open Link</a>
 
     <div class="presentation-buttons-wrap" id="presentationButtonsWrap"></div>
 
     <button class="fullscreen-btn" onclick="toggleFullScreen()">⛶ Fullscreen</button>
 
+    <!-- Iframe Overlay (existing) -->
     <div class="iframe-overlay" id="iframeOverlay">
         <div class="iframe-overlay-header">
             <button class="iframe-overlay-close" onclick="closeInPageOverlay()">✕ Close</button>
@@ -934,13 +1131,32 @@
         </div>
     </div>
 
-    <audio id="nationalAnthemAudio" src="/r/national_anthem.mp3" preload="none"></audio>
+    <!-- ===== NEW ANTHEM MODAL ===== -->
+    <div class="anthem-modal" id="anthemModal">
+        <div class="anthem-modal-content">
+            <button class="anthem-modal-close" onclick="closeAnthemModal()">✕</button>
+            <div class="anthem-modal-title">🇳🇵 राष्ट्रिय गान</div>
+            <div class="anthem-player-controls">
+                <button class="anthem-play-pause-btn" id="anthemPlayPauseBtn" onclick="toggleAnthemPlayPause()">▶</button>
+                <div class="anthem-progress-container">
+                    <span class="anthem-time" id="anthemCurrentTime">0:00</span>
+                    <input type="range" class="anthem-progress-bar" id="anthemProgressBar" min="0" max="100" value="0" step="0.1">
+                    <span class="anthem-time" id="anthemDuration">0:00</span>
+                </div>
+                <div class="anthem-error" id="anthemError">⚠️ Audio file could not be loaded.</div>
+            </div>
+        </div>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <!-- Audio element (existing) -->
+    <audio id="nationalAnthemAudio" src="/national_anthem.mp3" preload="metadata"></audio>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1">
+    </script>
 
     <script>
         // ============================================================
-        // ===== SUPABASE CONFIGURATION =====
+        // ===== SUPABASE CONFIGURATION (unchanged) =====
         // ============================================================
         const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
@@ -948,7 +1164,7 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // ============================================================
-        // ===== STATE =====
+        // ===== STATE (unchanged) =====
         // ============================================================
         let __fullscreenRequested = false;
         let __firstInteractionArmed = false;
@@ -960,13 +1176,151 @@
         let __liveBannerId = null;
         let __programStartTime = null;
         let __celebrationTimer = null;
+        let __countdownEnabled = true;
 
         // ============================================================
-        // ===== IMAGE LOADING (preload critical images) =====
+        // ===== ANTHEM MODAL LOGIC =====
+        // ============================================================
+        const anthemAudio = document.getElementById('nationalAnthemAudio');
+        const anthemModal = document.getElementById('anthemModal');
+        const anthemPlayPauseBtn = document.getElementById('anthemPlayPauseBtn');
+        const anthemProgressBar = document.getElementById('anthemProgressBar');
+        const anthemCurrentTime = document.getElementById('anthemCurrentTime');
+        const anthemDuration = document.getElementById('anthemDuration');
+        const anthemError = document.getElementById('anthemError');
+        const anthemFooterBtn = document.getElementById('anthemPlayBtn');
+
+        let isAnthemModalOpen = false;
+        let isAnthemPlaying = false;
+
+        function formatTime(seconds) {
+            if (isNaN(seconds) || seconds < 0) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateAnthemUI() {
+            if (!anthemAudio.duration) {
+                anthemDuration.textContent = '0:00';
+                return;
+            }
+            const current = anthemAudio.currentTime || 0;
+            const duration = anthemAudio.duration || 0;
+            anthemCurrentTime.textContent = formatTime(current);
+            anthemDuration.textContent = formatTime(duration);
+            const percent = (current / duration) * 100;
+            anthemProgressBar.value = isNaN(percent) ? 0 : percent;
+            anthemPlayPauseBtn.textContent = anthemAudio.paused ? '▶' : '⏸';
+            isAnthemPlaying = !anthemAudio.paused;
+            // Update footer button icon
+            anthemFooterBtn.textContent = anthemAudio.paused ? '▶' : '⏸';
+            anthemFooterBtn.classList.toggle('playing', !anthemAudio.paused);
+        }
+
+        function openAnthemModal() {
+            if (isAnthemModalOpen) {
+                // If modal already open, just toggle play/pause
+                toggleAnthemPlayPause();
+                return;
+            }
+            // Show modal
+            anthemModal.classList.add('visible');
+            isAnthemModalOpen = true;
+            // Start playing if not already
+            if (anthemAudio.paused) {
+                anthemAudio.play().catch(err => {
+                    console.warn('Anthem play error:', err);
+                    anthemError.classList.add('visible');
+                });
+            }
+            updateAnthemUI();
+        }
+
+        function closeAnthemModal() {
+            anthemModal.classList.remove('visible');
+            isAnthemModalOpen = false;
+            // Pause audio if playing
+            if (!anthemAudio.paused) {
+                anthemAudio.pause();
+            }
+            // Reset footer button
+            anthemFooterBtn.textContent = '▶';
+            anthemFooterBtn.classList.remove('playing');
+            // Hide error
+            anthemError.classList.remove('visible');
+        }
+
+        function toggleAnthemPlayPause() {
+            if (anthemAudio.paused) {
+                anthemAudio.play().catch(err => {
+                    console.warn('Anthem play error:', err);
+                    anthemError.classList.add('visible');
+                });
+            } else {
+                anthemAudio.pause();
+            }
+            updateAnthemUI();
+        }
+
+        // ===== Audio event listeners =====
+        anthemAudio.addEventListener('loadedmetadata', () => {
+            updateAnthemUI();
+            anthemError.classList.remove('visible');
+        });
+
+        anthemAudio.addEventListener('timeupdate', updateAnthemUI);
+
+        anthemAudio.addEventListener('play', () => {
+            updateAnthemUI();
+            anthemFooterBtn.textContent = '⏸';
+            anthemFooterBtn.classList.add('playing');
+        });
+
+        anthemAudio.addEventListener('pause', () => {
+            updateAnthemUI();
+            anthemFooterBtn.textContent = '▶';
+            anthemFooterBtn.classList.remove('playing');
+        });
+
+        anthemAudio.addEventListener('ended', () => {
+            // Auto-close modal when anthem ends
+            closeAnthemModal();
+            // Reset progress
+            anthemProgressBar.value = 0;
+            anthemCurrentTime.textContent = '0:00';
+            anthemFooterBtn.textContent = '▶';
+            anthemFooterBtn.classList.remove('playing');
+        });
+
+        anthemAudio.addEventListener('error', () => {
+            anthemError.classList.add('visible');
+            console.error('Anthem audio error');
+        });
+
+        // Progress bar seeking
+        anthemProgressBar.addEventListener('input', function() {
+            if (anthemAudio.duration) {
+                const seekTime = (this.value / 100) * anthemAudio.duration;
+                anthemAudio.currentTime = seekTime;
+                updateAnthemUI();
+            }
+        });
+
+        // Close modal if user clicks outside content
+        anthemModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAnthemModal();
+            }
+        });
+
+        // ============================================================
+        // ===== IMAGE LOADING (unchanged) =====
         // ============================================================
         let __lastPreloadedUrl = '';
+
         function preloadImage(url) {
-            if (!url || url === __lastPreloadedUrl) return; // avoid duplicate <link> tags on every 30s poll
+            if (!url || url === __lastPreloadedUrl) return;
             __lastPreloadedUrl = url;
             const link = document.createElement('link');
             link.rel = 'preload';
@@ -977,33 +1331,33 @@
         }
 
         // ============================================================
-        // ===== NEPALI DATE SYSTEM =====
+        // ===== NEPALI DATE SYSTEM (unchanged) =====
         // ============================================================
         const NepaliDate = {
             months: ['बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कात्तिक', 'मंसिर', 'पुष', 'माघ', 'फागुन', 'चैत'],
             weekdays: ['आइतबार', 'सोमबार', 'मंगलबार', 'बुधबार', 'बिहिबार', 'शुक्रबार', 'शनिबार'],
             monthDays: {
-                2070: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2071: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2072: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2073: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2074: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2075: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2076: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2077: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2078: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2079: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2080: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2081: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2082: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2083: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2084: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2085: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2086: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2087: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2088: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2089: [31,32,31,32,31,30,30,30,29,30,29,30],
-                2090: [31,32,31,32,31,30,30,30,29,30,29,30]
+                2070: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2071: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2072: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2073: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2074: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2075: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2076: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2077: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2078: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2079: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2080: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2081: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2082: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2083: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2084: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2085: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2086: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2087: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2088: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2089: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30],
+                2090: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 30]
             },
             referenceYear: 2070,
             referenceMonth: 0,
@@ -1020,15 +1374,15 @@
             const now = new Date();
             const refDate = NepaliDate.referenceEnglishDate;
             const diffDays = Math.floor((now - refDate) / (1000 * 60 * 60 * 24));
-            
+
             let remainingDays = diffDays;
             let year = NepaliDate.referenceYear;
             let month = NepaliDate.referenceMonth;
-            
+
             while (remainingDays > 0) {
                 const daysInYear = NepaliDate.monthDays[year];
                 if (!daysInYear) break;
-                
+
                 const totalDaysInYear = daysInYear.reduce((a, b) => a + b, 0);
                 if (remainingDays >= totalDaysInYear) {
                     remainingDays -= totalDaysInYear;
@@ -1046,10 +1400,10 @@
                     break;
                 }
             }
-            
+
             const day = remainingDays + 1;
             const weekdayIndex = (1 + diffDays) % 7;
-            
+
             return {
                 year: year,
                 month: month,
@@ -1068,7 +1422,8 @@
             const period = hours >= 12 ? 'PM' : 'AM';
             hours = hours % 12 || 12;
 
-            const digitsFormatted = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            const digitsFormatted =
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
             return {
                 hours: hours,
@@ -1082,7 +1437,7 @@
         }
 
         // ============================================================
-        // ===== CACHE =====
+        // ===== CACHE (unchanged) =====
         // ============================================================
         const BANNER_CACHE_KEY = 'bannerSettingsCache';
         const CHIEF_GUEST_CACHE_KEY = 'chiefGuestModeCache';
@@ -1118,7 +1473,16 @@
         }
 
         // ============================================================
-        // ===== APPLY BANNER DATA =====
+        // ===== HIDE COUNTDOWN (unchanged) =====
+        // ============================================================
+        function hideCountdown() {
+            const section = document.getElementById('countdownSection');
+            section.classList.remove('visible');
+            CountdownModule.stop();
+        }
+
+        // ============================================================
+        // ===== APPLY BANNER DATA (unchanged) =====
         // ============================================================
         function applyBannerData(data) {
             if (!data) return;
@@ -1167,7 +1531,8 @@
             let presentationItems = [];
             if (Array.isArray(data.presentation_urls) && data.presentation_urls.length) {
                 presentationItems = data.presentation_urls
-                    .map(it => (typeof it === 'string') ? { name: '', url: it.trim() } : { name: (it && it.name || '').trim(), url: (it && it.url || '').trim() })
+                    .map(it => (typeof it === 'string') ? { name: '', url: it.trim() } : { name: (it && it.name || '').trim(),
+                        url: (it && it.url || '').trim() })
                     .filter(it => it.url !== '');
             } else if (data.presentation_url && data.presentation_url.trim() !== '') {
                 presentationItems = [{ name: '', url: data.presentation_url.trim() }];
@@ -1178,7 +1543,8 @@
             document.documentElement.style.setProperty('--font-scale', fontScale / 100);
 
             document.documentElement.style.setProperty('--meeting-title-size', (data.meeting_name_font_size || 4.5) + 'rem');
-            document.documentElement.style.setProperty('--sub-meeting-title-size', (data.sub_meeting_font_size || 2.5) + 'rem');
+            document.documentElement.style.setProperty('--sub-meeting-title-size', (data.sub_meeting_font_size || 2.5) +
+            'rem');
             document.documentElement.style.setProperty('--organized-by-size', (data.organized_by_font_size || 2.8) + 'rem');
             document.documentElement.style.setProperty('--date-size', (data.date_font_size || 1.6) + 'rem');
             document.documentElement.style.setProperty('--time-size', (data.time_font_size || 1.6) + 'rem');
@@ -1190,6 +1556,7 @@
 
             if (data.program_start_trigger && data.program_start_trigger !== __lastProgramTrigger) {
                 __lastProgramTrigger = data.program_start_trigger;
+                hideCountdown();
                 const startScreen = document.getElementById('startScreen');
                 const startBtn = document.getElementById('startProgramBtn');
                 if (startScreen && startBtn && !startBtn.disabled &&
@@ -1198,7 +1565,6 @@
                 }
             }
 
-            // ===== SCROLLING NOTICE =====
             const noticeEnabled = data.scrolling_notice_enabled !== false;
             const noticeText = data.scrolling_notice || 'कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।';
             const noticeEl = document.getElementById('scrollingNotice');
@@ -1210,21 +1576,48 @@
                 noticeEl.classList.remove('visible');
             }
 
-            // ===== AGENDA =====
             const agendaData = data.agenda || [];
             renderAgenda(agendaData);
 
-            // ===== COUNTDOWN =====
+            // Countdown logic
+            const countdownEnabled = data.countdown_enabled !== undefined ? data.countdown_enabled : true;
+            __countdownEnabled = countdownEnabled;
             const startTime = data.program_start_time || null;
-            if (startTime) {
-                __programStartTime = startTime;
-                CountdownModule.start(startTime);
+            __programStartTime = startTime;
+
+            if (startTime && countdownEnabled) {
+                let hours, minutes;
+                const parts24 = startTime.match(/^(\d{1,2}):(\d{2})$/);
+                const parts12 = startTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+
+                if (parts24) {
+                    hours = parseInt(parts24[1]);
+                    minutes = parseInt(parts24[2]);
+                } else if (parts12) {
+                    hours = parseInt(parts12[1]);
+                    minutes = parseInt(parts12[2]);
+                    const period = parts12[3].toUpperCase();
+                    if (period === 'PM' && hours !== 12) hours += 12;
+                    if (period === 'AM' && hours === 12) hours = 0;
+                } else {
+                    hideCountdown();
+                    return;
+                }
+
+                const now = new Date();
+                let target = new Date(now);
+                target.setHours(hours, minutes, 0, 0);
+
+                if (target <= now) {
+                    hideCountdown();
+                } else {
+                    document.getElementById('countdownSection').classList.add('visible');
+                    CountdownModule.start(startTime, hideCountdown);
+                }
             } else {
-                document.getElementById('countdownSection').classList.remove('visible');
-                CountdownModule.stop();
+                hideCountdown();
             }
 
-            // ===== CELEBRATION TRIGGER =====
             if (data.celebration_trigger && data.celebration_type) {
                 triggerCelebration(data.celebration_type);
                 supabaseClient
@@ -1236,12 +1629,12 @@
         }
 
         // ============================================================
-        // ===== RENDER AGENDA =====
+        // ===== RENDER AGENDA (unchanged) =====
         // ============================================================
         function renderAgenda(agendaItems) {
             const section = document.getElementById('agendaSection');
             const list = document.getElementById('agendaList');
-            
+
             if (!agendaItems || agendaItems.length === 0) {
                 section.classList.remove('visible');
                 list.innerHTML = '';
@@ -1256,26 +1649,28 @@
         }
 
         // ============================================================
-        // ===== COUNTDOWN MODULE (self-contained: owns its own interval) =====
+        // ===== COUNTDOWN MODULE (unchanged) =====
         // ============================================================
-        const CountdownModule = (function () {
+        const CountdownModule = (function() {
             let intervalId = null;
+            let onFinishCallback = null;
 
             function stop() {
                 if (intervalId) {
                     clearInterval(intervalId);
                     intervalId = null;
                 }
+                onFinishCallback = null;
             }
 
-            function start(startTimeStr) {
+            function start(startTimeStr, onFinish) {
                 const section = document.getElementById('countdownSection');
                 const timer = document.getElementById('countdownTimer');
 
                 stop();
 
-                // Support both 24-hour "HH:MM" (native <input type="time"> format)
-                // and legacy 12-hour "H:MM AM/PM" strings.
+                onFinishCallback = onFinish || null;
+
                 let hours, minutes;
                 const parts24 = startTimeStr.match(/^(\d{1,2}):(\d{2})$/);
                 const parts12 = startTimeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
@@ -1290,7 +1685,7 @@
                     if (period === 'PM' && hours !== 12) hours += 12;
                     if (period === 'AM' && hours === 12) hours = 0;
                 } else {
-                    section.classList.remove('visible');
+                    if (onFinishCallback) onFinishCallback();
                     return;
                 }
 
@@ -1298,8 +1693,9 @@
                 let target = new Date(now);
                 target.setHours(hours, minutes, 0, 0);
 
-                if (target < now) {
-                    target.setDate(target.getDate() + 1);
+                if (target <= now) {
+                    if (onFinishCallback) onFinishCallback();
+                    return;
                 }
 
                 section.classList.add('visible');
@@ -1311,6 +1707,7 @@
                     if (diff <= 0) {
                         timer.textContent = '🎉 Program Started';
                         timer.className = 'countdown-timer started';
+                        if (onFinishCallback) onFinishCallback();
                         stop();
                         return;
                     }
@@ -1319,7 +1716,8 @@
                     const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                     const s = Math.floor((diff % (1000 * 60)) / 1000);
 
-                    timer.textContent = `${String(h).padStart(2, '0')} : ${String(m).padStart(2, '0')} : ${String(s).padStart(2, '0')}`;
+                    timer.textContent =
+                        `${String(h).padStart(2, '0')} : ${String(m).padStart(2, '0')} : ${String(s).padStart(2, '0')}`;
                     timer.className = 'countdown-timer';
                 }
 
@@ -1331,7 +1729,7 @@
         })();
 
         // ============================================================
-        // ===== CELEBRATION EFFECTS =====
+        // ===== CELEBRATION EFFECTS (unchanged) =====
         // ============================================================
         function triggerCelebration(type) {
             if (__celebrationTimer) {
@@ -1437,7 +1835,7 @@
         }
 
         // ============================================================
-        // ===== TYPEWRITER =====
+        // ===== TYPEWRITER (unchanged) =====
         // ============================================================
         async function playTypewriter(text, times = 3) {
             if (!text || __typewriterRunning) return;
@@ -1466,7 +1864,7 @@
         }
 
         // ============================================================
-        // ===== FETCH BANNER DATA =====
+        // ===== FETCH BANNER DATA (unchanged) =====
         // ============================================================
         async function fetchBannerData() {
             try {
@@ -1513,7 +1911,7 @@
         }
 
         // ============================================================
-        // ===== CHIEF GUEST MODE =====
+        // ===== CHIEF GUEST MODE (unchanged) =====
         // ============================================================
         let currentChiefGuestMode = true;
 
@@ -1562,7 +1960,8 @@
                     .maybeSingle();
 
                 if (error) {
-                    console.error('❌ Chief Guest Mode read failed (check RLS/select policy on app_settings for anon role):', error.message);
+                    console.error('❌ Chief Guest Mode read failed (check RLS/select policy on app_settings for anon role):',
+                        error.message);
                     currentChiefGuestMode = true;
                 } else if (!data) {
                     currentChiefGuestMode = true;
@@ -1578,19 +1977,21 @@
         }
 
         // ============================================================
-        // ===== START PROGRAM (with Confetti) =====
+        // ===== START PROGRAM (unchanged) =====
         // ============================================================
         function startProgram() {
+            hideCountdown();
+
             const startScreen = document.getElementById('startScreen');
             const startProgramBtn = document.getElementById('startProgramBtn');
             if (startProgramBtn) startProgramBtn.disabled = true;
 
             const el = document.documentElement;
-            const request = el.requestFullscreen
-                ? el.requestFullscreen()
-                : el.webkitRequestFullscreen
-                    ? el.webkitRequestFullscreen()
-                    : null;
+            const request = el.requestFullscreen ?
+                el.requestFullscreen() :
+                el.webkitRequestFullscreen ?
+                el.webkitRequestFullscreen() :
+                null;
             if (request && request.catch) {
                 request.catch(err => console.log('Fullscreen error:', err));
             }
@@ -1641,7 +2042,7 @@
         }
 
         // ============================================================
-        // ===== PRESENTATION BUTTONS =====
+        // ===== PRESENTATION BUTTONS (unchanged) =====
         // ============================================================
         function transformPresentationUrl(url) {
             try {
@@ -1674,9 +2075,9 @@
                 a.dataset.url = item.url;
                 const isPdf = /\.pdf(\?|$)/i.test(item.url || '');
                 const icon = isPdf ? '📄' : '🎞️';
-                const fallback = isPdf
-                    ? (items.length > 1 ? `PDF ${idx + 1}` : 'Open PDF')
-                    : (items.length > 1 ? `प्रस्तुति ${idx + 1}` : 'Open Presentation');
+                const fallback = isPdf ?
+                    (items.length > 1 ? `PDF ${idx + 1}` : 'Open PDF') :
+                    (items.length > 1 ? `प्रस्तुति ${idx + 1}` : 'Open Presentation');
                 const label = item.name && item.name !== '' ? item.name : fallback;
                 a.textContent = icon + ' ' + label;
                 a.onclick = (event) => openInPageOverlay(event, null, item.url);
@@ -1685,7 +2086,7 @@
         }
 
         // ============================================================
-        // ===== OVERLAY =====
+        // ===== OVERLAY (unchanged) =====
         // ============================================================
         function openInPageOverlay(event, btnId, directUrl) {
             if (event) event.preventDefault();
@@ -1773,38 +2174,7 @@
         document.addEventListener('webkitfullscreenchange', refitOverlayIfVisible);
 
         // ============================================================
-        // ===== ANTHEM =====
-        // ============================================================
-        function toggleNationalAnthem() {
-            const audio = document.getElementById('nationalAnthemAudio');
-            const btn = document.getElementById('anthemPlayBtn');
-
-            if (audio.paused) {
-                audio.play().catch(err => console.log('Anthem play error:', err));
-            } else {
-                audio.pause();
-            }
-        }
-
-        (function setupAnthemButtonState() {
-            const audio = document.getElementById('nationalAnthemAudio');
-            const btn = document.getElementById('anthemPlayBtn');
-            audio.addEventListener('play', () => {
-                btn.textContent = '⏸';
-                btn.classList.add('playing');
-            });
-            audio.addEventListener('pause', () => {
-                btn.textContent = '▶';
-                btn.classList.remove('playing');
-            });
-            audio.addEventListener('ended', () => {
-                btn.textContent = '▶';
-                btn.classList.remove('playing');
-            });
-        })();
-
-        // ============================================================
-        // ===== INTERNET STATUS =====
+        // ===== INTERNET STATUS (unchanged) =====
         // ============================================================
         function updateInternetStatus() {
             const badge = document.getElementById('internetBadge');
@@ -1823,9 +2193,9 @@
         window.addEventListener('offline', updateInternetStatus);
 
         // ============================================================
-        // ===== CLOCK MODULE (self-contained: owns its own interval) =====
+        // ===== CLOCK MODULE (unchanged) =====
         // ============================================================
-        const ClockModule = (function () {
+        const ClockModule = (function() {
             let intervalId = null;
 
             function tick() {
@@ -1835,7 +2205,7 @@
             }
 
             function start() {
-                if (intervalId) return; // already running
+                if (intervalId) return;
                 tick();
                 intervalId = setInterval(tick, 1000);
             }
@@ -1851,7 +2221,7 @@
         })();
 
         // ============================================================
-        // ===== VIEWPORT HEIGHT =====
+        // ===== VIEWPORT HEIGHT (unchanged) =====
         // ============================================================
         function setViewportHeight() {
             document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
@@ -1861,16 +2231,16 @@
         window.addEventListener('orientationchange', setViewportHeight);
 
         // ============================================================
-        // ===== FULLSCREEN =====
+        // ===== FULLSCREEN (unchanged) =====
         // ============================================================
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
                 const el = document.documentElement;
-                const request = el.requestFullscreen
-                    ? el.requestFullscreen()
-                    : el.webkitRequestFullscreen
-                        ? el.webkitRequestFullscreen()
-                        : null;
+                const request = el.requestFullscreen ?
+                    el.requestFullscreen() :
+                    el.webkitRequestFullscreen ?
+                    el.webkitRequestFullscreen() :
+                    null;
                 if (request && request.catch) {
                     request.catch(err => console.log('Fullscreen error:', err));
                 }
@@ -1903,18 +2273,18 @@
         document.addEventListener('webkitfullscreenchange', updateFullscreenBorder);
 
         // ============================================================
-        // ===== AUTO FULLSCREEN =====
+        // ===== AUTO FULLSCREEN (unchanged) =====
         // ============================================================
         function requestAutoFullscreen() {
             if (document.fullscreenElement || __fullscreenRequested) return;
             __fullscreenRequested = true;
 
             const el = document.documentElement;
-            const request = el.requestFullscreen
-                ? el.requestFullscreen()
-                : el.webkitRequestFullscreen
-                    ? el.webkitRequestFullscreen()
-                    : null;
+            const request = el.requestFullscreen ?
+                el.requestFullscreen() :
+                el.webkitRequestFullscreen ?
+                el.webkitRequestFullscreen() :
+                null;
 
             if (request && request.catch) {
                 request.catch(() => {
@@ -1933,11 +2303,11 @@
             const grabFullscreen = () => {
                 if (document.fullscreenElement) return;
                 const el = document.documentElement;
-                const request = el.requestFullscreen
-                    ? el.requestFullscreen()
-                    : el.webkitRequestFullscreen
-                        ? el.webkitRequestFullscreen()
-                        : null;
+                const request = el.requestFullscreen ?
+                    el.requestFullscreen() :
+                    el.webkitRequestFullscreen ?
+                    el.webkitRequestFullscreen() :
+                    null;
                 if (request && request.catch) {
                     request.catch(err => console.log('Fullscreen error:', err));
                 }
@@ -1949,7 +2319,7 @@
         }
 
         // ============================================================
-        // ===== REALTIME SETUP =====
+        // ===== REALTIME SETUP (unchanged) =====
         // ============================================================
         let realtimeChannel = null;
         let chiefGuestChannel = null;
@@ -1962,8 +2332,7 @@
 
             realtimeChannel = supabaseClient
                 .channel('public:banner_settings')
-                .on('postgres_changes',
-                    { event: '*', schema: 'public', table: 'banner_settings' },
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'banner_settings' },
                     payload => {
                         console.log('🔄 Realtime event received:', payload.eventType);
                         fetchBannerData();
@@ -1991,8 +2360,8 @@
             }
             chiefGuestChannel = supabaseClient
                 .channel('public:app_settings:chief_guest_mode')
-                .on('postgres_changes',
-                    { event: '*', schema: 'public', table: 'app_settings', filter: 'setting_key=eq.chief_guest_mode' },
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'app_settings',
+                    filter: 'setting_key=eq.chief_guest_mode' },
                     () => {
                         console.log('🔄 Chief Guest Mode changed, updating start screen...');
                         loadChiefGuestMode();
@@ -2005,8 +2374,7 @@
             }
             celebrationChannel = supabaseClient
                 .channel('public:banner_settings:celebration')
-                .on('postgres_changes',
-                    { event: 'UPDATE', schema: 'public', table: 'banner_settings' },
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'banner_settings' },
                     (payload) => {
                         const newData = payload.new;
                         if (newData && newData.celebration_trigger && newData.celebration_type) {
@@ -2036,7 +2404,7 @@
             await loadChiefGuestMode();
             ClockModule.start();
             setInterval(fetchBannerData, 30000);
-            setInterval(loadChiefGuestMode, 5000); // fallback poll in case Realtime isn't delivering app_settings changes
+            setInterval(loadChiefGuestMode, 5000);
             updateInternetStatus();
             setInterval(updateInternetStatus, 5000);
             console.log('✅ Banner initialized successfully!');

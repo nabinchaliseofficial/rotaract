@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Need Blood? | Rotaract Club of Galkot Baglung</title>
+<meta name="description" content="Find blood donors within the Rotaract Club of Galkot Baglung community by blood group." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --primary: #D91A5C;
+    --primary-dark: #A61042;
+    --primary-light: #FDE8F0;
+    --secondary: #1D2A44;
+    --secondary-light: #2D3A5A;
+    --gold: #D4AF37;
+    --gold-light: #F4E08A;
+    --dark: #0B1120;
+    --dark-card: #111827;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+    --bg-light: #F8FAFC;
+    --bg-white: #FFFFFF;
+    --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.12);
+    --radius-sm: 12px;
+    --radius-md: 20px;
+    --radius-lg: 28px;
+    --transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-light);
+    color: var(--text-primary);
+    min-height: 100vh;
+  }
+  a { text-decoration: none; }
+
+  /* ===== TOP BAR ===== */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 28px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; color: var(--text-primary); font-weight: 800; font-size: 1.05rem; }
+  .brand img { height: 36px; width: auto; border-radius: 8px; }
+  .brand span { background: linear-gradient(135deg, var(--primary), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .back-link { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.85rem; color: var(--text-secondary); transition: var(--transition); }
+  .back-link:hover { color: var(--primary); }
+
+  /* ===== HERO ===== */
+  .hero {
+    position: relative;
+    padding: 70px 20px 40px;
+    text-align: center;
+    background: radial-gradient(circle at 50% 0%, rgba(217, 26, 92, 0.08), transparent 60%);
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '\f0c9';
+    display: none;
+  }
+  .hero-drop {
+    width: 64px; height: 64px;
+    margin: 0 auto 18px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(45deg);
+    box-shadow: var(--shadow-md);
+    animation: dropPulse 2.4s ease-in-out infinite;
+  }
+  .hero-drop i { transform: rotate(-45deg); color: #fff; font-size: 1.4rem; }
+  @keyframes dropPulse { 0%, 100% { transform: rotate(45deg) scale(1); } 50% { transform: rotate(45deg) scale(1.08); } }
+  .hero h1 { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 900; letter-spacing: -1px; margin-bottom: 10px; }
+  .hero h1 span { color: var(--primary); }
+  .hero p { max-width: 560px; margin: 0 auto; color: var(--text-secondary); font-size: 1rem; line-height: 1.6; }
+
+  /* ===== BLOOD TYPE SELECTOR ===== */
+  .selector-wrap { max-width: 720px; margin: 36px auto 0; padding: 0 20px; }
+  .type-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .type-btn {
+    position: relative;
+    border: 2px solid rgba(217, 26, 92, 0.15);
+    background: var(--bg-white);
+    border-radius: var(--radius-sm);
+    padding: 16px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: 'Cinzel', serif;
+  }
+  .type-btn .code { display: block; font-size: 1.3rem; font-weight: 900; color: var(--secondary); }
+  .type-btn .lbl { display: block; margin-top: 4px; font-family: 'Inter', sans-serif; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; }
+  .type-btn:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow-sm); }
+  .type-btn.active { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-color: var(--primary-dark); }
+  .type-btn.active .code, .type-btn.active .lbl { color: #fff; }
+
+  /* ===== RESULTS ===== */
+  .results-wrap { max-width: 900px; margin: 48px auto 90px; padding: 0 20px; }
+  .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+  .results-header h2 { font-size: 1.3rem; font-weight: 800; }
+  .results-header h2 .type-tag { color: var(--primary); }
+  .results-count { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+  .donor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; }
+  .donor-card {
+    background: var(--bg-white);
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+  }
+  .donor-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+  .donor-card img { width: 76px; height: 76px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-light); margin-bottom: 12px; }
+  .donor-card .name { font-weight: 700; font-size: 1rem; }
+  .donor-card .designation { font-size: 0.78rem; color: var(--text-muted); margin: 3px 0 10px; }
+  .donor-card .badge { display: inline-block; background: var(--primary-light); color: var(--primary-dark); font-weight: 800; font-size: 0.78rem; padding: 3px 12px; border-radius: 20px; margin-bottom: 12px; font-family: 'Cinzel', serif; }
+  .donor-actions { display: flex; gap: 8px; width: 100%; }
+  .donor-actions a {
+    flex: 1;
+    padding: 9px 0;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: var(--transition);
+  }
+  .call-btn { background: var(--secondary); color: #fff; }
+  .call-btn:hover { background: var(--secondary-light); }
+  .wa-btn { background: #25D366; color: #fff; }
+  .wa-btn:hover { filter: brightness(1.08); }
+
+  .state-box {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--text-muted);
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    border: 1px dashed rgba(15, 23, 42, 0.12);
+  }
+  .state-box i { font-size: 2rem; margin-bottom: 12px; display: block; color: var(--primary); }
+  .state-box.error i { color: #EF4444; }
+
+  .disclaimer {
+    max-width: 900px; margin: 0 auto 60px; padding: 16px 20px;
+    background: rgba(212, 175, 55, 0.08);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6;
+  }
+  .disclaimer i { color: var(--gold); margin-right: 6px; }
+
+  @media (max-width: 600px) {
+    .type-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .type-btn { padding: 12px 4px; }
+    .type-btn .code { font-size: 1.05rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="brand">
+    <img src="rotaract-logo.jpg" alt="Rotaract Logo" onerror="this.style.display='none'">
+    <span>Rotaract</span>
+  </a>
+  <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+</div>
+
+<section class="hero">
+  <div class="hero-drop"><i class="fas fa-tint"></i></div>
+  <h1>Need <span>Blood?</span></h1>
+  <p>Search active Rotaract members by blood group and reach out directly. Every drop counts — thank you for stepping up.</p>
+
+  <div class="selector-wrap">
+    <div class="type-grid" id="typeGrid"></div>
+  </div>
+</section>
+
+<div class="results-wrap">
+  <div class="results-header" id="resultsHeader" style="display:none;">
+    <h2>Donors — <span class="type-tag" id="selectedTypeLabel"></span></h2>
+    <span class="results-count" id="resultsCount"></span>
+  </div>
+  <div id="resultsArea">
+    <div class="state-box">
+      <i class="fas fa-hand-pointer"></i>
+      Select a blood group above to find donors.
+    </div>
+  </div>
+</div>
+
+<div class="disclaimer">
+  <i class="fas fa-circle-info"></i>
+  Donor availability shown here is based on club membership records and is not a live medical registry. Please confirm eligibility and current availability directly with the donor before any donation.
+</div>
+
+<script>
+  const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+  const typeGrid = document.getElementById('typeGrid');
+  const resultsArea = document.getElementById('resultsArea');
+  const resultsHeader = document.getElementById('resultsHeader');
+  const resultsCount = document.getElementById('resultsCount');
+  const selectedTypeLabel = document.getElementById('selectedTypeLabel');
+
+  typeGrid.innerHTML = BLOOD_TYPES.map(t => `
+    <button class="type-btn" data-type="${t}">
+      <span class="code">${t}</span>
+      <span class="lbl">Search</span>
+    </button>
+  `).join('');
+
+  function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  function normalizeBloodGroup(str) {
+    return String(str ?? '')
+      .toUpperCase()
+      .replace(/\s+/g, '')
+      .replace('POSITIVE', '+')
+      .replace('NEGATIVE', '-');
+  }
+
+  let allActiveMembers = null; // cached after first fetch
+
+  async function fetchActiveMembersWithBlood() {
+    if (allActiveMembers) return allActiveMembers;
+    const { data, error } = await supabase
+      .from('members')
+      .select('name, designation, blood_group, phone, phone_number, photo_url, photo, profile_image, status')
+      .eq('status', 'active');
+    if (error) throw error;
+    allActiveMembers = data || [];
+    return allActiveMembers;
+  }
+
+  async function searchDonors(type) {
+    selectedTypeLabel.textContent = type;
+    resultsHeader.style.display = 'flex';
+    resultsArea.innerHTML = `<div class="state-box"><i class="fas fa-spinner fa-spin"></i> Searching donors…</div>`;
+    resultsCount.textContent = '';
+
+    try {
+      const members = await fetchActiveMembersWithBlood();
+      const matches = members.filter(m => normalizeBloodGroup(m.blood_group) === normalizeBloodGroup(type));
+
+      if (matches.length === 0) {
+        resultsCount.textContent = '';
+        resultsArea.innerHTML = `
+          <div class="state-box">
+            <i class="fas fa-tint-slash"></i>
+            No registered donors found for ${escapeHtml(type)} yet.
+          </div>`;
+        return;
+      }
+
+      resultsCount.textContent = `${matches.length} donor${matches.length > 1 ? 's' : ''} found`;
+
+      resultsArea.innerHTML = `<div class="donor-grid">${matches.map(m => {
+        const name = m.name || 'Member';
+        const photo = m.photo_url || m.photo || m.profile_image || '';
+        const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=D91A5C&color=fff&size=150`;
+        const phone = (m.phone || m.phone_number || '').toString().trim();
+        const telHref = phone ? `tel:${phone.replace(/\s+/g, '')}` : '#';
+        const waHref = phone ? `https://wa.me/${phone.replace(/[^\d]/g, '')}` : '#';
+        return `
+          <div class="donor-card">
+            <img src="${photo || fallback}" alt="${escapeHtml(name)}" loading="lazy" onerror="this.src='${fallback}'">
+            <div class="name">${escapeHtml(name)}</div>
+            <div class="designation">${escapeHtml(m.designation || 'Member')}</div>
+            <span class="badge">${escapeHtml(m.blood_group || type)}</span>
+            <div class="donor-actions">
+              ${phone ? `
+                <a href="${telHref}" class="call-btn"><i class="fas fa-phone"></i> Call</a>
+                <a href="${waHref}" target="_blank" class="wa-btn"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+              ` : `<span style="font-size:0.75rem;color:var(--text-muted);padding:9px 0;">No contact number on file</span>`}
+            </div>
+          </div>
+        `;
+      }).join('')}</div>`;
+    } catch (err) {
+      console.error('Donor search failed:', err);
+      resultsCount.textContent = '';
+      resultsArea.innerHTML = `
+        <div class="state-box error">
+          <i class="fas fa-triangle-exclamation"></i>
+          Couldn't load donor records right now. Please try again shortly.
+        </div>`;
+    }
+  }
+
+  typeGrid.addEventListener('click', (e) => {
+    const btn = e.target.closest('.type-btn');
+    if (!btn) return;
+    typeGrid.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    searchDonors(btn.dataset.type);
+  });
+</script>
+
+</body>
+</html>
