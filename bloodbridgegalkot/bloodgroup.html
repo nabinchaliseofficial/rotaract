@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Need Blood? | Rotaract Club of Galkot Baglung</title>
-<meta name="description" content="Find blood donors within the Rotaract Club of Galkot Baglung community by blood group." />
+<title>Blood Bridge Project 3.0 | Rotaract Club of Galkot Baglung</title>
+<meta name="description" content="Blood Bridge Project 3.0 — find blood donors across Galkot by blood group." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -85,9 +85,51 @@
   }
   .hero-drop i { transform: rotate(-45deg); color: #fff; font-size: 1.4rem; }
   @keyframes dropPulse { 0%, 100% { transform: rotate(45deg) scale(1); } 50% { transform: rotate(45deg) scale(1.08); } }
+  .eyebrow {
+    display: inline-block;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
   .hero h1 { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 900; letter-spacing: -1px; margin-bottom: 10px; }
   .hero h1 span { color: var(--primary); }
   .hero p { max-width: 560px; margin: 0 auto; color: var(--text-secondary); font-size: 1rem; line-height: 1.6; }
+
+  /* ===== TABS ===== */
+  .tab-nav { display: flex; justify-content: center; gap: 10px; margin: 26px auto 0; }
+  .tab-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border: 2px solid transparent;
+    transition: var(--transition);
+  }
+  .tab-btn.active { background: var(--secondary); color: #fff; }
+  .tab-btn:not(.active) { background: var(--bg-white); color: var(--text-secondary); border-color: rgba(15, 23, 42, 0.08); }
+  .tab-btn:not(.active):hover { border-color: var(--primary); color: var(--primary); }
+
+  .register-cta {
+    margin-top: 20px;
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--secondary);
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    transition: var(--transition);
+  }
+  .register-cta:hover { background: var(--secondary-light); }
 
   /* ===== BLOOD TYPE SELECTOR ===== */
   .selector-wrap { max-width: 720px; margin: 36px auto 0; padding: 0 20px; }
@@ -135,8 +177,10 @@
   .donor-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
   .donor-card img { width: 76px; height: 76px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-light); margin-bottom: 12px; }
   .donor-card .name { font-weight: 700; font-size: 1rem; }
-  .donor-card .designation { font-size: 0.78rem; color: var(--text-muted); margin: 3px 0 10px; }
+  .donor-card .location { font-size: 0.78rem; color: var(--text-muted); margin: 3px 0 10px; }
   .donor-card .badge { display: inline-block; background: var(--primary-light); color: var(--primary-dark); font-weight: 800; font-size: 0.78rem; padding: 3px 12px; border-radius: 20px; margin-bottom: 12px; font-family: 'Cinzel', serif; }
+  .donor-meta { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 14px; }
+  .donor-meta span { background: var(--bg-light); color: var(--text-secondary); font-size: 0.72rem; font-weight: 600; padding: 4px 10px; border-radius: 10px; }
   .donor-actions { display: flex; gap: 8px; width: 100%; }
   .donor-actions a {
     flex: 1;
@@ -184,15 +228,21 @@
 <div class="topbar">
   <a href="index.html" class="brand">
     <img src="rotaract-logo.jpg" alt="Rotaract Logo" onerror="this.style.display='none'">
-    <span>Rotaract</span>
+    <span>Blood Bridge Project 3.0</span>
   </a>
   <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
 </div>
 
 <section class="hero">
   <div class="hero-drop"><i class="fas fa-tint"></i></div>
+  <div class="eyebrow">Blood Bridge Project 3.0</div>
   <h1>Need <span>Blood?</span></h1>
-  <p>Search active Rotaract members by blood group and reach out directly. Every drop counts — thank you for stepping up.</p>
+  <p>Search registered donors across Galkot by blood group and reach out directly. Every drop counts — thank you for stepping up.</p>
+
+  <div class="tab-nav">
+    <a href="bloodgroup.html" class="tab-btn active"><i class="fas fa-magnifying-glass"></i> Find a Donor</a>
+    <a href="bloodgroupregister.html" class="tab-btn"><i class="fas fa-user-plus"></i> Register as Donor</a>
+  </div>
 
   <div class="selector-wrap">
     <div class="type-grid" id="typeGrid"></div>
@@ -208,13 +258,14 @@
     <div class="state-box">
       <i class="fas fa-hand-pointer"></i>
       Select a blood group above to find donors.
+      <div><a href="bloodgroupregister.html" class="register-cta"><i class="fas fa-user-plus"></i> Not in the list? Register here</a></div>
     </div>
   </div>
 </div>
 
 <div class="disclaimer">
   <i class="fas fa-circle-info"></i>
-  Donor availability shown here is based on club membership records and is not a live medical registry. Please confirm eligibility and current availability directly with the donor before any donation.
+  Donor availability shown here is based on the Blood Bridge Project registry and is not a live medical registry. Please confirm eligibility and current availability directly with the donor before any donation.
 </div>
 
 <script>
@@ -251,17 +302,17 @@
       .replace('NEGATIVE', '-');
   }
 
-  let allActiveMembers = null; // cached after first fetch
+  let allDonors = null; // cached after first fetch
 
-  async function fetchActiveMembersWithBlood() {
-    if (allActiveMembers) return allActiveMembers;
+  async function fetchDonors() {
+    if (allDonors) return allDonors;
     const { data, error } = await supabase
-      .from('members')
-      .select('name, designation, blood_group, phone, phone_number, photo_url, photo, profile_image, status')
-      .eq('status', 'active');
+      .from('blood_bridge_galkot')
+      .select('person_name, age, sex, blood_group, municipality, ward_number, phone_number, status')
+      .ilike('status', 'active');
     if (error) throw error;
-    allActiveMembers = data || [];
-    return allActiveMembers;
+    allDonors = data || [];
+    return allDonors;
   }
 
   async function searchDonors(type) {
@@ -271,8 +322,8 @@
     resultsCount.textContent = '';
 
     try {
-      const members = await fetchActiveMembersWithBlood();
-      const matches = members.filter(m => normalizeBloodGroup(m.blood_group) === normalizeBloodGroup(type));
+      const donors = await fetchDonors();
+      const matches = donors.filter(m => normalizeBloodGroup(m.blood_group) === normalizeBloodGroup(type));
 
       if (matches.length === 0) {
         resultsCount.textContent = '';
@@ -280,6 +331,7 @@
           <div class="state-box">
             <i class="fas fa-tint-slash"></i>
             No registered donors found for ${escapeHtml(type)} yet.
+            <div><a href="bloodgroupregister.html" class="register-cta"><i class="fas fa-user-plus"></i> Be the first ${escapeHtml(type)} donor — Register</a></div>
           </div>`;
         return;
       }
@@ -287,18 +339,22 @@
       resultsCount.textContent = `${matches.length} donor${matches.length > 1 ? 's' : ''} found`;
 
       resultsArea.innerHTML = `<div class="donor-grid">${matches.map(m => {
-        const name = m.name || 'Member';
-        const photo = m.photo_url || m.photo || m.profile_image || '';
+        const name = m.person_name || 'Donor';
         const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=D91A5C&color=fff&size=150`;
-        const phone = (m.phone || m.phone_number || '').toString().trim();
+        const phone = (m.phone_number || '').toString().trim();
         const telHref = phone ? `tel:${phone.replace(/\s+/g, '')}` : '#';
         const waHref = phone ? `https://wa.me/${phone.replace(/[^\d]/g, '')}` : '#';
+        const location = [m.municipality, m.ward_number ? `Ward ${m.ward_number}` : ''].filter(Boolean).join(' - ');
         return `
           <div class="donor-card">
-            <img src="${photo || fallback}" alt="${escapeHtml(name)}" loading="lazy" onerror="this.src='${fallback}'">
+            <img src="${fallback}" alt="${escapeHtml(name)}" loading="lazy" onerror="this.src='${fallback}'">
             <div class="name">${escapeHtml(name)}</div>
-            <div class="designation">${escapeHtml(m.designation || 'Member')}</div>
+            <div class="location">${escapeHtml(location || 'Location not on file')}</div>
             <span class="badge">${escapeHtml(m.blood_group || type)}</span>
+            <div class="donor-meta">
+              ${m.age ? `<span>Age: ${escapeHtml(m.age)}</span>` : ''}
+              ${m.sex ? `<span>${escapeHtml(m.sex)}</span>` : ''}
+            </div>
             <div class="donor-actions">
               ${phone ? `
                 <a href="${telHref}" class="call-btn"><i class="fas fa-phone"></i> Call</a>

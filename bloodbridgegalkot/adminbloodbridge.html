@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin | Blood Bridge Project 3.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --primary: #D91A5C;
+    --primary-dark: #A61042;
+    --primary-light: #FDE8F0;
+    --secondary: #1D2A44;
+    --secondary-light: #2D3A5A;
+    --gold: #D4AF37;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+    --bg-light: #F8FAFC;
+    --bg-white: #FFFFFF;
+    --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.08);
+    --radius-sm: 12px;
+    --radius-md: 20px;
+    --transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --green: #16A34A;
+    --red: #DC2626;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-light);
+    color: var(--text-primary);
+    min-height: 100vh;
+  }
+  a { text-decoration: none; }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 28px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; color: var(--text-primary); font-weight: 800; font-size: 1.05rem; }
+  .brand span { background: linear-gradient(135deg, var(--primary), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .brand .tag { font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-left: 4px; }
+  .logout-btn { display: none; align-items: center; gap: 8px; font-weight: 700; font-size: 0.82rem; color: var(--text-secondary); background: var(--bg-white); border: 1px solid rgba(15,23,42,0.1); padding: 8px 16px; border-radius: 30px; cursor: pointer; transition: var(--transition); }
+  .logout-btn:hover { color: var(--red); border-color: var(--red); }
+
+  /* ===== LOGIN ===== */
+  .login-wrap { max-width: 380px; margin: 90px auto; padding: 0 20px; }
+  .login-card {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    padding: 34px 28px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(15,23,42,0.06);
+    text-align: center;
+  }
+  .login-icon {
+    width: 56px; height: 56px; margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
+    border-radius: 16px;
+    color: #fff; font-size: 1.4rem;
+  }
+  .login-card h1 { font-size: 1.3rem; font-weight: 800; margin-bottom: 6px; }
+  .login-card p { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 22px; }
+  .field { margin-bottom: 14px; text-align: left; }
+  .field label { display: block; font-size: 0.78rem; font-weight: 700; margin-bottom: 6px; }
+  .field input {
+    width: 100%; padding: 12px 14px; border-radius: 10px;
+    border: 1.5px solid rgba(15,23,42,0.12);
+    font-size: 0.9rem; background: var(--bg-light); color: var(--text-primary);
+  }
+  .field input:focus { outline: none; border-color: var(--primary); background: #fff; }
+  .login-btn {
+    width: 100%; padding: 13px 0; margin-top: 6px;
+    border: none; border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff; font-weight: 800; font-size: 0.9rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: var(--transition);
+  }
+  .login-btn:hover { filter: brightness(1.05); }
+  .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .login-msg { margin-top: 14px; font-size: 0.8rem; font-weight: 600; display: none; }
+  .login-msg.show { display: block; }
+  .login-msg.error { color: var(--red); }
+
+  /* ===== DASHBOARD ===== */
+  .dash-wrap { max-width: 960px; margin: 40px auto 90px; padding: 0 20px; display: none; }
+  .dash-header { margin-bottom: 24px; }
+  .dash-header h1 { font-size: 1.5rem; font-weight: 900; margin-bottom: 4px; }
+  .dash-header p { font-size: 0.85rem; color: var(--text-muted); }
+  .dash-header .count-pill { display: inline-block; background: var(--primary-light); color: var(--primary-dark); font-weight: 800; font-size: 0.75rem; padding: 3px 12px; border-radius: 20px; margin-left: 8px; font-family: 'Cinzel', serif; }
+
+  .pending-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .pending-card {
+    background: var(--bg-white);
+    border: 1px solid rgba(15,23,42,0.06);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .pending-card .row-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .pending-card .name { font-weight: 800; font-size: 1rem; }
+  .pending-card .badge { background: var(--primary-light); color: var(--primary-dark); font-weight: 800; font-size: 0.75rem; padding: 3px 12px; border-radius: 20px; font-family: 'Cinzel', serif; }
+  .pending-card .details { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.9; margin-bottom: 14px; }
+  .pending-card .details i { width: 16px; color: var(--text-muted); margin-right: 6px; }
+  .pending-actions { display: flex; gap: 8px; }
+  .pending-actions button {
+    flex: 1; padding: 10px 0; border: none; border-radius: 10px;
+    font-weight: 700; font-size: 0.82rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: var(--transition);
+  }
+  .approve-btn { background: var(--green); color: #fff; }
+  .approve-btn:hover { filter: brightness(1.08); }
+  .reject-btn { background: rgba(220, 38, 38, 0.1); color: var(--red); }
+  .reject-btn:hover { background: rgba(220, 38, 38, 0.18); }
+  .pending-actions button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .state-box {
+    text-align: center; padding: 50px 20px; color: var(--text-muted);
+    background: var(--bg-white); border-radius: var(--radius-md);
+    border: 1px dashed rgba(15,23,42,0.12); grid-column: 1 / -1;
+  }
+  .state-box i { font-size: 2rem; margin-bottom: 12px; display: block; color: var(--primary); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span>Blood Bridge</span><span class="tag">Admin</span></div>
+  <button class="logout-btn" id="logoutBtn"><i class="fas fa-right-from-bracket"></i> Logout</button>
+</div>
+
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <div class="login-icon"><i class="fas fa-shield-halved"></i></div>
+    <h1>Admin Login</h1>
+    <p>Sign in with your admin account to review donor registrations.</p>
+    <form id="loginForm">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="admin@example.com" required />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" required />
+      </div>
+      <button type="submit" class="login-btn" id="loginBtn"><i class="fas fa-right-to-bracket"></i> Sign In</button>
+      <div class="login-msg" id="loginMsg"></div>
+    </form>
+  </div>
+</div>
+
+<div class="dash-wrap" id="dashWrap">
+  <div class="dash-header">
+    <h1>Pending Registrations <span class="count-pill" id="pendingCount">0</span></h1>
+    <p>Review and approve new donor sign-ups. Approved donors become searchable immediately.</p>
+  </div>
+  <div class="pending-grid" id="pendingGrid">
+    <div class="state-box"><i class="fas fa-spinner fa-spin"></i> Loading…</div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const loginWrap = document.getElementById('loginWrap');
+  const dashWrap = document.getElementById('dashWrap');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const loginForm = document.getElementById('loginForm');
+  const loginBtn = document.getElementById('loginBtn');
+  const loginMsg = document.getElementById('loginMsg');
+  const pendingGrid = document.getElementById('pendingGrid');
+  const pendingCount = document.getElementById('pendingCount');
+
+  function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  function isAdmin(user) {
+    // Admin access is granted via a "role" field set to "admin" in the user's
+    // metadata. Set this from Supabase Dashboard -> Authentication -> Users ->
+    // (select the admin's account) -> Raw user meta data -> { "role": "admin" }
+    return user?.user_metadata?.role === 'admin' || user?.app_metadata?.role === 'admin';
+  }
+
+  function showLogin() {
+    loginWrap.style.display = 'block';
+    dashWrap.style.display = 'none';
+    logoutBtn.style.display = 'none';
+  }
+
+  function showDashboard() {
+    loginWrap.style.display = 'none';
+    dashWrap.style.display = 'block';
+    logoutBtn.style.display = 'flex';
+    loadPending();
+  }
+
+  async function checkSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user && isAdmin(session.user)) {
+      showDashboard();
+    } else {
+      if (session?.user && !isAdmin(session.user)) {
+        await supabase.auth.signOut();
+      }
+      showLogin();
+    }
+  }
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loginMsg.className = 'login-msg';
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Signing in…`;
+
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+
+      if (!isAdmin(data.user)) {
+        await supabase.auth.signOut();
+        loginMsg.className = 'login-msg show error';
+        loginMsg.textContent = 'This account does not have admin access.';
+        return;
+      }
+
+      showDashboard();
+    } catch (err) {
+      console.error('Login failed:', err);
+      loginMsg.className = 'login-msg show error';
+      loginMsg.textContent = 'Invalid email or password.';
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.innerHTML = `<i class="fas fa-right-to-bracket"></i> Sign In`;
+    }
+  });
+
+  logoutBtn.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    showLogin();
+  });
+
+  async function loadPending() {
+    pendingGrid.innerHTML = `<div class="state-box"><i class="fas fa-spinner fa-spin"></i> Loading…</div>`;
+    try {
+      const { data, error } = await supabase
+        .from('blood_bridge_galkot')
+        .select('id, sn, person_name, age, sex, blood_group, municipality, ward_number, phone_number, status')
+        .eq('status', 'inactive')
+        .order('id', { ascending: false });
+      if (error) throw error;
+
+      renderPending(data || []);
+    } catch (err) {
+      console.error('Failed to load pending registrations:', err);
+      pendingGrid.innerHTML = `<div class="state-box"><i class="fas fa-triangle-exclamation"></i> Couldn't load registrations. Please refresh.</div>`;
+    }
+  }
+
+  function renderPending(rows) {
+    pendingCount.textContent = rows.length;
+
+    if (rows.length === 0) {
+      pendingGrid.innerHTML = `<div class="state-box"><i class="fas fa-circle-check"></i> No pending registrations right now.</div>`;
+      return;
+    }
+
+    pendingGrid.innerHTML = rows.map(r => `
+      <div class="pending-card" data-id="${r.id}">
+        <div class="row-top">
+          <span class="name">${escapeHtml(r.person_name || 'Unnamed')}</span>
+          <span class="badge">${escapeHtml(r.blood_group || '-')}</span>
+        </div>
+        <div class="details">
+          <div><i class="fas fa-cake-candles"></i>${escapeHtml(r.age || '-')} yrs • ${escapeHtml(r.sex || '-')}</div>
+          <div><i class="fas fa-location-dot"></i>${escapeHtml(r.municipality || '-')}${r.ward_number ? ', Ward ' + escapeHtml(r.ward_number) : ''}</div>
+          <div><i class="fas fa-phone"></i>${escapeHtml(r.phone_number || '-')}</div>
+        </div>
+        <div class="pending-actions">
+          <button class="approve-btn" onclick="handleDecision(${r.id}, 'approve', this)"><i class="fas fa-check"></i> Approve</button>
+          <button class="reject-btn" onclick="handleDecision(${r.id}, 'reject', this)"><i class="fas fa-xmark"></i> Reject</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function handleDecision(id, action, btnEl) {
+    const card = btnEl.closest('.pending-card');
+    card.querySelectorAll('button').forEach(b => b.disabled = true);
+
+    try {
+      if (action === 'approve') {
+        const { error } = await supabase
+          .from('blood_bridge_galkot')
+          .update({ status: 'active' })
+          .eq('id', id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('blood_bridge_galkot')
+          .delete()
+          .eq('id', id);
+        if (error) throw error;
+      }
+
+      card.remove();
+      pendingCount.textContent = pendingGrid.querySelectorAll('.pending-card').length;
+      if (pendingGrid.querySelectorAll('.pending-card').length === 0) {
+        pendingGrid.innerHTML = `<div class="state-box"><i class="fas fa-circle-check"></i> No pending registrations right now.</div>`;
+      }
+    } catch (err) {
+      console.error(`Failed to ${action}:`, err);
+      card.querySelectorAll('button').forEach(b => b.disabled = false);
+      alert(`Couldn't ${action} this registration. Please try again.`);
+    }
+  }
+
+  checkSession();
+</script>
+
+</body>
+</html>

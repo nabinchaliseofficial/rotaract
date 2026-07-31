@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Register as a Donor | Blood Bridge Project 3.0</title>
+<meta name="description" content="Register as a blood donor with the Rotaract Club of Galkot Baglung — Blood Bridge Project 3.0." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --primary: #D91A5C;
+    --primary-dark: #A61042;
+    --primary-light: #FDE8F0;
+    --secondary: #1D2A44;
+    --secondary-light: #2D3A5A;
+    --gold: #D4AF37;
+    --gold-light: #F4E08A;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+    --bg-light: #F8FAFC;
+    --bg-white: #FFFFFF;
+    --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.08);
+    --radius-sm: 12px;
+    --radius-md: 20px;
+    --transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-light);
+    color: var(--text-primary);
+    min-height: 100vh;
+  }
+  a { text-decoration: none; }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 28px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; color: var(--text-primary); font-weight: 800; font-size: 1.05rem; }
+  .brand img { height: 36px; width: auto; border-radius: 8px; }
+  .brand span { background: linear-gradient(135deg, var(--primary), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .back-link { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.85rem; color: var(--text-secondary); transition: var(--transition); }
+  .back-link:hover { color: var(--primary); }
+
+  .hero {
+    position: relative;
+    padding: 60px 20px 20px;
+    text-align: center;
+    background: radial-gradient(circle at 50% 0%, rgba(217, 26, 92, 0.08), transparent 60%);
+  }
+  .hero-drop {
+    width: 60px; height: 60px;
+    margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(45deg);
+    box-shadow: var(--shadow-md);
+  }
+  .hero-drop i { transform: rotate(-45deg); color: #fff; font-size: 1.3rem; }
+  .eyebrow {
+    display: inline-block;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+  .hero h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: 900; letter-spacing: -1px; margin-bottom: 8px; }
+  .hero h1 span { color: var(--primary); }
+  .hero p { max-width: 520px; margin: 0 auto; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; }
+
+  .tab-nav { display: flex; justify-content: center; gap: 10px; margin: 24px auto 0; }
+  .tab-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border: 2px solid transparent;
+    transition: var(--transition);
+  }
+  .tab-btn.active { background: var(--secondary); color: #fff; }
+  .tab-btn:not(.active) { background: var(--bg-white); color: var(--text-secondary); border-color: rgba(15, 23, 42, 0.08); }
+  .tab-btn:not(.active):hover { border-color: var(--primary); color: var(--primary); }
+
+  .form-wrap { max-width: 640px; margin: 40px auto 90px; padding: 0 20px; }
+  .form-card {
+    background: var(--bg-white);
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: var(--radius-md);
+    padding: 32px 28px;
+    box-shadow: var(--shadow-sm);
+  }
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 0.82rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+  .field label .req { color: var(--primary); }
+  .field input, .field select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(15, 23, 42, 0.12);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.92rem;
+    color: var(--text-primary);
+    background: var(--bg-light);
+    transition: var(--transition);
+  }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--primary); background: #fff; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .blood-select-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .blood-pill {
+    border: 2px solid rgba(217, 26, 92, 0.15);
+    background: var(--bg-light);
+    border-radius: 10px;
+    padding: 10px 4px;
+    text-align: center;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-weight: 900;
+    font-size: 0.95rem;
+    color: var(--secondary);
+    transition: var(--transition);
+  }
+  .blood-pill:hover { border-color: var(--primary); }
+  .blood-pill.active { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-color: var(--primary-dark); color: #fff; }
+
+  .submit-btn {
+    width: 100%;
+    margin-top: 8px;
+    padding: 14px 0;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: var(--transition);
+  }
+  .submit-btn:hover { filter: brightness(1.05); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .form-msg {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: none;
+    align-items: center;
+    gap: 8px;
+  }
+  .form-msg.show { display: flex; }
+  .form-msg.success { background: rgba(34, 197, 94, 0.1); color: #15803D; border: 1px solid rgba(34, 197, 94, 0.25); }
+  .form-msg.error { background: rgba(239, 68, 68, 0.1); color: #B91C1C; border: 1px solid rgba(239, 68, 68, 0.25); }
+
+  .disclaimer {
+    max-width: 640px; margin: 0 auto 60px; padding: 16px 20px;
+    background: rgba(212, 175, 55, 0.08);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6;
+  }
+  .disclaimer i { color: var(--gold); margin-right: 6px; }
+
+  @media (max-width: 480px) {
+    .field-row { grid-template-columns: 1fr; }
+    .blood-select-grid { grid-template-columns: repeat(4, 1fr); }
+    .form-card { padding: 24px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="brand">
+    <img src="rotaract-logo.jpg" alt="Rotaract Logo" onerror="this.style.display='none'">
+    <span>Blood Bridge Project 3.0</span>
+  </a>
+  <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+</div>
+
+<section class="hero">
+  <div class="hero-drop"><i class="fas fa-tint"></i></div>
+  <div class="eyebrow">Blood Bridge Project 3.0</div>
+  <h1>Become a <span>Donor</span></h1>
+  <p>Join the Blood Bridge donor registry. Your details will only be used to connect you with people who need blood in an emergency.</p>
+
+  <div class="tab-nav">
+    <a href="bloodgroup.html" class="tab-btn"><i class="fas fa-magnifying-glass"></i> Find a Donor</a>
+    <a href="bloodgroupregister.html" class="tab-btn active"><i class="fas fa-user-plus"></i> Register as Donor</a>
+  </div>
+</section>
+
+<div class="form-wrap">
+  <div class="form-card">
+    <form id="registerForm">
+      <div class="field">
+        <label>Full Name <span class="req">*</span></label>
+        <input type="text" id="personName" placeholder="e.g. Ramesh Thapa" required />
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Age <span class="req">*</span></label>
+          <input type="number" id="age" min="16" max="70" placeholder="e.g. 24" required />
+        </div>
+        <div class="field">
+          <label>Sex <span class="req">*</span></label>
+          <select id="sex" required>
+            <option value="" disabled selected>Select</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Blood Group <span class="req">*</span></label>
+        <div class="blood-select-grid" id="bloodGrid"></div>
+        <input type="hidden" id="bloodGroup" required />
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Municipality <span class="req">*</span></label>
+          <input type="text" id="municipality" placeholder="e.g. Galkot Municipality" required />
+        </div>
+        <div class="field">
+          <label>Ward Number <span class="req">*</span></label>
+          <input type="text" id="wardNumber" placeholder="e.g. 5" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Phone Number <span class="req">*</span></label>
+        <input type="tel" id="phoneNumber" placeholder="e.g. 98XXXXXXXX" required />
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">
+        <i class="fas fa-hand-holding-droplet"></i> Register as Donor
+      </button>
+
+      <div class="form-msg" id="formMsg"></div>
+    </form>
+  </div>
+</div>
+
+<div class="disclaimer">
+  <i class="fas fa-circle-info"></i>
+  By registering, you agree that Rotaract Club of Galkot Baglung may share your name, blood group, location, and phone number with people searching for donors on this site. You can request removal anytime by contacting the club.
+</div>
+
+<script>
+  const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+  const bloodGrid = document.getElementById('bloodGrid');
+  const bloodGroupInput = document.getElementById('bloodGroup');
+  const form = document.getElementById('registerForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const formMsg = document.getElementById('formMsg');
+
+  bloodGrid.innerHTML = BLOOD_TYPES.map(t => `<div class="blood-pill" data-type="${t}">${t}</div>`).join('');
+
+  bloodGrid.addEventListener('click', (e) => {
+    const pill = e.target.closest('.blood-pill');
+    if (!pill) return;
+    bloodGrid.querySelectorAll('.blood-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    bloodGroupInput.value = pill.dataset.type;
+  });
+
+  function showMsg(type, text) {
+    formMsg.className = `form-msg show ${type}`;
+    formMsg.innerHTML = `<i class="fas ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i> ${text}`;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    formMsg.className = 'form-msg';
+
+    if (!bloodGroupInput.value) {
+      showMsg('error', 'Please select a blood group.');
+      return;
+    }
+
+    const payload = {
+      person_name: document.getElementById('personName').value.trim(),
+      age: document.getElementById('age').value.trim(),
+      sex: document.getElementById('sex').value,
+      blood_group: bloodGroupInput.value,
+      municipality: document.getElementById('municipality').value.trim(),
+      ward_number: document.getElementById('wardNumber').value.trim(),
+      phone_number: document.getElementById('phoneNumber').value.trim(),
+      data_entry_by: 'Self (Online Registration)',
+      status: 'inactive'
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Submitting…`;
+
+    try {
+      // determine next serial number from existing records
+      const { data: snData, error: snError } = await supabase
+        .from('blood_bridge_galkot')
+        .select('sn')
+        .order('sn', { ascending: false })
+        .limit(1);
+      if (snError) throw snError;
+
+      const nextSn = (snData && snData.length && snData[0].sn) ? snData[0].sn + 1 : 1;
+      payload.sn = nextSn;
+      payload.highest_entry = nextSn;
+
+      const { error: insertError } = await supabase
+        .from('blood_bridge_galkot')
+        .insert([payload]);
+      if (insertError) throw insertError;
+
+      showMsg('success', 'Thank you! Your registration is submitted and will appear in search once approved by an admin.');
+      form.reset();
+      bloodGrid.querySelectorAll('.blood-pill').forEach(p => p.classList.remove('active'));
+      bloodGroupInput.value = '';
+    } catch (err) {
+      console.error('Registration failed:', err);
+      showMsg('error', "Couldn't submit your registration right now. Please try again shortly.");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<i class="fas fa-hand-holding-droplet"></i> Register as Donor`;
+    }
+  });
+</script>
+
+</body>
+</html>
