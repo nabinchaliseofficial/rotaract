@@ -123,6 +123,7 @@
       <div class="field">
         <label>Phone Number <span class="req">*</span></label>
         <input type="tel" id="phoneNumber" placeholder="e.g. 98XXXXXXXX" required />
+        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:5px;">Each phone number can register only once.</div>
       </div>
 
       <button type="submit" class="submit-btn" id="submitBtn">
@@ -191,18 +192,6 @@
     submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Submitting…`;
 
     try {
-      // Get next serial number
-      const { data: snData, error: snError } = await supabase
-        .from('blood_bridge_galkot')
-        .select('sn')
-        .order('sn', { ascending: false })
-        .limit(1);
-      if (snError) throw snError;
-
-      const nextSn = (snData && snData.length && snData[0].sn) ? snData[0].sn + 1 : 1;
-      payload.sn = nextSn;
-      payload.highest_entry = nextSn;
-
       const { error: insertError } = await supabase
         .from('blood_bridge_galkot')
         .insert([payload]);
@@ -214,7 +203,11 @@
       bloodGroupInput.value = '';
     } catch (err) {
       console.error('Registration failed:', err);
-      showMsg('error', `Submission failed: ${err.message}`);
+      if (err.code === '23505') {
+        showMsg('error', 'This phone number is already registered. Each donor can only register once.');
+      } else {
+        showMsg('error', `Submission failed: ${err.message}`);
+      }
     } finally {
       submitBtn.disabled = false;
       submitBtn.innerHTML = `<i class="fas fa-hand-holding-droplet"></i> Register as Donor`;

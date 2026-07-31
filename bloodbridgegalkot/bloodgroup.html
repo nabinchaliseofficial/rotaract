@@ -784,11 +784,7 @@
 
             <form id="registerForm">
                 <div class="form-grid">
-                    <!-- SN (auto) -->
-                    <div class="form-group full-width" style="display:none;">
-                        <label>SN (auto)</label>
-                        <input type="number" id="formSn" placeholder="Auto" disabled />
-                    </div>
+                    <!-- SN (auto) – hidden field removed, no longer needed -->
 
                     <div class="form-group">
                         <label>Full Name <span class="required">*</span></label>
@@ -967,7 +963,7 @@
                 const { data, error } = await supabase
                     .from('blood_bridge_galkot')
                     .select('*')
-                    .order('sn', { ascending: true });
+                    .order('sn', { ascending: true, nullsFirst: false });
 
                 if (error) throw error;
                 allDonors = data || [];
@@ -1012,7 +1008,7 @@
         // ---- REGISTER DONOR ----
         async function registerDonor(formData) {
             try {
-                // Check for duplicate phone number (optional but helpful)
+                // Optional duplicate check (database constraint will also enforce)
                 const { data: existing, error: checkErr } = await supabase
                     .from('blood_bridge_galkot')
                     .select('phone_number')
@@ -1020,7 +1016,6 @@
                     .maybeSingle();
 
                 if (checkErr && checkErr.code !== 'PGRST116') {
-                    // PGRST116 means no rows returned, ignore
                     console.warn('Duplicate check error:', checkErr);
                 }
 
@@ -1029,11 +1024,10 @@
                     return false;
                 }
 
-                // Insert
+                // Insert – do NOT include sn or id (DB auto-generates)
                 const { data, error } = await supabase
                     .from('blood_bridge_galkot')
                     .insert([{
-                        sn: parseInt(formData.sn) || null,
                         person_name: formData.person_name,
                         age: formData.age,
                         sex: formData.sex,
@@ -1042,20 +1036,24 @@
                         ward_number: formData.ward_number,
                         phone_number: formData.phone_number,
                         data_entry_by: formData.data_entry_by || null,
-                        highest_entry: parseInt(formData.highest_entry) || null,
                         status: formData.status || 'inactive',
+                        // highest_entry omitted intentionally (not used)
                     }])
                     .select();
 
                 if (error) throw error;
 
                 showToast('Donor registered successfully! 🎉', 'success');
-                // Refresh list
-                await fetchDonors();
+                await fetchDonors(); // refresh list
                 return true;
             } catch (err) {
                 console.error('Insert error:', err);
-                showToast('Registration failed: ' + err.message, 'error');
+                // Show user-friendly message
+                let msg = err.message;
+                if (msg.includes('duplicate key') || msg.includes('unique constraint')) {
+                    msg = 'Phone number already exists. Please use a different number.';
+                }
+                showToast('Registration failed: ' + msg, 'error');
                 return false;
             }
         }
@@ -1065,9 +1063,7 @@
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
             registerForm.reset();
-            // set default status
             document.getElementById('formStatus').value = 'inactive';
-            // focus first field
             setTimeout(() => document.getElementById('formName').focus(), 100);
         }
 
@@ -1090,12 +1086,10 @@
         closeModalBtn.addEventListener('click', closeModal);
         cancelFormBtn.addEventListener('click', closeModal);
 
-        // Close on overlay click
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
 
-        // Close on Escape
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
         });
@@ -1104,12 +1098,10 @@
         applyBtn.addEventListener('click', applyFilters);
         resetBtn.addEventListener('click', resetFilters);
 
-        // Enter key on filter inputs triggers apply
         municipalityFilter.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') applyFilters();
         });
 
-        // Hero "Find a Donor" scrolls to filter
         document.getElementById('heroFindBtn').addEventListener('click', (e) => {
             e.preventDefault();
             document.getElementById('filterSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1119,7 +1111,6 @@
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const form = e.target;
             const name = document.getElementById('formName').value.trim();
             const age = document.getElementById('formAge').value.trim();
             const sex = document.getElementById('formSex').value;
@@ -1136,20 +1127,17 @@
                 return;
             }
 
-            // Phone number validation (basic)
             if (!/^[0-9+\-() ]{7,15}$/.test(phone)) {
                 showToast('Please enter a valid phone number (7-15 digits).', 'error');
                 return;
             }
 
-            // Age validation
             if (isNaN(age) || parseInt(age) < 1 || parseInt(age) > 120) {
                 showToast('Please enter a valid age (1–120).', 'error');
                 return;
             }
 
             const payload = {
-                sn: null, // will auto-increment
                 person_name: name,
                 age: age,
                 sex: sex,
@@ -1158,15 +1146,13 @@
                 ward_number: ward,
                 phone_number: phone,
                 data_entry_by: dataEntry || null,
-                highest_entry: null,
                 status: status,
             };
 
             const success = await registerDonor(payload);
             if (success) {
                 closeModal();
-                // reset form
-                form.reset();
+                registerForm.reset();
                 document.getElementById('formStatus').value = 'inactive';
             }
         });
@@ -1174,14 +1160,13 @@
         // ---- INIT ----
         fetchDonors();
 
-        // Also refresh when user comes back to tab (optional)
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) {
                 fetchDonors();
             }
         });
 
-        console.log('🩸 Blood Bridge 3.0 – Galkot');
+        console.log('🩸 Blood Bridge 3.0 – Galkot (improved)');
         console.log('Supabase URL:', SUPABASE_URL);
         console.log('Table: blood_bridge_galkot');
     </script>
