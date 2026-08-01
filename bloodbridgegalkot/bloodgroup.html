@@ -1,1175 +1,253 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blood Bridge Project 3.0 – Galkot</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Blood Bridge Galkot | Donor List</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --red:#b91c1c; --red-dark:#7f1d1d; --bg:#fdf2f2; --card:#fff;
+    --text:#1f1a1a; --muted:#6b7280; --border:#f1d6d6;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Segoe UI',Roboto,-apple-system,sans-serif;background:var(--bg);color:var(--text);}
+  .header{
+    background:linear-gradient(135deg,var(--red),var(--red-dark));
+    color:#fff;padding:32px 16px 24px;text-align:center;
+  }
+  .header .drop{font-size:36px;margin-bottom:6px;}
+  .header h1{margin:0 0 4px;font-size:24px;}
+  .header p{margin:0;opacity:.9;font-size:14px;}
+  .live-dot{
+    display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);
+    padding:4px 12px;border-radius:20px;font-size:12px;margin-top:10px;
+  }
+  .live-dot .dot{width:8px;height:8px;border-radius:50%;background:#4ade80;animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 
-    <!-- Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-    </script>
+  .wrap{max-width:1000px;margin:-20px auto 0;padding:0 16px 60px;}
 
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  .toolbar{
+    background:var(--card);border-radius:14px;padding:16px;box-shadow:0 4px 20px rgba(185,28,28,0.08);
+    display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;
+  }
+  .toolbar input, .toolbar select{
+    padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;
+  }
+  .toolbar input[type=text]{flex:2;min-width:200px;}
+  .toolbar select{flex:1;min-width:120px;}
 
-    <style>
-        /* ----- RESET & BASE ----- */
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+  .stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+  .stat-card{
+    background:var(--card);border-radius:12px;padding:14px 18px;flex:1;min-width:110px;
+    text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.04);
+  }
+  .stat-card .num{font-size:22px;font-weight:800;color:var(--red);}
+  .stat-card .label{font-size:11px;color:var(--muted);margin-top:2px;}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f8fafc;
-            color: #0b1a2e;
-            line-height: 1.6;
-            padding: 0 20px;
-        }
+  .donor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+  .donor-card{
+    background:var(--card);border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);
+    border:1px solid var(--border);position:relative;
+  }
+  .bg-badge{
+    position:absolute;top:14px;right:14px;background:var(--red);color:#fff;
+    font-weight:800;font-size:15px;padding:4px 10px;border-radius:8px;
+  }
+  .donor-name{font-size:16px;font-weight:700;margin:0 0 6px;padding-right:60px;}
+  .donor-detail{font-size:13px;color:var(--muted);margin:3px 0;display:flex;gap:6px;align-items:center;}
+  .donor-detail .icon{width:14px;text-align:center;}
+  .call-btn{
+    display:inline-block;margin-top:10px;background:var(--red);color:#fff;text-decoration:none;
+    padding:8px 14px;border-radius:8px;font-size:13px;font-weight:700;
+  }
+  .call-btn:hover{background:var(--red-dark);}
 
-        .container {
-            max-width: 1300px;
-            margin: 0 auto;
-            padding: 0 16px;
-        }
+  .empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+  .empty-state .big-icon{font-size:40px;margin-bottom:12px;}
 
-        /* ----- HEADER / NAV ----- */
-        .navbar {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            padding: 18px 0 12px;
-            border-bottom: 2px solid #e5e9f0;
-            margin-bottom: 24px;
-        }
+  .load-error{
+    text-align:center;padding:20px;color:var(--red);background:#fee2e2;border-radius:12px;
+    margin-bottom:20px;font-size:14px;display:none;
+  }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #b91c1c;
-        }
-        .logo i {
-            font-size: 2rem;
-        }
-        .logo span {
-            color: #0b1a2e;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .nav-links a {
-            text-decoration: none;
-            color: #1e3a5f;
-            font-weight: 600;
-            padding: 6px 14px;
-            border-radius: 30px;
-            transition: 0.2s;
-            font-size: 0.95rem;
-        }
-        .nav-links a:hover {
-            background: #eef2f7;
-        }
-        .nav-links .btn-outline {
-            border: 2px solid #b91c1c;
-            color: #b91c1c;
-        }
-        .nav-links .btn-outline:hover {
-            background: #b91c1c;
-            color: #fff;
-        }
-        .nav-links .btn-solid {
-            background: #b91c1c;
-            color: #fff;
-        }
-        .nav-links .btn-solid:hover {
-            background: #991b1b;
-        }
-
-        /* ----- HERO ----- */
-        .hero {
-            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-            border-radius: 24px;
-            padding: 48px 40px 40px;
-            margin-bottom: 32px;
-            box-shadow: 0 4px 20px rgba(185, 28, 28, 0.08);
-            border: 1px solid #fecaca;
-        }
-
-        .hero h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: #7f1d1d;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .hero h1 i {
-            color: #b91c1c;
-            font-size: 2.8rem;
-        }
-        .hero p {
-            font-size: 1.1rem;
-            color: #1e293b;
-            max-width: 720px;
-            margin-top: 8px;
-            margin-bottom: 20px;
-        }
-        .hero-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            margin-top: 8px;
-        }
-        .hero-actions .btn {
-            padding: 12px 32px;
-            border-radius: 40px;
-            font-weight: 700;
-            font-size: 1rem;
-            border: none;
-            cursor: pointer;
-            transition: 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .btn-primary {
-            background: #b91c1c;
-            color: #fff;
-        }
-        .btn-primary:hover {
-            background: #991b1b;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(185, 28, 28, 0.3);
-        }
-        .btn-secondary {
-            background: #fff;
-            color: #b91c1c;
-            border: 2px solid #b91c1c;
-        }
-        .btn-secondary:hover {
-            background: #fef2f2;
-            transform: translateY(-2px);
-        }
-
-        /* ----- FILTER BAR ----- */
-        .filter-section {
-            background: #fff;
-            border-radius: 20px;
-            padding: 24px 28px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-            margin-bottom: 28px;
-            border: 1px solid #e9edf4;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: flex-end;
-            gap: 18px 30px;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            flex: 1 1 180px;
-        }
-        .filter-group label {
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            color: #475569;
-        }
-        .filter-group select,
-        .filter-group input {
-            padding: 10px 14px;
-            border-radius: 12px;
-            border: 1px solid #d1d9e6;
-            font-size: 0.95rem;
-            background: #fafcff;
-            transition: 0.2s;
-        }
-        .filter-group select:focus,
-        .filter-group input:focus {
-            outline: none;
-            border-color: #b91c1c;
-            box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.15);
-        }
-        .filter-actions {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .filter-actions .btn-sm {
-            padding: 10px 24px;
-            border-radius: 30px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: 0.2s;
-        }
-        .btn-filter {
-            background: #b91c1c;
-            color: #fff;
-        }
-        .btn-filter:hover {
-            background: #991b1b;
-        }
-        .btn-reset {
-            background: #e9edf4;
-            color: #1e293b;
-        }
-        .btn-reset:hover {
-            background: #d5dce6;
-        }
-
-        .stats-badge {
-            background: #f1f5f9;
-            padding: 6px 18px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: #1e293b;
-            margin-left: auto;
-            white-space: nowrap;
-        }
-        .stats-badge i {
-            color: #b91c1c;
-            margin-right: 6px;
-        }
-
-        /* ----- DONOR TABLE ----- */
-        .table-wrapper {
-            background: #fff;
-            border-radius: 20px;
-            border: 1px solid #e9edf4;
-            overflow: hidden;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
-            margin-bottom: 24px;
-        }
-
-        .table-scroll {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.92rem;
-            min-width: 700px;
-        }
-
-        thead {
-            background: #f8fafc;
-            border-bottom: 2px solid #e2e8f0;
-        }
-        thead th {
-            padding: 14px 18px;
-            text-align: left;
-            font-weight: 700;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            color: #475569;
-        }
-        tbody tr {
-            border-bottom: 1px solid #eef2f6;
-            transition: 0.15s;
-        }
-        tbody tr:hover {
-            background: #fafcff;
-        }
-        tbody td {
-            padding: 13px 18px;
-            vertical-align: middle;
-        }
-
-        .blood-tag {
-            display: inline-block;
-            padding: 2px 16px;
-            border-radius: 30px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            background: #fee2e2;
-            color: #991b1b;
-        }
-        .blood-tag.positive {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        .blood-tag.negative {
-            background: #e0f2fe;
-            color: #075985;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 2px 14px;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: capitalize;
-        }
-        .status-active {
-            background: #dcfce7;
-            color: #166534;
-        }
-        .status-inactive {
-            background: #f1f5f9;
-            color: #475569;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 48px 20px;
-            color: #64748b;
-        }
-        .empty-state i {
-            font-size: 3rem;
-            color: #cbd5e1;
-            margin-bottom: 12px;
-        }
-        .empty-state p {
-            font-size: 1.05rem;
-        }
-
-        /* ----- REGISTER FORM (Modal) ----- */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal {
-            background: #fff;
-            border-radius: 28px;
-            max-width: 640px;
-            width: 100%;
-            padding: 36px 40px 40px;
-            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-            animation: modalSlide 0.25s ease;
-        }
-        @keyframes modalSlide {
-            from {
-                opacity: 0;
-                transform: translateY(30px) scale(0.96);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 16px;
-            right: 20px;
-            background: none;
-            border: none;
-            font-size: 1.8rem;
-            color: #94a3b8;
-            cursor: pointer;
-            transition: 0.2s;
-            line-height: 1;
-        }
-        .modal-close:hover {
-            color: #1e293b;
-            transform: rotate(90deg);
-        }
-
-        .modal h2 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #0b1a2e;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .modal h2 i {
-            color: #b91c1c;
-        }
-        .modal .subtitle {
-            color: #64748b;
-            margin-bottom: 24px;
-            font-size: 0.95rem;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px 20px;
-        }
-        .form-grid .full-width {
-            grid-column: 1 / -1;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .form-group label {
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: #334155;
-        }
-        .form-group label .required {
-            color: #b91c1c;
-            margin-left: 2px;
-        }
-        .form-group input,
-        .form-group select {
-            padding: 10px 14px;
-            border-radius: 12px;
-            border: 1px solid #d1d9e6;
-            font-size: 0.95rem;
-            background: #fafcff;
-            transition: 0.2s;
-        }
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #b91c1c;
-            box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 14px;
-            margin-top: 24px;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-        }
-        .form-actions .btn {
-            padding: 11px 32px;
-            border-radius: 40px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            border: none;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .btn-submit {
-            background: #b91c1c;
-            color: #fff;
-        }
-        .btn-submit:hover {
-            background: #991b1b;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(185, 28, 28, 0.25);
-        }
-        .btn-cancel {
-            background: #e9edf4;
-            color: #1e293b;
-        }
-        .btn-cancel:hover {
-            background: #d5dce6;
-        }
-
-        /* ----- FOOTER ----- */
-        .footer {
-            margin-top: 40px;
-            padding: 24px 0 32px;
-            border-top: 1px solid #e9edf4;
-            text-align: center;
-            color: #64748b;
-            font-size: 0.9rem;
-        }
-        .footer a {
-            color: #b91c1c;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .footer a:hover {
-            text-decoration: underline;
-        }
-
-        /* ----- TOAST / ALERT ----- */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #0b1a2e;
-            color: #fff;
-            padding: 14px 28px;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            font-weight: 500;
-            z-index: 2000;
-            transform: translateY(80px);
-            opacity: 0;
-            transition: 0.35s ease;
-            max-width: 400px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        .toast i {
-            font-size: 1.4rem;
-        }
-        .toast.success i {
-            color: #4ade80;
-        }
-        .toast.error i {
-            color: #f87171;
-        }
-
-        /* ----- RESPONSIVE ----- */
-        @media (max-width: 768px) {
-            .navbar {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 12px;
-            }
-            .nav-links {
-                justify-content: center;
-            }
-            .hero {
-                padding: 32px 20px;
-            }
-            .hero h1 {
-                font-size: 1.8rem;
-            }
-            .hero h1 i {
-                font-size: 2rem;
-            }
-            .filter-section {
-                flex-direction: column;
-                align-items: stretch;
-                padding: 18px 16px;
-            }
-            .filter-group {
-                flex: 1 1 auto;
-            }
-            .stats-badge {
-                margin-left: 0;
-                text-align: center;
-            }
-            .modal {
-                padding: 28px 20px;
-            }
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            .form-grid .full-width {
-                grid-column: 1;
-            }
-            .form-actions {
-                justify-content: stretch;
-            }
-            .form-actions .btn {
-                flex: 1;
-                justify-content: center;
-            }
-            .modal h2 {
-                font-size: 1.4rem;
-            }
-            .hero-actions .btn {
-                width: 100%;
-                justify-content: center;
-            }
-            .filter-actions {
-                width: 100%;
-            }
-            .filter-actions .btn-sm {
-                flex: 1;
-                text-align: center;
-                justify-content: center;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 0 10px;
-            }
-            .hero h1 {
-                font-size: 1.5rem;
-            }
-            table {
-                font-size: 0.82rem;
-                min-width: 550px;
-            }
-            thead th,
-            tbody td {
-                padding: 10px 12px;
-            }
-            .blood-tag {
-                font-size: 0.75rem;
-                padding: 1px 12px;
-            }
-            .toast {
-                left: 16px;
-                right: 16px;
-                bottom: 16px;
-                padding: 12px 18px;
-                font-size: 0.9rem;
-            }
-        }
-
-        /* Scrollbar styling */
-        .table-scroll::-webkit-scrollbar {
-            height: 6px;
-        }
-        .table-scroll::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 10px;
-        }
-        .table-scroll::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-        .table-scroll::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-    </style>
+  .cta-footer{
+    text-align:center;margin-top:32px;padding:20px;background:var(--card);border-radius:14px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.04);
+  }
+  .cta-footer a{
+    display:inline-block;margin-top:10px;background:var(--red);color:#fff;text-decoration:none;
+    padding:10px 20px;border-radius:10px;font-weight:700;font-size:14px;
+  }
+</style>
 </head>
 <body>
 
-    <!-- ====== TOAST ====== -->
-    <div id="toast" class="toast">
-        <i id="toastIcon" class="fas fa-check-circle"></i>
-        <span id="toastMessage">Done!</span>
-    </div>
-
-    <!-- ====== MAIN CONTAINER ====== -->
-    <div class="container">
-
-        <!-- NAVBAR -->
-        <nav class="navbar">
-            <div class="logo">
-                <i class="fas fa-droplet"></i>
-                <span>Blood Bridge</span> <span style="font-weight:400;font-size:1rem;color:#64748b;">3.0</span>
-            </div>
-            <div class="nav-links">
-                <a href="#" class="active"><i class="fas fa-search"></i> Find Donor</a>
-                <a href="/bloodbridgegalkot/bloodgroupregister.html" id="openRegisterBtn" class="btn-solid"><i class="fas fa-user-plus"></i> Register</a>
-                <a href="#" class="btn-outline"><i class="fas fa-phone"></i> Contact</a>
-            </div>
-        </nav>
-
-        <!-- HERO -->
-        <section class="hero">
-            <h1>
-                <i class="fas fa-hand-holding-heart"></i>
-                Need Blood?
-            </h1>
-            <p>
-                Search registered donors across Galkot by blood group and reach out directly.
-                Every drop counts — thank you for stepping up.
-            </p>
-            <div class="hero-actions">
-                <a href="#" class="btn btn-primary" id="heroFindBtn">
-                    <i class="fas fa-search"></i> Find a Donor
-                </a>
-                <a href="/bloodbridgegalkot/bloodgroupregister.html" class="btn btn-secondary" id="heroRegisterBtn">
-                    <i class="fas fa-user-plus"></i> Register as Donor
-                </a>
-            </div>
-        </section>
-
-        <!-- FILTER BAR -->
-        <section class="filter-section" id="filterSection">
-            <div class="filter-group">
-                <label for="bloodFilter"><i class="fas fa-tint"></i> Blood Group</label>
-                <select id="bloodFilter">
-                    <option value="">All Groups</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label for="municipalityFilter"><i class="fas fa-city"></i> Municipality</label>
-                <input type="text" id="municipalityFilter" placeholder="e.g. Galkot" />
-            </div>
-
-            <div class="filter-actions">
-                <button class="btn-sm btn-filter" id="applyFilterBtn"><i class="fas fa-filter"></i> Apply</button>
-                <button class="btn-sm btn-reset" id="resetFilterBtn"><i class="fas fa-undo"></i> Reset</button>
-                <span class="stats-badge" id="statsBadge"><i class="fas fa-users"></i> <span id="donorCount">0</span> donors</span>
-            </div>
-        </section>
-
-        <!-- TABLE -->
-        <div class="table-wrapper">
-            <div class="table-scroll">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>S.N.</th>
-                            <th>Name</th>
-                            <th>Age</th>
-                            <th>Sex</th>
-                            <th>Blood</th>
-                            <th>Municipality</th>
-                            <th>Ward</th>
-                            <th>Phone</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="donorTableBody">
-                        <tr>
-                            <td colspan="9">
-                                <div class="empty-state">
-                                    <i class="fas fa-regular fa-circle-notch fa-spin"></i>
-                                    <p>Loading donors…</p>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- FOOTER NOTE -->
-        <div class="footer">
-            <p>
-                <i class="fas fa-info-circle" style="color:#b91c1c;"></i>
-                Donor availability shown here is based on the Blood Bridge Project registry and is not a live medical registry.
-                Please confirm eligibility and current availability directly with the donor before any donation.
-                <br />
-                <span style="font-size:0.85rem;color:#94a3b8;display:block;margin-top:6px;">
-                    <i class="fas fa-database"></i> Data source: <strong>blood_bridge_galkot</strong> &middot; Supabase
-                </span>
-            </p>
-        </div>
-    </div>
-
-    <!-- ====== REGISTER MODAL ====== -->
-    <div class="modal-overlay" id="registerModal">
-        <div class="modal">
-            <button class="modal-close" id="closeModalBtn">&times;</button>
-            <h2><i class="fas fa-user-plus"></i> Register as Donor</h2>
-            <p class="subtitle">Join the Blood Bridge registry — your donation can save a life.</p>
-
-            <form id="registerForm">
-                <div class="form-grid">
-                    <!-- SN (auto) – hidden field removed, no longer needed -->
-
-                    <div class="form-group">
-                        <label>Full Name <span class="required">*</span></label>
-                        <input type="text" id="formName" placeholder="e.g. Ram Sharma" required />
-                    </div>
-
-                    <div class="form-group">
-                        <label>Age <span class="required">*</span></label>
-                        <input type="text" id="formAge" placeholder="e.g. 28" required />
-                    </div>
-
-                    <div class="form-group">
-                        <label>Sex <span class="required">*</span></label>
-                        <select id="formSex" required>
-                            <option value="">Select</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Blood Group <span class="required">*</span></label>
-                        <select id="formBloodGroup" required>
-                            <option value="">Select</option>
-                            <option value="A+">A+</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B-">B-</option>
-                            <option value="AB+">AB+</option>
-                            <option value="AB-">AB-</option>
-                            <option value="O+">O+</option>
-                            <option value="O-">O-</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Municipality <span class="required">*</span></label>
-                        <input type="text" id="formMunicipality" placeholder="e.g. Galkot" required />
-                    </div>
-
-                    <div class="form-group">
-                        <label>Ward Number <span class="required">*</span></label>
-                        <input type="text" id="formWard" placeholder="e.g. 3" required />
-                    </div>
-
-                    <div class="form-group">
-                        <label>Phone Number <span class="required">*</span></label>
-                        <input type="text" id="formPhone" placeholder="e.g. 9841234567" required />
-                    </div>
-
-                    <div class="form-group">
-                        <label>Data Entry By</label>
-                        <input type="text" id="formDataEntry" placeholder="Your name or ID" />
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label>Status</label>
-                        <select id="formStatus">
-                            <option value="active">Active</option>
-                            <option value="inactive" selected>Inactive</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn btn-cancel" id="cancelFormBtn">Cancel</button>
-                    <button type="submit" class="btn btn-submit"><i class="fas fa-save"></i> Register Donor</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-
-    <!-- ====== SUPABASE & APP SCRIPT ====== -->
-    <script>
-        // ---- CONFIG ----
-        const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
-        const SUPABASE_PUBLISHABLE_KEY =
-            'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
-
-        // ---- INIT SUPABASE ----
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-
-        // ---- DOM REFS ----
-        const tableBody = document.getElementById('donorTableBody');
-        const donorCountSpan = document.getElementById('donorCount');
-
-        const bloodFilter = document.getElementById('bloodFilter');
-        const municipalityFilter = document.getElementById('municipalityFilter');
-        const applyBtn = document.getElementById('applyFilterBtn');
-        const resetBtn = document.getElementById('resetFilterBtn');
-
-        const modal = document.getElementById('registerModal');
-        const openRegisterBtns = document.querySelectorAll('#openRegisterBtn, #heroRegisterBtn');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const cancelFormBtn = document.getElementById('cancelFormBtn');
-        const registerForm = document.getElementById('registerForm');
-
-        const toast = document.getElementById('toast');
-        const toastMsg = document.getElementById('toastMessage');
-        const toastIcon = document.getElementById('toastIcon');
-
-        // ---- STATE ----
-        let allDonors = [];
-        let filteredDonors = [];
-
-        // ---- TOAST ----
-        function showToast(message, type = 'success') {
-            toastMsg.textContent = message;
-            toastIcon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
-            toast.className = 'toast show ' + type;
-            clearTimeout(toast._timeout);
-            toast._timeout = setTimeout(() => {
-                toast.className = 'toast';
-            }, 4000);
-        }
-
-        // ---- RENDER TABLE ----
-        function renderDonors(donors) {
-            if (!donors || donors.length === 0) {
-                tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="9">
-                                <div class="empty-state">
-                                    <i class="fas fa-regular fa-circle-notch fa-spin"></i>
-                                    <p>No donors found. <br /> <span style="font-size:0.9rem;color:#94a3b8;">Try adjusting your filters or register as a donor.</span></p>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                donorCountSpan.textContent = '0';
-                return;
-            }
-
-            let html = '';
-            donors.forEach((row, idx) => {
-                const statusClass = row.status === 'active' ? 'status-active' : 'status-inactive';
-                const bloodClass = row.blood_group && row.blood_group.includes('-') ? 'negative' : 'positive';
-
-                html += `
-                        <tr>
-                            <td><strong>${row.sn || idx + 1}</strong></td>
-                            <td>${escapeHtml(row.person_name || '—')}</td>
-                            <td>${escapeHtml(row.age || '—')}</td>
-                            <td>${escapeHtml(row.sex || '—')}</td>
-                            <td><span class="blood-tag ${bloodClass}">${escapeHtml(row.blood_group || '—')}</span></td>
-                            <td>${escapeHtml(row.municipality || '—')}</td>
-                            <td>${escapeHtml(row.ward_number || '—')}</td>
-                            <td><a href="tel:${escapeHtml(row.phone_number || '')}" style="color:#1e3a5f;text-decoration:none;font-weight:500;">${escapeHtml(row.phone_number || '—')}</a></td>
-                            <td><span class="status-badge ${statusClass}">${escapeHtml(row.status || 'inactive')}</span></td>
-                        </tr>
-                    `;
-            });
-
-            tableBody.innerHTML = html;
-            donorCountSpan.textContent = donors.length;
-        }
-
-        // simple escape
-        function escapeHtml(text) {
-            if (!text) return '';
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
-        }
-
-        // ---- FETCH DONORS ----
-        async function fetchDonors() {
-            try {
-                const { data, error } = await supabase
-                    .from('blood_bridge_galkot')
-                    .select('*')
-                    .order('sn', { ascending: true, nullsFirst: false });
-
-                if (error) throw error;
-                allDonors = data || [];
-                applyFilters();
-            } catch (err) {
-                console.error('Fetch error:', err);
-                showToast('Failed to load donors: ' + err.message, 'error');
-                tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="9">
-                                <div class="empty-state">
-                                    <i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i>
-                                    <p>Could not load donor data. <br /> <span style="font-size:0.9rem;color:#94a3b8;">${err.message}</span></p>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-            }
-        }
-
-        // ---- APPLY FILTERS ----
-        function applyFilters() {
-            const blood = bloodFilter.value.trim();
-            const municipality = municipalityFilter.value.trim().toLowerCase();
-
-            filteredDonors = allDonors.filter(row => {
-                if (blood && row.blood_group !== blood) return false;
-                if (municipality && !(row.municipality || '').toLowerCase().includes(municipality)) return false;
-                return true;
-            });
-
-            renderDonors(filteredDonors);
-        }
-
-        // ---- RESET FILTERS ----
-        function resetFilters() {
-            bloodFilter.value = '';
-            municipalityFilter.value = '';
-            applyFilters();
-        }
-
-        // ---- REGISTER DONOR ----
-        async function registerDonor(formData) {
-            try {
-                // Optional duplicate check (database constraint will also enforce)
-                const { data: existing, error: checkErr } = await supabase
-                    .from('blood_bridge_galkot')
-                    .select('phone_number')
-                    .eq('phone_number', formData.phone_number)
-                    .maybeSingle();
-
-                if (checkErr && checkErr.code !== 'PGRST116') {
-                    console.warn('Duplicate check error:', checkErr);
-                }
-
-                if (existing) {
-                    showToast('A donor with this phone number already exists.', 'error');
-                    return false;
-                }
-
-                // Insert – do NOT include sn or id (DB auto-generates)
-                const { data, error } = await supabase
-                    .from('blood_bridge_galkot')
-                    .insert([{
-                        person_name: formData.person_name,
-                        age: formData.age,
-                        sex: formData.sex,
-                        blood_group: formData.blood_group,
-                        municipality: formData.municipality,
-                        ward_number: formData.ward_number,
-                        phone_number: formData.phone_number,
-                        data_entry_by: formData.data_entry_by || null,
-                        status: formData.status || 'inactive',
-                        // highest_entry omitted intentionally (not used)
-                    }])
-                    .select();
-
-                if (error) throw error;
-
-                showToast('Donor registered successfully! 🎉', 'success');
-                await fetchDonors(); // refresh list
-                return true;
-            } catch (err) {
-                console.error('Insert error:', err);
-                // Show user-friendly message
-                let msg = err.message;
-                if (msg.includes('duplicate key') || msg.includes('unique constraint')) {
-                    msg = 'Phone number already exists. Please use a different number.';
-                }
-                showToast('Registration failed: ' + msg, 'error');
-                return false;
-            }
-        }
-
-        // ---- MODAL CONTROLS ----
-        function openModal() {
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            registerForm.reset();
-            document.getElementById('formStatus').value = 'inactive';
-            setTimeout(() => document.getElementById('formName').focus(), 100);
-        }
-
-        function closeModal() {
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        // ---- EVENT LISTENERS ----
-
-        // Open modal
-        openRegisterBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                openModal();
-            });
-        });
-
-        // Close modal
-        closeModalBtn.addEventListener('click', closeModal);
-        cancelFormBtn.addEventListener('click', closeModal);
-
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
-        });
-
-        // Filter buttons
-        applyBtn.addEventListener('click', applyFilters);
-        resetBtn.addEventListener('click', resetFilters);
-
-        municipalityFilter.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') applyFilters();
-        });
-
-        document.getElementById('heroFindBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            document.getElementById('filterSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-
-        // ---- FORM SUBMIT ----
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const name = document.getElementById('formName').value.trim();
-            const age = document.getElementById('formAge').value.trim();
-            const sex = document.getElementById('formSex').value;
-            const bloodGroup = document.getElementById('formBloodGroup').value;
-            const municipality = document.getElementById('formMunicipality').value.trim();
-            const ward = document.getElementById('formWard').value.trim();
-            const phone = document.getElementById('formPhone').value.trim();
-            const dataEntry = document.getElementById('formDataEntry').value.trim();
-            const status = document.getElementById('formStatus').value;
-
-            // Basic validation
-            if (!name || !age || !sex || !bloodGroup || !municipality || !ward || !phone) {
-                showToast('Please fill in all required fields.', 'error');
-                return;
-            }
-
-            if (!/^[0-9+\-() ]{7,15}$/.test(phone)) {
-                showToast('Please enter a valid phone number (7-15 digits).', 'error');
-                return;
-            }
-
-            if (isNaN(age) || parseInt(age) < 1 || parseInt(age) > 120) {
-                showToast('Please enter a valid age (1–120).', 'error');
-                return;
-            }
-
-            const payload = {
-                person_name: name,
-                age: age,
-                sex: sex,
-                blood_group: bloodGroup,
-                municipality: municipality,
-                ward_number: ward,
-                phone_number: phone,
-                data_entry_by: dataEntry || null,
-                status: status,
-            };
-
-            const success = await registerDonor(payload);
-            if (success) {
-                closeModal();
-                registerForm.reset();
-                document.getElementById('formStatus').value = 'inactive';
-            }
-        });
-
-        // ---- INIT ----
+<div class="header">
+  <div class="drop">🩸</div>
+  <h1>Blood Bridge Galkot</h1>
+  <p>List of Available Blood Donors</p>
+  <div class="live-dot"><span class="dot"></span> Live Updates</div>
+</div>
+
+<div class="wrap">
+  <div class="load-error" id="loadError"></div>
+
+  <div class="stats" id="statsRow"></div>
+
+  <div class="toolbar">
+    <input type="text" id="searchInput" placeholder="Search by name, phone, or municipality..." />
+    <select id="bgFilter">
+      <option value="">All Blood Groups</option>
+      <option value="A+">A+</option><option value="A-">A-</option>
+      <option value="B+">B+</option><option value="B-">B-</option>
+      <option value="AB+">AB+</option><option value="AB-">AB-</option>
+      <option value="O+">O+</option><option value="O-">O-</option>
+    </select>
+    <select id="muniFilter">
+      <option value="">All Municipalities</option>
+    </select>
+  </div>
+
+  <div id="donorGrid" class="donor-grid"></div>
+  <div class="empty-state" id="emptyState" style="display:none;">
+    <div class="big-icon">🔍</div>
+    <p>No donors found.</p>
+  </div>
+
+  <div class="cta-footer">
+    <p>Want to become a blood donor?</p>
+    <a href="bloodgroupregister.html">Register as a New Donor →</a>
+  </div>
+</div>
+
+<script>
+  // ---- SUPABASE CONFIG ----
+  const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // --------------------------
+
+  let allDonors = [];
+
+  async function fetchDonors() {
+    const errBox = document.getElementById("loadError");
+    try {
+      const { data, error } = await supabaseClient
+        .from("blood_bridge_galkot")
+        .select("*")
+        .eq("status", "active")
+        .order("id", { ascending: false });
+
+      if (error) {
+        errBox.textContent = "Error loading donors: " + error.message;
+        errBox.style.display = "block";
+        return;
+      }
+      errBox.style.display = "none";
+      allDonors = data || [];
+      populateMunicipalityFilter();
+      renderStats();
+      renderDonors();
+    } catch (err) {
+      errBox.textContent = "Network error: could not reach the server. Check your internet connection. (" + err.message + ")";
+      errBox.style.display = "block";
+    }
+  }
+
+  function populateMunicipalityFilter() {
+    const select = document.getElementById("muniFilter");
+    const current = select.value;
+    const munis = [...new Set(allDonors.map(d => d.municipality).filter(Boolean))].sort();
+    select.innerHTML = '<option value="">All Municipalities</option>' +
+      munis.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join("");
+    select.value = current;
+  }
+
+  function renderStats() {
+    const total = allDonors.length;
+    const groups = {};
+    allDonors.forEach(d => {
+      const g = d.blood_group || "Unknown";
+      groups[g] = (groups[g] || 0) + 1;
+    });
+    const statsRow = document.getElementById("statsRow");
+    let html = `<div class="stat-card"><div class="num">${total}</div><div class="label">Total Donors</div></div>`;
+    Object.keys(groups).sort().forEach(g => {
+      html += `<div class="stat-card"><div class="num">${groups[g]}</div><div class="label">${escapeHtml(g)}</div></div>`;
+    });
+    statsRow.innerHTML = html;
+  }
+
+  function renderDonors() {
+    const search = document.getElementById("searchInput").value.trim().toLowerCase();
+    const bg = document.getElementById("bgFilter").value;
+    const muni = document.getElementById("muniFilter").value;
+
+    let rows = allDonors;
+    if (bg) rows = rows.filter(d => d.blood_group === bg);
+    if (muni) rows = rows.filter(d => d.municipality === muni);
+    if (search) {
+      rows = rows.filter(d =>
+        (d.person_name || "").toLowerCase().includes(search) ||
+        (d.phone_number || "").toLowerCase().includes(search) ||
+        (d.municipality || "").toLowerCase().includes(search)
+      );
+    }
+
+    const grid = document.getElementById("donorGrid");
+    const empty = document.getElementById("emptyState");
+
+    if (rows.length === 0) {
+      grid.innerHTML = "";
+      empty.style.display = "block";
+      return;
+    }
+    empty.style.display = "none";
+
+    grid.innerHTML = rows.map(d => `
+      <div class="donor-card">
+        <span class="bg-badge">${escapeHtml(d.blood_group || "-")}</span>
+        <p class="donor-name">${escapeHtml(d.person_name || "-")}</p>
+        <div class="donor-detail"><span class="icon">🎂</span> ${escapeHtml(d.age || "-")} yrs • ${escapeHtml(sexLabel(d.sex))}</div>
+        <div class="donor-detail"><span class="icon">📍</span> ${escapeHtml(d.municipality || "-")}${d.ward_number ? ", Ward " + escapeHtml(d.ward_number) : ""}</div>
+        <div class="donor-detail"><span class="icon">📞</span> ${escapeHtml(d.phone_number || "-")}</div>
+        ${d.phone_number ? `<a class="call-btn" href="tel:${escapeHtml(d.phone_number)}">📞 Call</a>` : ""}
+      </div>
+    `).join("");
+  }
+
+  function sexLabel(s) {
+    return { Male: "Male", Female: "Female", Other: "Other" }[s] || "-";
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  document.getElementById("searchInput").addEventListener("input", renderDonors);
+  document.getElementById("bgFilter").addEventListener("change", renderDonors);
+  document.getElementById("muniFilter").addEventListener("change", renderDonors);
+
+  // Initial load
+  fetchDonors();
+
+  // ---------------- REALTIME SUBSCRIPTION ----------------
+  supabaseClient
+    .channel("blood_bridge_galkot_changes")
+    .on("postgres_changes",
+      { event: "*", schema: "public", table: "blood_bridge_galkot" },
+      (payload) => {
+        // Simplest reliable approach: refetch on any change
         fetchDonors();
-
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                fetchDonors();
-            }
-        });
-
-        console.log('🩸 Blood Bridge 3.0 – Galkot (improved)');
-        console.log('Supabase URL:', SUPABASE_URL);
-        console.log('Table: blood_bridge_galkot');
-    </script>
-
+      }
+    )
+    .subscribe();
+</script>
 </body>
 </html>

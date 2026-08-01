@@ -1,101 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Register as a Donor | Blood Bridge Project 3.0</title>
-  <meta name="description" content="Register as a blood donor with the Rotaract Club of Galkot Baglung — Blood Bridge Project 3.0." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    /* Same as original – kept for brevity */
-    :root { --primary: #D91A5C; --primary-dark: #A61042; --primary-light: #FDE8F0; --secondary: #1D2A44; --secondary-light: #2D3A5A; --gold: #D4AF37; --gold-light: #F4E08A; --text-primary: #0F172A; --text-secondary: #475569; --text-muted: #94A3B8; --bg-light: #F8FAFC; --bg-white: #FFFFFF; --shadow-sm: 0 4px 20px rgba(0,0,0,0.06); --shadow-md: 0 10px 40px rgba(0,0,0,0.08); --radius-sm: 12px; --radius-md: 20px; --transition: all 0.35s cubic-bezier(0.25,0.46,0.45,0.94); }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Inter',sans-serif; background:var(--bg-light); color:var(--text-primary); min-height:100vh; }
-    a { text-decoration:none; }
-    .topbar { position:sticky; top:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:16px 28px; background:rgba(255,255,255,0.85); backdrop-filter:blur(16px); border-bottom:1px solid rgba(15,23,42,0.06); }
-    .brand { display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.05rem; }
-    .brand img { height:36px; width:auto; border-radius:8px; }
-    .brand span { background:linear-gradient(135deg,var(--primary),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-    .back-link { display:flex; align-items:center; gap:8px; font-weight:600; font-size:0.85rem; color:var(--text-secondary); transition:var(--transition); }
-    .back-link:hover { color:var(--primary); }
-    .hero { position:relative; padding:60px 20px 20px; text-align:center; background:radial-gradient(circle at 50% 0%, rgba(217,26,92,0.08), transparent 60%); }
-    .hero-drop { width:60px; height:60px; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); border-radius:50% 50% 50% 0; transform:rotate(45deg); box-shadow:var(--shadow-md); }
-    .hero-drop i { transform:rotate(-45deg); color:#fff; font-size:1.3rem; }
-    .eyebrow { display:inline-block; font-family:'Cinzel',serif; font-weight:700; font-size:0.75rem; letter-spacing:2px; text-transform:uppercase; color:var(--gold); background:rgba(212,175,55,0.1); border:1px solid rgba(212,175,55,0.3); padding:5px 14px; border-radius:20px; margin-bottom:14px; }
-    .hero h1 { font-size:clamp(1.8rem,5vw,2.5rem); font-weight:900; letter-spacing:-1px; margin-bottom:8px; }
-    .hero h1 span { color:var(--primary); }
-    .hero p { max-width:520px; margin:0 auto; color:var(--text-secondary); font-size:0.95rem; line-height:1.6; }
-    .tab-nav { display:flex; justify-content:center; gap:10px; margin:24px auto 0; }
-    .tab-btn { display:flex; align-items:center; gap:8px; padding:10px 20px; border-radius:30px; font-weight:700; font-size:0.85rem; border:2px solid transparent; transition:var(--transition); }
-    .tab-btn.active { background:var(--secondary); color:#fff; }
-    .tab-btn:not(.active) { background:var(--bg-white); color:var(--text-secondary); border-color:rgba(15,23,42,0.08); }
-    .tab-btn:not(.active):hover { border-color:var(--primary); color:var(--primary); }
-    .form-wrap { max-width:640px; margin:40px auto 90px; padding:0 20px; }
-    .form-card { background:var(--bg-white); border:1px solid rgba(15,23,42,0.06); border-radius:var(--radius-md); padding:32px 28px; box-shadow:var(--shadow-sm); }
-    .field { margin-bottom:18px; }
-    .field label { display:block; font-size:0.82rem; font-weight:700; color:var(--text-primary); margin-bottom:6px; }
-    .field label .req { color:var(--primary); }
-    .field input, .field select { width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid rgba(15,23,42,0.12); font-family:'Inter',sans-serif; font-size:0.92rem; color:var(--text-primary); background:var(--bg-light); transition:var(--transition); }
-    .field input:focus, .field select:focus { outline:none; border-color:var(--primary); background:#fff; }
-    .field-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-    .blood-select-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
-    .blood-pill { border:2px solid rgba(217,26,92,0.15); background:var(--bg-light); border-radius:10px; padding:10px 4px; text-align:center; cursor:pointer; font-family:'Cinzel',serif; font-weight:900; font-size:0.95rem; color:var(--secondary); transition:var(--transition); }
-    .blood-pill:hover { border-color:var(--primary); }
-    .blood-pill.active { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); border-color:var(--primary-dark); color:#fff; }
-    .submit-btn { width:100%; margin-top:8px; padding:14px 0; border:none; border-radius:12px; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; font-weight:800; font-size:0.95rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:var(--transition); }
-    .submit-btn:hover { filter:brightness(1.05); transform:translateY(-2px); box-shadow:var(--shadow-md); }
-    .submit-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
-    .form-msg { margin-top:16px; padding:12px 16px; border-radius:10px; font-size:0.85rem; font-weight:600; display:none; align-items:center; gap:8px; }
-    .form-msg.show { display:flex; }
-    .form-msg.success { background:rgba(34,197,94,0.1); color:#15803D; border:1px solid rgba(34,197,94,0.25); }
-    .form-msg.error { background:rgba(239,68,68,0.1); color:#B91C1C; border:1px solid rgba(239,68,68,0.25); }
-    .disclaimer { max-width:640px; margin:0 auto 60px; padding:16px 20px; background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.25); border-radius:var(--radius-sm); font-size:0.8rem; color:var(--text-secondary); line-height:1.6; }
-    .disclaimer i { color:var(--gold); margin-right:6px; }
-    @media (max-width:480px) { .field-row { grid-template-columns:1fr; } .blood-select-grid { grid-template-columns:repeat(4,1fr); } .form-card { padding:24px 18px; } }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Blood Bridge Galkot | New Donor Registration</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --red:#b91c1c;
+    --red-dark:#7f1d1d;
+    --bg:#fdf2f2;
+    --card:#ffffff;
+    --text:#1f1a1a;
+    --muted:#6b7280;
+    --border:#f1d6d6;
+    --success:#15803d;
+    --success-bg:#dcfce7;
+    --error:#b91c1c;
+    --error-bg:#fee2e2;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, -apple-system, sans-serif;
+    background:linear-gradient(180deg,var(--bg),#fff 40%);
+    color:var(--text);
+    min-height:100vh;
+    padding:24px 16px 60px;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+  .header{text-align:center;margin-bottom:24px;}
+  .header .drop{
+    width:56px;height:56px;border-radius:50%;
+    background:var(--red);display:flex;align-items:center;justify-content:center;
+    margin:0 auto 12px;font-size:28px;color:#fff;
+  }
+  .header h1{font-size:22px;margin:0 0 4px;color:var(--red-dark);}
+  .header p{margin:0;color:var(--muted);font-size:14px;}
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:24px 20px;
+    box-shadow:0 4px 24px rgba(185,28,28,0.06);
+  }
+  .field{margin-bottom:16px;}
+  label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#374151;}
+  label .req{color:var(--red);}
+  input, select{
+    width:100%;
+    padding:11px 12px;
+    border:1.5px solid var(--border);
+    border-radius:10px;
+    font-size:15px;
+    background:#fff;
+    color:var(--text);
+    transition:border-color .15s;
+  }
+  input:focus, select:focus{
+    outline:none;
+    border-color:var(--red);
+  }
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .bg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px;}
+  .bg-option{
+    border:1.5px solid var(--border);
+    border-radius:10px;
+    text-align:center;
+    padding:10px 4px;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    user-select:none;
+    transition:all .15s;
+    color:var(--text);
+  }
+  .bg-option.selected{
+    background:var(--red);
+    color:#fff;
+    border-color:var(--red);
+  }
+  button.submit{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:var(--red);
+    color:#fff;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:8px;
+    transition:background .15s;
+  }
+  button.submit:hover{background:var(--red-dark);}
+  button.submit:disabled{background:#d1a3a3;cursor:not-allowed;}
+  .msg{
+    margin-top:14px;
+    padding:12px 14px;
+    border-radius:10px;
+    font-size:14px;
+    display:none;
+  }
+  .msg.show{display:block;}
+  .msg.success{background:var(--success-bg);color:var(--success);}
+  .msg.error{background:var(--error-bg);color:var(--error);}
+  .note{font-size:12px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.5;}
+</style>
 </head>
 <body>
-
-<div class="topbar">
-  <a href="index.html" class="brand">
-    <img src="rotaract-logo.jpg" alt="Rotaract Logo" onerror="this.style.display='none'">
-    <span>Blood Bridge Project 3.0</span>
-  </a>
-  <a href="/index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
-</div>
-
-<section class="hero">
-  <div class="hero-drop"><i class="fas fa-tint"></i></div>
-  <div class="eyebrow">Blood Bridge Project 3.0</div>
-  <h1>Become a <span>Donor</span></h1>
-  <p>Join the Blood Bridge donor registry. Your details will only be used to connect you with people who need blood in an emergency.</p>
-
-  <div class="tab-nav">
-    <a href="bloodgroup.html" class="tab-btn"><i class="fas fa-magnifying-glass"></i> Find a Donor</a>
-    <a href="bloodgroupregister.html" class="tab-btn active"><i class="fas fa-user-plus"></i> Register as Donor</a>
+<div class="wrap">
+  <div class="header">
+    <div class="drop">🩸</div>
+    <h1>Blood Bridge Galkot</h1>
+    <p>New Donor Registration Form</p>
   </div>
-</section>
 
-<div class="form-wrap">
-  <div class="form-card">
+  <div class="card">
     <form id="registerForm">
       <div class="field">
         <label>Full Name <span class="req">*</span></label>
-        <input type="text" id="personName" placeholder="e.g. Ramesh Thapa" required />
+        <input type="text" id="person_name" required placeholder="e.g. Ram Bahadur Thapa" />
       </div>
 
-      <div class="field-row">
+      <div class="row2">
         <div class="field">
-          <label>Age <span class="req">*</span></label>
-          <input type="number" id="age" min="16" max="70" placeholder="e.g. 24" required />
+          <label>Age</label>
+          <input type="number" id="age" min="16" max="70" placeholder="e.g. 25" />
         </div>
         <div class="field">
-          <label>Sex <span class="req">*</span></label>
-          <select id="sex" required>
-            <option value="" disabled selected>Select</option>
+          <label>Sex</label>
+          <select id="sex">
+            <option value="">Select</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
             <option value="Other">Other</option>
@@ -105,112 +141,131 @@
 
       <div class="field">
         <label>Blood Group <span class="req">*</span></label>
-        <div class="blood-select-grid" id="bloodGrid"></div>
-        <input type="hidden" id="bloodGroup" required />
+        <div class="bg-grid" id="bgGrid">
+          <div class="bg-option" data-value="A+">A+</div>
+          <div class="bg-option" data-value="A-">A-</div>
+          <div class="bg-option" data-value="B+">B+</div>
+          <div class="bg-option" data-value="B-">B-</div>
+          <div class="bg-option" data-value="AB+">AB+</div>
+          <div class="bg-option" data-value="AB-">AB-</div>
+          <div class="bg-option" data-value="O+">O+</div>
+          <div class="bg-option" data-value="O-">O-</div>
+        </div>
       </div>
 
-      <div class="field-row">
+      <div class="row2">
         <div class="field">
           <label>Municipality <span class="req">*</span></label>
-          <input type="text" id="municipality" placeholder="e.g. Galkot Municipality" required />
+          <input type="text" id="municipality" required placeholder="e.g. Galkot Municipality" />
         </div>
         <div class="field">
-          <label>Ward Number <span class="req">*</span></label>
-          <input type="text" id="wardNumber" placeholder="e.g. 5" required />
+          <label>Ward No.</label>
+          <input type="text" id="ward_number" placeholder="e.g. 5" />
         </div>
       </div>
 
       <div class="field">
         <label>Phone Number <span class="req">*</span></label>
-        <input type="tel" id="phoneNumber" placeholder="e.g. 98XXXXXXXX" required />
-        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:5px;">Each phone number can register only once.</div>
+        <input type="tel" id="phone_number" required placeholder="e.g. 98XXXXXXXX" pattern="[0-9]{7,15}" />
       </div>
 
-      <button type="submit" class="submit-btn" id="submitBtn">
-        <i class="fas fa-hand-holding-droplet"></i> Register as Donor
-      </button>
+      <div class="field">
+        <label>Your Name (entered by)</label>
+        <input type="text" id="data_entry_by" placeholder="Optional" />
+      </div>
 
-      <div class="form-msg" id="formMsg"></div>
+      <button type="submit" class="submit" id="submitBtn">Register</button>
+
+      <div class="msg" id="msgBox"></div>
     </form>
+
+    <p class="note">Your information will appear in the public list only after it is approved by an admin.</p>
   </div>
 </div>
 
-<div class="disclaimer">
-  <i class="fas fa-circle-info"></i>
-  By registering, you agree that Rotaract Club of Galkot Baglung may share your name, blood group, location, and phone number with people searching for donors on this site. You can request removal anytime by contacting the club.
-</div>
-
 <script>
+  // ---- SUPABASE CONFIG ----
   const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const SUPABASE_ANON_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // --------------------------
 
-  const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-  const bloodGrid = document.getElementById('bloodGrid');
-  const bloodGroupInput = document.getElementById('bloodGroup');
-  const form = document.getElementById('registerForm');
-  const submitBtn = document.getElementById('submitBtn');
-  const formMsg = document.getElementById('formMsg');
-
-  bloodGrid.innerHTML = BLOOD_TYPES.map(t => `<div class="blood-pill" data-type="${t}">${t}</div>`).join('');
-
-  bloodGrid.addEventListener('click', (e) => {
-    const pill = e.target.closest('.blood-pill');
-    if (!pill) return;
-    bloodGrid.querySelectorAll('.blood-pill').forEach(p => p.classList.remove('active'));
-    pill.classList.add('active');
-    bloodGroupInput.value = pill.dataset.type;
+  let selectedBloodGroup = "";
+  const bgGrid = document.getElementById("bgGrid");
+  bgGrid.addEventListener("click", (e) => {
+    const opt = e.target.closest(".bg-option");
+    if (!opt) return;
+    document.querySelectorAll(".bg-option").forEach(el => el.classList.remove("selected"));
+    opt.classList.add("selected");
+    selectedBloodGroup = opt.dataset.value;
   });
 
-  function showMsg(type, text) {
-    formMsg.className = `form-msg show ${type}`;
-    formMsg.innerHTML = `<i class="fas ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i> ${text}`;
+  const form = document.getElementById("registerForm");
+  const submitBtn = document.getElementById("submitBtn");
+  const msgBox = document.getElementById("msgBox");
+
+  function showMsg(text, type) {
+    msgBox.textContent = text;
+    msgBox.className = "msg show " + type;
   }
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    formMsg.className = 'form-msg';
+    msgBox.className = "msg";
 
-    if (!bloodGroupInput.value) {
-      showMsg('error', 'Please select a blood group.');
+    const person_name = document.getElementById("person_name").value.trim();
+    const age = document.getElementById("age").value.trim();
+    const sex = document.getElementById("sex").value;
+    const municipality = document.getElementById("municipality").value.trim();
+    const ward_number = document.getElementById("ward_number").value.trim();
+    const phone_number = document.getElementById("phone_number").value.trim();
+    const data_entry_by = document.getElementById("data_entry_by").value.trim();
+
+    if (!selectedBloodGroup) {
+      showMsg("Please select your blood group.", "error");
+      return;
+    }
+    if (!person_name || !municipality || !phone_number) {
+      showMsg("Please fill in all required (*) fields.", "error");
       return;
     }
 
-    const payload = {
-      person_name: document.getElementById('personName').value.trim(),
-      age: document.getElementById('age').value.trim(),
-      sex: document.getElementById('sex').value,
-      blood_group: bloodGroupInput.value,
-      municipality: document.getElementById('municipality').value.trim(),
-      ward_number: document.getElementById('wardNumber').value.trim(),
-      phone_number: document.getElementById('phoneNumber').value.trim(),
-      data_entry_by: 'Self (Online Registration)',
-      status: 'inactive' // New registrations start as inactive
-    };
-
     submitBtn.disabled = true;
-    submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Submitting…`;
+    submitBtn.textContent = "Submitting...";
 
     try {
-      const { error: insertError } = await supabase
-        .from('blood_bridge_galkot')
-        .insert([payload]);
-      if (insertError) throw insertError;
+      const { error } = await supabaseClient.from("bloodbridge_register").insert([{
+        person_name,
+        age: age || null,
+        sex: sex || null,
+        blood_group: selectedBloodGroup,
+        municipality,
+        ward_number: ward_number || null,
+        phone_number,
+        data_entry_by: data_entry_by || null,
+        status: "pending"
+      }]);
 
-      showMsg('success', 'Thank you! Your registration is submitted and will appear in search once approved by an admin.');
-      form.reset();
-      bloodGrid.querySelectorAll('.blood-pill').forEach(p => p.classList.remove('active'));
-      bloodGroupInput.value = '';
-    } catch (err) {
-      console.error('Registration failed:', err);
-      if (err.code === '23505') {
-        showMsg('error', 'This phone number is already registered. Each donor can only register once.');
-      } else {
-        showMsg('error', `Submission failed: ${err.message}`);
-      }
-    } finally {
       submitBtn.disabled = false;
-      submitBtn.innerHTML = `<i class="fas fa-hand-holding-droplet"></i> Register as Donor`;
+      submitBtn.textContent = "Register";
+
+      if (error) {
+        if (error.code === "23505") {
+          showMsg("This phone number is already registered.", "error");
+        } else {
+          showMsg("Error: " + error.message, "error");
+        }
+        return;
+      }
+
+      showMsg("Thank you! Your registration was successful. It is awaiting approval.", "success");
+      form.reset();
+      document.querySelectorAll(".bg-option").forEach(el => el.classList.remove("selected"));
+      selectedBloodGroup = "";
+    } catch (err) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Register";
+      showMsg("Network error: could not reach the server. Check your internet connection and try again. (" + err.message + ")", "error");
     }
   });
 </script>

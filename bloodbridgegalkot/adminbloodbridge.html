@@ -1,268 +1,628 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin | Blood Bridge Project 3.0</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    /* Same CSS as original, kept for brevity – assume it's identical */
-    :root { --primary: #D91A5C; --primary-dark: #A61042; --primary-light: #FDE8F0; --secondary: #1D2A44; --secondary-light: #2D3A5A; --gold: #D4AF37; --text-primary: #0F172A; --text-secondary: #475569; --text-muted: #94A3B8; --bg-light: #F8FAFC; --bg-white: #FFFFFF; --shadow-sm: 0 4px 20px rgba(0,0,0,0.06); --shadow-md: 0 10px 40px rgba(0,0,0,0.08); --radius-sm: 12px; --radius-md: 20px; --transition: all 0.35s cubic-bezier(0.25,0.46,0.45,0.94); --green: #16A34A; --red: #DC2626; }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Inter',sans-serif; background:var(--bg-light); color:var(--text-primary); min-height:100vh; }
-    a { text-decoration:none; }
-    .topbar { position:sticky; top:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:16px 28px; background:rgba(255,255,255,0.9); backdrop-filter:blur(16px); border-bottom:1px solid rgba(15,23,42,0.06); }
-    .brand { display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.05rem; }
-    .brand span { background:linear-gradient(135deg,var(--primary),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-    .brand .tag { font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); font-weight:700; margin-left:4px; }
-    .logout-btn { display:none; align-items:center; gap:8px; font-weight:700; font-size:0.82rem; color:var(--text-secondary); background:var(--bg-white); border:1px solid rgba(15,23,42,0.1); padding:8px 16px; border-radius:30px; cursor:pointer; transition:var(--transition); }
-    .logout-btn:hover { color:var(--red); border-color:var(--red); }
-    .login-wrap { max-width:380px; margin:90px auto; padding:0 20px; }
-    .login-card { background:var(--bg-white); border-radius:var(--radius-md); padding:34px 28px; box-shadow:var(--shadow-md); border:1px solid rgba(15,23,42,0.06); text-align:center; }
-    .login-icon { width:56px; height:56px; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,var(--secondary),var(--secondary-light)); border-radius:16px; color:#fff; font-size:1.4rem; }
-    .login-card h1 { font-size:1.3rem; font-weight:800; margin-bottom:6px; }
-    .login-card p { font-size:0.82rem; color:var(--text-muted); margin-bottom:22px; }
-    .field { margin-bottom:14px; text-align:left; }
-    .field label { display:block; font-size:0.78rem; font-weight:700; margin-bottom:6px; }
-    .field input { width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid rgba(15,23,42,0.12); font-size:0.9rem; background:var(--bg-light); }
-    .field input:focus { outline:none; border-color:var(--primary); background:#fff; }
-    .login-btn { width:100%; padding:13px 0; margin-top:6px; border:none; border-radius:12px; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; font-weight:800; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:var(--transition); }
-    .login-btn:hover { filter:brightness(1.05); }
-    .login-btn:disabled { opacity:0.6; cursor:not-allowed; }
-    .login-msg { margin-top:14px; font-size:0.8rem; font-weight:600; display:none; }
-    .login-msg.show { display:block; }
-    .login-msg.error { color:var(--red); }
-    .dash-wrap { max-width:960px; margin:40px auto 90px; padding:0 20px; display:none; }
-    .dash-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:10px; }
-    .dash-header h1 { font-size:1.5rem; font-weight:900; margin:0; }
-    .dash-header .count-pill { display:inline-block; background:var(--primary-light); color:var(--primary-dark); font-weight:800; font-size:0.75rem; padding:3px 12px; border-radius:20px; font-family:'Cinzel',serif; margin-left:8px; }
-    .dash-header .refresh-btn { background:var(--bg-white); border:1px solid rgba(15,23,42,0.1); border-radius:30px; padding:6px 14px; font-weight:600; font-size:0.8rem; cursor:pointer; transition:var(--transition); display:flex; align-items:center; gap:6px; }
-    .dash-header .refresh-btn:hover { border-color:var(--primary); color:var(--primary); }
-    .pending-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
-    .pending-card { background:var(--bg-white); border:1px solid rgba(15,23,42,0.06); border-radius:var(--radius-md); padding:20px; box-shadow:var(--shadow-sm); }
-    .pending-card .row-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-    .pending-card .name { font-weight:800; font-size:1rem; }
-    .pending-card .badge { background:var(--primary-light); color:var(--primary-dark); font-weight:800; font-size:0.75rem; padding:3px 12px; border-radius:20px; font-family:'Cinzel',serif; }
-    .pending-card .details { font-size:0.8rem; color:var(--text-secondary); line-height:1.9; margin-bottom:14px; }
-    .pending-card .details i { width:16px; color:var(--text-muted); margin-right:6px; }
-    .pending-actions { display:flex; gap:8px; }
-    .pending-actions button { flex:1; padding:10px 0; border:none; border-radius:10px; font-weight:700; font-size:0.82rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:var(--transition); }
-    .approve-btn { background:var(--green); color:#fff; }
-    .approve-btn:hover { filter:brightness(1.08); }
-    .reject-btn { background:rgba(220,38,38,0.1); color:var(--red); }
-    .reject-btn:hover { background:rgba(220,38,38,0.18); }
-    .pending-actions button:disabled { opacity:0.5; cursor:not-allowed; }
-    .state-box { text-align:center; padding:50px 20px; color:var(--text-muted); background:var(--bg-white); border-radius:var(--radius-md); border:1px dashed rgba(15,23,42,0.12); grid-column:1/-1; }
-    .state-box i { font-size:2rem; margin-bottom:12px; display:block; color:var(--primary); }
-    .state-box.error i { color:var(--red); }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Blood Bridge Galkot | Admin Panel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --red:#b91c1c; --red-dark:#7f1d1d; --bg:#f8f9fb; --card:#fff;
+    --text:#1f1a1a; --muted:#6b7280; --border:#e5e7eb;
+    --green:#15803d; --green-bg:#dcfce7;
+    --amber:#b45309; --amber-bg:#fef3c7;
+    --blue:#1d4ed8; --blue-bg:#dbeafe;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Segoe UI',Roboto,-apple-system,sans-serif;background:var(--bg);color:var(--text);}
+  .topbar{
+    background:var(--red);color:#fff;padding:14px 20px;
+    display:flex;align-items:center;justify-content:space-between;
+    position:sticky;top:0;z-index:20;
+  }
+  .topbar h1{font-size:18px;margin:0;}
+  .topbar .user-info{display:flex;align-items:center;gap:12px;font-size:13px;}
+  .topbar button{
+    background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);
+    color:#fff;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;
+  }
+  .topbar button:hover{background:rgba(255,255,255,0.28);}
+
+  /* Login screen */
+  #loginScreen{
+    max-width:380px;margin:80px auto;background:var(--card);padding:32px 28px;
+    border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);
+  }
+  #loginScreen h2{margin-top:0;color:var(--red-dark);}
+  #loginScreen input{
+    width:100%;padding:11px 12px;margin-bottom:12px;border:1.5px solid var(--border);
+    border-radius:10px;font-size:14px;
+  }
+  #loginScreen button{
+    width:100%;padding:12px;background:var(--red);color:#fff;border:none;
+    border-radius:10px;font-weight:700;cursor:pointer;font-size:15px;
+  }
+  #loginScreen .err{color:var(--red);font-size:13px;margin-top:10px;display:none;}
+
+  #app{display:none;max-width:1200px;margin:0 auto;padding:20px 16px 60px;}
+
+  .tabs{display:flex;gap:8px;margin-bottom:20px;border-bottom:2px solid var(--border);}
+  .tab{
+    padding:10px 18px;cursor:pointer;font-weight:600;font-size:14px;color:var(--muted);
+    border-bottom:2px solid transparent;margin-bottom:-2px;
+  }
+  .tab.active{color:var(--red);border-bottom-color:var(--red);}
+  .badge-count{
+    background:var(--amber-bg);color:var(--amber);border-radius:10px;padding:1px 8px;
+    font-size:12px;margin-left:6px;
+  }
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
+  .toolbar input, .toolbar select{
+    padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;
+  }
+  .toolbar input[type=text]{flex:1;min-width:180px;}
+
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+  thead{background:#f3f4f6;}
+  th, td{padding:10px 12px;text-align:left;font-size:13px;border-bottom:1px solid var(--border);white-space:nowrap;}
+  th{color:var(--muted);font-weight:600;}
+  tbody tr:hover{background:#fafafa;}
+  .table-wrap{overflow-x:auto;border-radius:12px;}
+
+  .pill{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+  .pill.pending{background:var(--amber-bg);color:var(--amber);}
+  .pill.approved, .pill.active{background:var(--green-bg);color:var(--green);}
+  .pill.rejected, .pill.inactive{background:#fee2e2;color:var(--red);}
+
+  .actions{display:flex;gap:6px;}
+  .btn{
+    border:none;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;
+  }
+  .btn-approve{background:var(--green-bg);color:var(--green);}
+  .btn-reject{background:#fee2e2;color:var(--red);}
+  .btn-delete{background:#f3f4f6;color:#374151;}
+  .btn-edit{background:var(--blue-bg);color:var(--blue);}
+  .btn:hover{filter:brightness(0.95);}
+
+  .empty{padding:40px;text-align:center;color:var(--muted);}
+
+  /* Modal */
+  .modal-overlay{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);
+    align-items:center;justify-content:center;z-index:50;padding:16px;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal{background:#fff;border-radius:14px;padding:24px;max-width:420px;width:100%;}
+  .modal h3{margin-top:0;}
+  .modal .field{margin-bottom:12px;}
+  .modal label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:#374151;}
+  .modal input, .modal select{width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;}
+  .modal .modal-actions{display:flex;gap:10px;margin-top:16px;}
+  .modal .modal-actions button{flex:1;padding:10px;border:none;border-radius:8px;font-weight:700;cursor:pointer;}
+  .modal .btn-save{background:var(--red);color:#fff;}
+  .modal .btn-cancel{background:#f3f4f6;color:#374151;}
+
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:#1f1a1a;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;
+    display:none;z-index:60;
+  }
+  .toast.show{display:block;}
+</style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="brand"><span>Blood Bridge</span><span class="tag">Admin</span></div>
-  <button class="logout-btn" id="logoutBtn"><i class="fas fa-right-from-bracket"></i> Logout</button>
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <h2>🩸 Admin Login</h2>
+  <input type="email" id="loginEmail" name="email" placeholder="Email" autocomplete="username" />
+  <input type="password" id="loginPassword" name="password" placeholder="Password" autocomplete="current-password" />
+  <button id="loginBtn">Log In</button>
+  <div class="err" id="loginErr"></div>
 </div>
 
-<div class="login-wrap" id="loginWrap">
-  <div class="login-card">
-    <div class="login-icon"><i class="fas fa-shield-halved"></i></div>
-    <h1>Admin Login</h1>
-    <p>Sign in with your admin account to review donor registrations.</p>
-    <form id="loginForm">
-      <div class="field">
-        <label>Email</label>
-        <input type="email" id="loginEmail" placeholder="admin@example.com" required />
+<!-- ADMIN APP -->
+<div id="app">
+  <div class="topbar">
+    <h1>🩸 Blood Bridge Galkot — Admin</h1>
+    <div class="user-info">
+      <span id="userEmail"></span>
+      <button id="logoutBtn">Log Out</button>
+    </div>
+  </div>
+
+  <div style="padding:20px 20px 0;">
+    <div class="tabs">
+      <div class="tab active" data-panel="pending">Registration Requests <span class="badge-count" id="pendingCount">0</span></div>
+      <div class="tab" data-panel="donors">Donor List (blood_bridge_galkot)</div>
+    </div>
+  </div>
+
+  <div style="padding:0 20px;">
+    <!-- PENDING REGISTRATIONS PANEL -->
+    <div class="panel active" id="panel-pending">
+      <div class="toolbar">
+        <select id="statusFilter">
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+          <option value="all">All</option>
+        </select>
+        <input type="text" id="regSearch" placeholder="Search by name, phone, or blood group..." />
       </div>
-      <div class="field">
-        <label>Password</label>
-        <input type="password" id="loginPassword" placeholder="••••••••" required />
+      <div class="table-wrap">
+        <table id="regTable">
+          <thead>
+            <tr>
+              <th>Name</th><th>Age</th><th>Sex</th><th>Blood Group</th>
+              <th>Municipality</th><th>Ward</th><th>Phone</th><th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="regTbody"></tbody>
+        </table>
+        <div class="empty" id="regEmpty" style="display:none;">No data found</div>
       </div>
-      <button type="submit" class="login-btn" id="loginBtn"><i class="fas fa-right-to-bracket"></i> Sign In</button>
-      <div class="login-msg" id="loginMsg"></div>
-    </form>
+    </div>
+
+    <!-- DONORS PANEL -->
+    <div class="panel" id="panel-donors">
+      <div class="toolbar">
+        <input type="text" id="donorSearch" placeholder="Search by name, phone, municipality, or blood group..." />
+        <select id="donorStatusFilter">
+          <option value="all">All Statuses</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table id="donorTable">
+          <thead>
+            <tr>
+              <th>S.N.</th><th>Name</th><th>Age</th><th>Sex</th><th>Blood Group</th>
+              <th>Municipality</th><th>Ward</th><th>Phone</th><th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="donorTbody"></tbody>
+        </table>
+        <div class="empty" id="donorEmpty" style="display:none;">No data found</div>
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="dash-wrap" id="dashWrap">
-  <div class="dash-header">
-    <h1>Pending Registrations <span class="count-pill" id="pendingCount">0</span></h1>
-    <button class="refresh-btn" id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
-  </div>
-  <div class="pending-grid" id="pendingGrid">
-    <div class="state-box"><i class="fas fa-spinner fa-spin"></i> Loading…</div>
+<!-- EDIT DONOR MODAL -->
+<div class="modal-overlay" id="editModalOverlay">
+  <div class="modal">
+    <h3>Edit Donor</h3>
+    <input type="hidden" id="edit_id" />
+    <div class="field"><label>Name</label><input type="text" id="edit_person_name" /></div>
+    <div class="field"><label>Age</label><input type="text" id="edit_age" /></div>
+    <div class="field"><label>Sex</label>
+      <select id="edit_sex"><option value="">--</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select>
+    </div>
+    <div class="field"><label>Blood Group</label>
+      <select id="edit_blood_group">
+        <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+        <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+      </select>
+    </div>
+    <div class="field"><label>Municipality</label><input type="text" id="edit_municipality" /></div>
+    <div class="field"><label>Ward No.</label><input type="text" id="edit_ward_number" /></div>
+    <div class="field"><label>Phone Number</label><input type="text" id="edit_phone_number" /></div>
+    <div class="field"><label>Status</label>
+      <select id="edit_status"><option value="active">Active</option><option value="inactive">Inactive</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="editCancelBtn">Cancel</button>
+      <button class="btn-save" id="editSaveBtn">Save</button>
+    </div>
   </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
+  // ---- SUPABASE CONFIG ----
   const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const SUPABASE_ANON_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // --------------------------
 
-  const loginWrap = document.getElementById('loginWrap');
-  const dashWrap = document.getElementById('dashWrap');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const loginForm = document.getElementById('loginForm');
-  const loginBtn = document.getElementById('loginBtn');
-  const loginMsg = document.getElementById('loginMsg');
-  const pendingGrid = document.getElementById('pendingGrid');
-  const pendingCount = document.getElementById('pendingCount');
-  const refreshBtn = document.getElementById('refreshBtn');
+  const loginScreen = document.getElementById("loginScreen");
+  const app = document.getElementById("app");
+  const toast = document.getElementById("toast");
 
-  function escapeHtml(str) {
-    return String(str ?? '').replace(/[&<>"']/g, c => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    }[c]));
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.className = "toast show";
+    setTimeout(() => toast.className = "toast", 2500);
   }
 
-  function isAdmin(user) {
-    return user?.user_metadata?.role === 'admin' || user?.app_metadata?.role === 'admin';
-  }
+  // ---------------- AUTH ----------------
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const errBox = document.getElementById("loginErr");
+    errBox.style.display = "none";
 
-  function showLogin() {
-    loginWrap.style.display = 'block';
-    dashWrap.style.display = 'none';
-    logoutBtn.style.display = 'none';
-  }
-
-  function showDashboard() {
-    loginWrap.style.display = 'none';
-    dashWrap.style.display = 'block';
-    logoutBtn.style.display = 'flex';
-    loadPending();
-  }
-
-  async function checkSession() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user && isAdmin(session.user)) {
-      showDashboard();
-    } else {
-      if (session?.user && !isAdmin(session.user)) {
-        await supabase.auth.signOut();
-      }
-      showLogin();
-    }
-  }
-
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    loginMsg.className = 'login-msg';
-    loginBtn.disabled = true;
-    loginBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Signing in…`;
-
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-
-      if (!isAdmin(data.user)) {
-        await supabase.auth.signOut();
-        loginMsg.className = 'login-msg show error';
-        loginMsg.textContent = 'This account does not have admin access.';
-        return;
-      }
-
-      showDashboard();
-    } catch (err) {
-      console.error('Login failed:', err);
-      loginMsg.className = 'login-msg show error';
-      loginMsg.textContent = err.message || 'Invalid email or password.';
-    } finally {
-      loginBtn.disabled = false;
-      loginBtn.innerHTML = `<i class="fas fa-right-to-bracket"></i> Sign In`;
-    }
-  });
-
-  logoutBtn.addEventListener('click', async () => {
-    await supabase.auth.signOut();
-    showLogin();
-  });
-
-  refreshBtn.addEventListener('click', loadPending);
-
-  async function loadPending() {
-    pendingGrid.innerHTML = `<div class="state-box"><i class="fas fa-spinner fa-spin"></i> Loading…</div>`;
-    try {
-      const { data, error } = await supabase
-        .from('blood_bridge_galkot')
-        .select('id, sn, person_name, age, sex, blood_group, municipality, ward_number, phone_number, status')
-        .eq('status', 'inactive')
-        .order('id', { ascending: false });
-      if (error) throw error;
-
-      renderPending(data || []);
-    } catch (err) {
-      console.error('Failed to load pending registrations:', err);
-      pendingGrid.innerHTML = `<div class="state-box error"><i class="fas fa-triangle-exclamation"></i> ${escapeHtml(err.message)}</div>`;
-    }
-  }
-
-  function renderPending(rows) {
-    pendingCount.textContent = rows.length;
-
-    if (rows.length === 0) {
-      pendingGrid.innerHTML = `<div class="state-box"><i class="fas fa-circle-check"></i> No pending registrations right now.</div>`;
+    if (!email || !password) {
+      errBox.textContent = "Please enter both email and password.";
+      errBox.style.display = "block";
       return;
     }
 
-    pendingGrid.innerHTML = rows.map(r => `
-      <div class="pending-card" data-id="${r.id}">
-        <div class="row-top">
-          <span class="name">${escapeHtml(r.person_name || 'Unnamed')}</span>
-          <span class="badge">${escapeHtml(r.blood_group || '-')}</span>
-        </div>
-        <div class="details">
-          <div><i class="fas fa-cake-candles"></i>${escapeHtml(r.age || '-')} yrs • ${escapeHtml(r.sex || '-')}</div>
-          <div><i class="fas fa-location-dot"></i>${escapeHtml(r.municipality || '-')}${r.ward_number ? ', Ward ' + escapeHtml(r.ward_number) : ''}</div>
-          <div><i class="fas fa-phone"></i>${escapeHtml(r.phone_number || '-')}</div>
-        </div>
-        <div class="pending-actions">
-          <button class="approve-btn" onclick="handleDecision(${r.id}, 'approve', this)"><i class="fas fa-check"></i> Approve</button>
-          <button class="reject-btn" onclick="handleDecision(${r.id}, 'reject', this)"><i class="fas fa-xmark"></i> Reject</button>
-        </div>
-      </div>
-    `).join('');
+    try {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) {
+        errBox.textContent = "Login failed: " + error.message;
+        errBox.style.display = "block";
+        return;
+      }
+      await checkAdminAndInit();
+    } catch (err) {
+      errBox.textContent = "Network error: could not reach the server. (" + err.message + ")";
+      errBox.style.display = "block";
+    }
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", async () => {
+    await supabaseClient.auth.signOut();
+    location.reload();
+  });
+
+  async function checkAdminAndInit() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) {
+      loginScreen.style.display = "block";
+      app.style.display = "none";
+      return;
+    }
+    // Check admin access via blood_bridge_admins table
+    const { data: adminRow, error } = await supabaseClient
+      .from("blood_bridge_admins")
+      .select("status")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    // Log full details to console for debugging
+    console.log("Admin check — user:", user.id, user.email);
+    console.log("Admin check — row:", adminRow, "error:", error);
+
+    const isAdmin = adminRow && adminRow.status === "active";
+
+    if (error) {
+      // A real query error (e.g. RLS blocking the select) — show it so it's
+      // clear this isn't just "no matching row"
+      document.getElementById("loginErr").textContent =
+        "Could not verify admin access: " + error.message + " (check console for details)";
+      document.getElementById("loginErr").style.display = "block";
+      await supabaseClient.auth.signOut();
+      loginScreen.style.display = "block";
+      app.style.display = "none";
+      return;
+    }
+
+    if (!isAdmin) {
+      document.getElementById("loginErr").textContent =
+        adminRow
+          ? "Your admin access is inactive. Contact another admin to reactivate it."
+          : "You do not have admin access. (No admin record found for " + user.email + ")";
+      document.getElementById("loginErr").style.display = "block";
+      await supabaseClient.auth.signOut();
+      loginScreen.style.display = "block";
+      app.style.display = "none";
+      return;
+    }
+
+    document.getElementById("userEmail").textContent = user.email;
+    loginScreen.style.display = "none";
+    app.style.display = "block";
+    loadRegistrations();
+    loadDonors();
   }
 
-  async function handleDecision(id, action, btnEl) {
-    const card = btnEl.closest('.pending-card');
-    card.querySelectorAll('button').forEach(b => b.disabled = true);
+  // On page load, check existing session
+  checkAdminAndInit();
 
+  // ---------------- TABS ----------------
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById("panel-" + tab.dataset.panel).classList.add("active");
+    });
+  });
+
+  // ---------------- REGISTRATIONS (bloodbridge_register) ----------------
+  let allRegistrations = [];
+
+  async function loadRegistrations() {
     try {
-      if (action === 'approve') {
-        const { error } = await supabase
-          .from('blood_bridge_galkot')
-          .update({ status: 'active' })
-          .eq('id', id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('blood_bridge_galkot')
-          .delete()
-          .eq('id', id);
-        if (error) throw error;
-      }
+      const { data, error } = await supabaseClient
+        .from("bloodbridge_register")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-      card.remove();
-      const remaining = pendingGrid.querySelectorAll('.pending-card').length;
-      pendingCount.textContent = remaining;
-      if (remaining === 0) {
-        pendingGrid.innerHTML = `<div class="state-box"><i class="fas fa-circle-check"></i> No pending registrations right now.</div>`;
-      }
+      if (error) { showToast("Error: " + error.message); return; }
+      allRegistrations = data || [];
+      const pendingCount = allRegistrations.filter(r => r.status === "pending").length;
+      document.getElementById("pendingCount").textContent = pendingCount;
+      renderRegistrations();
     } catch (err) {
-      console.error(`Failed to ${action}:`, err);
-      card.querySelectorAll('button').forEach(b => b.disabled = false);
-      alert(`Couldn't ${action} this registration: ${err.message}`);
+      showToast("Network error: " + err.message);
     }
   }
 
-  // Initialize
-  checkSession();
+  function renderRegistrations() {
+    const statusFilter = document.getElementById("statusFilter").value;
+    const search = document.getElementById("regSearch").value.trim().toLowerCase();
+    let rows = allRegistrations;
+
+    if (statusFilter !== "all") rows = rows.filter(r => r.status === statusFilter);
+    if (search) {
+      rows = rows.filter(r =>
+        (r.person_name || "").toLowerCase().includes(search) ||
+        (r.phone_number || "").toLowerCase().includes(search) ||
+        (r.blood_group || "").toLowerCase().includes(search) ||
+        (r.municipality || "").toLowerCase().includes(search)
+      );
+    }
+
+    const tbody = document.getElementById("regTbody");
+    const empty = document.getElementById("regEmpty");
+    tbody.innerHTML = "";
+
+    if (rows.length === 0) {
+      empty.style.display = "block";
+      return;
+    }
+    empty.style.display = "none";
+
+    rows.forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(r.person_name)}</td>
+        <td>${escapeHtml(r.age || "-")}</td>
+        <td>${escapeHtml(r.sex || "-")}</td>
+        <td><b>${escapeHtml(r.blood_group || "-")}</b></td>
+        <td>${escapeHtml(r.municipality || "-")}</td>
+        <td>${escapeHtml(r.ward_number || "-")}</td>
+        <td>${escapeHtml(r.phone_number)}</td>
+        <td><span class="pill ${r.status}">${statusLabel(r.status)}</span></td>
+        <td class="actions">
+          ${r.status === "pending" ? `
+            <button class="btn btn-approve" data-id="${r.id}" data-action="approve">Approve</button>
+            <button class="btn btn-reject" data-id="${r.id}" data-action="reject">Reject</button>
+          ` : ""}
+          <button class="btn btn-delete" data-id="${r.id}" data-action="delete-reg">Delete</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function statusLabel(s) {
+    return { pending: "Pending", approved: "Approved", rejected: "Rejected" }[s] || s;
+  }
+
+  document.getElementById("statusFilter").addEventListener("change", renderRegistrations);
+  document.getElementById("regSearch").addEventListener("input", renderRegistrations);
+
+  document.getElementById("regTbody").addEventListener("click", async (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+    const record = allRegistrations.find(r => String(r.id) === String(id));
+    if (!record) return;
+
+    if (action === "approve") {
+      await approveRegistration(record);
+    } else if (action === "reject") {
+      await updateRegistrationStatus(id, "rejected");
+    } else if (action === "delete-reg") {
+      if (!confirm("Are you sure you want to delete this registration?")) return;
+      try {
+        const { error } = await supabaseClient.from("bloodbridge_register").delete().eq("id", id);
+        if (error) { showToast("Error: " + error.message); return; }
+        showToast("Registration deleted.");
+        loadRegistrations();
+      } catch (err) {
+        showToast("Network error: " + err.message);
+      }
+    }
+  });
+
+  async function updateRegistrationStatus(id, status) {
+    try {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      const { error } = await supabaseClient
+        .from("bloodbridge_register")
+        .update({ status, reviewed_at: new Date().toISOString(), reviewed_by: user?.email || null })
+        .eq("id", id);
+      if (error) { showToast("Error: " + error.message); return; }
+      showToast(status === "rejected" ? "Registration rejected." : "Updated.");
+      loadRegistrations();
+    } catch (err) {
+      showToast("Network error: " + err.message);
+    }
+  }
+
+  async function approveRegistration(record) {
+    try {
+      // 1. Insert into blood_bridge_galkot as active donor
+      const { error: insertError } = await supabaseClient.from("blood_bridge_galkot").insert([{
+        person_name: record.person_name,
+        age: record.age,
+        sex: record.sex,
+        blood_group: record.blood_group,
+        municipality: record.municipality,
+        ward_number: record.ward_number,
+        phone_number: record.phone_number,
+        data_entry_by: record.data_entry_by,
+        status: "active"
+      }]);
+
+      if (insertError) {
+        showToast("Error approving: " + insertError.message);
+        return;
+      }
+
+      // 2. Mark registration as approved
+      await updateRegistrationStatus(record.id, "approved");
+      loadDonors();
+    } catch (err) {
+      showToast("Network error: " + err.message);
+    }
+  }
+
+  // ---------------- DONORS (blood_bridge_galkot) ----------------
+  let allDonors = [];
+
+  async function loadDonors() {
+    try {
+      const { data, error } = await supabaseClient
+        .from("blood_bridge_galkot")
+        .select("*")
+        .order("id", { ascending: false });
+
+      if (error) { showToast("Error: " + error.message); return; }
+      allDonors = data || [];
+      renderDonors();
+    } catch (err) {
+      showToast("Network error: " + err.message);
+    }
+  }
+
+  function renderDonors() {
+    const search = document.getElementById("donorSearch").value.trim().toLowerCase();
+    const statusFilter = document.getElementById("donorStatusFilter").value;
+    let rows = allDonors;
+
+    if (statusFilter !== "all") rows = rows.filter(d => d.status === statusFilter);
+    if (search) {
+      rows = rows.filter(d =>
+        (d.person_name || "").toLowerCase().includes(search) ||
+        (d.phone_number || "").toLowerCase().includes(search) ||
+        (d.blood_group || "").toLowerCase().includes(search) ||
+        (d.municipality || "").toLowerCase().includes(search)
+      );
+    }
+
+    const tbody = document.getElementById("donorTbody");
+    const empty = document.getElementById("donorEmpty");
+    tbody.innerHTML = "";
+
+    if (rows.length === 0) {
+      empty.style.display = "block";
+      return;
+    }
+    empty.style.display = "none";
+
+    rows.forEach(d => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${d.sn ?? d.id}</td>
+        <td>${escapeHtml(d.person_name || "-")}</td>
+        <td>${escapeHtml(d.age || "-")}</td>
+        <td>${escapeHtml(d.sex || "-")}</td>
+        <td><b>${escapeHtml(d.blood_group || "-")}</b></td>
+        <td>${escapeHtml(d.municipality || "-")}</td>
+        <td>${escapeHtml(d.ward_number || "-")}</td>
+        <td>${escapeHtml(d.phone_number || "-")}</td>
+        <td><span class="pill ${d.status}">${d.status === "active" ? "Active" : "Inactive"}</span></td>
+        <td class="actions">
+          <button class="btn btn-edit" data-id="${d.id}" data-action="edit">Edit</button>
+          <button class="btn btn-delete" data-id="${d.id}" data-action="delete-donor">Delete</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.getElementById("donorSearch").addEventListener("input", renderDonors);
+  document.getElementById("donorStatusFilter").addEventListener("change", renderDonors);
+
+  document.getElementById("donorTbody").addEventListener("click", async (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+    const record = allDonors.find(d => String(d.id) === String(id));
+    if (!record) return;
+
+    if (action === "edit") {
+      openEditModal(record);
+    } else if (action === "delete-donor") {
+      if (!confirm("Are you sure you want to delete this donor?")) return;
+      try {
+        const { error } = await supabaseClient.from("blood_bridge_galkot").delete().eq("id", id);
+        if (error) { showToast("Error: " + error.message); return; }
+        showToast("Donor deleted.");
+        loadDonors();
+      } catch (err) {
+        showToast("Network error: " + err.message);
+      }
+    }
+  });
+
+  // ---------------- EDIT MODAL ----------------
+  const editModalOverlay = document.getElementById("editModalOverlay");
+
+  function openEditModal(record) {
+    document.getElementById("edit_id").value = record.id;
+    document.getElementById("edit_person_name").value = record.person_name || "";
+    document.getElementById("edit_age").value = record.age || "";
+    document.getElementById("edit_sex").value = record.sex || "";
+    document.getElementById("edit_blood_group").value = record.blood_group || "A+";
+    document.getElementById("edit_municipality").value = record.municipality || "";
+    document.getElementById("edit_ward_number").value = record.ward_number || "";
+    document.getElementById("edit_phone_number").value = record.phone_number || "";
+    document.getElementById("edit_status").value = record.status || "active";
+    editModalOverlay.classList.add("show");
+  }
+
+  document.getElementById("editCancelBtn").addEventListener("click", () => {
+    editModalOverlay.classList.remove("show");
+  });
+
+  document.getElementById("editSaveBtn").addEventListener("click", async () => {
+    const id = document.getElementById("edit_id").value;
+    const updated = {
+      person_name: document.getElementById("edit_person_name").value.trim(),
+      age: document.getElementById("edit_age").value.trim() || null,
+      sex: document.getElementById("edit_sex").value || null,
+      blood_group: document.getElementById("edit_blood_group").value,
+      municipality: document.getElementById("edit_municipality").value.trim(),
+      ward_number: document.getElementById("edit_ward_number").value.trim() || null,
+      phone_number: document.getElementById("edit_phone_number").value.trim(),
+      status: document.getElementById("edit_status").value
+    };
+
+    try {
+      const { error } = await supabaseClient.from("blood_bridge_galkot").update(updated).eq("id", id);
+      if (error) { showToast("Error: " + error.message); return; }
+      showToast("Update saved.");
+      editModalOverlay.classList.remove("show");
+      loadDonors();
+    } catch (err) {
+      showToast("Network error: " + err.message);
+    }
+  });
+
+  // ---------------- UTIL ----------------
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
 </script>
 </body>
 </html>
