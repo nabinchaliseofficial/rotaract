@@ -1,320 +1,1076 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Verify Member | Rotaract Club of Galkot Baglung</title>
-<meta name="description" content="Verify the membership status of a Rotaract Club of Galkot Baglung member." />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-  :root {
-    --primary: #D91A5C;
-    --primary-dark: #A61042;
-    --primary-light: #FDE8F0;
-    --secondary: #1D2A44;
-    --secondary-light: #2D3A5A;
-    --gold: #D4AF37;
-    --gold-light: #F4E08A;
-    --dark: #0B1120;
-    --text-primary: #0F172A;
-    --text-secondary: #475569;
-    --text-muted: #94A3B8;
-    --bg-light: #F8FAFC;
-    --bg-white: #FFFFFF;
-    --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.06);
-    --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.12);
-    --radius-sm: 12px;
-    --radius-md: 20px;
-    --radius-lg: 28px;
-    --transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg-light);
-    color: var(--text-primary);
-    min-height: 100vh;
-  }
-  a { text-decoration: none; }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Member Directory · Rotary</title>
+    <link rel="stylesheet" href="https://cdnXOs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        }
 
-  .topbar {
-    position: sticky; top: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 28px;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
-  }
-  .brand { display: flex; align-items: center; gap: 10px; color: var(--text-primary); font-weight: 800; font-size: 1.05rem; }
-  .brand img { height: 36px; width: auto; border-radius: 8px; }
-  .brand span { background: linear-gradient(135deg, var(--primary), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .back-link { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.85rem; color: var(--text-secondary); transition: var(--transition); }
-  .back-link:hover { color: var(--primary); }
+        body {
+            background: linear-gradient(135deg, #eef2f6 0%, #f8fafc 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-  .hero {
-    padding: 70px 20px 30px;
-    text-align: center;
-    background: radial-gradient(circle at 50% 0%, rgba(29, 42, 68, 0.06), transparent 60%);
-  }
-  .hero-icon {
-    width: 64px; height: 64px; margin: 0 auto 18px;
-    display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
-    border-radius: 18px;
-    box-shadow: var(--shadow-md);
-  }
-  .hero-icon i { color: var(--gold-light); font-size: 1.5rem; }
-  .hero h1 { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 900; letter-spacing: -1px; margin-bottom: 10px; }
-  .hero h1 span { color: var(--primary); }
-  .hero p { max-width: 560px; margin: 0 auto; color: var(--text-secondary); font-size: 1rem; line-height: 1.6; }
+        .container {
+            max-width: 720px;
+            width: 100%;
+            background: white;
+            border-radius: 32px;
+            padding: 32px 28px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e9edf2;
+        }
 
-  /* ===== SEARCH ===== */
-  .search-wrap { max-width: 560px; margin: 36px auto 0; padding: 0 20px; }
-  .search-box {
-    display: flex; gap: 10px;
-    background: var(--bg-white);
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 50px;
-    padding: 6px 6px 6px 22px;
-    box-shadow: var(--shadow-sm);
-  }
-  .search-box input {
-    flex: 1; border: none; outline: none; font-size: 0.95rem;
-    font-family: inherit; background: transparent; color: var(--text-primary);
-  }
-  .search-box input::placeholder { color: var(--text-muted); }
-  .search-box button {
-    border: none; cursor: pointer;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: #fff; font-weight: 700; font-size: 0.85rem;
-    padding: 12px 24px; border-radius: 50px;
-    display: flex; align-items: center; gap: 8px;
-    transition: var(--transition);
-  }
-  .search-box button:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
-  .search-hint { text-align: center; font-size: 0.78rem; color: var(--text-muted); margin-top: 10px; }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
 
-  /* ===== RESULTS LIST (multiple matches) ===== */
-  .match-list { max-width: 560px; margin: 20px auto 0; padding: 0 20px; display: flex; flex-direction: column; gap: 10px; }
-  .match-row {
-    display: flex; align-items: center; gap: 12px;
-    background: var(--bg-white);
-    border: 1px solid rgba(15, 23, 42, 0.06);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    cursor: pointer;
-    transition: var(--transition);
-    text-align: left;
-  }
-  .match-row:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); }
-  .match-row img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
-  .match-row .mname { font-weight: 700; font-size: 0.9rem; }
-  .match-row .mrole { font-size: 0.75rem; color: var(--text-muted); }
+        .header .logo {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.4rem;
+        }
 
-  /* ===== VERIFICATION CARD ===== */
-  .card-wrap { max-width: 460px; margin: 40px auto 90px; padding: 0 20px; }
-  .id-card {
-    position: relative;
-    background: linear-gradient(160deg, var(--secondary) 0%, var(--dark) 100%);
-    border-radius: var(--radius-lg);
-    padding: 32px 28px 26px;
-    color: #fff;
-    box-shadow: var(--shadow-lg);
-    overflow: hidden;
-  }
-  .id-card::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(circle at 85% 0%, rgba(212, 175, 55, 0.18), transparent 55%);
-    pointer-events: none;
-  }
-  .id-card-top { display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1; }
-  .id-card-top .club-tag { font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold-light); }
-  .status-pill { font-size: 0.68rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .status-pill.active { background: rgba(34, 197, 94, 0.18); color: #4ADE80; border: 1px solid rgba(74, 222, 128, 0.4); }
-  .status-pill.inactive { background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(248, 113, 113, 0.4); }
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
 
-  .id-card-body { display: flex; gap: 18px; align-items: center; margin-top: 22px; position: relative; z-index: 1; }
-  .id-card-body img { width: 78px; height: 78px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(212, 175, 55, 0.5); }
-  .id-card-body .mname { font-size: 1.25rem; font-weight: 800; }
-  .id-card-body .mrole { font-size: 0.85rem; color: rgba(255, 255, 255, 0.65); margin-top: 2px; }
+        .subhead {
+            color: #64748b;
+            margin: 2px 0 24px 60px;
+            font-size: 0.85rem;
+        }
 
-  .id-card-meta {
-    margin-top: 22px; position: relative; z-index: 1;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 14px 10px;
-    border-top: 1px dashed rgba(255, 255, 255, 0.15);
-    padding-top: 18px;
-  }
-  .id-card-meta .field-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255, 255, 255, 0.45); margin-bottom: 3px; }
-  .id-card-meta .field-value { font-size: 0.88rem; font-weight: 600; }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
 
-  .verified-seal {
-    position: absolute; bottom: -18px; right: -18px;
-    width: 100px; height: 100px; opacity: 0.08;
-    border: 6px solid var(--gold);
-    border-radius: 50%;
-  }
+        .search-wrapper {
+            flex: 1;
+            position: relative;
+        }
 
-  .state-box {
-    text-align: center; padding: 40px 20px; color: var(--text-muted);
-    background: var(--bg-white); border-radius: var(--radius-md);
-    border: 1px dashed rgba(15, 23, 42, 0.12); max-width: 460px; margin: 30px auto 90px;
-  }
-  .state-box i { font-size: 2rem; margin-bottom: 12px; display: block; color: var(--primary); }
-  .state-box.error i { color: #EF4444; }
-</style>
+        .search-wrapper i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .search-wrapper input {
+            width: 100%;
+            padding: 13px 16px 13px 44px;
+            border-radius: 60px;
+            border: 1px solid #dce2eb;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.2s;
+            background: #f8fafc;
+        }
+
+        .search-wrapper input:focus {
+            border-color: #2563eb;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+        }
+
+        .search-btn {
+            background: #1e293b;
+            border: none;
+            color: white;
+            padding: 0 24px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.15s;
+            white-space: nowrap;
+        }
+
+        .search-btn:hover {
+            background: #0f172a;
+            transform: scale(1.02);
+        }
+
+        .search-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ===== RESULT COUNT ===== */
+        .result-count {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 14px;
+            padding: 0 4px;
+        }
+
+        .result-count strong {
+            color: #0f172a;
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px 40px;
+            color: #94a3b8;
+        }
+
+        .empty-state .icon {
+            font-size: 4rem;
+            color: #dce2eb;
+            margin-bottom: 14px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.1rem;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        /* ===== MEMBER CARD (clickable) ===== */
+        .member-card {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 18px 20px;
+            border: 1px solid #e9edf2;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 10px;
+        }
+
+        .member-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .member-card:hover {
+            border-color: #2563eb;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.06);
+            transform: translateY(-2px);
+        }
+
+        .member-card .avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #dbeafe;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #2563eb;
+            overflow: hidden;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .member-card .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .member-card .info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .member-card .info .name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #0f172a;
+        }
+
+        .member-card .info .position {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .member-card .info .email-small {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-top: 1px;
+        }
+
+        .member-card .arrow {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+
+        .member-card:hover .arrow {
+            color: #2563eb;
+            transform: translateX(4px);
+        }
+
+        /* ===== NO RESULT ===== */
+        .no-result {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+
+        .no-result i {
+            font-size: 2.5rem;
+            color: #dce2eb;
+            margin-bottom: 10px;
+        }
+
+        .no-result p {
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .no-result span {
+            font-size: 0.85rem;
+        }
+
+        /* ===== POPUP OVERLAY ===== */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .popup-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .popup {
+            background: white;
+            border-radius: 32px;
+            max-width: 460px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 0;
+            animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.25);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.05);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .popup-close:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: #0f172a;
+        }
+
+        .popup-header {
+            position: relative;
+            padding: 32px 28px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #f8fafc, #eef2f6);
+            border-radius: 32px 32px 0 0;
+        }
+
+        .popup-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 14px;
+            background: #dbeafe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 2.8rem;
+            color: #2563eb;
+            overflow: hidden;
+            border: 4px solid white;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .popup-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .popup-header .name {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .popup-header .designation {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .popup-body {
+            padding: 20px 28px 28px;
+        }
+
+        .popup-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 16px;
+            margin-bottom: 20px;
+        }
+
+        .popup-details .detail {
+            padding: 6px 0;
+        }
+
+        .popup-details .detail .label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .popup-details .detail .value {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #0f172a;
+            margin-top: 1px;
+            word-break: break-word;
+        }
+
+        .popup-actions {
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid #e9edf2;
+            padding-top: 18px;
+        }
+
+        .popup-actions .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.15s;
+            border: none;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .popup-actions .btn-primary {
+            background: #1e293b;
+            color: white;
+        }
+
+        .popup-actions .btn-primary:hover {
+            background: #0f172a;
+            transform: scale(1.02);
+        }
+
+        .popup-actions .btn-print {
+            background: #2563eb;
+            color: white;
+            flex: 1;
+        }
+
+        .popup-actions .btn-print:hover {
+            background: #1d4ed8;
+            transform: scale(1.02);
+        }
+
+        .popup-actions .btn-print:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .popup-actions .btn-print .spinner {
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 60px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 99999;
+            animation: slideUp 0.3s ease;
+        }
+
+        .toast.show {
+            display: flex;
+        }
+
+        .toast.success { background: #166534; }
+        .toast.error { background: #991b1b; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .toast i { font-size: 1.1rem; }
+
+        /* ===== PRINT STYLES ===== */
+        @media print {
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            .container,
+            .search-box,
+            .subhead,
+            .header,
+            .empty-state,
+            .no-result,
+            .member-card,
+            .toast,
+            .popup-overlay,
+            .result-count {
+                display: none !important;
+            }
+
+            .print-content {
+                display: block !important;
+            }
+        }
+
+        .print-content {
+            display: none;
+            padding: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .print-content .print-card {
+            background: white;
+            border: 2px solid #1e293b;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .print-content .print-card .print-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            background: #dbeafe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 2.2rem;
+            color: #2563eb;
+            overflow: hidden;
+            border: 3px solid #1e293b;
+        }
+
+        .print-content .print-card .print-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .print-content .print-card .print-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .print-content .print-card .print-position {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 14px;
+        }
+
+        .print-content .print-card .print-details {
+            text-align: left;
+            border-top: 1px solid #e9edf2;
+            padding-top: 14px;
+            margin-top: 4px;
+        }
+
+        .print-content .print-card .print-details .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            font-size: 0.85rem;
+            border-bottom: 1px dashed #f1f5f9;
+        }
+
+        .print-content .print-card .print-details .row .label {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .print-content .print-card .print-details .row .value {
+            color: #0f172a;
+            font-weight: 500;
+            text-align: right;
+        }
+
+        .print-content .print-footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-top: 10px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .container { padding: 20px 16px; }
+            .header h1 { font-size: 1.3rem; }
+            .subhead { margin-left: 0; }
+            .search-box { flex-direction: column; }
+            .search-btn { justify-content: center; padding: 14px; }
+            .popup-header { padding: 24px 20px 16px; }
+            .popup-avatar { width: 90px; height: 90px; font-size: 2rem; }
+            .popup-header .name { font-size: 1.3rem; }
+            .popup-body { padding: 16px 20px 20px; }
+            .popup-details { grid-template-columns: 1fr; gap: 2px; }
+            .popup-actions { flex-direction: column; }
+            .toast { width: 90%; padding: 12px 20px; font-size: 0.85rem; }
+            .member-card { padding: 14px 16px; gap: 12px; }
+            .member-card .avatar { width: 44px; height: 44px; font-size: 0.9rem; }
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 40px 0;
+            color: #94a3b8;
+        }
+
+        .loading-state i {
+            font-size: 1.8rem;
+            color: #2563eb;
+        }
+
+        .loading-state p {
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
 
-<div class="topbar">
-  <a href="index.html" class="brand">
-    <img src="rotaract-logo.jpg" alt="Rotaract Logo" onerror="this.style.display='none'">
-    <span>Rotaract</span>
-  </a>
-  <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
-</div>
+    <div class="container">
+        <div class="header">
+            <div class="logo"><i class="fas fa-id-card"></i></div>
+            <h1>Member Directory</h1>
+        </div>
+        <div class="subhead">
+            <i class="fas fa-search" style="margin-right: 6px;color:#2563eb;"></i> Search by name, email, or Rotary ID
+        </div>
 
-<section class="hero">
-  <div class="hero-icon"><i class="fas fa-id-badge"></i></div>
-  <h1>Verify <span>Member</span></h1>
-  <p>Confirm whether someone is a genuine, active member of the Rotaract Club of Galkot Baglung.</p>
+        <!-- Search -->
+        <div class="search-box">
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Type name, email, or Rotary ID..." />
+            </div>
+            <button class="search-btn" id="searchBtn"><i class="fas fa-arrow-right"></i> Search</button>
+        </div>
 
-  <div class="search-wrap">
-    <div class="search-box">
-      <input type="text" id="searchInput" placeholder="Name, Rotary ID, or email" autocomplete="off" />
-      <button id="searchBtn"><i class="fas fa-magnifying-glass"></i> Verify</button>
+        <!-- Result Area -->
+        <div id="resultArea">
+            <div class="empty-state">
+                <div class="icon"><i class="fas fa-user-circle"></i></div>
+                <h3>Search for a member</h3>
+                <p>Enter a name, email, or Rotary ID</p>
+            </div>
+        </div>
     </div>
-    <div class="search-hint">Try a full name, partial name, Rotary ID, or email address.</div>
-  </div>
-</section>
 
-<div id="matchList" class="match-list"></div>
-<div id="resultArea"></div>
-
-<script>
-  const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  const searchInput = document.getElementById('searchInput');
-  const searchBtn = document.getElementById('searchBtn');
-  const matchList = document.getElementById('matchList');
-  const resultArea = document.getElementById('resultArea');
-
-  function escapeHtml(str) {
-    return String(str ?? '').replace(/[&<>"']/g, c => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    }[c]));
-  }
-
-  function renderState(html) {
-    matchList.innerHTML = '';
-    resultArea.innerHTML = html;
-  }
-
-  function photoFor(m) {
-    const name = m.name || 'Member';
-    const photo = m.photo_url || m.photo || m.profile_image || '';
-    const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1D2A44&color=fff&size=200`;
-    return photo || fallback;
-  }
-
-  function renderCard(m) {
-    matchList.innerHTML = '';
-    const isActive = (m.status || '').toLowerCase() === 'active';
-    const name = escapeHtml(m.name || 'Member');
-    const photo = photoFor(m);
-    resultArea.innerHTML = `
-      <div class="card-wrap">
-        <div class="id-card">
-          <div class="verified-seal"></div>
-          <div class="id-card-top">
-            <span class="club-tag">Rotaract · Galkot Baglung</span>
-            <span class="status-pill ${isActive ? 'active' : 'inactive'}">
-              <i class="fas ${isActive ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
-              ${isActive ? 'Active Member' : 'Not Active'}
-            </span>
-          </div>
-          <div class="id-card-body">
-            <img src="${photo}" alt="${name}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(m.name || 'Member')}&background=1D2A44&color=fff&size=200'">
-            <div>
-              <div class="mname">${name}</div>
-              <div class="mrole">${escapeHtml(m.designation || 'Member')}</div>
+    <!-- ===== PRINT CONTENT (hidden, used for printing) ===== -->
+    <div class="print-content" id="printContent">
+        <div class="print-card" id="printCard">
+            <div class="print-avatar" id="printAvatar">
+                <span id="printInitials">JD</span>
             </div>
-          </div>
-          <div class="id-card-meta">
-            <div>
-              <div class="field-label">Rotary ID</div>
-              <div class="field-value">${escapeHtml(m.rotary_id || 'N/A')}</div>
+            <div class="print-name" id="printName">John Doe</div>
+            <div class="print-position" id="printPosition">President</div>
+            <div class="print-details" id="printDetails">
+                <div class="row"><span class="label">Email</span><span class="value" id="printEmail">—</span></div>
+                <div class="row"><span class="label">Rotary ID</span><span class="value" id="printRotary">—</span></div>
+                <div class="row"><span class="label">Phone</span><span class="value" id="printPhone">—</span></div>
+                <div class="row"><span class="label">Blood Group</span><span class="value" id="printBlood">—</span></div>
+                <div class="row"><span class="label">Gender</span><span class="value" id="printGender">—</span></div>
+                <div class="row"><span class="label">DOB</span><span class="value" id="printDob">—</span></div>
+                <div class="row"><span class="label">Profession</span><span class="value" id="printProfession">—</span></div>
+                <div class="row"><span class="label">Address</span><span class="value" id="printAddress">—</span></div>
             </div>
-            <div>
-              <div class="field-label">Profession</div>
-              <div class="field-value">${escapeHtml(m.profession || 'N/A')}</div>
-            </div>
-          </div>
         </div>
-      </div>
-    `;
-  }
+        <div class="print-footer">Rotaract Club of Galkot Baglung · Member Card</div>
+    </div>
 
-  function renderMatchList(members) {
-    resultArea.innerHTML = '';
-    matchList.innerHTML = members.map((m, i) => `
-      <button class="match-row" data-index="${i}">
-        <img src="${photoFor(m)}" alt="${escapeHtml(m.name || 'Member')}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(m.name || 'Member')}&background=1D2A44&color=fff&size=100'">
-        <div>
-          <div class="mname">${escapeHtml(m.name || 'Member')}</div>
-          <div class="mrole">${escapeHtml(m.designation || 'Member')}</div>
+    <!-- ===== POPUP ===== -->
+    <div class="popup-overlay" id="popup">
+        <div class="popup">
+            <div class="popup-header">
+                <button class="popup-close" id="popupClose"><i class="fas fa-times"></i></button>
+                <div class="popup-avatar" id="popupAvatar">
+                    <span id="popupInitials">JD</span>
+                </div>
+                <div class="name" id="popupName">John Doe</div>
+                <div class="designation" id="popupDesignation">President</div>
+            </div>
+            <div class="popup-body">
+                <div class="popup-details" id="popupDetails">
+                    <div class="detail"><span class="label">Email</span><span class="value" id="pEmail">—</span></div>
+                    <div class="detail"><span class="label">Rotary ID</span><span class="value" id="pRotary">—</span></div>
+                    <div class="detail"><span class="label">Phone</span><span class="value" id="pPhone">—</span></div>
+                    <div class="detail"><span class="label">Blood Group</span><span class="value" id="pBlood">—</span></div>
+                    <div class="detail"><span class="label">Gender</span><span class="value" id="pGender">—</span></div>
+                    <div class="detail"><span class="label">DOB</span><span class="value" id="pDob">—</span></div>
+                    <div class="detail"><span class="label">Profession</span><span class="value" id="pProfession">—</span></div>
+                    <div class="detail"><span class="label">Address</span><span class="value" id="pAddress">—</span></div>
+                </div>
+                <div class="popup-actions">
+                    <button class="btn btn-primary" id="popupCloseBtn"><i class="fas fa-check"></i> Done</button>
+                    <button class="btn btn-print" id="printBtn"><i class="fas fa-print"></i> Print</button>
+                </div>
+            </div>
         </div>
-      </button>
-    `).join('');
+    </div>
 
-    matchList.querySelectorAll('.match-row').forEach(row => {
-      row.addEventListener('click', () => renderCard(members[Number(row.dataset.index)]));
-    });
-  }
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle" id="toastIcon"></i>
+        <span id="toastMessage">Success!</span>
+    </div>
 
-  async function verifyMember() {
-    const q = searchInput.value.trim();
-    if (!q) {
-      renderState(`<div class="state-box"><i class="fas fa-keyboard"></i> Enter a name, Rotary ID, or email to verify.</div>`);
-      return;
-    }
+    <script>
+        (function() {
+            "use strict";
 
-    renderState(`<div class="state-box"><i class="fas fa-spinner fa-spin"></i> Verifying…</div>`);
+            // ===== SUPABASE =====
+            const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+            const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
+            
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            const TABLE_NAME = "members";
 
-    try {
-      const { data, error } = await supabase
-        .from('members')
-        .select('name, rotary_id, designation, profession, email, status, photo_url, photo, profile_image')
-        .or(`name.ilike.%${q}%,rotary_id.ilike.%${q}%,email.ilike.%${q}%`)
-        .limit(10);
+            // DOM refs
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const resultArea = document.getElementById('resultArea');
 
-      if (error) throw error;
+            // Popup
+            const popup = document.getElementById('popup');
+            const popupClose = document.getElementById('popupClose');
+            const popupCloseBtn = document.getElementById('popupCloseBtn');
+            const popupAvatar = document.getElementById('popupAvatar');
+            const popupInitials = document.getElementById('popupInitials');
+            const popupName = document.getElementById('popupName');
+            const popupDesignation = document.getElementById('popupDesignation');
 
-      if (!data || data.length === 0) {
-        renderState(`<div class="state-box error"><i class="fas fa-user-slash"></i> No member found matching "${escapeHtml(q)}".</div>`);
-        return;
-      }
+            // Popup details
+            const pEmail = document.getElementById('pEmail');
+            const pRotary = document.getElementById('pRotary');
+            const pPhone = document.getElementById('pPhone');
+            const pBlood = document.getElementById('pBlood');
+            const pGender = document.getElementById('pGender');
+            const pDob = document.getElementById('pDob');
+            const pProfession = document.getElementById('pProfession');
+            const pAddress = document.getElementById('pAddress');
 
-      if (data.length === 1) {
-        renderCard(data[0]);
-      } else {
-        renderMatchList(data);
-      }
-    } catch (err) {
-      console.error('Member verification failed:', err);
-      renderState(`<div class="state-box error"><i class="fas fa-triangle-exclamation"></i> Couldn't complete verification right now. Please try again shortly.</div>`);
-    }
-  }
+            // Print elements
+            const printContent = document.getElementById('printContent');
+            const printAvatar = document.getElementById('printAvatar');
+            const printInitials = document.getElementById('printInitials');
+            const printName = document.getElementById('printName');
+            const printPosition = document.getElementById('printPosition');
+            const printEmail = document.getElementById('printEmail');
+            const printRotary = document.getElementById('printRotary');
+            const printPhone = document.getElementById('printPhone');
+            const printBlood = document.getElementById('printBlood');
+            const printGender = document.getElementById('printGender');
+            const printDob = document.getElementById('printDob');
+            const printProfession = document.getElementById('printProfession');
+            const printAddress = document.getElementById('printAddress');
+            const printBtn = document.getElementById('printBtn');
 
-  searchBtn.addEventListener('click', verifyMember);
-  searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') verifyMember(); });
-</script>
+            // Toast
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toastIcon');
+            const toastMessage = document.getElementById('toastMessage');
 
+            let currentMember = null;
+            let toastTimeout = null;
+
+            // ===== TOAST =====
+            function showToast(message, type = 'success') {
+                toast.className = 'toast ' + type;
+                toastIcon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+                toastMessage.textContent = message;
+                toast.classList.add('show');
+
+                if (toastTimeout) clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
+            // ===== HELPERS =====
+            function getFullName(member) {
+                const raw = (member.name || member.full_name || '').toString().trim();
+                if (!raw) return '—';
+                const withoutRtr = raw.replace(/^rtr(?:\.\s*|\s+)/i, '').trim();
+                if (withoutRtr !== raw) return `RTR. ${withoutRtr}`;
+                if (/^(dr|mr|ms|mrs|rit)(?:\.\s*|\s+)/i.test(raw)) return raw;
+                return `RTR. ${raw}`;
+            }
+
+            function getInitials(name) {
+                if (!name) return '?';
+                const clean = name.replace(/^(RTR|DR|MR|MS|MRS|RIT)(\.\s*|\s+)/i, '').trim();
+                const parts = clean.split(' ').filter(p => p.length > 0);
+                if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+                if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+                return clean.substring(0, 2).toUpperCase();
+            }
+
+            function getPhotoSrc(member) {
+                if (member.profile_image && member.profile_image.trim()) return member.profile_image.trim();
+                if (member.photo && member.photo.trim()) return member.photo.trim();
+                if (member.photo_url && member.photo_url.trim()) return member.photo_url.trim();
+                return null;
+            }
+
+            // ===== UPDATE PRINT CARD =====
+            function updatePrintCard(member) {
+                const displayName = getFullName(member);
+                const photoSrc = getPhotoSrc(member);
+                const initials = getInitials(displayName);
+
+                printAvatar.innerHTML = '';
+                if (photoSrc) {
+                    const img = document.createElement('img');
+                    img.src = photoSrc;
+                    img.alt = displayName;
+                    img.onerror = function() {
+                        this.style.display = 'none';
+                        printAvatar.innerHTML = `<span style="font-size:2.2rem;font-weight:700;color:#2563eb;">${initials}</span>`;
+                    };
+                    printAvatar.appendChild(img);
+                } else {
+                    printAvatar.innerHTML = `<span style="font-size:2.2rem;font-weight:700;color:#2563eb;">${initials}</span>`;
+                }
+
+                printName.textContent = displayName;
+                printPosition.textContent = member.position || member.designation || 'Club Member';
+
+                printEmail.textContent = member.email || '—';
+                printRotary.textContent = member.rotary_id || '—';
+                printPhone.textContent = member.phone || member.phone_number || '—';
+                printBlood.textContent = member.blood_group || '—';
+                printGender.textContent = member.gender || '—';
+                printDob.textContent = member.dob || member.date_of_birth || member.birthday || '—';
+                printProfession.textContent = member.profession || '—';
+                printAddress.textContent = member.address || '—';
+            }
+
+            // ===== OPEN POPUP =====
+            function openPopup(member) {
+                currentMember = member;
+                const displayName = getFullName(member);
+                const photoSrc = getPhotoSrc(member);
+                const initials = getInitials(displayName);
+
+                popupAvatar.innerHTML = '';
+                if (photoSrc) {
+                    const img = document.createElement('img');
+                    img.src = photoSrc;
+                    img.alt = displayName;
+                    img.onerror = function() {
+                        this.style.display = 'none';
+                        popupAvatar.innerHTML = `<span style="font-size:2.8rem;font-weight:700;color:#2563eb;">${initials}</span>`;
+                    };
+                    popupAvatar.appendChild(img);
+                } else {
+                    popupAvatar.innerHTML = `<span style="font-size:2.8rem;font-weight:700;color:#2563eb;">${initials}</span>`;
+                }
+
+                popupName.textContent = displayName;
+                popupDesignation.textContent = member.position || member.designation || 'Club Member';
+
+                pEmail.textContent = member.email || '—';
+                pRotary.textContent = member.rotary_id || '—';
+                pPhone.textContent = member.phone || member.phone_number || '—';
+                pBlood.textContent = member.blood_group || '—';
+                pGender.textContent = member.gender || '—';
+                pDob.textContent = member.dob || member.date_of_birth || member.birthday || '—';
+                pProfession.textContent = member.profession || '—';
+                pAddress.textContent = member.address || '—';
+
+                updatePrintCard(member);
+
+                popup.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            // ===== CLOSE POPUP =====
+            function closePopup() {
+                popup.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            popupClose.addEventListener('click', closePopup);
+            popupCloseBtn.addEventListener('click', closePopup);
+            popup.addEventListener('click', function(e) {
+                if (e.target === this) closePopup();
+            });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && popup.classList.contains('active')) closePopup();
+            });
+
+            // ===== PRINT FUNCTION =====
+            function printMemberCard() {
+                if (!currentMember) {
+                    showToast('No member to print', 'error');
+                    return;
+                }
+
+                printBtn.disabled = true;
+                printBtn.innerHTML = '<i class="fas fa-spinner spinner"></i> Preparing...';
+
+                updatePrintCard(currentMember);
+
+                printContent.style.display = 'block';
+
+                setTimeout(() => {
+                    window.print();
+                    
+                    setTimeout(() => {
+                        printContent.style.display = 'none';
+                        printBtn.disabled = false;
+                        printBtn.innerHTML = '<i class="fas fa-print"></i> Print';
+                    }, 500);
+                }, 300);
+            }
+
+            printBtn.addEventListener('click', printMemberCard);
+
+            // ===== RENDER SEARCH RESULTS =====
+            function renderResults(members, searchTerm) {
+                if (!members || members.length === 0) {
+                    resultArea.innerHTML = `
+                        <div class="no-result">
+                            <i class="fas fa-user-slash"></i>
+                            <p>No member found</p>
+                            <span>"${searchTerm}" did not match any member</span>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = `<div class="result-count">Found <strong>${members.length}</strong> member${members.length > 1 ? 's' : ''}</div>`;
+
+                members.forEach(member => {
+                    const displayName = getFullName(member);
+                    const photoSrc = getPhotoSrc(member);
+                    const initials = getInitials(displayName);
+                    const position = member.position || member.designation || 'Club Member';
+                    const email = member.email || '';
+
+                    html += `
+                        <div class="member-card" data-id="${member.id}">
+                            <div class="avatar">
+                                ${photoSrc 
+                                    ? `<img src="${photoSrc}" alt="${displayName}" 
+                                          onerror="this.style.display='none';this.parentElement.textContent='${initials}';">` 
+                                    : initials
+                                }
+                            </div>
+                            <div class="info">
+                                <div class="name">${displayName}</div>
+                                <div class="position">${position}</div>
+                                ${email ? `<div class="email-small"><i class="fas fa-envelope"></i> ${email}</div>` : ''}
+                            </div>
+                            <div class="arrow"><i class="fas fa-chevron-right"></i></div>
+                        </div>
+                    `;
+                });
+
+                resultArea.innerHTML = html;
+
+                // Add click listeners to all cards
+                document.querySelectorAll('.member-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        const id = parseInt(this.dataset.id);
+                        const member = members.find(m => m.id === id);
+                        if (member) openPopup(member);
+                    });
+                });
+            }
+
+            // ===== SEARCH =====
+            async function performSearch(query) {
+                const trimmed = query.trim();
+
+                if (!trimmed) {
+                    resultArea.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon"><i class="fas fa-user-circle"></i></div>
+                            <h3>Search for a member</h3>
+                            <p>Enter a name, email, or Rotary ID</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                resultArea.innerHTML = `
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Searching...</p>
+                    </div>
+                `;
+
+                try {
+                    const { data, error } = await supabase
+                        .from(TABLE_NAME)
+                        .select('*')
+                        .or(`name.ilike.%${trimmed}%,email.ilike.%${trimmed}%,rotary_id.ilike.%${trimmed}%`);
+
+                    if (error) throw error;
+
+                    if (data && data.length > 0) {
+                        renderResults(data, trimmed);
+                    } else {
+                        resultArea.innerHTML = `
+                            <div class="no-result">
+                                <i class="fas fa-user-slash"></i>
+                                <p>No member found</p>
+                                <span>"${trimmed}" did not match any member</span>
+                            </div>
+                        `;
+                    }
+                } catch (err) {
+                    console.error('Search error:', err);
+                    resultArea.innerHTML = `
+                        <div class="no-result">
+                            <i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i>
+                            <p style="color:#991b1b;">Search failed</p>
+                            <span>${err.message}</span>
+                        </div>
+                    `;
+                }
+            }
+
+            // ===== EVENT LISTENERS =====
+            searchBtn.addEventListener('click', () => {
+                performSearch(searchInput.value);
+            });
+
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    performSearch(searchInput.value);
+                }
+            });
+
+            // ===== INITIAL EMPTY STATE =====
+            resultArea.innerHTML = `
+                <div class="empty-state">
+                    <div class="icon"><i class="fas fa-user-circle"></i></div>
+                    <h3>Search for a member</h3>
+                    <p>Enter a name, email, or Rotary ID</p>
+                </div>
+            `;
+
+            console.log('✅ Member Directory ready — No verified/unverified text');
+        })();
+    </script>
 </body>
 </html>

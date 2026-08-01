@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Digital Certificate</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Georgia', 'Times New Roman', serif;
+        }
+
+        body {
+            background: #e8edf2;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .search-section {
+            max-width: 900px;
+            width: 100%;
+            margin-bottom: 24px;
+            background: white;
+            border-radius: 20px;
+            padding: 24px 28px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e9edf2;
+        }
+
+        .search-section h2 {
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 1.2rem;
+            color: #0f172a;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-section h2 i {
+            color: #2563eb;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-row .search-input {
+            flex: 1;
+            min-width: 180px;
+            padding: 12px 18px;
+            border-radius: 60px;
+            border: 1px solid #dce2eb;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.15s;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f8fafc;
+        }
+
+        .search-row .search-input:focus {
+            border-color: #2563eb;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+        }
+
+        .search-row .btn {
+            padding: 12px 28px;
+            border-radius: 60px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.15s;
+            font-family: system-ui, -apple-system, sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #1e293b;
+            color: white;
+        }
+
+        .search-row .btn:hover {
+            background: #0f172a;
+            transform: scale(1.02);
+        }
+
+        .search-row .btn-secondary {
+            background: #2563eb;
+        }
+
+        .search-row .btn-secondary:hover {
+            background: #1d4ed8;
+        }
+
+        .search-row .btn-success {
+            background: #22c55e;
+        }
+
+        .search-row .btn-success:hover {
+            background: #16a34a;
+        }
+
+        .results-list {
+            margin-top: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .results-list.show {
+            display: block;
+        }
+
+        .result-item {
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.15s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f1f5f9;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .result-item:hover {
+            background: #f1f5f9;
+        }
+
+        .result-item .r-name {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .result-item .r-program {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .result-item .r-type {
+            font-size: 0.7rem;
+            background: #dcfce7;
+            color: #166534;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-weight: 600;
+        }
+
+        .result-item .r-status {
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-weight: 600;
+        }
+
+        .result-item .r-status.approved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .result-item .r-status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            color: #94a3b8;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        /* Certificate */
+        .certificate-wrapper {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+            border: 1px solid #dce2eb;
+        }
+
+        .certificate {
+            background: white;
+            border: 4px double #1e293b;
+            padding: 40px 45px;
+            position: relative;
+            min-height: 500px;
+        }
+
+        .certificate .border-decoration {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            border: 1px solid #1e293b;
+            pointer-events: none;
+        }
+
+        .certificate .header {
+            text-align: center;
+            border-bottom: 2px solid #1e293b;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .certificate .header .line1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1e293b;
+            letter-spacing: 4px;
+        }
+
+        .certificate .header .line2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2563eb;
+            letter-spacing: 2px;
+        }
+
+        .certificate .header .line3 {
+            font-size: 0.85rem;
+            color: #64748b;
+            letter-spacing: 1px;
+        }
+
+        .certificate .title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: 6px;
+            margin: 16px 0 10px;
+            padding: 6px 0;
+        }
+
+        .certificate .title .type {
+            display: inline-block;
+            background: #f1f5f9;
+            padding: 0 20px;
+        }
+
+        .certificate .main-text {
+            text-align: center;
+            font-size: 1rem;
+            color: #334155;
+            line-height: 1.8;
+            margin: 10px 0;
+        }
+
+        .certificate .recipient-name {
+            text-align: center;
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 12px 0;
+            font-style: italic;
+            letter-spacing: 2px;
+            border-bottom: 2px solid #2563eb;
+            display: inline-block;
+            padding: 0 30px 4px;
+            width: 100%;
+        }
+
+        .certificate .program-name {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2563eb;
+            margin: 8px 0;
+        }
+
+        .certificate .club-name {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .certificate .footer {
+            margin-top: 18px;
+            border-top: 1px solid #1e293b;
+            padding-top: 14px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .certificate .footer .item {
+            text-align: center;
+        }
+
+        .certificate .footer .item strong {
+            color: #0f172a;
+        }
+
+        .certificate .signatures {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid #e9edf2;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #64748b;
+        }
+
+        .certificate .signatures .sig-line {
+            border-top: 1px solid #0f172a;
+            width: 80%;
+            margin: 0 auto 4px;
+        }
+
+        .certificate .signatures .sig-label {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .certificate .signatures .sig-sub {
+            font-size: 0.6rem;
+            color: #94a3b8;
+        }
+
+        .certificate .qr-section {
+            text-align: center;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #e9edf2;
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+
+        .certificate .qr-section .qr-code-img {
+            width: 110px;
+            height: 110px;
+            margin: 8px auto 6px;
+            display: block;
+            border-radius: 8px;
+            background: white;
+            padding: 4px;
+            border: 1px solid #e9edf2;
+        }
+
+        .certificate .qr-section .qr-caption {
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+            color: #64748b;
+        }
+
+        .certificate .qr-section .qr-code {
+            font-size: 1.1rem;
+            letter-spacing: 3px;
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        /* Actions */
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .actions .btn {
+            padding: 12px 32px;
+            border-radius: 60px;
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: system-ui, -apple-system, sans-serif;
+            text-decoration: none;
+        }
+
+        .actions .btn-primary {
+            background: #1e293b;
+            color: white;
+        }
+
+        .actions .btn-primary:hover {
+            background: #0f172a;
+            transform: scale(1.02);
+        }
+
+        .actions .btn-success {
+            background: #22c55e;
+            color: white;
+        }
+
+        .actions .btn-success:hover {
+            background: #16a34a;
+            transform: scale(1.02);
+        }
+
+        .actions .btn-outline {
+            background: transparent;
+            border: 2px solid #dce2eb;
+            color: #475569;
+        }
+
+        .actions .btn-outline:hover {
+            border-color: #94a3b8;
+            background: #f8fafc;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .loading-state i {
+            font-size: 2.5rem;
+            color: #2563eb;
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #991b1b;
+        }
+
+        .error-state i {
+            font-size: 2.5rem;
+            color: #ef4444;
+            margin-bottom: 12px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 60px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 99999;
+            animation: slideUp 0.3s ease;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .toast.show {
+            display: flex;
+        }
+
+        .toast.success {
+            background: #166534;
+        }
+        .toast.error {
+            background: #991b1b;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .toast i {
+            font-size: 1.1rem;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            .search-section {
+                display: none !important;
+            }
+
+            .certificate-wrapper {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 10px !important;
+                border-radius: 0 !important;
+            }
+
+            .certificate {
+                border: 4px double #1e293b !important;
+                padding: 30px 35px !important;
+                min-height: auto !important;
+            }
+
+            .actions {
+                display: none !important;
+            }
+
+            .certificate .border-decoration {
+                display: none !important;
+            }
+
+            .certificate .header .line1 {
+                font-size: 1.4rem !important;
+            }
+            .certificate .recipient-name {
+                font-size: 2rem !important;
+            }
+            .certificate .title {
+                font-size: 1.6rem !important;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .search-section {
+                padding: 16px 18px;
+            }
+            .search-row {
+                flex-direction: column;
+            }
+            .search-row .btn {
+                justify-content: center;
+            }
+            .certificate-wrapper {
+                padding: 16px;
+            }
+            .certificate {
+                padding: 20px 16px;
+            }
+            .certificate .header .line1 {
+                font-size: 1.1rem;
+                letter-spacing: 2px;
+            }
+            .certificate .header .line2 {
+                font-size: 0.9rem;
+            }
+            .certificate .title {
+                font-size: 1.3rem;
+                letter-spacing: 3px;
+            }
+            .certificate .recipient-name {
+                font-size: 1.5rem;
+                padding: 0 10px 3px;
+            }
+            .certificate .program-name {
+                font-size: 1rem;
+            }
+            .certificate .footer {
+                grid-template-columns: 1fr 1fr;
+                font-size: 0.65rem;
+            }
+            .certificate .signatures {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            .actions .btn {
+                padding: 10px 20px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== SEARCH SECTION ===== -->
+    <div class="search-section" id="searchSection">
+        <h2><i class="fas fa-search"></i> Find Your Certificate</h2>
+        <div class="search-row">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search by your name or program name..." />
+            <button class="btn" id="searchBtn"><i class="fas fa-search"></i> Search</button>
+            <button class="btn btn-secondary" id="clearBtn"><i class="fas fa-times"></i> Clear</button>
+            <button class="btn btn-success" id="registerBtn" onclick="window.location.href='attendancecert.html'">
+                <i class="fas fa-calendar-plus"></i> Register Program
+            </button>
+        </div>
+        <div class="results-list" id="resultsList"></div>
+    </div>
+
+    <!-- ===== CERTIFICATE ===== -->
+    <div class="certificate-wrapper" id="certWrapper">
+        <div id="certContent">
+            <div class="loading-state">
+                <i class="fas fa-certificate" style="font-size:3rem;color:#2563eb;display:block;margin-bottom:12px;"></i>
+                <p>Search for your certificate above</p>
+                <p style="font-size:0.85rem;color:#94a3b8;">Enter your name or the program name</p>
+            </div>
+        </div>
+        <div class="actions" id="actions">
+            <button class="btn btn-success" onclick="window.print()" id="printBtn" style="display:none;"><i class="fas fa-print"></i> Print</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle" id="toastIcon"></i>
+        <span id="toastMessage">Success!</span>
+    </div>
+
+    <script>
+        (function() {
+            "use strict";
+
+            const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+            const SUPABASE_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            const RECIPIENTS_TABLE = "attendance_registrations";
+            const SETTINGS_TABLE = "certificate_settings";
+
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const resultsList = document.getElementById('resultsList');
+            const certContent = document.getElementById('certContent');
+            const printBtn = document.getElementById('printBtn');
+
+            let allRecipients = [];
+            let settings = {};
+            let selectedId = null;
+            let toastTimeout = null;
+
+            // ===== TOAST =====
+            function showToast(message, type = 'success') {
+                const toast = document.getElementById('toast');
+                const toastIcon = document.getElementById('toastIcon');
+                const toastMessage = document.getElementById('toastMessage');
+                toast.className = 'toast ' + type;
+                toastIcon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+                toastMessage.textContent = message;
+                toast.classList.add('show');
+                if (toastTimeout) clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+
+            // ===== LOAD DATA =====
+            async function loadData() {
+                try {
+                    // Load all certificate records (any status). We keep the full
+                    // list so a direct "?id=" link (e.g. from the admin panel's
+                    // preview button) can show a pending/rejected certificate too.
+                    const { data, error: rError } = await supabase
+                        .from(RECIPIENTS_TABLE)
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (rError) throw rError;
+
+                    allRecipients = (data || []).map(a => ({
+                        id: a.id,
+                        recipient_name: a.participant_name,
+                        certificate_type: a.certificate_type || 'Participation',
+                        program_event_name: a.program_event_name,
+                        certificate_no: a.certificate_no || 'Pending',
+                        issue_date: a.issue_date,
+                        venue: a.venue,
+                        rotary_year: a.rotary_year,
+                        verification_id: a.verification_id,
+                        status: a.status || 'pending'
+                    }));
+
+                    // Load settings
+                    const { data: settingsData, error: sError } = await supabase
+                        .from(SETTINGS_TABLE)
+                        .select('*');
+
+                    if (sError) throw sError;
+
+                    settings = {};
+                    settingsData.forEach(item => settings[item.setting_key] = item.setting_value);
+
+                    // Check URL params
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const id = urlParams.get('id');
+                    const source = urlParams.get('source');
+
+                    if (id) {
+                        const found = allRecipients.find(r => r.id == id);
+                        if (found) {
+                            selectedId = id;
+                            renderCertificate(found);
+                            printBtn.style.display = 'inline-flex';
+                            return;
+                        }
+                    }
+
+                    showSearchPrompt();
+
+                } catch (err) {
+                    console.error('Error loading data:', err);
+                    certContent.innerHTML = `
+                            <div class="error-state">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <p>Error loading data</p>
+                                <p style="font-size:0.85rem;color:#94a3b8;">${err.message}</p>
+                            </div>
+                        `;
+                }
+            }
+
+            function showSearchPrompt() {
+                certContent.innerHTML = `
+                        <div class="loading-state">
+                            <i class="fas fa-certificate" style="font-size:3rem;color:#2563eb;display:block;margin-bottom:12px;"></i>
+                            <p>Search for your certificate above</p>
+                            <p style="font-size:0.85rem;color:#94a3b8;">Enter your name or the program name</p>
+                        </div>
+                    `;
+                printBtn.style.display = 'none';
+            }
+
+            // ===== SEARCH =====
+            function performSearch() {
+                const query = searchInput.value.trim().toLowerCase();
+
+                if (!query) {
+                    resultsList.classList.remove('show');
+                    showSearchPrompt();
+                    return;
+                }
+
+                const results = allRecipients.filter(r =>
+                    r.status === 'approved' &&
+                    (
+                        (r.recipient_name && r.recipient_name.toLowerCase().includes(query)) ||
+                        (r.program_event_name && r.program_event_name.toLowerCase().includes(query))
+                    )
+                );
+
+                if (results.length === 0) {
+                    resultsList.innerHTML =
+                        `<div class="no-results">No certificates found for "<strong>${searchInput.value}</strong>"</div>`;
+                    resultsList.classList.add('show');
+                    showSearchPrompt();
+                    return;
+                }
+
+                resultsList.innerHTML = results.map(r => {
+                    const statusClass = r.status === 'approved' ? 'approved' : '';
+                    const statusText = r.status === 'approved' ? '✅ Approved' : r.status === 'pending' ? '⏳ Pending' :
+                        '📜 Certificate';
+                    return `
+                            <div class="result-item" onclick="selectCertificate(${r.id}, '${r.source || 'recipient'}')">
+                                <div>
+                                    <div class="r-name">${r.recipient_name}</div>
+                                    <div class="r-program">${r.program_event_name || '—'}</div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <span class="r-type">${r.certificate_type || 'Recognition'}</span>
+                                    <span class="r-status ${statusClass}">${statusText}</span>
+                                </div>
+                            </div>
+                        `;
+                }).join('');
+                resultsList.classList.add('show');
+
+                if (results.length === 1) {
+                    selectCertificate(results[0].id, results[0].source || 'recipient');
+                }
+            }
+
+            // ===== SELECT CERTIFICATE =====
+            window.selectCertificate = function(id, source) {
+                const found = allRecipients.find(r => r.id == id);
+                if (found) {
+                    selectedId = id;
+                    renderCertificate(found);
+                    resultsList.classList.remove('show');
+                    printBtn.style.display = 'inline-flex';
+                    const url = new URL(window.location);
+                    url.searchParams.set('id', id);
+                    if (source) url.searchParams.set('source', source);
+                    window.history.pushState({}, '', url);
+                }
+            };
+
+            // ===== RENDER CERTIFICATE =====
+            function renderCertificate(recipient) {
+                const {
+                    recipient_name,
+                    certificate_type = 'Recognition',
+                    program_event_name,
+                    issue_date,
+                    venue,
+                    rotary_year,
+                    certificate_no,
+                    verification_id,
+                    status
+                } = recipient;
+
+                const dateStr = issue_date ? new Date(issue_date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                }) : '—';
+
+                const s = settings;
+                const isApproved = status === 'approved' || !status;
+
+                const verifyBaseUrl = window.location.href.replace(/digitalcert\.html.*$/i, '') + 'certificateverify.html';
+                const verifyUrl = verification_id ?
+                    `${verifyBaseUrl}?vid=${encodeURIComponent(verification_id)}` :
+                    `${verifyBaseUrl}?id=${encodeURIComponent(recipient.id)}`;
+                const qrImgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(verifyUrl)}`;
+
+                certContent.innerHTML = `
+                        <div class="certificate" id="certificate">
+                            <div class="border-decoration"></div>
+
+                            ${!isApproved ? `<div style="text-align:center;padding:8px;background:#fef3c7;color:#92400e;border-radius:8px;margin-bottom:12px;font-family:system-ui;font-weight:600;">
+                                ⏳ This certificate is pending approval
+                            </div>` : ''}
+
+                            <div class="header">
+                                <div class="line1">${s.header_line1 || 'ROTARY INTERNATIONAL'}</div>
+                                <div class="line2">${s.header_line2 || 'ROTARACT CLUB OF GALKOT BAGLUNG'}</div>
+                                <div class="line3">${s.header_line3 || 'Rotary International District 3292, Nepal'}</div>
+                            </div>
+
+                            <div class="title">
+                                <span class="type">CERTIFICATE OF ${certificate_type.toUpperCase()}</span>
+                            </div>
+
+                            <div class="main-text">
+                                ${s.main_text_prefix || 'This Certificate is proudly presented to'}
+                            </div>
+
+                            <div class="recipient-name">${recipient_name}</div>
+
+                            <div class="main-text">
+                                ${s.main_text_middle || 'in recognition of your valuable contribution, active participation, dedication, and commitment towards the successful accomplishment of'}
+                            </div>
+
+                            <div class="program-name">${program_event_name || '—'}</div>
+
+                            <div class="main-text">
+                                ${s.main_text_organized_by || 'organized by the'}
+                            </div>
+
+                            <div class="club-name">${s.main_text_club_name || 'Rotaract Club of Galkot Baglung'}</div>
+
+                            <div class="main-text" style="font-size:0.9rem; margin-top:12px;">
+                                ${s.main_text_suffix || 'Your enthusiasm, leadership, service spirit, and unwavering support have greatly contributed to the success of this initiative. Thank you for making a meaningful difference through Service Above Self.'}
+                            </div>
+
+                            <div class="footer">
+                                <div class="item"><strong>${s.footer_certificate_no || 'Certificate No.:'}</strong> ${certificate_no || '—'}</div>
+                                <div class="item"><strong>${s.footer_date || 'Date:'}</strong> ${dateStr}</div>
+                                <div class="item"><strong>${s.footer_venue || 'Venue:'}</strong> ${venue || '—'}</div>
+                                <div class="item" style="grid-column: span 3;"><strong>${s.footer_rotary_year || 'Rotary Year:'}</strong> ${rotary_year || '—'}</div>
+                            </div>
+
+                            <div class="signatures">
+                                <div>
+                                    <div class="sig-line"></div>
+                                    <div class="sig-label">${s.signature_program_coordinator || 'Program Coordinator'}</div>
+                                </div>
+                                <div>
+                                    <div class="sig-line"></div>
+                                    <div class="sig-label">${s.signature_club_secretary || 'Club Secretary'}</div>
+                                </div>
+                                <div>
+                                    <div class="sig-line"></div>
+                                    <div class="sig-label">${s.signature_president || 'President'}</div>
+                                    <div class="sig-sub">${s.signature_president_label || 'Rotaract Club of Galkot Baglung'}</div>
+                                </div>
+                                <div>
+                                    <div class="sig-line"></div>
+                                    <div class="sig-label">${s.signature_chief_guest || 'Rotary Club President / Chief Guest'}</div>
+                                    <div class="sig-sub">${s.signature_chief_guest_optional || '(Optional)'}</div>
+                                </div>
+                            </div>
+
+                            <div class="qr-section">
+                                <div>${s.qr_verification_text || 'Verification ID / QR Code'}</div>
+                                <img class="qr-code-img" src="${qrImgSrc}" alt="Scan to verify certificate" />
+                                <div class="qr-code">${verification_id || '—'}</div>
+                                <div class="qr-caption">Scan to verify at certificateverify.html</div>
+                            </div>
+                        </div>
+                    `;
+            }
+
+            // ===== EVENT LISTENERS =====
+            searchBtn.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') performSearch();
+            });
+
+            clearBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                resultsList.classList.remove('show');
+                showSearchPrompt();
+                printBtn.style.display = 'none';
+                const url = new URL(window.location);
+                url.searchParams.delete('id');
+                url.searchParams.delete('source');
+                window.history.pushState({}, '', url);
+            });
+
+            // ===== INIT =====
+            loadData();
+
+            console.log('✅ Digital Certificate with Search ready');
+        })();
+    </script>
+</body>
+</html>

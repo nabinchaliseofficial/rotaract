@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Certificate Verification</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #f0f4fa;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 560px;
+            width: 100%;
+        }
+
+        .card {
+            background: white;
+            border-radius: 28px;
+            padding: 32px 28px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9edf2;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .header .logo {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .header p {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        /* Search form */
+        .search-form {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .search-form input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #dce2eb;
+            font-size: 0.9rem;
+            outline: none;
+            background: #f8fafc;
+        }
+
+        .search-form input:focus {
+            border-color: #2563eb;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+        }
+
+        .search-form button {
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: none;
+            background: #1e293b;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-form button:hover {
+            background: #0f172a;
+        }
+
+        /* Result states */
+        .state {
+            text-align: center;
+            padding: 20px 0 8px;
+        }
+
+        .state i.state-icon {
+            font-size: 3.2rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .state.loading i.state-icon { color: #94a3b8; }
+        .state.verified i.state-icon { color: #22c55e; }
+        .state.pending i.state-icon { color: #f59e0b; }
+        .state.invalid i.state-icon { color: #ef4444; }
+        .state.rejected i.state-icon { color: #ef4444; }
+
+        .state h2 {
+            font-size: 1.3rem;
+            margin-bottom: 4px;
+        }
+
+        .state.verified h2 { color: #166534; }
+        .state.pending h2 { color: #92400e; }
+        .state.invalid h2, .state.rejected h2 { color: #991b1b; }
+        .state.loading h2 { color: #475569; }
+
+        .state p.sub {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+        }
+
+        .details {
+            background: #f8fafc;
+            border: 1px solid #e9edf2;
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-top: 12px;
+            text-align: left;
+        }
+
+        .details .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 7px 0;
+            border-bottom: 1px dashed #e2e8f0;
+            font-size: 0.88rem;
+        }
+
+        .details .row:last-child {
+            border-bottom: none;
+        }
+
+        .details .row .label {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .details .row .value {
+            color: #0f172a;
+            font-weight: 500;
+            text-align: right;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 11px 22px;
+            border-radius: 60px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.15s;
+        }
+
+        .btn-primary {
+            background: #1e293b;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0f172a;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #dce2eb;
+            color: #475569;
+        }
+
+        .btn-outline:hover {
+            border-color: #94a3b8;
+            background: #f8fafc;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <div class="logo"><i class="fas fa-shield-halved"></i></div>
+                <div>
+                    <h1>Certificate Verification</h1>
+                    <p>Rotaract Club of Galkot Baglung</p>
+                </div>
+            </div>
+
+            <form class="search-form" id="verifyForm">
+                <input type="text" id="vidInput" placeholder="Enter Verification ID" />
+                <button type="submit"><i class="fas fa-magnifying-glass"></i> Verify</button>
+            </form>
+
+            <div id="resultArea">
+                <div class="state" id="promptState">
+                    <i class="fas fa-qrcode state-icon"></i>
+                    <h2>Scan a certificate QR code</h2>
+                    <p class="sub">or enter the Verification ID above to check authenticity.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            "use strict";
+
+            const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+            const SUPABASE_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            const TABLE = "attendance_registrations";
+
+            const resultArea = document.getElementById('resultArea');
+            const vidInput = document.getElementById('vidInput');
+            const verifyForm = document.getElementById('verifyForm');
+
+            function esc(str) {
+                if (str === null || str === undefined) return '—';
+                const div = document.createElement('div');
+                div.textContent = String(str);
+                return div.innerHTML;
+            }
+
+            function renderLoading() {
+                resultArea.innerHTML = `
+                    <div class="state loading">
+                        <i class="fas fa-spinner fa-spin state-icon"></i>
+                        <h2>Checking certificate…</h2>
+                    </div>
+                `;
+            }
+
+            function renderInvalid(message) {
+                resultArea.innerHTML = `
+                    <div class="state invalid">
+                        <i class="fas fa-circle-xmark state-icon"></i>
+                        <h2>Not Verified</h2>
+                        <p class="sub">${esc(message || 'No certificate matches this Verification ID.')}</p>
+                    </div>
+                `;
+            }
+
+            function renderResult(record) {
+                const status = record.status || 'pending';
+
+                if (status === 'rejected') {
+                    resultArea.innerHTML = `
+                        <div class="state rejected">
+                            <i class="fas fa-circle-xmark state-icon"></i>
+                            <h2>Not Verified</h2>
+                            <p class="sub">This registration was rejected and is not a valid certificate.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (status !== 'approved') {
+                    resultArea.innerHTML = `
+                        <div class="state pending">
+                            <i class="fas fa-hourglass-half state-icon"></i>
+                            <h2>Pending Approval</h2>
+                            <p class="sub">This certificate has not been approved by the club yet, so it cannot be verified as authentic.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const dateStr = record.issue_date ? new Date(record.issue_date).toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                }) : '—';
+
+                resultArea.innerHTML = `
+                    <div class="state verified">
+                        <i class="fas fa-circle-check state-icon"></i>
+                        <h2>Verified ✓</h2>
+                        <p class="sub">This is a genuine certificate issued by the Rotaract Club of Galkot Baglung.</p>
+                        <div class="details">
+                            <div class="row"><span class="label">Name</span><span class="value">${esc(record.participant_name)}</span></div>
+                            <div class="row"><span class="label">Certificate Type</span><span class="value">${esc(record.certificate_type)}</span></div>
+                            <div class="row"><span class="label">Program / Event</span><span class="value">${esc(record.program_event_name)}</span></div>
+                            <div class="row"><span class="label">Certificate No.</span><span class="value">${esc(record.certificate_no)}</span></div>
+                            <div class="row"><span class="label">Issue Date</span><span class="value">${dateStr}</span></div>
+                            <div class="row"><span class="label">Venue</span><span class="value">${esc(record.venue)}</span></div>
+                        </div>
+                        <div class="actions">
+                            <a href="digitalcert.html?id=${encodeURIComponent(record.id)}" class="btn btn-primary" target="_blank">
+                                <i class="fas fa-certificate"></i> View Full Certificate
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
+
+            async function verifyByVid(vid) {
+                if (!vid) return;
+                renderLoading();
+                try {
+                    const { data, error } = await supabase
+                        .from(TABLE)
+                        .select('*')
+                        .eq('verification_id', vid)
+                        .maybeSingle();
+
+                    if (error) throw error;
+                    if (!data) {
+                        renderInvalid();
+                        return;
+                    }
+                    renderResult(data);
+                } catch (err) {
+                    console.error('Verification error:', err);
+                    renderInvalid('Error checking certificate: ' + err.message);
+                }
+            }
+
+            async function verifyById(id) {
+                if (!id) return;
+                renderLoading();
+                try {
+                    const { data, error } = await supabase
+                        .from(TABLE)
+                        .select('*')
+                        .eq('id', id)
+                        .maybeSingle();
+
+                    if (error) throw error;
+                    if (!data) {
+                        renderInvalid();
+                        return;
+                    }
+                    renderResult(data);
+                } catch (err) {
+                    console.error('Verification error:', err);
+                    renderInvalid('Error checking certificate: ' + err.message);
+                }
+            }
+
+            verifyForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const vid = vidInput.value.trim();
+                if (!vid) return;
+                const url = new URL(window.location);
+                url.searchParams.set('vid', vid);
+                url.searchParams.delete('id');
+                window.history.pushState({}, '', url);
+                verifyByVid(vid);
+            });
+
+            // ===== INIT: read query params =====
+            (function init() {
+                const params = new URLSearchParams(window.location.search);
+                const vid = params.get('vid');
+                const id = params.get('id');
+
+                if (vid) {
+                    vidInput.value = vid;
+                    verifyByVid(vid);
+                } else if (id) {
+                    verifyById(id);
+                }
+            })();
+        })();
+    </script>
+</body>
+</html>

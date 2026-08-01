@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register · Attendance & Feedback</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #f0f4fa;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background: white;
+            border-radius: 32px;
+            padding: 32px 28px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9edf2;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+
+        .header .logo {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.4rem;
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .subhead {
+            color: #64748b;
+            margin: 2px 0 24px 60px;
+            font-size: 0.85rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Program Selection */
+        .program-selector {
+            margin-bottom: 20px;
+        }
+
+        .program-selector label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #0f172a;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .program-selector select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #dce2eb;
+            font-size: 0.95rem;
+            outline: none;
+            background: #f8fafc;
+            transition: 0.15s;
+        }
+
+        .program-selector select:focus {
+            border-color: #2563eb;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+        }
+
+        .program-details {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e9edf2;
+            display: none;
+        }
+
+        .program-details.show {
+            display: block;
+        }
+
+        .program-details .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 0.9rem;
+        }
+
+        .program-details .detail-row .label {
+            color: #64748b;
+        }
+
+        .program-details .detail-row .value {
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 4px;
+        }
+
+        .form-group label .required {
+            color: #ef4444;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #dce2eb;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.15s;
+            background: #f8fafc;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #2563eb;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .rating-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .rating-group .star {
+            font-size: 2rem;
+            cursor: pointer;
+            color: #dce2eb;
+            transition: 0.15s;
+            background: none;
+            border: none;
+            padding: 4px;
+        }
+
+        .rating-group .star.active {
+            color: #f59e0b;
+        }
+
+        .rating-group .star:hover {
+            transform: scale(1.1);
+        }
+
+        .certificate-type-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .certificate-type-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 400;
+            font-size: 0.9rem;
+            cursor: pointer;
+            padding: 6px 14px;
+            border-radius: 40px;
+            border: 2px solid #e9edf2;
+            transition: 0.15s;
+        }
+
+        .certificate-type-group label:hover {
+            border-color: #2563eb;
+        }
+
+        .certificate-type-group input[type="radio"] {
+            display: none;
+        }
+
+        .certificate-type-group input[type="radio"]:checked+span {
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .certificate-type-group label:has(input:checked) {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 60px;
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: inherit;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-success {
+            background: #22c55e;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #16a34a;
+            transform: scale(1.01);
+        }
+
+        .btn-success:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary {
+            background: #1e293b;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0f172a;
+            transform: scale(1.01);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 60px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 99999;
+            animation: slideUp 0.3s ease;
+        }
+
+        .toast.show {
+            display: flex;
+        }
+
+        .toast.success {
+            background: #166534;
+        }
+        .toast.error {
+            background: #991b1b;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .toast i {
+            font-size: 1.1rem;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 20px;
+            color: #94a3b8;
+        }
+
+        .loading-state i {
+            font-size: 1.5rem;
+            color: #2563eb;
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .success-message i {
+            font-size: 4rem;
+            color: #22c55e;
+            margin-bottom: 12px;
+        }
+
+        .success-message h3 {
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .success-message p {
+            color: #64748b;
+        }
+
+        .success-message .cert-details {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        .success-message .cert-details .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #e9edf2;
+        }
+
+        .success-message .cert-details .row:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px 16px;
+            }
+            .header h1 {
+                font-size: 1.3rem;
+            }
+            .subhead {
+                margin-left: 0;
+            }
+            .rating-group .star {
+                font-size: 1.6rem;
+            }
+            .certificate-type-group label {
+                font-size: 0.8rem;
+                padding: 4px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a href="digitalcert.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Certificate</a>
+
+        <div class="header">
+            <div class="logo"><i class="fas fa-clipboard-check"></i></div>
+            <h1>Attendance & Feedback</h1>
+        </div>
+        <div class="subhead">
+            <i class="fas fa-users" style="margin-right:6px;color:#2563eb;"></i> Register attendance, share feedback & get certificate
+        </div>
+
+        <!-- Program Selector -->
+        <div class="program-selector">
+            <label><i class="fas fa-list"></i> Select Running Program</label>
+            <select id="programSelect">
+                <option value="">— Loading programs —</option>
+            </select>
+        </div>
+
+        <!-- Program Details -->
+        <div class="program-details" id="programDetails">
+            <div class="detail-row"><span class="label">📅 Date</span><span class="value" id="pDate">—</span></div>
+            <div class="detail-row"><span class="label">📍 Venue</span><span class="value" id="pVenue">—</span></div>
+            <div class="detail-row"><span class="label">⏰ Time</span><span class="value" id="pTime">—</span></div>
+            <div class="detail-row"><span class="label">📝 Description</span><span class="value" id="pDescription">—</span></div>
+        </div>
+
+        <!-- Registration Form -->
+        <form id="registrationForm">
+            <div class="form-group">
+                <label>Your Name <span class="required">*</span></label>
+                <input type="text" id="participantName" placeholder="e.g. Rtr. Nabin Chalise" required />
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="participantEmail" placeholder="your@email.com" />
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="text" id="participantPhone" placeholder="e.g. 98XXXXXXXX" />
+            </div>
+
+            <div class="form-group">
+                <label>Short Feedback</label>
+                <textarea id="feedback" placeholder="Share your thoughts about this program..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Rating</label>
+                <div class="rating-group" id="ratingGroup">
+                    <button type="button" class="star" data-value="1">⭐</button>
+                    <button type="button" class="star" data-value="2">⭐</button>
+                    <button type="button" class="star" data-value="3">⭐</button>
+                    <button type="button" class="star" data-value="4">⭐</button>
+                    <button type="button" class="star" data-value="5">⭐</button>
+                </div>
+                <input type="hidden" id="rating" value="0" />
+            </div>
+
+            <button type="submit" class="btn btn-success" id="submitBtn">
+                <i class="fas fa-check-circle"></i> Register & Get Certificate
+            </button>
+        </form>
+
+        <!-- Success Message -->
+        <div id="successMessage" style="display:none;">
+            <div class="success-message">
+                <i class="fas fa-check-circle"></i>
+                <h3>🎉 Registration Successful!</h3>
+                <p>Your attendance has been recorded. Wait for admin approval.</p>
+                <div class="cert-details" id="certDetails">
+                    <div class="row"><span>Name</span><span id="sName">—</span></div>
+                    <div class="row"><span>Certificate Type</span><span id="sType">—</span></div>
+                    <div class="row"><span>Program</span><span id="sProgram">—</span></div>
+                    <div class="row"><span>Status</span><span id="sStatus" style="color:#f59e0b;font-weight:600;">Pending Approval</span></div>
+                </div>
+                <button class="btn btn-primary" onclick="location.reload()" style="margin-top:16px;width:auto;padding:12px 32px;">
+                    <i class="fas fa-redo"></i> Register Another
+                </button>
+                <br>
+                <a href="digitalcert.html" class="btn btn-primary" style="margin-top:10px;width:auto;padding:12px 32px;text-decoration:none;display:inline-flex;">
+                    <i class="fas fa-arrow-left"></i> Back to Certificate
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle" id="toastIcon"></i>
+        <span id="toastMessage">Success!</span>
+    </div>
+
+    <script>
+        (function() {
+            "use strict";
+
+            const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+            const SUPABASE_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            const PROGRAMS_TABLE = "running_programs";
+            const ATTENDANCE_TABLE = "attendance_registrations";
+
+            const programSelect = document.getElementById('programSelect');
+            const programDetails = document.getElementById('programDetails');
+            const pDate = document.getElementById('pDate');
+            const pVenue = document.getElementById('pVenue');
+            const pTime = document.getElementById('pTime');
+            const pDescription = document.getElementById('pDescription');
+            const registrationForm = document.getElementById('registrationForm');
+            const successMessage = document.getElementById('successMessage');
+            const submitBtn = document.getElementById('submitBtn');
+            const certDetails = document.getElementById('certDetails');
+
+            let selectedProgramId = null;
+            let selectedProgram = null;
+            let toastTimeout = null;
+
+            // ===== TOAST =====
+            function showToast(message, type = 'success') {
+                const toast = document.getElementById('toast');
+                const toastIcon = document.getElementById('toastIcon');
+                const toastMessage = document.getElementById('toastMessage');
+                toast.className = 'toast ' + type;
+                toastIcon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+                toastMessage.textContent = message;
+                toast.classList.add('show');
+                if (toastTimeout) clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+
+            // ===== LOAD PROGRAMS =====
+            async function loadPrograms() {
+                try {
+                    const { data, error } = await supabase
+                        .from(PROGRAMS_TABLE)
+                        .select('*')
+                        .eq('is_active', true)
+                        .order('program_date', { ascending: false });
+
+                    if (error) throw error;
+
+                    programSelect.innerHTML = '<option value="">— Select a program —</option>';
+                    if (data && data.length > 0) {
+                        data.forEach(p => {
+                            const opt = document.createElement('option');
+                            opt.value = p.id;
+                            opt.textContent = `${p.program_name} (${new Date(p.program_date).toLocaleDateString()})`;
+                            programSelect.appendChild(opt);
+                        });
+                    } else {
+                        programSelect.innerHTML = '<option value="">— No active programs —</option>';
+                    }
+                } catch (err) {
+                    console.error('Error loading programs:', err);
+                    programSelect.innerHTML = '<option value="">— Error loading programs —</option>';
+                    showToast('Error loading programs: ' + err.message, 'error');
+                }
+            }
+
+            // ===== PROGRAM SELECTED =====
+            programSelect.addEventListener('change', async function() {
+                const id = this.value;
+                if (!id) {
+                    programDetails.classList.remove('show');
+                    selectedProgramId = null;
+                    selectedProgram = null;
+                    return;
+                }
+
+                try {
+                    const { data, error } = await supabase
+                        .from(PROGRAMS_TABLE)
+                        .select('*')
+                        .eq('id', id)
+                        .single();
+
+                    if (error) throw error;
+
+                    if (data) {
+                        selectedProgramId = data.id;
+                        selectedProgram = data;
+                        pDate.textContent = new Date(data.program_date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                        pVenue.textContent = data.venue || '—';
+                        pTime.textContent = data.start_time && data.end_time ?
+                            `${data.start_time} - ${data.end_time}` :
+                            data.start_time || data.end_time || '—';
+                        pDescription.textContent = data.description || '—';
+                        programDetails.classList.add('show');
+                    }
+                } catch (err) {
+                    console.error('Error loading program details:', err);
+                    showToast('Error loading program details', 'error');
+                }
+            });
+
+            // ===== RATING STARS =====
+            document.querySelectorAll('.star').forEach(star => {
+                star.addEventListener('click', function() {
+                    const value = parseInt(this.dataset.value);
+                    document.getElementById('rating').value = value;
+                    document.querySelectorAll('.star').forEach(s => {
+                        s.classList.toggle('active', parseInt(s.dataset.value) <= value);
+                    });
+                });
+            });
+
+            // ===== FORM SUBMIT =====
+            registrationForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const name = document.getElementById('participantName').value.trim();
+                const email = document.getElementById('participantEmail').value.trim();
+                const phone = document.getElementById('participantPhone').value.trim();
+                const feedback = document.getElementById('feedback').value.trim();
+                const rating = parseInt(document.getElementById('rating').value);
+
+                if (!selectedProgramId) {
+                    showToast('Please select a program first', 'error');
+                    return;
+                }
+
+                if (!name) {
+                    showToast('Please enter your name', 'error');
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...';
+
+                try {
+                    // Insert into attendance_registrations
+                    // certificate_type is left to its default ('Participation') here —
+                    // the admin assigns/changes the actual type when approving.
+                    const { data, error } = await supabase
+                        .from(ATTENDANCE_TABLE)
+                        .insert({
+                            program_id: selectedProgramId,
+                            participant_name: name,
+                            participant_email: email || null,
+                            participant_phone: phone || null,
+                            feedback: feedback || null,
+                            rating: rating > 0 ? rating : null,
+                            program_event_name: selectedProgram.program_name,
+                            issue_date: new Date().toISOString().split('T')[0],
+                            venue: selectedProgram.venue || null,
+                            rotary_year: selectedProgram.rotary_year || null,
+                            status: 'pending'
+                        })
+                        .select();
+
+                    if (error) throw error;
+
+                    // Show success
+                    if (data && data[0]) {
+                        document.getElementById('sName').textContent = data[0].participant_name;
+                        document.getElementById('sType').textContent = 'Assigned after approval';
+                        document.getElementById('sProgram').textContent = data[0].program_event_name;
+                        document.getElementById('sStatus').textContent = '⏳ Pending Approval';
+                        document.getElementById('sStatus').style.color = '#f59e0b';
+                    }
+
+                    registrationForm.style.display = 'none';
+                    successMessage.style.display = 'block';
+                    showToast('✅ Registration successful! Waiting for admin approval.', 'success');
+
+                } catch (err) {
+                    console.error('Registration error:', err);
+                    showToast('Error: ' + err.message, 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Register & Get Certificate';
+                }
+            });
+
+            // ===== INIT =====
+            loadPrograms();
+
+            console.log('✅ Attendance Registration ready');
+        })();
+    </script>
+</body>
+</html>

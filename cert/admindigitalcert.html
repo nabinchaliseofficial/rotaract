@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin · Certificate Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #f0f4fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* ===== LOGIN SCREEN ===== */
+        .login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px 36px;
+            border-radius: 24px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9edf2;
+        }
+
+        .login-box .logo {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .login-box .logo i {
+            font-size: 3rem;
+            color: #2563eb;
+            background: #eff6ff;
+            padding: 16px;
+            border-radius: 16px;
+        }
+
+        .login-box h2 {
+            text-align: center;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .login-box p {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+
+        .login-box .form-group {
+            margin-bottom: 16px;
+        }
+
+        .login-box .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 4px;
+        }
+
+        .login-box .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #dce2eb;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.15s;
+            background: #f8fafc;
+        }
+
+        .login-box .form-group input:focus {
+            border-color: #2563eb;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+        }
+
+        .login-box .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 60px;
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.15s;
+            background: #1e293b;
+            color: white;
+        }
+
+        .login-box .btn:hover {
+            background: #0f172a;
+            transform: scale(1.01);
+        }
+
+        .login-box .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-box .error-msg {
+            color: #b91c1c;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .login-box .error-msg.show {
+            display: block;
+        }
+
+        /* ===== ADMIN HEADER ===== */
+        .admin-header {
+            background: #1e293b;
+            color: white;
+            padding: 20px 30px;
+            border-radius: 20px;
+            margin-bottom: 24px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .admin-header.show {
+            display: flex;
+        }
+
+        .admin-header h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-header h1 i {
+            color: #fbbf24;
+        }
+
+        .admin-header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .admin-header .user-info .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+        }
+
+        .admin-header .user-info .name {
+            font-size: 0.9rem;
+        }
+
+        .admin-header .user-info .role {
+            font-size: 0.7rem;
+            background: #fbbf24;
+            color: #1e293b;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-weight: 600;
+        }
+
+        .admin-header .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .admin-header .actions a,
+        .admin-header .actions button {
+            color: white;
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .admin-header .actions a:hover,
+        .admin-header .actions button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .admin-header .actions a.btn-primary {
+            background: #2563eb;
+        }
+
+        .admin-header .actions a.btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .admin-header .actions .btn-danger {
+            background: #ef4444;
+        }
+
+        .admin-header .actions .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        /* ===== TABS ===== */
+        .tabs {
+            display: none;
+            gap: 4px;
+            margin-bottom: 24px;
+            background: white;
+            border-radius: 16px;
+            padding: 6px;
+            border: 1px solid #e9edf2;
+            flex-wrap: wrap;
+        }
+
+        .tabs.show {
+            display: flex;
+        }
+
+        .tabs button {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.15s;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tabs button:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .tabs button.active {
+            background: #1e293b;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid #e9edf2;
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            color: #0f172a;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2 i {
+            color: #2563eb;
+        }
+
+        .card p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        /* ===== FORMS ===== */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-grid .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid #dce2eb;
+            font-size: 0.9rem;
+            outline: none;
+            transition: 0.15s;
+            background: #f8fafc;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #2563eb;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 10px 24px;
+            border-radius: 60px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: #1e293b;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0f172a;
+            transform: scale(1.02);
+        }
+
+        .btn-success {
+            background: #22c55e;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #16a34a;
+            transform: scale(1.02);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: scale(1.02);
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+            transform: scale(1.02);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #dce2eb;
+            color: #475569;
+        }
+
+        .btn-outline:hover {
+            border-color: #94a3b8;
+            background: #f8fafc;
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 0.8rem;
+        }
+
+        /* ===== TABLE ===== */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        table thead {
+            background: #f1f5f9;
+        }
+
+        table th {
+            padding: 12px 14px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #e9edf2;
+            color: #0f172a;
+        }
+
+        table tr:hover td {
+            background: #f8fafc;
+        }
+
+        table .actions-cell {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        /* ===== BADGES ===== */
+        .badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* ===== SETTINGS GRID ===== */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .settings-grid .setting-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .settings-grid .setting-item label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .settings-grid .setting-item input,
+        .settings-grid .setting-item textarea {
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid #dce2eb;
+            font-size: 0.85rem;
+            outline: none;
+            background: #f8fafc;
+            font-family: inherit;
+        }
+
+        .settings-grid .setting-item input:focus,
+        .settings-grid .setting-item textarea:focus {
+            border-color: #2563eb;
+            background: white;
+        }
+
+        .settings-grid .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .settings-section-title {
+            background: #f1f5f9;
+            padding: 10px 14px;
+            border-radius: 12px;
+            margin: 4px 0;
+            grid-column: 1 / -1;
+        }
+
+        .settings-section-title strong {
+            color: #0f172a;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 60px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 99999;
+            animation: slideUp 0.3s ease;
+        }
+
+        .toast.show {
+            display: flex;
+        }
+
+        .toast.success {
+            background: #166534;
+        }
+        .toast.error {
+            background: #991b1b;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .toast i {
+            font-size: 1.1rem;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+            .admin-header .user-info {
+                justify-content: center;
+            }
+            .admin-header .actions {
+                justify-content: center;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+            .tabs button {
+                flex: 1;
+                justify-content: center;
+                font-size: 0.8rem;
+                padding: 10px 14px;
+            }
+            table {
+                font-size: 0.8rem;
+            }
+            table th,
+            table td {
+                padding: 8px 10px;
+            }
+            .login-box {
+                padding: 28px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .admin-header h1 {
+                font-size: 1.2rem;
+            }
+            .admin-header .actions a {
+                font-size: 0.75rem;
+                padding: 6px 12px;
+            }
+            .card {
+                padding: 16px;
+            }
+            .btn {
+                padding: 8px 16px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="app">
+
+        <!-- ===== LOGIN SCREEN ===== -->
+        <div class="login-screen" id="loginScreen">
+            <div class="login-box">
+                <div class="logo">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h2>Admin Login</h2>
+                <p>Sign in to manage certificates</p>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="loginEmail" placeholder="admin@rotary.org" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required />
+                    </div>
+                    <button type="submit" class="btn" id="loginBtn">Sign In</button>
+                    <div class="error-msg" id="loginError">Invalid credentials or insufficient permissions</div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ===== ADMIN HEADER ===== -->
+        <div class="admin-header" id="adminHeader">
+            <h1><i class="fas fa-certificate"></i> Certificate Manager</h1>
+            <div class="user-info">
+                <div class="avatar" id="userAvatar">A</div>
+                <div>
+                    <div class="name" id="userName">Admin</div>
+                    <div class="role" id="userRole">Admin</div>
+                </div>
+                <div class="actions">
+                    <a href="digitalcert.html" target="_blank"><i class="fas fa-eye"></i> View Certificate</a>
+                    <button onclick="logout()" class="btn-danger"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TABS ===== -->
+        <div class="tabs" id="tabs">
+            <button class="active" data-tab="recipients"><i class="fas fa-users"></i> Recipients</button>
+            <button data-tab="add"><i class="fas fa-plus-circle"></i> Add Recipient</button>
+            <button data-tab="settings"><i class="fas fa-sliders-h"></i> Certificate Design</button>
+            <button data-tab="programs"><i class="fas fa-calendar-alt"></i> Running Programs</button>
+        </div>
+
+        <!-- ===== TAB 1: RECIPIENTS ===== -->
+        <div class="tab-content active" id="tab-recipients">
+            <div class="card">
+                <h2><i class="fas fa-list"></i> All Certificate Recipients</h2>
+                <div style="display:flex; gap:8px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
+                    <label style="font-size:0.85rem; font-weight:600; color:#475569;">Filter:</label>
+                    <select id="statusFilter" style="padding:8px 14px; border-radius:10px; border:1px solid #dce2eb; background:#f8fafc; font-size:0.85rem;">
+                        <option value="all">All</option>
+                        <option value="pending">Pending Approval</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Recipient</th>
+                                <th>Certificate Type</th>
+                                <th>Program/Event</th>
+                                <th>Certificate No.</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recipientsTableBody">
+                            <tr>
+                                <td colspan="8" style="text-align:center;color:#94a3b8;padding:30px;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TAB 2: ADD RECIPIENT ===== -->
+        <div class="tab-content" id="tab-add">
+            <div class="card">
+                <h2><i class="fas fa-user-plus"></i> Add New Recipient</h2>
+                <form id="recipientForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Recipient Name *</label>
+                            <input type="text" id="recipientName" placeholder="e.g. Rtr. Nabin Chalise" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Certificate Type</label>
+                            <select id="certificateType">
+                                <option value="Recognition">Recognition</option>
+                                <option value="Participation">Participation</option>
+                                <option value="Appreciation">Appreciation</option>
+                                <option value="Achievement">Achievement</option>
+                                <option value="Excellence">Excellence</option>
+                                <option value="Completion">Completion</option>
+                                <option value="Service">Service</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Program / Event Name *</label>
+                            <input type="text" id="programEvent" placeholder="e.g. District Training Assembly 2026" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Issue Date</label>
+                            <input type="date" id="issueDate" />
+                        </div>
+                        <div class="form-group">
+                            <label>Venue</label>
+                            <input type="text" id="venue" placeholder="e.g. Galkot, Baglung" />
+                        </div>
+                        <div class="form-group">
+                            <label>Rotary Year</label>
+                            <input type="text" id="rotaryYear" placeholder="e.g. 2025-26" />
+                        </div>
+                        <div class="form-group">
+                            <label>Verification ID (auto-generated if empty)</label>
+                            <input type="text" id="verificationId" placeholder="Leave empty for auto-generate" />
+                        </div>
+                        <div class="form-group full-width" style="display:flex; gap:10px; margin-top:8px;">
+                            <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Generate Certificate</button>
+                            <button type="reset" class="btn btn-outline"><i class="fas fa-undo"></i> Reset</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ===== TAB 3: SETTINGS ===== -->
+        <div class="tab-content" id="tab-settings">
+            <div class="card">
+                <h2><i class="fas fa-paint-brush"></i> Certificate Design Settings</h2>
+                <p style="color:#64748b; margin-bottom:16px; font-size:0.9rem;">Customize the certificate text. Leave empty to use defaults.</p>
+                <form id="settingsForm">
+                    <div class="settings-grid">
+                        <div class="settings-section-title"><strong>HEADER</strong></div>
+                        <div class="setting-item"><label>Line 1</label><input type="text" id="s_header_line1" placeholder="ROTARY INTERNATIONAL" /></div>
+                        <div class="setting-item"><label>Line 2</label><input type="text" id="s_header_line2" placeholder="ROTARACT CLUB OF GALKOT BAGLUNG" /></div>
+                        <div class="setting-item full-width"><label>Line 3</label><input type="text" id="s_header_line3" placeholder="Rotary International District 3292, Nepal" /></div>
+
+                        <div class="settings-section-title"><strong>CERTIFICATE TITLE</strong></div>
+                        <div class="setting-item full-width"><label>Title</label><input type="text" id="s_certificate_title" placeholder="CERTIFICATE OF RECOGNITION" /></div>
+
+                        <div class="settings-section-title"><strong>MAIN TEXT</strong></div>
+                        <div class="setting-item full-width"><label>Prefix (before recipient name)</label><textarea id="s_main_text_prefix" rows="2">This Certificate is proudly presented to</textarea></div>
+                        <div class="setting-item full-width"><label>Middle (after recipient name)</label><textarea id="s_main_text_middle" rows="2">in recognition of your valuable contribution, active participation, dedication, and commitment towards the successful accomplishment of</textarea></div>
+                        <div class="setting-item"><label>Organized by</label><input type="text" id="s_main_text_organized_by" placeholder="organized by the" /></div>
+                        <div class="setting-item"><label>Club Name</label><input type="text" id="s_main_text_club_name" placeholder="Rotaract Club of Galkot Baglung" /></div>
+                        <div class="setting-item full-width"><label>Suffix (closing text)</label><textarea id="s_main_text_suffix" rows="3">Your enthusiasm, leadership, service spirit, and unwavering support have greatly contributed to the success of this initiative. Thank you for making a meaningful difference through Service Above Self.</textarea></div>
+
+                        <div class="settings-section-title"><strong>FOOTER</strong></div>
+                        <div class="setting-item"><label>Certificate No. label</label><input type="text" id="s_footer_certificate_no" placeholder="Certificate No.: RCGB-2026-0001" /></div>
+                        <div class="setting-item"><label>Date label</label><input type="text" id="s_footer_date" placeholder="Date:" /></div>
+                        <div class="setting-item"><label>Venue label</label><input type="text" id="s_footer_venue" placeholder="Venue:" /></div>
+                        <div class="setting-item"><label>Rotary Year label</label><input type="text" id="s_footer_rotary_year" placeholder="Rotary Year:" /></div>
+
+                        <div class="settings-section-title"><strong>SIGNATURES</strong></div>
+                        <div class="setting-item"><label>Program Coordinator</label><input type="text" id="s_signature_program_coordinator" placeholder="Program Coordinator" /></div>
+                        <div class="setting-item"><label>Club Secretary</label><input type="text" id="s_signature_club_secretary" placeholder="Club Secretary" /></div>
+                        <div class="setting-item"><label>President</label><input type="text" id="s_signature_president" placeholder="President" /></div>
+                        <div class="setting-item"><label>President Label</label><input type="text" id="s_signature_president_label" placeholder="Rotaract Club of Galkot Baglung" /></div>
+                        <div class="setting-item full-width"><label>Chief Guest / Optional</label><input type="text" id="s_signature_chief_guest" placeholder="Rotary Club President / Chief Guest" /></div>
+                        <div class="setting-item"><label>Chief Guest Optional Text</label><input type="text" id="s_signature_chief_guest_optional" placeholder="(Optional)" /></div>
+
+                        <div class="settings-section-title"><strong>VERIFICATION</strong></div>
+                        <div class="setting-item full-width"><label>Verification ID / QR Text</label><input type="text" id="s_qr_verification_text" placeholder="Verification ID / QR Code" /></div>
+
+                        <div class="setting-item full-width" style="margin-top:8px;">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Settings</button>
+                            <button type="button" class="btn btn-outline" onclick="resetSettings()"><i class="fas fa-undo"></i> Reset to Defaults</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ===== TAB 4: RUNNING PROGRAMS ===== -->
+        <div class="tab-content" id="tab-programs">
+            <div class="card">
+                <h2><i class="fas fa-calendar-alt"></i> Manage Running Programs</h2>
+                <p style="color:#64748b; margin-bottom:16px; font-size:0.9rem;">Create and manage active programs for attendance registration.</p>
+
+                <!-- Add Program Form -->
+                <form id="programForm" style="margin-bottom:24px; padding:16px; background:#f8fafc; border-radius:16px;">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Program Name *</label>
+                            <input type="text" id="programName" placeholder="e.g. District Training Assembly 2026" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <input type="date" id="programDate" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Venue</label>
+                            <input type="text" id="programVenue" placeholder="e.g. Galkot, Baglung" />
+                        </div>
+                        <div class="form-group">
+                            <label>Start Time</label>
+                            <input type="time" id="programStartTime" />
+                        </div>
+                        <div class="form-group">
+                            <label>End Time</label>
+                            <input type="time" id="programEndTime" />
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Description</label>
+                            <textarea id="programDescription" rows="2" placeholder="Brief description of the program..."></textarea>
+                        </div>
+                        <div class="form-group full-width" style="display:flex; gap:10px; margin-top:4px;">
+                            <button type="submit" class="btn btn-success"><i class="fas fa-plus-circle"></i> Add Program</button>
+                            <button type="reset" class="btn btn-outline"><i class="fas fa-undo"></i> Reset</button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Programs List -->
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Program Name</th>
+                                <th>Date</th>
+                                <th>Venue</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="programsTableBody">
+                            <tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:30px;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle" id="toastIcon"></i>
+        <span id="toastMessage">Success!</span>
+    </div>
+
+    <script>
+        (function() {
+            "use strict";
+
+            // ===== SUPABASE CONFIG =====
+            const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+            const SUPABASE_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            const RECIPIENTS_TABLE = "attendance_registrations";
+            const SETTINGS_TABLE = "certificate_settings";
+            const USER_ROLES_TABLE = "user_roles";
+            const PROGRAMS_TABLE = "running_programs";
+
+            // ===== DOM REFS =====
+            const loginScreen = document.getElementById('loginScreen');
+            const adminHeader = document.getElementById('adminHeader');
+            const tabs = document.getElementById('tabs');
+            const loginForm = document.getElementById('loginForm');
+            const loginEmail = document.getElementById('loginEmail');
+            const loginPassword = document.getElementById('loginPassword');
+            const loginBtn = document.getElementById('loginBtn');
+            const loginError = document.getElementById('loginError');
+            const userName = document.getElementById('userName');
+            const userRole = document.getElementById('userRole');
+            const userAvatar = document.getElementById('userAvatar');
+
+            let currentUser = null;
+            let toastTimeout = null;
+
+            // ===== TOAST =====
+            function showToast(message, type = 'success') {
+                const toast = document.getElementById('toast');
+                const toastIcon = document.getElementById('toastIcon');
+                const toastMessage = document.getElementById('toastMessage');
+                toast.className = 'toast ' + type;
+                toastIcon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+                toastMessage.textContent = message;
+                toast.classList.add('show');
+                if (toastTimeout) clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+
+            // ===== CHECK AUTH =====
+            async function checkAuth() {
+                const { data: { session } } = await supabase.auth.getSession();
+
+                if (session) {
+                    await checkUserRole(session.user);
+                } else {
+                    showLogin();
+                }
+            }
+
+            // ===== CHECK USER ROLE =====
+            async function checkUserRole(user) {
+                try {
+                    const { data, error } = await supabase
+                        .from(USER_ROLES_TABLE)
+                        .select('role, full_name, email, status')
+                        .eq('user_id', user.id)
+                        .single();
+
+                    if (error || !data) {
+                        console.error('User role not found:', error);
+                        await supabase.auth.signOut();
+                        showLogin();
+                        return;
+                    }
+
+                    if (data.status !== 'active') {
+                        showToast('Your account is inactive. Contact admin.', 'error');
+                        await supabase.auth.signOut();
+                        showLogin();
+                        return;
+                    }
+
+                    if (data.role !== 'admin') {
+                        showToast('Admin access required. You have: ' + data.role, 'error');
+                        await supabase.auth.signOut();
+                        showLogin();
+                        return;
+                    }
+
+                    currentUser = { ...user, ...data };
+                    showAdmin(user, data);
+                } catch (err) {
+                    console.error('Role check error:', err);
+                    await supabase.auth.signOut();
+                    showLogin();
+                }
+            }
+
+            // ===== SHOW LOGIN =====
+            function showLogin() {
+                loginScreen.style.display = 'flex';
+                adminHeader.classList.remove('show');
+                tabs.classList.remove('show');
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                document.getElementById('tab-recipients').classList.add('active');
+                document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+                document.querySelector('.tabs button[data-tab="recipients"]').classList.add('active');
+            }
+
+            // ===== SHOW ADMIN =====
+            function showAdmin(user, roleData) {
+                loginScreen.style.display = 'none';
+                adminHeader.classList.add('show');
+                tabs.classList.add('show');
+
+                const displayName = roleData.full_name || user.email || 'Admin';
+                userName.textContent = displayName;
+                userRole.textContent = roleData.role.toUpperCase();
+                userAvatar.textContent = displayName.charAt(0).toUpperCase();
+
+                loadRecipients();
+                loadSettings();
+                loadPrograms();
+            }
+
+            // ===== LOGIN =====
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const email = loginEmail.value.trim();
+                const password = loginPassword.value;
+
+                loginBtn.disabled = true;
+                loginBtn.textContent = 'Signing in...';
+                loginError.classList.remove('show');
+
+                try {
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email,
+                        password
+                    });
+
+                    if (error) throw error;
+
+                    if (data.user) {
+                        await checkUserRole(data.user);
+                        showToast('Welcome, ' + (data.user.email || 'Admin') + '!');
+                    }
+                } catch (err) {
+                    loginError.textContent = err.message || 'Invalid credentials';
+                    loginError.classList.add('show');
+                } finally {
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In';
+                }
+            });
+
+            // ===== LOGOUT =====
+            window.logout = async function() {
+                await supabase.auth.signOut();
+                currentUser = null;
+                showLogin();
+                showToast('Logged out successfully');
+            };
+
+            // ============================================================
+            // ===== RECIPIENTS =====
+            // ============================================================
+            let allRecipientsData = [];
+
+            function genCertificateNo(id) {
+                const year = new Date().getFullYear();
+                return `RCGB-${year}-${String(id).padStart(4, '0')}`;
+            }
+
+            function genVerificationId(id) {
+                return `VER-${id}-${Date.now().toString(36).toUpperCase()}`;
+            }
+
+            async function loadRecipients() {
+                const tbody = document.getElementById('recipientsTableBody');
+                try {
+                    const { data, error } = await supabase
+                        .from(RECIPIENTS_TABLE)
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+
+                    allRecipientsData = data || [];
+                    renderRecipients();
+                } catch (err) {
+                    console.error('Error loading recipients:', err);
+                    tbody.innerHTML =
+                        `<tr><td colspan="8" style="text-align:center;color:#b91c1c;padding:30px;">Error loading: ${err.message}</td></tr>`;
+                }
+            }
+
+            const CERT_TYPES = ['Participation', 'Recognition', 'Appreciation', 'Achievement', 'Excellence', 'Completion', 'Service'];
+
+            function renderRecipients() {
+                const tbody = document.getElementById('recipientsTableBody');
+                const filter = document.getElementById('statusFilter').value;
+                const data = filter === 'all' ?
+                    allRecipientsData :
+                    allRecipientsData.filter(r => (r.status || 'pending') === filter);
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML =
+                        `<tr><td colspan="8" style="text-align:center;color:#94a3b8;padding:30px;">No recipients found.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = data.map((r, i) => {
+                    const status = r.status || 'pending';
+                    const badgeClass = status === 'approved' ? 'badge-success' : status === 'rejected' ? 'badge-danger' : 'badge-warning';
+                    const statusLabel = status === 'approved' ? 'Approved' : status === 'rejected' ? 'Rejected' : 'Pending';
+                    const currentType = r.certificate_type || 'Participation';
+
+                    let actionButtons = `<a href="digitalcert.html?id=${r.id}" target="_blank" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i></a>`;
+                    if (status === 'pending') {
+                        actionButtons += `
+                            <button onclick="approveRecipient(${r.id})" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Approve</button>
+                            <button onclick="rejectRecipient(${r.id})" class="btn btn-warning btn-sm"><i class="fas fa-times"></i> Reject</button>`;
+                    } else if (status === 'rejected') {
+                        actionButtons += `<button onclick="approveRecipient(${r.id})" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Approve</button>`;
+                    }
+                    actionButtons += `<button onclick="deleteRecipient(${r.id})" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>`;
+
+                    // Admin picks/assigns the certificate type at approval time — while
+                    // still pending (or rejected), show an editable dropdown; once
+                    // approved, the type is locked in and shown as a plain badge.
+                    const typeCell = status === 'approved' ?
+                        `<span class="badge badge-success">${currentType}</span>` :
+                        `<select id="certTypeSelect_${r.id}" style="padding:6px 10px;border-radius:8px;border:1px solid #dce2eb;background:#f8fafc;font-size:0.8rem;">
+                            ${CERT_TYPES.map(t => `<option value="${t}" ${t === currentType ? 'selected' : ''}>${t}</option>`).join('')}
+                        </select>`;
+
+                    return `
+                            <tr>
+                                <td>${i + 1}</td>
+                                <td><strong>${r.participant_name}</strong></td>
+                                <td>${typeCell}</td>
+                                <td>${r.program_event_name || '—'}</td>
+                                <td><code style="background:#f1f5f9;padding:2px 10px;border-radius:6px;font-size:0.8rem;">${r.certificate_no || '—'}</code></td>
+                                <td>${r.issue_date ? new Date(r.issue_date).toLocaleDateString() : '—'}</td>
+                                <td><span class="badge ${badgeClass}">${statusLabel}</span></td>
+                                <td>
+                                    <div class="actions-cell">${actionButtons}</div>
+                                </td>
+                            </tr>
+                        `;
+                }).join('');
+            }
+
+            document.getElementById('statusFilter').addEventListener('change', renderRecipients);
+
+            // ===== APPROVE RECIPIENT =====
+            window.approveRecipient = async function(id) {
+                const typeSelect = document.getElementById('certTypeSelect_' + id);
+                const chosenType = typeSelect ? typeSelect.value : null;
+
+                if (!confirm(`Approve this certificate as "${chosenType || 'Participation'}"? It will become visible on the public certificate page.`)) return;
+                try {
+                    const existing = allRecipientsData.find(r => r.id === id);
+                    const updates = { status: 'approved' };
+                    if (chosenType) updates.certificate_type = chosenType;
+                    if (!existing || !existing.certificate_no) updates.certificate_no = genCertificateNo(id);
+                    if (!existing || !existing.verification_id) updates.verification_id = genVerificationId(id);
+
+                    const { error } = await supabase
+                        .from(RECIPIENTS_TABLE)
+                        .update(updates)
+                        .eq('id', id);
+
+                    if (error) throw error;
+                    showToast('✅ Certificate approved!');
+                    loadRecipients();
+                } catch (err) {
+                    showToast('Error: ' + err.message, 'error');
+                }
+            };
+
+            // ===== REJECT RECIPIENT =====
+            window.rejectRecipient = async function(id) {
+                if (!confirm('Reject this registration?')) return;
+                try {
+                    const { error } = await supabase
+                        .from(RECIPIENTS_TABLE)
+                        .update({ status: 'rejected' })
+                        .eq('id', id);
+
+                    if (error) throw error;
+                    showToast('Registration rejected');
+                    loadRecipients();
+                } catch (err) {
+                    showToast('Error: ' + err.message, 'error');
+                }
+            };
+
+            // ===== DELETE RECIPIENT =====
+            window.deleteRecipient = async function(id) {
+                if (!confirm('Delete this certificate recipient?')) return;
+                try {
+                    const { error } = await supabase
+                        .from(RECIPIENTS_TABLE)
+                        .delete()
+                        .eq('id', id);
+                    if (error) throw error;
+                    showToast('Recipient deleted successfully');
+                    loadRecipients();
+                } catch (err) {
+                    showToast('Error: ' + err.message, 'error');
+                }
+            };
+
+            // ===== ADD RECIPIENT (manual, auto-approved) =====
+            document.getElementById('recipientForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const name = document.getElementById('recipientName').value.trim();
+                const type = document.getElementById('certificateType').value;
+                const program = document.getElementById('programEvent').value.trim();
+                const date = document.getElementById('issueDate').value;
+                const venue = document.getElementById('venue').value.trim();
+                const year = document.getElementById('rotaryYear').value.trim();
+                const vid = document.getElementById('verificationId').value.trim();
+
+                if (!name || !program) {
+                    showToast('Name and Program/Event are required', 'error');
+                    return;
+                }
+
+                try {
+                    const { data, error } = await supabase
+                        .from(RECIPIENTS_TABLE)
+                        .insert({
+                            participant_name: name,
+                            certificate_type: type,
+                            program_event_name: program,
+                            issue_date: date || null,
+                            venue: venue || null,
+                            rotary_year: year || null,
+                            verification_id: vid || null,
+                            status: 'approved'
+                        })
+                        .select();
+
+                    if (error) throw error;
+
+                    if (data && data[0]) {
+                        const updates = { certificate_no: genCertificateNo(data[0].id) };
+                        if (!vid) updates.verification_id = genVerificationId(data[0].id);
+                        await supabase.from(RECIPIENTS_TABLE).update(updates).eq('id', data[0].id);
+                    }
+
+                    showToast('✅ Certificate generated successfully!');
+                    this.reset();
+                    loadRecipients();
+
+                    if (data && data[0]) {
+                        window.open(`digitalcert.html?id=${data[0].id}`, '_blank');
+                    }
+                } catch (err) {
+                    showToast('Error: ' + err.message, 'error');
+                }
+            });
+
+            // ============================================================
+            // ===== SETTINGS =====
+            // ============================================================
+            async function loadSettings() {
+                try {
+                    const { data, error } = await supabase
+                        .from(SETTINGS_TABLE)
+                        .select('*');
+
+                    if (error) throw error;
+
+                    const settingsMap = {};
+                    data.forEach(s => settingsMap[s.setting_key] = s.setting_value);
+
+                    document.querySelectorAll('#settingsForm input, #settingsForm textarea').forEach(el => {
+                        const key = el.id.replace('s_', '');
+                        if (settingsMap[key] !== undefined) {
+                            el.value = settingsMap[key] || '';
+                        }
+                    });
+                } catch (err) {
+                    console.error('Error loading settings:', err);
+                }
+            }
+
+            document.getElementById('settingsForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                try {
+                    const formData = new FormData(this);
+                    const updates = [];
+                    for (let [key, value] of formData.entries()) {
+                        updates.push({
+                            setting_key: key,
+                            setting_value: value
+                        });
+                    }
+
+                    for (const item of updates) {
+                        const { error } = await supabase
+                            .from(SETTINGS_TABLE)
+                            .upsert({ setting_key: item.setting_key, setting_value: item.setting_value }, { onConflict: 'setting_key' });
+                        if (error) throw error;
+                    }
+
+                    showToast('Settings saved successfully!');
+                } catch (err) {
+                    showToast('Error: ' + err.message, 'error');
+                }
+            });
+
+            // ===== RESET SETTINGS =====
+            window.resetSettings = function() {
+                if (!confirm('Reset all settings to defaults?')) return;
+                const defaults = {
+                    'header_line1': 'ROTARY INTERNATIONAL',
+                    'header_line2': 'ROTARACT CLUB OF GALKOT BAGLUNG',
+                    'header_line3': 'Rotary International District 3292, Nepal',
+                    'certificate_title': 'CERTIFICATE OF RECOGNITION',
+                    'main_text_prefix': 'This Certificate is proudly presented to',
+                    'main_text_middle': 'in recognition of your valuable contribution, active participation, dedication, and commitment towards the successful accomplishment of',
+                    'main_text_organized_by': 'organized by the',
+                    'main_text_club_name': 'Rotaract Club of Galkot Baglung',
+                    'main_text_suffix': 'Your enthusiasm, leadership, service spirit, and unwavering support have greatly contributed to the success of this initiative. Thank you for making a meaningful difference through Service Above Self.',
+                    'footer_certificate_no': 'Certificate No.: RCGB-2026-0001',
+                    'footer_date': 'Date:',
+                    'footer_venue': 'Venue:',
+                    'footer_rotary_year': 'Rotary Year:',
+                    'signature_program_coordinator': 'Program Coordinator',
+                    'signature_club_secretary': 'Club Secretary',
+                    'signature_president': 'President',
+                    'signature_president_label': 'Rotaract Club of Galkot Baglung',
+                    'signature_chief_guest': 'Rotary Club President / Chief Guest',
+                    'signature_chief_guest_optional': '(Optional)',
+                    'qr_verification_text': 'Verification ID / QR Code'
+                };
+
+                Object.entries(defaults).forEach(([key, value]) => {
+                    const el = document.getElementById('s_' + key);
+                    if (el) el.value = value;
+                });
+
+                showToast('Defaults loaded. Click Save to apply.');
+            };
+
+            // ============================================================
+            // ===== RUNNING PROGRAMS =====
+            // ============================================================
+            async function loadPrograms() {
+                const tbody = document.getElementById('programsTableBody');
+                try {
+                    const { data, error } = await supabase
+                        .from(PROGRAMS_TABLE)
+                        .select('*')
+                        .order('program_date', { ascending: false });
+
+                    if (error) throw error;
+
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML =
+                            `<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:30px;">No programs yet. Add one!</td></tr>`;
+                        return;
+                    }
+
+                    tbody.innerHTML = data.map((p, i) => `
+                            <tr>
+                                <td>${i + 1}</td>
+                                <td><strong>${p.program_name}</strong></td>
+                                <td>${new Date(p.program_date).toLocaleDateString()}</td>
+                                <td>${p.venue || '—'}</td>
+                                <td><span class="badge ${p.is_active ? 'badge-success' : 'badge-danger'}">${p.is_active ? 'Active' : 'Inactive'}</span></td>
+                                <td>
+                                    <div class="actions-cell">
+                                        <button onclick="toggleProgramStatus(${p.id}, ${!p.is_active})" class="btn ${p.is_active ? 'btn-warning' : 'btn-success'} btn-sm">
+                                            <i class="fas ${p.is_active ? 'fa-pause' : 'fa-play'}"></i>
+                                            ${p.is_active ? 'Deactivate' : 'Activate'}
+                                        </button>
+                                        <button onclick="deleteProgram(${p.id})" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
+                } catch (err) {
+                    console.error('Error loading programs:', err);
+                    tbody.innerHTML =
+                        `<tr><td colspan="6" style="text-align:center;color:#b91c1c;padding:30px;">Error loading: ${err.message}</td></tr>`;
+                }
+            }
+
+            // ===== ADD PROGRAM =====
+            document.getElementById('programForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const name = document.getElementById('programName').value.trim();
+                const date = document.getElementById('programDate').value;
+                const venue = document.getElementById('programVenue').value.trim();
+                const startTime = document.getElementById('programStartTime').value;
+                const endTime = document.getElementById('programEndTime').value;
+                const description = document.getElementById('programDescription').value.trim();
+
+                if (!name || !date) {
+                    showToast('Name and Date are required', 'error');
+                    return;
+                }
+
+                try {
+                    const { error } = await supabase
+                        .from(PROGRAMS_TABLE)
+                        .insert({
+                            program_name: name,
+                            program_date: date,
+                            venue: venue || null,
+                            start_time: startTime || null,
+                            end_time: endTime || null,
+                            description: description || null,
+                            is_active: true
+                        });
+
+                    if (error) throw error;
+
+                    showToast('✅ Program added successfully!');
+                    this.reset();
+                    loadPrograms();
+                } catch (err) {
+                    showToast('Error: ' + err.message, 'error');
+                }
+            });
+
+            // ===== TOGGLE PROGRAM STATUS =====
+            window.toggleProgramStatus = async function(id, newStatus) {
+                try {
+                    const { error } = await supabase
+                        .from(PROGRAMS_TABLE)
+                        .update({ is_active: newStatus })
+                        .eq('id', id);
+
+                    if (error) throw error;
+                    showToast(`Program ${newStatus ? 'activated' : 'deactivated'}`);
+                    loadPrograms();
+                } catch (err) {
+                    showToast('Error: ' + err.message, 'error');
+                }
+            };
+
+            // ===== DELETE PROGRAM =====
+            window.deleteProgram = async function(id) {
+                if (!confirm('Delete this program?')) return;
+                try {
+                    const { error } = await supabase
+                        .from(PROGRAMS_TABLE)
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+                    showToast('Program deleted');
+                    loadPrograms();
+                } catch (err) {
+                    showToast('Error: ' + err.message, 'error');
+                }
+            };
+
+            // ============================================================
+            // ===== TABS =====
+            // ============================================================
+            document.querySelectorAll('.tabs button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const tabId = this.dataset.tab;
+                    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                    document.getElementById('tab-' + tabId).classList.add('active');
+
+                    // Refresh data when switching tabs
+                    if (tabId === 'recipients') loadRecipients();
+                    if (tabId === 'programs') loadPrograms();
+                });
+            });
+
+            // ============================================================
+            // ===== INIT =====
+            // ============================================================
+            checkAuth();
+
+            console.log('✅ Admin Certificate Manager with Auth and Programs ready');
+        })();
+    </script>
+</body>
+</html>
