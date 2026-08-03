@@ -588,6 +588,40 @@ async function checkAdminAndInit() {
   app.style.display = "block";
   await Promise.all([loadRegistrations(), loadDonors()]);
   renderDashboard();
+  setupRealtimeSync();
+}
+
+// ==================== REALTIME AUTO-REFRESH ====================
+// Subscribes to live changes on both tables so the admin panel updates
+// automatically (no manual refresh needed) whenever a donor/registration
+// row is inserted, updated, or deleted — from this device or any other.
+let realtimeChannel = null;
+let realtimeDebounceTimer = null;
+
+function scheduleRealtimeReload(kind) {
+  // Debounce so a burst of changes (e.g. bulk delete) triggers one reload.
+  clearTimeout(realtimeDebounceTimer);
+  realtimeDebounceTimer = setTimeout(async () => {
+    if (kind === "registrations") {
+      await loadRegistrations();
+    } else if (kind === "donors") {
+      await loadDonors();
+    }
+    renderDashboard();
+  }, 400);
+}
+
+function setupRealtimeSync() {
+  if (realtimeChannel) return; // already subscribed, avoid duplicate channels
+  realtimeChannel = supabaseClient
+    .channel("blood_bridge_admin_live")
+    .on("postgres_changes", { event: "*", schema: "public", table: "bloodbridge_register" }, () => {
+      scheduleRealtimeReload("registrations");
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "blood_bridge_galkot" }, () => {
+      scheduleRealtimeReload("donors");
+    })
+    .subscribe();
 }
 
 // ==================== TABS ====================
