@@ -422,17 +422,17 @@ function renderTopEntries() {
     if (!who) return;
     counts[who] = (counts[who] || 0) + 1;
   });
-  const top3 = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 3);
-  if (top3.length === 0) { section.innerHTML = ""; return; }
+  const top10 = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  if (top10.length === 0) { section.innerHTML = ""; return; }
 
   const medals = ["🥇", "🥈", "🥉"];
   section.innerHTML = `
     <div class="top-entry-card" style="flex-basis:100%;padding:6px 14px 0;box-shadow:none;border:none;background:transparent;">
       <span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;">🏆 Highest Entry — Top Volunteers</span>
     </div>` +
-    top3.map(([name, c], i) => `
+    top10.map(([name, c], i) => `
       <div class="top-entry-card">
-        <span class="medal" aria-hidden="true">${medals[i]}</span>
+        <span class="medal" aria-hidden="true">${medals[i] || (i + 1) + "."}</span>
         <div class="info">
           <div class="name">${escapeHtml(name)}</div>
           <div class="count">${c} entr${c === 1 ? "y" : "ies"}</div>
