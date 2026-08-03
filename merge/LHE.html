@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Letterhead Exchange Request — Rotaract Club of Galkot Baglung</title>
+<meta name="description" content="Submit a Letterhead Exchange (LHE) request with the Rotaract Club of Galkot Baglung, RI District 3292." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet" />
+
+<!-- Load Supabase WITHOUT defer -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   LHE Shared Design System
+   ══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --magenta: #D91B5C;
+  --magenta-dark: #B0143F;
+  --magenta-light: #FCE4EC;
+  --magenta-glow: rgba(217, 27, 92, .16);
+  --navy: #0B1E30;
+  --navy-mid: #163455;
+  --navy-soft: #1F406B;
+  --seal-gold: #B8862E;
+  --seal-gold-light: #F3E4C4;
+  --ink: #14202E;
+  --gray-900: #1E3146;
+  --gray-700: #3A4C63;
+  --gray-600: #4A5A72;
+  --gray-500: #6B7A93;
+  --gray-400: #8FA0B6;
+  --gray-300: #D3DCE8;
+  --gray-200: #E7ECF3;
+  --gray-100: #F4F7FB;
+  --gray-50: #FAFBFD;
+  --white: #FFFFFF;
+  --success: #157A46;
+  --success-bg: #E5F6EC;
+  --success-border: #B9E5CB;
+  --warning: #93650B;
+  --warning-bg: #FFF3DA;
+  --warning-border: #F2D693;
+  --error: #B0392B;
+  --error-bg: #FCEAE7;
+  --error-border: #F0C0B8;
+  --info: #1F4E82;
+  --info-bg: #E8F1FC;
+  --shadow-xs: 0 1px 2px rgba(11, 30, 48, .06);
+  --shadow-sm: 0 4px 14px rgba(11, 30, 48, .07);
+  --shadow-md: 0 12px 32px rgba(11, 30, 48, .10);
+  --shadow-lg: 0 24px 64px rgba(11, 30, 48, .14);
+  --shadow-btn: 0 6px 18px rgba(217, 27, 92, .28);
+  --radius-xl: 26px;
+  --radius-lg: 18px;
+  --radius-md: 13px;
+  --radius-sm: 9px;
+  --radius-pill: 999px;
+  --ease: cubic-bezier(.4, 0, .2, 1);
+  --fast: .15s;
+  --base: .25s;
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-doc: 'Source Serif 4', 'Georgia', serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font-ui);
+  background: linear-gradient(180deg, #EEF2F8 0%, #F4F7FB 260px);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; display: block; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2.5px solid var(--magenta);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.app {
+  width: 100%;
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: appIn .4s var(--ease);
+}
+
+.app--form { max-width: 720px; }
+
+@keyframes appIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.app-header {
+  background: radial-gradient(120% 180% at 0% 0%, var(--navy-mid) 0%, var(--navy) 65%);
+  color: var(--white);
+  border-bottom: 4px solid var(--magenta);
+  padding: 1.1rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.app-header .logo-wrap { display: flex; align-items: center; gap: .9rem; min-width: 0; }
+
+.app-header .logo-img {
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--magenta);
+  flex-shrink: 0;
+  background: var(--white);
+}
+
+.app-header .club-info h1 {
+  font-size: .95rem;
+  font-weight: 700;
+  letter-spacing: .2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-header .club-info .sub {
+  font-size: .72rem;
+  opacity: .78;
+  margin-top: 1px;
+}
+
+.app-header .header-right {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  flex-wrap: wrap;
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .14);
+  padding: .32rem 1rem;
+  border-radius: var(--radius-pill);
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+
+.live-dot {
+  width: 7px; height: 7px;
+  background: #4ADE80;
+  border-radius: 50%;
+  animation: pulseDot 1.9s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .35; transform: scale(.75); }
+}
+
+.section-pad { padding: 1.6rem clamp(1.1rem, 3vw, 2rem); }
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -.2px;
+}
+
+.section-subtitle {
+  font-size: .85rem;
+  color: var(--gray-500);
+  margin-top: .3rem;
+  line-height: 1.5;
+}
+
+.section-subtitle .highlight { color: var(--magenta); font-weight: 700; }
+
+.field { margin-bottom: 1.15rem; }
+.field.full { grid-column: 1 / -1; }
+
+.field > label {
+  display: flex;
+  align-items: baseline;
+  gap: .4rem;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: var(--gray-600);
+  margin-bottom: .38rem;
+}
+
+.field > label .required-star { color: var(--magenta); font-size: .95rem; }
+.field > label .hint { font-weight: 500; text-transform: none; color: var(--gray-400); font-size: .68rem; letter-spacing: 0; }
+
+.field .field-error {
+  display: none;
+  font-size: .72rem;
+  color: var(--error);
+  margin-top: .35rem;
+  font-weight: 500;
+}
+
+.field.invalid .field-error { display: block; }
+.field.invalid input,
+.field.invalid select,
+.field.invalid textarea { border-color: var(--error) !important; background: var(--error-bg); }
+
+input, select, textarea {
+  width: 100%;
+  padding: .7rem .95rem;
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  font-size: .9rem;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--white);
+  transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease), background var(--fast) var(--ease);
+}
+
+textarea { resize: vertical; min-height: 90px; line-height: 1.55; }
+
+input::placeholder, textarea::placeholder { color: var(--gray-400); }
+
+input:hover, select:hover, textarea:hover { border-color: var(--gray-400); }
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--magenta);
+  box-shadow: 0 0 0 4px var(--magenta-glow);
+}
+
+input:read-only, input:disabled, textarea:disabled {
+  background: var(--gray-100);
+  color: var(--gray-500);
+  cursor: not-allowed;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1.1rem;
+}
+
+.file-upload-wrap {
+  position: relative;
+  border: 2px dashed var(--gray-300);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  background: var(--gray-50);
+  transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
+}
+
+.file-upload-wrap:hover,
+.file-upload-wrap:focus-within,
+.file-upload-wrap.dragover {
+  border-color: var(--magenta);
+  background: var(--magenta-light);
+}
+
+.file-upload-wrap .upload-icon { font-size: 2.1rem; display: block; margin-bottom: .3rem; }
+.file-upload-wrap .upload-text { font-size: .84rem; color: var(--gray-600); }
+.file-upload-wrap .upload-text strong { color: var(--magenta); }
+.file-upload-wrap .upload-sub { font-size: .72rem; color: var(--gray-400); display: block; margin-top: .15rem; }
+
+.file-upload-wrap input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+
+.file-preview {
+  display: none;
+  margin-top: .6rem;
+  align-items: center;
+  gap: .8rem;
+  padding: .55rem .8rem;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  animation: fadeIn var(--base) var(--ease);
+}
+
+.file-preview.visible { display: flex; }
+
+.file-preview img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid var(--gray-200); background: var(--white); }
+.file-preview .file-meta { flex: 1; min-width: 0; }
+.file-preview .file-name { font-size: .8rem; color: var(--gray-700); font-weight: 600; word-break: break-all; }
+.file-preview .file-size { font-size: .7rem; color: var(--gray-400); }
+
+.file-preview .file-remove {
+  background: none; border: none; color: var(--gray-400); cursor: pointer;
+  font-size: 1.1rem; line-height: 1; padding: .3rem; border-radius: 50%;
+  transition: color var(--fast), background var(--fast);
+}
+.file-preview .file-remove:hover { color: var(--error); background: var(--error-bg); }
+
+.upload-progress {
+  display: none;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--gray-200);
+  overflow: hidden;
+  margin-top: .55rem;
+}
+.upload-progress.visible { display: block; }
+.upload-progress .bar {
+  height: 100%; width: 30%;
+  background: linear-gradient(90deg, var(--magenta), var(--magenta-dark));
+  border-radius: var(--radius-pill);
+  animation: indeterminate 1.1s ease-in-out infinite;
+}
+@keyframes indeterminate {
+  0% { transform: translateX(-100%); width: 40%; }
+  50% { width: 60%; }
+  100% { transform: translateX(250%); width: 40%; }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  padding: .72rem 1.6rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: .87rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--fast) var(--ease), box-shadow var(--fast) var(--ease), background var(--fast) var(--ease), opacity var(--fast) var(--ease);
+  white-space: nowrap;
+}
+
+.btn:active { transform: translateY(0) scale(.98); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--magenta), var(--magenta-dark));
+  color: var(--white);
+  box-shadow: var(--shadow-btn);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(217, 27, 92, .35); }
+
+.btn-secondary { background: var(--gray-200); color: var(--gray-700); }
+.btn-secondary:hover { background: var(--gray-300); }
+
+.btn:disabled { opacity: .55; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+.btn .spinner-small {
+  display: none;
+  width: 16px; height: 16px;
+  border: 2.5px solid rgba(255, 255, 255, .35);
+  border-top-color: var(--white);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+.btn.loading .spinner-small { display: inline-block; }
+.btn.loading .btn-text { visibility: hidden; width: 0; overflow: hidden; }
+.btn.loading { pointer-events: none; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.form-actions { display: flex; gap: .7rem; flex-wrap: wrap; margin-top: 1.4rem; }
+.form-actions .btn-primary { flex: 1 1 220px; }
+
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem; right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: .55rem;
+  max-width: 380px;
+  width: calc(100% - 2rem);
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  padding: .8rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: .84rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+  background: var(--white);
+  border-left: 4px solid;
+  color: var(--ink);
+  animation: toastIn .3s var(--ease);
+}
+.toast.leaving { opacity: 0; transform: translateX(16px); transition: all .25s var(--ease); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+.toast.success { border-color: var(--success); }
+.toast.error { border-color: var(--error); }
+.toast.info { border-color: var(--info); }
+.toast .toast-icon { flex-shrink: 0; }
+.toast .toast-close { margin-left: auto; background: none; border: none; cursor: pointer; color: var(--gray-400); font-size: .9rem; padding: 0 .2rem; }
+
+.success-state {
+  display: none;
+  text-align: center;
+  padding: 2.4rem 2rem 2.6rem;
+}
+.success-state.visible { display: block; animation: fadeIn .4s var(--ease); }
+.success-state .success-seal { margin: 0 auto .8rem; }
+.success-state h2 { color: var(--navy); font-size: 1.25rem; margin-bottom: .4rem; }
+.success-state p { color: var(--gray-500); font-size: .88rem; }
+.success-state .vid-chip {
+  display: inline-block; margin-top: .8rem; padding: .4rem 1.3rem;
+  background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: var(--radius-pill);
+  font-family: 'Source Serif 4', serif; font-size: .92rem; letter-spacing: .5px; color: var(--magenta-dark); font-weight: 600;
+}
+.success-state .vid-note { margin-top: .9rem; font-size: .76rem; color: var(--gray-400); }
+
+.app-footer {
+  background: var(--navy);
+  color: rgba(255, 255, 255, .65);
+  padding: .85rem clamp(1.1rem, 3vw, 2rem);
+  font-size: .7rem;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: .4rem;
+  border-top: 3px solid var(--magenta);
+}
+
+@media (max-width: 700px) {
+  .app-header { padding: .95rem 1.1rem; }
+  .app-header .club-info h1 { font-size: .85rem; }
+  .section-pad { padding: 1.2rem; }
+  .form-actions .btn { flex: 1 1 100%; }
+  .toast-container { right: .6rem; bottom: .6rem; max-width: calc(100% - 1.2rem); }
+}
+
+@media (max-width: 460px) {
+  .page { padding: .6rem; }
+  .app { border-radius: var(--radius-md); }
+  .section-title { font-size: 1.1rem; }
+  .app-header .header-right { width: 100%; justify-content: space-between; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <main class="app app--form">
+
+    <header class="app-header">
+      <div class="logo-wrap">
+        <img src="rotaract.jpg" alt="Rotaract Club of Galkot Baglung logo" class="logo-img" onerror="this.style.display='none'" />
+        <div class="club-info">
+          <h1>ROTARACT CLUB OF GALKOT BAGLUNG</h1>
+          <div class="sub">RI District 3292 • Nepal</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="live-badge"><span class="live-dot" aria-hidden="true"></span>LHE Registration</span>
+      </div>
+    </header>
+
+    <div class="section-pad" id="formContainer">
+      <h2 class="section-title">Letterhead Exchange request</h2>
+      <p class="section-subtitle">
+        Fill in your club's details for an <span class="highlight">LHE (Letterhead Exchange)</span> with Rotaract Club of Galkot Baglung. Fields marked <span style="color:var(--magenta);font-weight:700;">*</span> are required.
+      </p>
+
+      <form id="lheForm" novalidate aria-label="Letterhead Exchange request form">
+
+        <div class="field" data-field="presidentName">
+          <label for="presidentName">President's name <span class="required-star">*</span></label>
+          <input type="text" id="presidentName" name="presidentName" placeholder="e.g., Rtr. Kanhaiya Gupta" maxlength="80" autocomplete="name" required aria-describedby="presidentName-err" />
+          <p class="field-error" id="presidentName-err">Please enter the president's full name.</p>
+        </div>
+
+        <div class="field" data-field="rotaryYear">
+          <label for="rotaryYear">Rotary year <span class="required-star">*</span></label>
+          <select id="rotaryYear" name="rotaryYear" required>
+            <option value="2026-27" selected>2026-27</option>
+            <option value="2025-26">2025-26</option>
+            <option value="2027-28">2027-28</option>
+          </select>
+        </div>
+
+        <div class="field" data-field="clubName">
+          <label for="clubName">Club / organization name <span class="required-star">*</span></label>
+          <input type="text" id="clubName" name="clubName" placeholder="e.g., Rotaract Club of Birgunj" maxlength="120" required aria-describedby="clubName-err" />
+          <p class="field-error" id="clubName-err">Please enter your club or organization name.</p>
+        </div>
+
+        <div class="field" data-field="rid">
+          <label for="rid">RID <span class="hint">Rotary International District</span> <span class="required-star">*</span></label>
+          <input type="text" id="rid" name="rid" placeholder="e.g., 9455" inputmode="numeric" maxlength="5" required aria-describedby="rid-err" />
+          <p class="field-error" id="rid-err">Enter a valid district number (3–5 digits).</p>
+        </div>
+
+        <div class="field" data-field="sponsoredClub">
+          <label for="sponsoredClub">Sponsored club <span class="hint">(if any)</span></label>
+          <input type="text" id="sponsoredClub" name="sponsoredClub" placeholder="e.g., Rotaract Club of …" maxlength="120" />
+        </div>
+
+        <div class="field">
+          <label for="logoUpload">Club logo <span class="hint">PNG, JPG or SVG, max 200KB (auto-compressed)</span></label>
+          <div class="file-upload-wrap" id="uploadWrap">
+            <span class="upload-icon" aria-hidden="true">🖼️</span>
+            <div class="upload-text"><strong>Click to upload</strong> or drag &amp; drop</div>
+            <span class="upload-sub">PNG, JPG or SVG up to 200KB (will be compressed)</span>
+            <input type="file" id="logoUpload" name="logoUpload" accept="image/png,image/jpeg,image/svg+xml" aria-label="Club logo file" />
+          </div>
+          <div class="file-preview" id="filePreview">
+            <img id="previewImage" src="" alt="" />
+            <div class="file-meta">
+              <div class="file-name" id="fileName">logo.png</div>
+              <div class="file-size" id="fileSize"></div>
+            </div>
+            <button type="button" class="file-remove" id="removeFile" aria-label="Remove selected logo">✕</button>
+          </div>
+          <div class="upload-progress" id="uploadProgress"><div class="bar"></div></div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <span class="spinner-small" aria-hidden="true"></span>
+            <span class="btn-text">📤 Submit LHE request</span>
+          </button>
+          <button type="reset" class="btn btn-secondary" id="resetBtn">Reset</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="success-state" id="successState" role="status" aria-live="polite">
+      <div class="success-seal" id="successSeal"></div>
+      <h2>LHE request submitted</h2>
+      <p>Your Letterhead Exchange request has been received. We'll review it and get back to you.</p>
+      <div class="vid-chip" id="verificationIdDisplay">LHE-XXXX-XXXX</div>
+      <p class="vid-note">Keep this verification ID — it's used to track and later verify your LHE document.</p>
+      <div class="form-actions" style="justify-content:center;">
+        <button class="btn btn-primary" id="submitAnotherBtn" type="button">📝 Submit another request</button>
+      </div>
+    </div>
+
+    <footer class="app-footer no-print">
+      <span>© 2026 Rotaract Club of Galkot Baglung • RI District 3292</span>
+      <span style="opacity:.6;">LHE Registration</span>
+    </footer>
+  </main>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ─── Configuration ────────────────────────────────────────────────
+  const CONFIG = {
+    supabaseUrl: 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co',
+    supabaseAnonKey: 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv',
+
+    clubName: 'Rotaract Club of Galkot Baglung',
+    rid: '3292',
+    sponsoredClub: 'Rotaract Club of Baglung',
+    charterDate: '23 April 2021',
+    fiscalYear: '026/027',
+    signPlace: 'Galkot, Baglung',
+    defaultRotaryYear: '2026-27',
+
+    signatures: {
+      president: { name: 'Rtr. Nabin Chalise', title: 'President RY 2026-27', image: 'presidentsign.jpg' },
+      secretary: { name: 'Rtr. Madan Subedi', title: 'Secretary RY 2026-27', image: 'secretarysign.jpg' },
+      chair: { name: 'Rtr. Anil Shrestha', title: 'International Service Chair (2026-27)', image: 'anilsign.jpg' }
+    }
+  };
+
+  // ─── Helpers ──────────────────────────────────────────────────────
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function generateVerificationId() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const part = () => Array.from({ length: 4 }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join('');
+    return `LHE-${part()}-${part()}`;
+  }
+
+  function showToast(message, type = 'info', duration = 4200) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    const icons = { success: '✅', error: '⚠️', info: 'ℹ️' };
+    toast.innerHTML = `
+      <span class="toast-icon">${icons[type] || icons.info}</span>
+      <span class="toast-msg">${escapeHtml(message)}</span>
+      <button type="button" class="toast-close" aria-label="Dismiss">✕</button>
+    `;
+    container.appendChild(toast);
+    const remove = () => {
+      toast.classList.add('leaving');
+      setTimeout(() => toast.remove(), 260);
+    };
+    toast.querySelector('.toast-close').addEventListener('click', remove);
+    const timer = setTimeout(remove, duration);
+    toast.addEventListener('mouseenter', () => clearTimeout(timer));
+    return toast;
+  }
+
+  function sealSvg({ size = 76 } = {}) {
+    return `
+      <svg width="${size}" height="${size}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="44" stroke="#D91B5C" stroke-width="3"/>
+        <circle cx="50" cy="50" r="38" stroke="#D91B5C" stroke-width="2" stroke-dasharray="4 4"/>
+        <circle cx="50" cy="50" r="32" fill="#FCE4EC"/>
+        <path d="M38 48 L47 57 L62 42" stroke="#157A46" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="50" y="82" text-anchor="middle" font-family="Inter, sans-serif" font-size="8" font-weight="700" fill="#157A46">VERIFIED</text>
+      </svg>
+    `;
+  }
+
+  // ─── Image Compression ──────────────────────────────────────────
+  function compressImage(file, maxSizeKB = 200) {
+    return new Promise((resolve, reject) => {
+      // If file is SVG, just return it
+      if (file.type === 'image/svg+xml') {
+        resolve(file);
+        return;
+      }
+
+      const maxSizeBytes = maxSizeKB * 1024;
+      
+      // If file is already small enough, return it
+      if (file.size <= maxSizeBytes) {
+        resolve(file);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          let quality = 0.92;
+          let width = img.width;
+          let height = img.height;
+          
+          // First, try to resize if image is too large
+          const maxDimension = 1200;
+          if (width > maxDimension || height > maxDimension) {
+            const ratio = Math.min(maxDimension / width, maxDimension / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Try different quality levels
+          function tryCompress(quality) {
+            const dataUrl = canvas.toDataURL(file.type || 'image/jpeg', quality);
+            const binary = atob(dataUrl.split(',')[1]);
+            const size = binary.length;
+            
+            if (size <= maxSizeBytes) {
+              // Convert to Blob
+              const arr = new Uint8Array(binary.length);
+              for (let i = 0; i < binary.length; i++) {
+                arr[i] = binary.charCodeAt(i);
+              }
+              const blob = new Blob([arr], { type: file.type || 'image/jpeg' });
+              resolve(blob);
+            } else if (quality > 0.1) {
+              // Try lower quality
+              tryCompress(quality - 0.1);
+            } else {
+              // If still too large, resize more
+              const newWidth = Math.round(width * 0.7);
+              const newHeight = Math.round(height * 0.7);
+              if (newWidth > 100 && newHeight > 100) {
+                width = newWidth;
+                height = newHeight;
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+                tryCompress(0.9);
+              } else {
+                reject(new Error('Image cannot be compressed to under 200KB'));
+              }
+            }
+          }
+
+          tryCompress(quality);
+        };
+        img.onerror = function() {
+          reject(new Error('Failed to load image'));
+        };
+        img.src = e.target.result;
+      };
+      reader.onerror = function() {
+        reject(new Error('Failed to read file'));
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ─── Validation ──────────────────────────────────────────────────
+  function fieldWrap(el) { return el.closest('.field'); }
+
+  const validators = {
+    required: (v) => v.length > 0,
+    maxLen: (max) => (v) => v.length <= max,
+    rid: (v) => /^[0-9]{3,5}$/.test(v)
+  };
+
+  function validateField(el, rules) {
+    const wrap = fieldWrap(el);
+    const value = el.value.trim();
+    let valid = true;
+    for (const rule of rules) {
+      if (typeof rule === 'function') {
+        if (!rule(value)) { valid = false; break; }
+      } else if (rule && typeof rule.test === 'function') {
+        if (!rule.test(value)) { valid = false; break; }
+      }
+    }
+    wrap.classList.toggle('invalid', !valid);
+    return valid;
+  }
+
+  // ─── DOM refs ──────────────────────────────────────────────────
+  const form = document.getElementById('lheForm');
+  const presidentName = document.getElementById('presidentName');
+  const rotaryYear = document.getElementById('rotaryYear');
+  const clubName = document.getElementById('clubName');
+  const rid = document.getElementById('rid');
+  const sponsoredClub = document.getElementById('sponsoredClub');
+  const logoUpload = document.getElementById('logoUpload');
+  const filePreview = document.getElementById('filePreview');
+  const previewImage = document.getElementById('previewImage');
+  const fileName = document.getElementById('fileName');
+  const fileSize = document.getElementById('fileSize');
+  const removeFile = document.getElementById('removeFile');
+  const uploadWrap = document.getElementById('uploadWrap');
+  const uploadProgress = document.getElementById('uploadProgress');
+  const submitBtn = document.getElementById('submitBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const formContainer = document.getElementById('formContainer');
+  const successState = document.getElementById('successState');
+  const verificationIdDisplay = document.getElementById('verificationIdDisplay');
+  const submitAnotherBtn = document.getElementById('submitAnotherBtn');
+  const successSeal = document.getElementById('successSeal');
+
+  successSeal.innerHTML = sealSvg({ size: 76 });
+
+  // ─── Supabase ──────────────────────────────────────────────────
+  let supabaseClient = null;
+  try {
+    if (window.supabase && window.supabase.createClient) {
+      supabaseClient = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
+      console.log('✅ Supabase client created');
+    }
+  } catch (e) {
+    console.error('❌ Supabase error:', e);
+  }
+
+  let submitting = false;
+  let compressedFile = null;
+
+  // ─── Field validation bindings ────────────────────────────────
+  const rulesMap = {
+    presidentName: [validators.required, validators.maxLen(80)],
+    clubName: [validators.required, validators.maxLen(120)],
+    rid: [validators.rid]
+  };
+
+  [presidentName, clubName, rid].forEach((el) => {
+    el.addEventListener('blur', () => validateField(el, rulesMap[el.id]));
+    el.addEventListener('input', () => {
+      if (fieldWrap(el).classList.contains('invalid')) validateField(el, rulesMap[el.id]);
+    });
+  });
+
+  function validateAll() {
+    return [presidentName, clubName, rid].every((el) => validateField(el, rulesMap[el.id]));
+  }
+
+  function firstInvalid() {
+    return [presidentName, clubName, rid].find((el) => fieldWrap(el).classList.contains('invalid'));
+  }
+
+  // ─── File handling with compression ────────────────────────────
+  function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  async function handleFile(file) {
+    if (!file) return;
+    
+    // Validate file type
+    const validTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
+    if (!validTypes.includes(file.type)) {
+      showToast('Please upload a PNG, JPG or SVG image.', 'error');
+      logoUpload.value = '';
+      return;
+    }
+
+    try {
+      // Show progress
+      uploadProgress.classList.add('visible');
+      
+      // Compress image
+      const compressed = await compressImage(file, 200);
+      compressedFile = compressed;
+
+      // Update preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImage.src = e.target.result;
+        fileName.textContent = file.name;
+        fileSize.textContent = formatBytes(compressed.size);
+        filePreview.classList.add('visible');
+        uploadProgress.classList.remove('visible');
+        
+        // Show compression info if size changed
+        if (compressed.size < file.size) {
+          showToast(`Image compressed from ${formatBytes(file.size)} to ${formatBytes(compressed.size)}`, 'info', 3000);
+        }
+      };
+      reader.readAsDataURL(compressed);
+      
+    } catch (error) {
+      console.error('Compression error:', error);
+      showToast('Failed to process image. Please try a smaller image.', 'error');
+      uploadProgress.classList.remove('visible');
+      logoUpload.value = '';
+      compressedFile = null;
+    }
+  }
+
+  logoUpload.addEventListener('change', function () {
+    if (this.files && this.files[0]) {
+      handleFile(this.files[0]);
+    }
+  });
+
+  removeFile.addEventListener('click', () => {
+    logoUpload.value = '';
+    filePreview.classList.remove('visible');
+    previewImage.src = '';
+    compressedFile = null;
+  });
+
+  // Drag and drop
+  ['dragover', 'dragenter'].forEach((evt) =>
+    uploadWrap.addEventListener(evt, (e) => { e.preventDefault(); uploadWrap.classList.add('dragover'); })
+  );
+  ['dragleave', 'dragend'].forEach((evt) =>
+    uploadWrap.addEventListener(evt, (e) => { e.preventDefault(); uploadWrap.classList.remove('dragover'); })
+  );
+  uploadWrap.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadWrap.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length) { logoUpload.files = files; handleFile(files[0]); }
+  });
+
+  // ─── Upload logo ───────────────────────────────────────────────
+  async function uploadLogo(file) {
+    if (!supabaseClient) throw new Error('Connection not ready.');
+    if (!file) return '';
+    
+    const fileExt = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const safeName = `lhe_logos/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${fileExt}`;
+    
+    // Upload the compressed file
+    const { error } = await supabaseClient.storage.from('lhe-logos').upload(safeName, file, { 
+      cacheControl: '3600', 
+      upsert: false 
+    });
+    if (error) throw error;
+    const { data: urlData } = supabaseClient.storage.from('lhe-logos').getPublicUrl(safeName);
+    return urlData.publicUrl;
+  }
+
+  // ─── Get next LHE ref number ──────────────────────────────────
+  async function getNextLheRef() {
+    if (!supabaseClient) return 'LHE_001';
+    try {
+      const { data, error } = await supabaseClient
+        .from('rotaract_verify')
+        .select('ref_no')
+        .eq('doc_type', 'lhe')
+        .order('ref_no', { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      if (!data || data.length === 0) return 'LHE_001';
+      const match = String(data[0].ref_no || '').match(/LHE_(\d+)/);
+      const num = match ? parseInt(match[1], 10) : 0;
+      return `LHE_${String(num + 1).padStart(3, '0')}`;
+    } catch (e) {
+      console.warn('Error fetching LHE ref:', e);
+      return 'LHE_001';
+    }
+  }
+
+  // ─── Save to database (rotaract_verify) ──────────────────────
+  async function saveToDatabase(data) {
+    if (!supabaseClient) throw new Error('Connection not ready.');
+
+    const today = new Date().toISOString().split('T')[0];
+    const refNo = await getNextLheRef();
+    const verificationId = data.verificationId || generateVerificationId();
+
+    const bodyText = `Dear ${data.presidentName},
+
+On behalf of ${CONFIG.clubName}, I extend our heartfelt congratulations and best wishes to you and your Board of Directors for a successful Rotary Year ${data.rotaryYear}. May your tenure be filled with impactful service, inspiring leadership, and meaningful achievements.
+
+Since our charter on ${CONFIG.charterDate}, our club has remained committed to community service, youth empowerment, leadership development, and fellowship. We sincerely appreciate the contributions of ${data.clubName} to the Rotaract movement.
+
+Through this Letterhead Exchange, we celebrate the spirit of friendship and collaboration between our clubs. We look forward to building a strong and lasting relationship through service and fellowship.
+
+Wishing you and your club a successful Rotary Year ahead.
+
+Thank you!`;
+
+    const insertData = {
+      doc_type: 'lhe',
+      fiscal_year: CONFIG.fiscalYear,
+      ref_no: refNo,
+      date: today,
+      to_address: `${data.presidentName}, President, RY ${data.rotaryYear}, ${data.clubName}`,
+      subject: 'Letterhead Exchange',
+      title: 'LHE Request',
+      club: CONFIG.clubName,
+      issued_by: CONFIG.clubName,
+      body: bodyText,
+      letter_type: 'LHE',
+      signed_by: CONFIG.signatures.president.name,
+      designation: CONFIG.signatures.president.title,
+      letter_status: 'Pending',
+      verification_id: verificationId,
+      recipient_name: data.presidentName,
+      recipient_club_name: data.clubName,
+      recipient_rid: data.rid,
+      rotary_year: data.rotaryYear,
+      sponsored_club: data.sponsoredClub || null,
+      sender_rid: CONFIG.rid,
+      sender_sponsored_club: CONFIG.sponsoredClub,
+      president_signature_url: CONFIG.signatures.president.image,
+      secretary_name: CONFIG.signatures.secretary.name,
+      secretary_signature_url: CONFIG.signatures.secretary.image,
+      international_chair_name: CONFIG.signatures.chair.name,
+      international_chair_signature_url: CONFIG.signatures.chair.image,
+      sign_place: CONFIG.signPlace,
+      message: null,
+      logo_url: data.logoUrl || null
+    };
+
+    const { data: inserted, error } = await supabaseClient
+      .from('rotaract_verify')
+      .insert(insertData)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Database error:', error);
+      throw error;
+    }
+
+    return { ...inserted, verificationId };
+  }
+
+  function setLoading(loading) {
+    submitBtn.classList.toggle('loading', loading);
+    submitBtn.disabled = loading;
+    resetBtn.disabled = loading;
+  }
+
+  // ─── Form submit ──────────────────────────────────────────────
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    if (submitting) return;
+
+    if (!validateAll()) {
+      showToast('Please correct the highlighted fields.', 'error');
+      const invalid = firstInvalid();
+      if (invalid) invalid.focus();
+      return;
+    }
+
+    submitting = true;
+    setLoading(true);
+
+    try {
+      let logoUrl = '';
+      if (compressedFile) {
+        logoUrl = await uploadLogo(compressedFile);
+      }
+
+      const verificationId = generateVerificationId();
+
+      const result = await saveToDatabase({
+        presidentName: presidentName.value.trim(),
+        rotaryYear: rotaryYear.value,
+        clubName: clubName.value.trim(),
+        rid: rid.value.trim(),
+        sponsoredClub: sponsoredClub.value.trim(),
+        logoUrl,
+        verificationId
+      });
+
+      verificationIdDisplay.textContent = result.verificationId || verificationId;
+      formContainer.style.display = 'none';
+      successState.classList.add('visible');
+      successState.setAttribute('tabindex', '-1');
+      successState.focus();
+      showToast('LHE request submitted successfully!', 'success');
+    } catch (err) {
+      console.error('Submission error:', err);
+      showToast(err.message || 'Failed to submit. Please try again.', 'error');
+    } finally {
+      submitting = false;
+      setLoading(false);
+    }
+  });
+
+  // ─── Reset ────────────────────────────────────────────────────
+  resetBtn.addEventListener('click', () => {
+    setTimeout(() => {
+      filePreview.classList.remove('visible');
+      previewImage.src = '';
+      compressedFile = null;
+      [presidentName, clubName, rid].forEach((el) => {
+        const wrap = fieldWrap(el);
+        if (wrap) wrap.classList.remove('invalid');
+      });
+      presidentName.focus();
+    }, 0);
+  });
+
+  // ─── Submit another ──────────────────────────────────────────
+  submitAnotherBtn.addEventListener('click', () => {
+    form.reset();
+    filePreview.classList.remove('visible');
+    previewImage.src = '';
+    compressedFile = null;
+    formContainer.style.display = 'block';
+    successState.classList.remove('visible');
+    [presidentName, clubName, rid].forEach((el) => {
+      const wrap = fieldWrap(el);
+      if (wrap) wrap.classList.remove('invalid');
+    });
+    presidentName.focus();
+  });
+
+  // ─── Init ─────────────────────────────────────────────────────
+  if (!supabaseClient) {
+    showToast('Connection issue — please refresh the page.', 'error');
+  } else {
+    showToast('✅ Connected! You can submit your LHE request.', 'success', 3000);
+  }
+
+  presidentName.focus();
+
+})();
+</script>
+</body>
+</html>

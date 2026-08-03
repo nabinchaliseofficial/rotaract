@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rotaract Club - कागजात प्रमाणीकरण</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
+    </script>
+    <style>
+        /* ─── Same styles as before ────────────────────────────────────────────── */
+        :root {
+            --magenta: #D91B5C;
+            --magenta-dark: #B5154C;
+            --magenta-light: #FCE4EC;
+            --magenta-glow: rgba(217, 27, 92, 0.15);
+            --blue-dark: #0B1E30;
+            --blue-mid: #1A3A5C;
+            --gray-100: #F8FAFC;
+            --gray-200: #E9EDF4;
+            --gray-300: #D0D9E8;
+            --gray-400: #8A9BB0;
+            --gray-500: #6B7A93;
+            --gray-600: #4A5A72;
+            --gray-700: #1E3146;
+            --white: #FFFFFF;
+            --success: #1E8B4C;
+            --success-bg: #E6F7EE;
+            --error: #B13A2E;
+            --error-bg: #FEF0EE;
+            --shadow-card: 0 20px 60px rgba(0, 20, 40, 0.08);
+            --radius-lg: 28px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --transition: 0.25s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+            background: #F4F7FB;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem 1rem;
+        }
+
+        .app {
+            max-width: 880px;
+            width: 100%;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+            padding: 1.2rem 2rem;
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            border-bottom: 4px solid var(--magenta);
+        }
+
+        .app-header .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex: 1 1 auto;
+        }
+
+        .app-header .logo-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--magenta);
+            flex-shrink: 0;
+        }
+
+        .app-header .logo-fallback {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--magenta);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--white);
+            flex-shrink: 0;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .app-header .club-info h1 {
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .app-header .club-info .sub {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem 0.6rem;
+        }
+
+        .app-header .badge-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin-left: auto;
+        }
+
+        .app-header .badge {
+            background: rgba(255, 255, 255, 0.10);
+            padding: 0.25rem 1rem;
+            border-radius: 40px;
+            font-size: 0.65rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            backdrop-filter: blur(4px);
+        }
+
+        .badge .live-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            background: #4ADE80;
+            border-radius: 50%;
+            animation: pulse-dot 1.8s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.4;
+                transform: scale(0.8);
+            }
+        }
+
+        .header-magenta-accent {
+            height: 4px;
+            background: var(--magenta);
+            width: 100%;
+        }
+
+        .status-section {
+            padding: 2rem 2.5rem 1.5rem;
+            background: var(--gray-100);
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .status-section .loader {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.95rem;
+            color: var(--gray-500);
+        }
+
+        .status-section .loader .spinner {
+            width: 28px;
+            height: 28px;
+            border: 3px solid var(--gray-200);
+            border-top: 3px solid var(--magenta);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .verify-banner {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-sm);
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            border-left: 5px solid;
+        }
+
+        .verify-banner.visible {
+            display: flex;
+        }
+
+        .verify-banner.success {
+            background: var(--success-bg);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .verify-banner.error {
+            background: var(--error-bg);
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .verify-banner .banner-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .verify-banner .banner-text {
+            flex: 1;
+        }
+
+        .verify-banner .banner-text .banner-title {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .verify-banner .banner-text .banner-sub {
+            font-weight: 400;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        .result-section {
+            padding: 2rem 2.5rem 2.5rem;
+            display: none;
+            animation: fadeUp 0.4s ease;
+        }
+
+        .result-section.visible {
+            display: block;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .letter-card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            padding: 2rem 2.2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+            position: relative;
+        }
+
+        .letter-card .verified-stamp {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            background: var(--success-bg);
+            color: var(--success);
+            padding: 0.25rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border: 1px solid #C5E0D0;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-transform: uppercase;
+        }
+
+        .letter-card .verified-stamp .dot-green {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+        }
+
+        .letter-card .letter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-bottom: 2px solid var(--gray-100);
+            padding-bottom: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .letter-card .letter-header .org {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+        }
+
+        .letter-card .letter-header .org .name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--blue-dark);
+        }
+
+        .letter-card .letter-header .org .sub {
+            font-size: 0.78rem;
+            color: var(--gray-400);
+        }
+
+        .letter-card .letter-header .ref-badge {
+            background: var(--magenta-light);
+            padding: 0.25rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--magenta-dark);
+            border: 1px solid rgba(217, 27, 92, 0.15);
+            white-space: nowrap;
+        }
+
+        .letter-card .letter-body {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .letter-card .letter-body .to-line {
+            font-size: 0.92rem;
+            line-height: 1.8;
+            color: var(--gray-700);
+            white-space: pre-wrap;
+            text-align: justify;
+        }
+
+        .letter-card .letter-body .to-line strong {
+            font-weight: 600;
+            color: var(--blue-dark);
+        }
+
+        .letter-card .letter-body .subject {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--blue-dark);
+            background: var(--gray-100);
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius-sm);
+            border-left: 4px solid var(--magenta);
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .letter-card .letter-body .body-text {
+            white-space: pre-wrap;
+            line-height: 1.8;
+            font-size: 0.92rem;
+            color: var(--gray-700);
+            margin: 0.3rem 0;
+            text-align: justify;
+        }
+
+        .letter-card .letter-body .meta-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            font-size: 0.88rem;
+            color: var(--gray-700);
+            margin-top: 0.3rem;
+        }
+
+        .letter-card .letter-body .meta-line .fiscal-left {
+            font-weight: 500;
+        }
+
+        .letter-card .letter-body .meta-line .ref-right {
+            font-weight: 500;
+        }
+
+        .letter-card .letter-body .date-right {
+            text-align: right;
+            font-size: 0.88rem;
+            color: var(--gray-600);
+            margin-top: 0.2rem;
+        }
+
+        .letter-card .letter-body .details-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.2rem 1.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--gray-700);
+            border-top: 1px solid var(--gray-100);
+            padding-top: 0.8rem;
+        }
+
+        .letter-card .letter-body .details-grid .label {
+            font-weight: 600;
+            color: var(--gray-500);
+            white-space: nowrap;
+        }
+
+        .letter-card .letter-body .details-grid .value {
+            font-weight: 500;
+        }
+
+        .letter-card .letter-body .details-grid .value .status-badge {
+            display: inline-block;
+            padding: 0.05rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .letter-card .letter-body .details-grid .value .status-badge.active {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .letter-card .letter-body .details-grid .value .status-badge.suchana {
+            background: #F3E8FF;
+            color: #7C3AED;
+        }
+
+        .letter-card .letter-body .details-grid .value .status-badge.lhe {
+            background: #E8F0FE;
+            color: var(--blue-mid);
+        }
+
+        .letter-card .letter-signature {
+            margin-top: 2rem;
+            border-top: 1px solid var(--gray-200);
+            padding-top: 1.2rem;
+        }
+
+        .letter-card .letter-signature .sig-line {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .letter-card .letter-signature .sig-sub {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+        }
+
+        .letter-card .letter-footer {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--gray-100);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.78rem;
+            color: var(--gray-400);
+        }
+
+        .letter-card .letter-footer .stamp {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--magenta);
+            font-weight: 600;
+        }
+
+        .letter-card .letter-footer .stamp .dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            background: var(--magenta);
+            border-radius: 50%;
+            opacity: 0.4;
+        }
+
+        .letter-card .qr-section {
+            margin-top: 1.2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .letter-card .qr-section .qr-label {
+            font-size: 0.7rem;
+            color: var(--gray-400);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .letter-card .qr-section .qr-box {
+            width: 120px;
+            height: 120px;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+        }
+
+        .letter-card .qr-section .qr-box canvas,
+        .letter-card .qr-section .qr-box img {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .letter-card .qr-section .qr-url {
+            font-size: 0.65rem;
+            color: var(--gray-400);
+            word-break: break-all;
+            text-align: center;
+            max-width: 100%;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: var(--gray-400);
+        }
+
+        .no-data .icon-big {
+            font-size: 3rem;
+            margin-bottom: 0.8rem;
+            display: block;
+        }
+
+        .no-data p {
+            font-size: 0.95rem;
+        }
+
+        .no-data .sub-hint {
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+            color: var(--gray-300);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin-top: 1.2rem;
+        }
+
+        .action-buttons .btn-action {
+            padding: 0.4rem 1.2rem;
+            border: 1.5px solid var(--gray-200);
+            border-radius: 40px;
+            background: var(--white);
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            cursor: pointer;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: inherit;
+        }
+
+        .action-buttons .btn-action:hover {
+            border-color: var(--magenta);
+            color: var(--magenta);
+            background: var(--magenta-light);
+            transform: translateY(-1px);
+        }
+
+        .action-buttons .btn-action.primary {
+            background: var(--magenta);
+            border-color: var(--magenta);
+            color: var(--white);
+        }
+
+        .action-buttons .btn-action.primary:hover {
+            background: var(--magenta-dark);
+            border-color: var(--magenta-dark);
+            color: var(--white);
+        }
+
+        .app-footer {
+            background: var(--blue-dark);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 1rem 2.5rem;
+            font-size: 0.72rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.8rem;
+            border-top: 3px solid var(--magenta);
+        }
+
+        .app-footer .footer-left {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+        }
+
+        .app-footer .footer-left .club-name {
+            font-weight: 600;
+            color: var(--white);
+            font-size: 0.85rem;
+        }
+
+        .app-footer .footer-left .district {
+            font-size: 0.65rem;
+            opacity: 0.6;
+        }
+
+        .app-footer .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem 1.2rem;
+            align-items: center;
+        }
+
+        .app-footer .footer-links a {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            transition: color var(--transition);
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .app-footer .footer-links a:hover {
+            color: var(--white);
+        }
+
+        .app-footer .footer-links .sep {
+            opacity: 0.2;
+            user-select: none;
+        }
+
+        .app-footer .copyright {
+            font-size: 0.65rem;
+            opacity: 0.5;
+            text-align: right;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                padding: 0 !important;
+                background: white !important;
+            }
+            .app {
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+            .letter-card {
+                border: none !important;
+                padding: 1rem !important;
+                box-shadow: none !important;
+            }
+            .letter-card .verified-stamp {
+                position: static !important;
+                align-self: flex-start;
+                margin-bottom: 0.5rem;
+            }
+            .action-buttons {
+                display: none !important;
+            }
+            .result-section {
+                padding: 1rem !important;
+            }
+            .letter-card .qr-section .qr-box {
+                width: 140px !important;
+                height: 140px !important;
+            }
+            .letter-card .letter-body .subject {
+                text-align: center !important;
+            }
+            .letter-card .letter-body .meta-line {
+                display: flex !important;
+                justify-content: space-between !important;
+            }
+            .letter-card .letter-body .date-right {
+                text-align: right !important;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .app-header {
+                padding: 1rem 1.2rem;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+            .app-header .badge-wrap {
+                margin-left: 0;
+                justify-content: flex-start;
+            }
+            .status-section {
+                padding: 1.2rem;
+            }
+            .result-section {
+                padding: 1.2rem;
+            }
+            .letter-card {
+                padding: 1.2rem 1rem;
+            }
+            .letter-card .verified-stamp {
+                position: relative;
+                top: auto;
+                right: auto;
+                align-self: flex-start;
+                margin-bottom: 0.5rem;
+            }
+            .letter-card .letter-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .letter-card .letter-body .details-grid {
+                grid-template-columns: 1fr;
+                gap: 0.1rem;
+            }
+            .letter-card .letter-body .details-grid .label {
+                white-space: normal;
+            }
+            .letter-card .letter-footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .letter-card .letter-body .meta-line {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.2rem;
+            }
+            .letter-card .letter-body .date-right {
+                text-align: left;
+            }
+            .app-footer {
+                padding: 1rem 1.2rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            .app-footer .copyright {
+                text-align: left;
+            }
+            .app-footer .footer-links {
+                gap: 0.4rem 0.8rem;
+            }
+            .letter-card .qr-section .qr-box {
+                width: 100px;
+                height: 100px;
+            }
+            .verify-banner {
+                padding: 0.8rem 1rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .verify-banner .banner-icon {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 420px) {
+            body {
+                padding: 0.5rem;
+            }
+            .app {
+                border-radius: var(--radius-md);
+            }
+            .app-header .club-info h1 {
+                font-size: 0.9rem;
+            }
+            .letter-card .letter-body .subject {
+                font-size: 0.85rem;
+                padding: 0.5rem 0.8rem;
+            }
+            .letter-card .letter-header .org .name {
+                font-size: 1rem;
+            }
+            .letter-card .qr-section .qr-box {
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--gray-100);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--gray-300);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-400);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app">
+
+        <header class="app-header no-print">
+            <div class="logo-wrap">
+                <img src="rotaract.jpg" alt="Rotaract Logo" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                <div class="logo-fallback">R</div>
+                <div class="club-info">
+                    <h1>ROTARACT CLUB OF GALKOT BAGLUNG</h1>
+                    <div class="sub">
+                        <span>RI District 3292</span>
+                        <span>|</span>
+                        <span>Nepal</span>
+                        <span>|</span>
+                        <span>🔐 Document Verification</span>
+                    </div>
+                </div>
+            </div>
+            <div class="badge-wrap">
+                <div class="badge">
+                    <span class="live-dot"></span>
+                    <span>लाइभ • प्रमाणित</span>
+                </div>
+            </div>
+        </header>
+        <div class="header-magenta-accent no-print"></div>
+
+        <section class="status-section no-print" id="statusSection">
+            <div id="loader" class="loader">
+                <div class="spinner"></div>
+                <span>🔍 कागजात खोज्दै...</span>
+            </div>
+            <div id="verifyBanner" class="verify-banner">
+                <span class="banner-icon" id="bannerIcon">✅</span>
+                <div class="banner-text">
+                    <div class="banner-title" id="bannerTitle">प्रमाणित</div>
+                    <div class="banner-sub" id="bannerSub">यो कागजात प्रमाणीकरण प्रणालीबाट जाँच गरिएको हो ।</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="result-section" id="resultSection">
+            <div id="letterContainer"></div>
+        </section>
+
+        <footer class="app-footer no-print">
+            <div class="footer-left">
+                <span class="club-name">🔄 Rotaract Club of Galkot Baglung</span>
+                <span class="district">RI District 3292 | Nepal</span>
+            </div>
+            <div class="footer-links">
+                <a href="mailto:rotaractgalkot@gmail.com">✉️ Email</a>
+                <span class="sep">|</span>
+                <a href="#">🌐 Website</a>
+                <span class="sep">|</span>
+                <a href="#">📘 Facebook</a>
+                <span class="sep">|</span>
+                <a href="#">🔒 Privacy Policy</a>
+            </div>
+            <div class="copyright">
+                © 2026 Rotaract Club of Galkot Baglung
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ─── Supabase ──────────────────────────────────────────────────────────
+            const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
+            const SUPABASE_ANON_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
+
+            const loader = document.getElementById('loader');
+            const verifyBanner = document.getElementById('verifyBanner');
+            const bannerIcon = document.getElementById('bannerIcon');
+            const bannerTitle = document.getElementById('bannerTitle');
+            const bannerSub = document.getElementById('bannerSub');
+            const resultSection = document.getElementById('resultSection');
+            const letterContainer = document.getElementById('letterContainer');
+
+            let supabaseClient = null;
+
+            try {
+                if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    console.log('✅ Supabase client initialized.');
+                } else {
+                    console.warn('⚠️ Supabase library not loaded.');
+                }
+            } catch (e) {
+                console.error('❌ Failed to init Supabase:', e);
+            }
+
+            // ─── Utility ──────────────────────────────────────────────────────────
+            function escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            function showBanner(icon, title, sub, type) {
+                verifyBanner.className = 'verify-banner visible ' + type;
+                bannerIcon.textContent = icon;
+                bannerTitle.textContent = title;
+                bannerSub.textContent = sub;
+            }
+
+            function getDocTypeIcon(type) {
+                const icons = { letter: '📝', suchana: '📢', lhe: '📨' };
+                return icons[type] || '📄';
+            }
+
+            function getDocTypeLabel(type) {
+                const labels = { letter: 'पत्र', suchana: 'सूचना', lhe: 'LHE' };
+                return labels[type] || type;
+            }
+
+            function getDocTypeClass(type) {
+                return type || 'letter';
+            }
+
+            // ─── Render Document ──────────────────────────────────────────────────
+            function renderDocument(data) {
+                if (!data) {
+                    letterContainer.innerHTML = `
+                        <div class="no-data">
+                            <span class="icon-big">📄</span>
+                            <p>क्षमा गर्नुहोस्, यो प्रमाणीकरण ID को कुनै सक्रिय कागजात फेला परेन।</p>
+                            <p class="sub-hint">कागजात निष्क्रिय (Inactive) वा अवस्थित छैन। कृपया सही लिङ्क प्रयोग गर्नुहोस् वा क्लबलाई सम्पर्क गर्नुहोस्।</p>
+                        </div>
+                    `;
+                    resultSection.classList.add('visible');
+                    return;
+                }
+
+                const docType = data.doc_type || 'letter';
+                const isLHE = docType === 'lhe';
+                const isSuchana = docType === 'suchana';
+                const docTypeIcon = getDocTypeIcon(docType);
+                const docTypeLabel = getDocTypeLabel(docType);
+                const docTypeClass = getDocTypeClass(docType);
+
+                // Build details
+                const details = [
+                    { label: 'कागजात प्रकार', value: `${docTypeIcon} ${docTypeLabel}` },
+                    { label: 'जारीकर्ता', value: data.issued_by || 'Rotaract Club of Galkot Baglung' },
+                    { label: 'स्थिति', value: `<span class="status-badge ${docTypeClass}">${docTypeIcon} ${docTypeLabel}</span>` },
+                ];
+
+                if (isLHE) {
+                    details.push({ label: 'Recipient Club', value: data.recipient_club_name || data.club_name || '—' });
+                    details.push({ label: 'Recipient President', value: data.recipient_name || data.president_name || '—' });
+                    details.push({ label: 'Recipient RID', value: data.recipient_rid || data.rid || '—' });
+                    details.push({ label: 'Rotary Year', value: data.rotary_year || '2026-27' });
+                }
+
+                if (data.created_at) {
+                    const d = new Date(data.created_at);
+                    details.push({ label: 'सिर्जना मिति', value: d.toLocaleDateString('en-US', { year: 'numeric',
+                            month: 'short', day: 'numeric' }) });
+                }
+                if (data.updated_at) {
+                    const d = new Date(data.updated_at);
+                    details.push({ label: 'अन्तिम अपडेट', value: d.toLocaleDateString('en-US', { year: 'numeric',
+                            month: 'short', day: 'numeric' }) });
+                }
+
+                const vid = data.verification_id || '';
+                const qrUrl =
+                    `https://galkot.netlify.app/verify?vid=${encodeURIComponent(vid)}`;
+
+                const detailsHtml = details.map(d => `
+                    <span class="label">${escapeHtml(d.label)}</span>
+                    <span class="value">${d.value}</span>
+                `).join('');
+
+                const dateDisplay = data.date || data.created_at ? new Date(data.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                }) : '—';
+
+                // Content based on document type
+                let contentHtml = '';
+
+                if (isLHE) {
+                    const bodyText = data.body ||
+                        `Dear ${data.recipient_name || 'President'},
+
+On behalf of ${data.club || 'Rotaract Club of Galkot Baglung'}, I extend our heartfelt congratulations and best wishes to you and your Board of Directors for a successful Rotary Year ${data.rotary_year || '2026-27'}. May your tenure be filled with impactful service, inspiring leadership, and meaningful achievements.
+
+Since our charter on 23 April 2021, our club has remained committed to community service, youth empowerment, leadership development, and fellowship. We sincerely appreciate the contributions of ${data.recipient_club_name || 'your club'} to the Rotaract movement.
+
+Through this Letterhead Exchange, we celebrate the spirit of friendship and collaboration between our clubs. We look forward to building a strong and lasting relationship through service and fellowship.
+
+Wishing you and your club a successful Rotary Year ahead.
+
+Thank you!`;
+
+                    contentHtml = `
+                        <div class="to-line">
+                            <strong>To:</strong>\n${escapeHtml(data.recipient_name || '—')}, President, RY ${escapeHtml(data.rotary_year || '2026-27')}, ${escapeHtml(data.recipient_club_name || '—')}
+                        </div>
+                        <div class="subject">📌 विषय: Letterhead Exchange</div>
+                        <div class="body-text">${escapeHtml(data.body || bodyText)}</div>
+                        ${data.message ? `<div class="body-text" style="margin-top:-0.5rem;">${escapeHtml(data.message)}</div>` : ''}
+                    `;
+                } else {
+                    contentHtml = `
+                        <div class="to-line">
+                            <strong>प्रति :</strong>\n${escapeHtml(data.to_address || '')}
+                        </div>
+                        <div class="subject">📌 विषय: ${escapeHtml(data.subject || '')}</div>
+                        <div class="body-text">${escapeHtml(data.body || '')}</div>
+                    `;
+                }
+
+                const refDisplay = isLHE ? `LHE-${escapeHtml(vid.slice(0, 8))}` :
+                    (isSuchana ? '📢 सूचना' : escapeHtml(data.ref_no || '—'));
+
+                const html = `
+                    <div class="letter-card" id="letterCard">
+                        <div class="verified-stamp">
+                            <span class="dot-green"></span> ✅ VERIFIED
+                        </div>
+
+                        <div class="letter-header">
+                            <div class="org">
+                                <span class="name">${escapeHtml(data.club || 'Rotaract Club of Galkot Baglung')}</span>
+                                <span class="sub">${escapeHtml(data.issued_by || 'Rotaract Club of Galkot Baglung')}</span>
+                            </div>
+                            <div class="ref-badge">
+                                ${refDisplay} • ${isLHE ? 'LHE' : 'आ.व. ' + escapeHtml(data.fiscal_year || '—')}
+                            </div>
+                        </div>
+
+                        <div class="letter-body">
+                            ${contentHtml}
+
+                            <div class="meta-line">
+                                <span class="fiscal-left">${isLHE ? 'LHE Document' : 'आ.व. ' + escapeHtml(data.fiscal_year || '—')}</span>
+                                <span class="ref-right">${refDisplay}</span>
+                            </div>
+
+                            <div class="date-right">
+                                ${isLHE ? 'Date' : 'मिति'}: ${escapeHtml(dateDisplay)}
+                            </div>
+
+                            <div class="details-grid">
+                                ${detailsHtml}
+                            </div>
+                        </div>
+
+                        ${data.signed_by || data.designation || data.president_name ? `
+                        <div class="letter-signature">
+                            ${data.president_name ? `<div class="sig-line">${escapeHtml(data.president_name)}</div>` : ''}
+                            ${data.signed_by ? `<div class="sig-line">${escapeHtml(data.signed_by)}</div>` : ''}
+                            ${data.designation ? `<div class="sig-sub">${escapeHtml(data.designation)}</div>` : ''}
+                            <div class="sig-sub">${escapeHtml(data.club || 'Rotaract Club of Galkot Baglung')}</div>
+                        </div>
+                        ` : ''}
+
+                        <div class="qr-section">
+                            <div class="qr-label">🔍 स्क्यान गर्नुहोस् • Scan to Verify</div>
+                            <div class="qr-box" id="qrCodeContainer"></div>
+                            <div class="qr-url">${escapeHtml(qrUrl)}</div>
+                        </div>
+
+                        <div class="letter-footer">
+                            <span>यो कागजात प्रमाणीकरण प्रणालीबाट जाँच गरिएको हो ।</span>
+                            <span class="stamp">
+                                <span class="dot"></span>
+                                प्रमाणित
+                                <span class="dot"></span>
+                            </span>
+                        </div>
+
+                        <div class="action-buttons no-print">
+                            <button class="btn-action primary" onclick="window.print()">🖨️ प्रिन्ट गर्नुहोस्</button>
+                            <button class="btn-action" onclick="shareDocument()">📤 सेयर गर्नुहोस्</button>
+                        </div>
+                    </div>
+                `;
+
+                letterContainer.innerHTML = html;
+                resultSection.classList.add('visible');
+
+                setTimeout(() => {
+                    const qrContainer = document.getElementById('qrCodeContainer');
+                    if (qrContainer && typeof QRCode !== 'undefined') {
+                        qrContainer.innerHTML = '';
+                        new QRCode(qrContainer, {
+                            text: qrUrl,
+                            width: 140,
+                            height: 140,
+                            colorDark: '#0B1E30',
+                            colorLight: '#FFFFFF',
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    } else {
+                        console.warn('QRCode library not loaded');
+                    }
+                }, 150);
+            }
+
+            // ─── Share ─────────────────────────────────────────────────────────────
+            window.shareDocument = function() {
+                const vid = new URLSearchParams(window.location.search).get('vid') || '';
+                const url = window.location.href;
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Rotaract Club - Verified Document',
+                        text: 'Verify this document: ' + vid,
+                        url: url,
+                    }).catch(() => {});
+                } else {
+                    navigator.clipboard.writeText(url).then(() => {
+                        alert('✅ लिङ्क कपी गरियो!');
+                    }).catch(() => {
+                        const textarea = document.createElement('textarea');
+                        textarea.value = url;
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textarea);
+                        alert('✅ लिङ्क कपी गरियो!');
+                    });
+                }
+            };
+
+            // ─── Verify ────────────────────────────────────────────────────────────
+            async function verifyDocument(vid) {
+                if (!supabaseClient) {
+                    loader.innerHTML = '⚠️ सर्भर जडान भएन।';
+                    showBanner('❌', 'सर्भर त्रुटि', 'कृपया पुन: प्रयास गर्नुहोस्।', 'error');
+                    return;
+                }
+
+                if (!vid) {
+                    loader.innerHTML = '🔍 कृपया प्रमाणीकरण ID प्रविष्ट गर्नुहोस्।';
+                    showBanner('ℹ️', 'ID आवश्यक छ', 'URL मा ?vid=... थप्नुहोस् वा QR स्क्यान गर्नुहोस्।', 'error');
+                    return;
+                }
+
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('rotaract_verify')
+                        .select('*')
+                        .eq('verification_id', vid)
+                        .eq('letter_status', 'Active')
+                        .maybeSingle();
+
+                    if (error) throw error;
+
+                    if (data) {
+                        const docType = data.doc_type || 'letter';
+                        const typeLabel = getDocTypeLabel(docType);
+                        const message = docType === 'lhe' ?
+                            `This is an official Letterhead Exchange (LHE) document authenticated by Rotaract Club of Galkot Baglung.` :
+                            docType === 'suchana' ?
+                            `This is an official "Suchana" (Notice) document authenticated by Rotaract Club of Galkot Baglung.` :
+                            `This document is authentic and officially issued by Rotaract Club of Galkot Baglung.`;
+
+                        showBanner('✅', `✅ VERIFIED ${typeLabel.toUpperCase()}`, message, 'success');
+                        renderDocument(data);
+                    } else {
+                        showBanner('❌', '❌ DOCUMENT NOT FOUND', 'This document is either inactive, archived, or does not exist in our records.',
+                            'error');
+                        renderDocument(null);
+                    }
+
+                } catch (err) {
+                    console.error('Verification error:', err);
+                    showBanner('❌', '⚠️ सर्भर समस्या', 'कृपया केही समयपछि पुनः प्रयास गर्नुहोस्।', 'error');
+                    renderDocument(null);
+                } finally {
+                    loader.style.display = 'none';
+                }
+            }
+
+            // ─── Get VID from URL ──────────────────────────────────────────────────
+            const vid = new URLSearchParams(window.location.search).get('vid');
+
+            if (vid) {
+                verifyDocument(vid);
+            } else {
+                loader.innerHTML = '🔍 कृपया प्रमाणीकरण ID प्रविष्ट गर्नुहोस्।';
+                showBanner('ℹ️', 'ID आवश्यक छ', 'URL मा ?vid=... थप्नुहोस् वा QR स्क्यान गर्नुहोस्।', 'error');
+                loader.style.display = 'none';
+                renderDocument(null);
+            }
+
+            console.log('✅ Rotaract Verify — single table — ready. VID:', vid);
+
+        })();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
+    </script>
+
+</body>
+</html>

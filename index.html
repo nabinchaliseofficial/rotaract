@@ -892,6 +892,7 @@
     .partnership-card .sponsored { font-size: 0.8rem; color: var(--gold); font-weight: 600; margin-bottom: 6px; }
     .partnership-card .meta { font-size: 0.75rem; color: var(--text-muted); }
     .partnership-card .rid-badge { display: inline-block; margin-top: 10px; font-size: 0.68rem; font-weight: 600; color: var(--text-primary); background: rgba(217, 26, 92, 0.08); padding: 4px 14px; border-radius: 20px; }
+    .partnership-card .rid-badge i { margin-right: 4px; }
 
     /* ===== OUR PARTNERS & SPONSORS ===== */
     .partners-section { padding: 60px 20px 80px; background: var(--bg-light); transition: background 0.6s ease; }
@@ -2237,47 +2238,51 @@
       }[c]));
     }
 
-    // ---------- NATIONAL / INTERNATIONAL PARTNERSHIPS (rotaract_lhe_requests) ----------
-    async function renderPartnerships() {
-      const grid = document.getElementById('partnershipGrid');
-      if (!grid) return;
-      try {
-        const { data, error } = await supabase
-          .from('rotaract_lhe_requests')
-          .select('president_name, rotary_year, club_name, rid, sponsored_club, logo_url, verification_id, status, created_at')
-          .eq('status', 'approved')
-          .order('created_at', { ascending: false });
+    // ---------- NATIONAL / INTERNATIONAL PARTNERSHIPS (from rotaract_verify) ----------
+async function renderPartnerships() {
+  const grid = document.getElementById('partnershipGrid');
+  if (!grid) return;
+  try {
+    // Fetch LHE entries from rotaract_verify where doc_type = 'lhe' and letter_status = 'Active'
+    const { data, error } = await supabase
+      .from('rotaract_verify')
+      .select('ref_no, fiscal_year, date, club, issued_by, body, letter_status, verification_id, doc_type, recipient_name, recipient_club_name, recipient_rid, rotary_year, sponsored_club, sender_rid, sender_sponsored_club, president_signature_url, secretary_name, secretary_signature_url, international_chair_name, international_chair_signature_url, sign_place, message, created_at, logo_url')
+      .eq('doc_type', 'lhe')
+      .eq('letter_status', 'Active')
+      .order('created_at', { ascending: false });
 
-        if (error) throw error;
+    if (error) throw error;
 
-        if (!data || data.length === 0) {
-          grid.innerHTML = `<div class="partnership-empty"><i class="fas fa-globe"></i> No approved partnerships yet.</div>`;
-          return;
-        }
-
-        grid.innerHTML = data.map(p => {
-          const club = escapeHtml(p.club_name || 'Club');
-          const logo = p.logo_url || '';
-          const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.club_name || 'RC')}&background=1D2A44&color=fff&size=176`;
-          return `
-            <div class="partnership-card">
-              <div class="logo">
-                <img src="${logo || fallback}" alt="${club}" loading="lazy"
-                     onerror="this.src='${fallback}'">
-              </div>
-              <div class="club-name">${club}</div>
-              ${p.sponsored_club ? `<div class="sponsored"><i class="fas fa-hand-holding-heart"></i> Sponsors ${escapeHtml(p.sponsored_club)}</div>` : ''}
-              <div class="meta">${escapeHtml(p.president_name || '')}${p.president_name ? ' · ' : ''}R.Y. ${escapeHtml(p.rotary_year || '')}</div>
-              <span class="rid-badge">RID ${escapeHtml(p.rid || 'N/A')}</span>
-            </div>
-          `;
-        }).join('');
-      } catch (err) {
-        console.error('Failed to load partnerships:', err);
-        grid.innerHTML = `<div class="partnership-error"><i class="fas fa-triangle-exclamation"></i> Failed to load partnerships.</div>`;
-      }
+    if (!data || data.length === 0) {
+      grid.innerHTML = `<div class="partnership-empty"><i class="fas fa-globe"></i> No approved partnerships yet.</div>`;
+      return;
     }
-    renderPartnerships();
+
+    grid.innerHTML = data.map(p => {
+      const club = escapeHtml(p.recipient_club_name || p.club || 'Club');
+      // Use logo_url from the database, fallback to signature URL, then initials
+      const logoUrl = p.logo_url || p.president_signature_url || '';
+      const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.recipient_club_name || p.club || 'RC')}&background=1D2A44&color=fff&size=176`;
+      return `
+        <div class="partnership-card">
+          <div class="logo">
+            <img src="${logoUrl || fallback}" alt="${club}" loading="lazy"
+                 onerror="this.src='${fallback}'">
+          </div>
+          <div class="club-name">${club}</div>
+          ${p.sponsored_club ? `<div class="sponsored"><i class="fas fa-hand-holding-heart"></i> Sponsors ${escapeHtml(p.sponsored_club)}</div>` : ''}
+          <div class="meta">${escapeHtml(p.recipient_name || '')}${p.recipient_name ? ' · ' : ''}R.Y. ${escapeHtml(p.rotary_year || '')}</div>
+          <span class="rid-badge">RID ${escapeHtml(p.recipient_rid || p.sender_rid || 'N/A')}</span>
+          ${p.verification_id ? `<span class="rid-badge" style="background:rgba(212,175,55,0.12);color:var(--gold);"><i class="fas fa-certificate"></i> ${escapeHtml(p.verification_id)}</span>` : ''}
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Failed to load partnerships:', err);
+    grid.innerHTML = `<div class="partnership-error"><i class="fas fa-triangle-exclamation"></i> Failed to load partnerships.</div>`;
+  }
+}
+renderPartnerships();
 
     // ---------- OUR PARTNERS & SPONSORS (partners_sponsors) ----------
     async function renderPartnersSponsors() {
