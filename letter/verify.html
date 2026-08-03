@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Rotaract Club - पत्र प्रमाणीकरण</title>
+    <title>Rotaract Club - कागजात प्रमाणीकरण</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js">
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
+    </script>
     <style>
-        /* ─── Root Variables ─────────────────────────────────────────────── */
+        /* ─── Same styles as before ────────────────────────────────────────────── */
         :root {
             --magenta: #D91B5C;
             --magenta-dark: #B5154C;
@@ -62,7 +64,6 @@
             flex-direction: column;
         }
 
-        /* ─── Header ──────────────────────────────────────────────────────── */
         .app-header {
             background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
             padding: 1.2rem 2rem;
@@ -81,17 +82,16 @@
             flex: 1 1 auto;
         }
 
-        .app-header .logo-wrap .logo-img {
+        .app-header .logo-img {
             width: 48px;
             height: 48px;
             border-radius: 50%;
             object-fit: cover;
-            background: var(--white);
             border: 2px solid var(--magenta);
             flex-shrink: 0;
         }
 
-        .app-header .logo-wrap .logo-fallback {
+        .app-header .logo-fallback {
             width: 48px;
             height: 48px;
             border-radius: 50%;
@@ -109,14 +109,11 @@
         .app-header .club-info h1 {
             font-size: 1.05rem;
             font-weight: 700;
-            letter-spacing: -0.3px;
-            line-height: 1.2;
         }
 
         .app-header .club-info .sub {
             font-size: 0.7rem;
             opacity: 0.8;
-            font-weight: 400;
             display: flex;
             flex-wrap: wrap;
             gap: 0.3rem 0.6rem;
@@ -135,8 +132,6 @@
             padding: 0.25rem 1rem;
             border-radius: 40px;
             font-size: 0.65rem;
-            font-weight: 500;
-            letter-spacing: 0.4px;
             border: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             align-items: center;
@@ -171,7 +166,6 @@
             width: 100%;
         }
 
-        /* ─── Loading & Status ───────────────────────────────────────────── */
         .status-section {
             padding: 2rem 2.5rem 1.5rem;
             background: var(--gray-100);
@@ -244,7 +238,6 @@
         .verify-banner .banner-text .banner-title {
             font-weight: 700;
             font-size: 1rem;
-            letter-spacing: 0.3px;
         }
 
         .verify-banner .banner-text .banner-sub {
@@ -253,7 +246,6 @@
             opacity: 0.8;
         }
 
-        /* ─── Result Section ─────────────────────────────────────────────── */
         .result-section {
             padding: 2rem 2.5rem 2.5rem;
             display: none;
@@ -265,17 +257,16 @@
         }
 
         @keyframes fadeUp {
-            0% {
+            from {
                 opacity: 0;
                 transform: translateY(16px);
             }
-            100% {
+            to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
 
-        /* ─── Letter Card ────────────────────────────────────────────────── */
         .letter-card {
             background: var(--white);
             border: 1px solid var(--gray-200);
@@ -295,7 +286,6 @@
             border-radius: 40px;
             font-size: 0.7rem;
             font-weight: 700;
-            letter-spacing: 0.5px;
             border: 1px solid #C5E0D0;
             display: flex;
             align-items: center;
@@ -452,6 +442,11 @@
         }
 
         .letter-card .letter-body .details-grid .value .status-badge.suchana {
+            background: #F3E8FF;
+            color: #7C3AED;
+        }
+
+        .letter-card .letter-body .details-grid .value .status-badge.lhe {
             background: #E8F0FE;
             color: var(--blue-mid);
         }
@@ -545,7 +540,6 @@
             max-width: 100%;
         }
 
-        /* ─── No Data ────────────────────────────────────────────────────── */
         .no-data {
             text-align: center;
             padding: 2.5rem 1rem;
@@ -568,7 +562,6 @@
             color: var(--gray-300);
         }
 
-        /* ─── Print Button ────────────────────────────────────────────────── */
         .action-buttons {
             display: flex;
             gap: 0.6rem;
@@ -599,10 +592,6 @@
             transform: translateY(-1px);
         }
 
-        .action-buttons .btn-action:active {
-            transform: translateY(0);
-        }
-
         .action-buttons .btn-action.primary {
             background: var(--magenta);
             border-color: var(--magenta);
@@ -615,7 +604,6 @@
             color: var(--white);
         }
 
-        /* ─── Footer ──────────────────────────────────────────────────────── */
         .app-footer {
             background: var(--blue-dark);
             color: rgba(255, 255, 255, 0.7);
@@ -678,7 +666,6 @@
             text-align: right;
         }
 
-        /* ─── Print Styles ───────────────────────────────────────────────── */
         @media print {
             .no-print {
                 display: none !important;
@@ -723,7 +710,6 @@
             }
         }
 
-        /* ─── Responsive ──────────────────────────────────────────────────── */
         @media (max-width: 700px) {
             .app-header {
                 padding: 1rem 1.2rem;
@@ -823,7 +809,6 @@
             }
         }
 
-        /* ─── Scrollbar ──────────────────────────────────────────────────── */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -844,7 +829,6 @@
 
     <div class="app">
 
-        <!-- ═══ HEADER ═══ -->
         <header class="app-header no-print">
             <div class="logo-wrap">
                 <img src="rotaract.jpg" alt="Rotaract Logo" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
@@ -856,7 +840,7 @@
                         <span>|</span>
                         <span>Nepal</span>
                         <span>|</span>
-                        <span>🔐 Official Document Verification</span>
+                        <span>🔐 Document Verification</span>
                     </div>
                 </div>
             </div>
@@ -869,27 +853,24 @@
         </header>
         <div class="header-magenta-accent no-print"></div>
 
-        <!-- ═══ STATUS / LOADING ═══ -->
         <section class="status-section no-print" id="statusSection">
             <div id="loader" class="loader">
                 <div class="spinner"></div>
-                <span>🔍 पत्र खोज्दै...</span>
+                <span>🔍 कागजात खोज्दै...</span>
             </div>
             <div id="verifyBanner" class="verify-banner">
                 <span class="banner-icon" id="bannerIcon">✅</span>
                 <div class="banner-text">
                     <div class="banner-title" id="bannerTitle">प्रमाणित</div>
-                    <div class="banner-sub" id="bannerSub">यो पत्र प्रमाणीकरण प्रणालीबाट जाँच गरिएको हो ।</div>
+                    <div class="banner-sub" id="bannerSub">यो कागजात प्रमाणीकरण प्रणालीबाट जाँच गरिएको हो ।</div>
                 </div>
             </div>
         </section>
 
-        <!-- ═══ RESULT SECTION ═══ -->
         <section class="result-section" id="resultSection">
             <div id="letterContainer"></div>
         </section>
 
-        <!-- ═══ FOOTER ═══ -->
         <footer class="app-footer no-print">
             <div class="footer-left">
                 <span class="club-name">🔄 Rotaract Club of Galkot Baglung</span>
@@ -919,7 +900,6 @@
             const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
             const SUPABASE_ANON_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
 
-            // ─── DOM refs ──────────────────────────────────────────────────────────
             const loader = document.getElementById('loader');
             const verifyBanner = document.getElementById('verifyBanner');
             const bannerIcon = document.getElementById('bannerIcon');
@@ -930,7 +910,6 @@
 
             let supabaseClient = null;
 
-            // ─── Init Supabase ─────────────────────────────────────────────────────
             try {
                 if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
                     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -957,69 +936,118 @@
                 bannerSub.textContent = sub;
             }
 
-            function hideBanner() {
-                verifyBanner.className = 'verify-banner';
+            function getDocTypeIcon(type) {
+                const icons = { letter: '📝', suchana: '📢', lhe: '📨' };
+                return icons[type] || '📄';
             }
 
-            // ─── Check if letter is Suchana ──────────────────────────────────────
-            function isSuchanaLetter(letter) {
-                return letter.ref_no === 'सूचना' || letter.ref_no === '--' || !letter.ref_no;
+            function getDocTypeLabel(type) {
+                const labels = { letter: 'पत्र', suchana: 'सूचना', lhe: 'LHE' };
+                return labels[type] || type;
             }
 
-            // ─── Render Letter ────────────────────────────────────────────────────
-            function renderLetter(letter) {
-                if (!letter) {
+            function getDocTypeClass(type) {
+                return type || 'letter';
+            }
+
+            // ─── Render Document ──────────────────────────────────────────────────
+            function renderDocument(data) {
+                if (!data) {
                     letterContainer.innerHTML = `
                         <div class="no-data">
                             <span class="icon-big">📄</span>
-                            <p>क्षमा गर्नुहोस्, यो प्रमाणीकरण ID को कुनै सक्रिय पत्र फेला परेन।</p>
-                            <p class="sub-hint">पत्र निष्क्रिय (Inactive) वा अवस्थित छैन। कृपया सही लिङ्क प्रयोग गर्नुहोस् वा क्लबलाई सम्पर्क गर्नुहोस्।</p>
+                            <p>क्षमा गर्नुहोस्, यो प्रमाणीकरण ID को कुनै सक्रिय कागजात फेला परेन।</p>
+                            <p class="sub-hint">कागजात निष्क्रिय (Inactive) वा अवस्थित छैन। कृपया सही लिङ्क प्रयोग गर्नुहोस् वा क्लबलाई सम्पर्क गर्नुहोस्।</p>
                         </div>
                     `;
                     resultSection.classList.add('visible');
                     return;
                 }
 
-                // Check if this is a Suchana letter
-                const isSuchana = isSuchanaLetter(letter);
+                const docType = data.doc_type || 'letter';
+                const isLHE = docType === 'lhe';
+                const isSuchana = docType === 'suchana';
+                const docTypeIcon = getDocTypeIcon(docType);
+                const docTypeLabel = getDocTypeLabel(docType);
+                const docTypeClass = getDocTypeClass(docType);
 
-                // Build details grid
+                // Build details
                 const details = [
-                    { label: 'पत्र प्रकार (Type)', value: isSuchana ? '📢 सूचना' : (letter.letter_type || 'सामान्य') },
-                    { label: 'जारीकर्ता (Issued By)', value: letter.issued_by },
+                    { label: 'कागजात प्रकार', value: `${docTypeIcon} ${docTypeLabel}` },
+                    { label: 'जारीकर्ता', value: data.issued_by || 'Rotaract Club of Galkot Baglung' },
+                    { label: 'स्थिति', value: `<span class="status-badge ${docTypeClass}">${docTypeIcon} ${docTypeLabel}</span>` },
                 ];
 
-                if (letter.signed_by) details.push({ label: 'हस्ताक्षरकर्ता (Signed By)', value: letter.signed_by });
-                if (letter.designation) details.push({ label: 'पद (Designation)', value: letter.designation });
+                if (isLHE) {
+                    details.push({ label: 'Recipient Club', value: data.recipient_club_name || data.club_name || '—' });
+                    details.push({ label: 'Recipient President', value: data.recipient_name || data.president_name || '—' });
+                    details.push({ label: 'Recipient RID', value: data.recipient_rid || data.rid || '—' });
+                    details.push({ label: 'Rotary Year', value: data.rotary_year || '2026-27' });
+                }
 
-                // Status badge
-                const statusClass = isSuchana ? 'active suchana' : 'active';
-                details.push({
-                    label: 'स्थिति (Status)',
-                    value: `<span class="status-badge ${statusClass}">${isSuchana ? '📢 सूचना' : '✅ Active'}</span>`
-                });
-
-                if (letter.created_at) {
-                    const d = new Date(letter.created_at);
-                    details.push({ label: 'सिर्जना मिति (Created)', value: d.toLocaleDateString('en-US', { year: 'numeric',
+                if (data.created_at) {
+                    const d = new Date(data.created_at);
+                    details.push({ label: 'सिर्जना मिति', value: d.toLocaleDateString('en-US', { year: 'numeric',
                             month: 'short', day: 'numeric' }) });
                 }
-                if (letter.updated_at) {
-                    const d = new Date(letter.updated_at);
-                    details.push({ label: 'अन्तिम अपडेट (Updated)', value: d.toLocaleDateString('en-US', { year: 'numeric',
+                if (data.updated_at) {
+                    const d = new Date(data.updated_at);
+                    details.push({ label: 'अन्तिम अपडेट', value: d.toLocaleDateString('en-US', { year: 'numeric',
                             month: 'short', day: 'numeric' }) });
                 }
 
-                const vid = letter.verification_id || `ROT-${letter.fiscal_year}-${letter.ref_no}`;
-                const qrUrl = `https://galkotbaglung.vercel.app/letter/verify?vid=${encodeURIComponent(vid)}`;
+                const vid = data.verification_id || '';
+                const qrUrl =
+                    `https://galkot.netlify.app/verify?vid=${encodeURIComponent(vid)}`;
 
                 const detailsHtml = details.map(d => `
                     <span class="label">${escapeHtml(d.label)}</span>
                     <span class="value">${d.value}</span>
                 `).join('');
 
-                const dateDisplay = letter.date || '—';
-                const refDisplay = isSuchana ? '📢 सूचना' : (letter.ref_no || '—');
+                const dateDisplay = data.date || data.created_at ? new Date(data.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                }) : '—';
+
+                // Content based on document type
+                let contentHtml = '';
+
+                if (isLHE) {
+                    const bodyText = data.body ||
+                        `Dear ${data.recipient_name || 'President'},
+
+On behalf of ${data.club || 'Rotaract Club of Galkot Baglung'}, I extend our heartfelt congratulations and best wishes to you and your Board of Directors for a successful Rotary Year ${data.rotary_year || '2026-27'}. May your tenure be filled with impactful service, inspiring leadership, and meaningful achievements.
+
+Since our charter on 23 April 2021, our club has remained committed to community service, youth empowerment, leadership development, and fellowship. We sincerely appreciate the contributions of ${data.recipient_club_name || 'your club'} to the Rotaract movement.
+
+Through this Letterhead Exchange, we celebrate the spirit of friendship and collaboration between our clubs. We look forward to building a strong and lasting relationship through service and fellowship.
+
+Wishing you and your club a successful Rotary Year ahead.
+
+Thank you!`;
+
+                    contentHtml = `
+                        <div class="to-line">
+                            <strong>To:</strong>\n${escapeHtml(data.recipient_name || '—')}, President, RY ${escapeHtml(data.rotary_year || '2026-27')}, ${escapeHtml(data.recipient_club_name || '—')}
+                        </div>
+                        <div class="subject">📌 विषय: Letterhead Exchange</div>
+                        <div class="body-text">${escapeHtml(data.body || bodyText)}</div>
+                        ${data.message ? `<div class="body-text" style="margin-top:-0.5rem;">${escapeHtml(data.message)}</div>` : ''}
+                    `;
+                } else {
+                    contentHtml = `
+                        <div class="to-line">
+                            <strong>प्रति :</strong>\n${escapeHtml(data.to_address || '')}
+                        </div>
+                        <div class="subject">📌 विषय: ${escapeHtml(data.subject || '')}</div>
+                        <div class="body-text">${escapeHtml(data.body || '')}</div>
+                    `;
+                }
+
+                const refDisplay = isLHE ? `LHE-${escapeHtml(vid.slice(0, 8))}` :
+                    (isSuchana ? '📢 सूचना' : escapeHtml(data.ref_no || '—'));
 
                 const html = `
                     <div class="letter-card" id="letterCard">
@@ -1029,34 +1057,24 @@
 
                         <div class="letter-header">
                             <div class="org">
-                                <span class="name">${escapeHtml(letter.club || 'Rotaract Club of Galkot Baglung')}</span>
-                                <span class="sub">${escapeHtml(letter.issued_by || 'Rotaract Club of Galkot Baglung')}</span>
+                                <span class="name">${escapeHtml(data.club || 'Rotaract Club of Galkot Baglung')}</span>
+                                <span class="sub">${escapeHtml(data.issued_by || 'Rotaract Club of Galkot Baglung')}</span>
                             </div>
                             <div class="ref-badge">
-                                ${isSuchana ? '📢 सूचना' : `दर्ता नं. ${escapeHtml(letter.ref_no)}`}  •  आ.व. ${escapeHtml(letter.fiscal_year)}
+                                ${refDisplay} • ${isLHE ? 'LHE' : 'आ.व. ' + escapeHtml(data.fiscal_year || '—')}
                             </div>
                         </div>
 
                         <div class="letter-body">
-                            <div class="to-line">
-                                <strong>प्रति :</strong>\n${escapeHtml(letter.to_address)}
-                            </div>
-
-                            <div class="subject">
-                                📌 विषय: ${escapeHtml(letter.subject)}
-                            </div>
-
-                            <div class="body-text">
-                                ${escapeHtml(letter.body || '')}
-                            </div>
+                            ${contentHtml}
 
                             <div class="meta-line">
-                                <span class="fiscal-left">आ.व. ${escapeHtml(letter.fiscal_year || '—')}</span>
+                                <span class="fiscal-left">${isLHE ? 'LHE Document' : 'आ.व. ' + escapeHtml(data.fiscal_year || '—')}</span>
                                 <span class="ref-right">${refDisplay}</span>
                             </div>
 
                             <div class="date-right">
-                                मिति: ${escapeHtml(dateDisplay)}
+                                ${isLHE ? 'Date' : 'मिति'}: ${escapeHtml(dateDisplay)}
                             </div>
 
                             <div class="details-grid">
@@ -1064,11 +1082,12 @@
                             </div>
                         </div>
 
-                        ${letter.signed_by || letter.designation ? `
+                        ${data.signed_by || data.designation || data.president_name ? `
                         <div class="letter-signature">
-                            ${letter.signed_by ? `<div class="sig-line">${escapeHtml(letter.signed_by)}</div>` : ''}
-                            ${letter.designation ? `<div class="sig-sub">${escapeHtml(letter.designation)}</div>` : ''}
-                            ${letter.club ? `<div class="sig-sub">${escapeHtml(letter.club)}</div>` : ''}
+                            ${data.president_name ? `<div class="sig-line">${escapeHtml(data.president_name)}</div>` : ''}
+                            ${data.signed_by ? `<div class="sig-line">${escapeHtml(data.signed_by)}</div>` : ''}
+                            ${data.designation ? `<div class="sig-sub">${escapeHtml(data.designation)}</div>` : ''}
+                            <div class="sig-sub">${escapeHtml(data.club || 'Rotaract Club of Galkot Baglung')}</div>
                         </div>
                         ` : ''}
 
@@ -1079,7 +1098,7 @@
                         </div>
 
                         <div class="letter-footer">
-                            <span>यो पत्र प्रमाणीकरण प्रणालीबाट जाँच गरिएको हो ।</span>
+                            <span>यो कागजात प्रमाणीकरण प्रणालीबाट जाँच गरिएको हो ।</span>
                             <span class="stamp">
                                 <span class="dot"></span>
                                 प्रमाणित
@@ -1089,7 +1108,7 @@
 
                         <div class="action-buttons no-print">
                             <button class="btn-action primary" onclick="window.print()">🖨️ प्रिन्ट गर्नुहोस्</button>
-                            <button class="btn-action" onclick="shareLetter()">📤 सेयर गर्नुहोस्</button>
+                            <button class="btn-action" onclick="shareDocument()">📤 सेयर गर्नुहोस्</button>
                         </div>
                     </div>
                 `;
@@ -1097,7 +1116,6 @@
                 letterContainer.innerHTML = html;
                 resultSection.classList.add('visible');
 
-                // ─── Generate QR Code ──────────────────────────────────────────────
                 setTimeout(() => {
                     const qrContainer = document.getElementById('qrCodeContainer');
                     if (qrContainer && typeof QRCode !== 'undefined') {
@@ -1117,7 +1135,7 @@
             }
 
             // ─── Share ─────────────────────────────────────────────────────────────
-            window.shareLetter = function() {
+            window.shareDocument = function() {
                 const vid = new URLSearchParams(window.location.search).get('vid') || '';
                 const url = window.location.href;
                 if (navigator.share) {
@@ -1141,11 +1159,11 @@
                 }
             };
 
-            // ─── Fetch and Verify ──────────────────────────────────────────────────
+            // ─── Verify ────────────────────────────────────────────────────────────
             async function verifyDocument(vid) {
                 if (!supabaseClient) {
-                    loader.innerHTML = '⚠️ सर्भर जडान भएन। कृपया पुन: प्रयास गर्नुहोस्।';
-                    showBanner('❌', 'सर्भर त्रुटि', 'कृपया केही समयपछि पुनः प्रयास गर्नुहोस्।', 'error');
+                    loader.innerHTML = '⚠️ सर्भर जडान भएन।';
+                    showBanner('❌', 'सर्भर त्रुटि', 'कृपया पुन: प्रयास गर्नुहोस्।', 'error');
                     return;
                 }
 
@@ -1156,59 +1174,43 @@
                 }
 
                 try {
-                    // 🔥 Search in BOTH tables: rotaract_verify AND rotaract_suchana
-                    const [verifyResult, suchanaResult] = await Promise.all([
-                        supabaseClient
+                    const { data, error } = await supabaseClient
                         .from('rotaract_verify')
                         .select('*')
                         .eq('verification_id', vid)
                         .eq('letter_status', 'Active')
-                        .maybeSingle(),
-                        supabaseClient
-                        .from('rotaract_suchana')
-                        .select('*')
-                        .eq('verification_id', vid)
-                        .eq('letter_status', 'Active')
-                        .maybeSingle()
-                    ]);
+                        .maybeSingle();
 
-                    if (verifyResult.error) throw verifyResult.error;
-                    if (suchanaResult.error) throw suchanaResult.error;
-
-                    const data = verifyResult.data || suchanaResult.data;
+                    if (error) throw error;
 
                     if (data) {
-                        const isSuchana = !!suchanaResult.data;
-                        showBanner(
-                            '✅',
-                            '✅ VERIFIED DOCUMENT',
-                            isSuchana ? 'This is an official "Suchana" (Notice) document authenticated by Rotaract Club of Galkot Baglung.' :
-                            'This document is authentic and officially issued by Rotaract Club of Galkot Baglung.',
-                            'success'
-                        );
-                        renderLetter(data);
+                        const docType = data.doc_type || 'letter';
+                        const typeLabel = getDocTypeLabel(docType);
+                        const message = docType === 'lhe' ?
+                            `This is an official Letterhead Exchange (LHE) document authenticated by Rotaract Club of Galkot Baglung.` :
+                            docType === 'suchana' ?
+                            `This is an official "Suchana" (Notice) document authenticated by Rotaract Club of Galkot Baglung.` :
+                            `This document is authentic and officially issued by Rotaract Club of Galkot Baglung.`;
+
+                        showBanner('✅', `✅ VERIFIED ${typeLabel.toUpperCase()}`, message, 'success');
+                        renderDocument(data);
                     } else {
-                        showBanner('❌', '❌ DOCUMENT NOT FOUND', 'This document is either inactive, archived, or does not exist in our records.', 'error');
-                        renderLetter(null);
+                        showBanner('❌', '❌ DOCUMENT NOT FOUND', 'This document is either inactive, archived, or does not exist in our records.',
+                            'error');
+                        renderDocument(null);
                     }
 
                 } catch (err) {
                     console.error('Verification error:', err);
                     showBanner('❌', '⚠️ सर्भर समस्या', 'कृपया केही समयपछि पुनः प्रयास गर्नुहोस्।', 'error');
-                    renderLetter(null);
+                    renderDocument(null);
                 } finally {
                     loader.style.display = 'none';
                 }
             }
 
             // ─── Get VID from URL ──────────────────────────────────────────────────
-            function getVidFromUrl() {
-                const params = new URLSearchParams(window.location.search);
-                return params.get('vid');
-            }
-
-            // ─── Init ─────────────────────────────────────────────────────────────
-            const vid = getVidFromUrl();
+            const vid = new URLSearchParams(window.location.search).get('vid');
 
             if (vid) {
                 verifyDocument(vid);
@@ -1216,15 +1218,14 @@
                 loader.innerHTML = '🔍 कृपया प्रमाणीकरण ID प्रविष्ट गर्नुहोस्।';
                 showBanner('ℹ️', 'ID आवश्यक छ', 'URL मा ?vid=... थप्नुहोस् वा QR स्क्यान गर्नुहोस्।', 'error');
                 loader.style.display = 'none';
-                renderLetter(null);
+                renderDocument(null);
             }
 
-            console.log('✅ Rotaract Verify — ready. VID:', vid);
+            console.log('✅ Rotaract Verify — single table — ready. VID:', vid);
 
         })();
     </script>
 
-    <!-- QRCode library (loaded from CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
     </script>
 
