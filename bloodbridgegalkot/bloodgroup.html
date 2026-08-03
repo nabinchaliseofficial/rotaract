@@ -101,6 +101,16 @@
   .stat-card .num{font-size:22px;font-weight:800;color:var(--red);}
   .stat-card .label{font-size:11px;color:var(--muted);margin-top:2px;}
 
+  .top-entries{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+  .top-entry-card{
+    background:var(--card);border-radius:12px;padding:12px 14px;flex:1;min-width:160px;
+    box-shadow:var(--shadow);border:1px solid var(--border);display:flex;align-items:center;gap:10px;
+  }
+  .top-entry-card .medal{font-size:20px;line-height:1;}
+  .top-entry-card .info{flex:1;min-width:0;}
+  .top-entry-card .name{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .top-entry-card .count{font-size:11px;color:var(--muted);margin-top:2px;}
+
   .donor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;}
   .donor-card{
     background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);
@@ -192,6 +202,8 @@
   <div class="load-error" id="loadError" role="alert"></div>
 
   <section class="stats" id="statsRow" aria-label="Donor statistics"></section>
+
+  <section class="top-entries" id="topEntriesSection" aria-label="Top data entry volunteers"></section>
 
   <form class="toolbar" role="search" aria-label="Search donors" onsubmit="return false;">
     <div class="search-field">
@@ -343,7 +355,7 @@ async function fetchDonors() {
     // select only the columns the UI needs — minimizes bandwidth
     const { data, error } = await supabaseClient
       .from("blood_bridge_galkot")
-      .select("id, person_name, age, sex, blood_group, municipality, ward_number, phone_number")
+      .select("id, person_name, age, sex, blood_group, municipality, ward_number, phone_number, data_entry_by")
       .eq("status", "active")
       .order("id", { ascending: false });
 
@@ -358,6 +370,7 @@ async function fetchDonors() {
     visibleCount = PAGE_SIZE;
     populateFilters();
     renderStats();
+    renderTopEntries();
     renderDonors();
   } catch (err) {
     errBox.innerHTML = "Network error: could not reach the server. Check your internet connection." +
@@ -399,6 +412,32 @@ function renderStats() {
     html += `<div class="stat-card"><div class="num" style="color:${BG_COLORS[g] || 'var(--red)'}">${groups[g]}</div><div class="label">${escapeHtml(g)}</div></div>`;
   });
   statsRow.innerHTML = html;
+}
+
+function renderTopEntries() {
+  const section = document.getElementById("topEntriesSection");
+  const counts = {};
+  allDonors.forEach(d => {
+    const who = d.data_entry_by;
+    if (!who) return;
+    counts[who] = (counts[who] || 0) + 1;
+  });
+  const top3 = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  if (top3.length === 0) { section.innerHTML = ""; return; }
+
+  const medals = ["🥇", "🥈", "🥉"];
+  section.innerHTML = `
+    <div class="top-entry-card" style="flex-basis:100%;padding:6px 14px 0;box-shadow:none;border:none;background:transparent;">
+      <span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;">🏆 Highest Entry — Top Volunteers</span>
+    </div>` +
+    top3.map(([name, c], i) => `
+      <div class="top-entry-card">
+        <span class="medal" aria-hidden="true">${medals[i]}</span>
+        <div class="info">
+          <div class="name">${escapeHtml(name)}</div>
+          <div class="count">${c} entr${c === 1 ? "y" : "ies"}</div>
+        </div>
+      </div>`).join("");
 }
 
 // ==================== FILTER / SORT / RENDER ====================

@@ -227,6 +227,7 @@
       <button class="tab active" role="tab" data-panel="dashboard">Dashboard</button>
       <button class="tab" role="tab" data-panel="pending">Registration Requests <span class="badge-count" id="pendingCount">0</span></button>
       <button class="tab" role="tab" data-panel="donors">Donor List</button>
+      <button class="tab" role="tab" data-panel="entryby">Entry By</button>
     </div>
   </div>
 
@@ -321,6 +322,14 @@
           <tbody id="donorTbody"></tbody>
         </table>
         <div class="empty" id="donorEmpty" style="display:none;">No data found</div>
+      </div>
+    </div>
+
+    <!-- ENTRY BY PANEL -->
+    <div class="panel" id="panel-entryby">
+      <div class="dash-panel">
+        <h3>Entries by Volunteer (Data Entry By)</h3>
+        <div id="donorEntryBreakdown"></div>
       </div>
     </div>
   </div>
@@ -589,6 +598,7 @@ document.querySelectorAll(".tab").forEach(tab => {
     tab.classList.add("active");
     document.getElementById("panel-" + tab.dataset.panel).classList.add("active");
     if (tab.dataset.panel === "dashboard") renderDashboard();
+    if (tab.dataset.panel === "entryby") renderDonorEntryBreakdown();
   });
 });
 
@@ -897,10 +907,28 @@ async function loadDonors() {
     populateSelectFilter("donorBgFilter", allDonors.map(d => d.blood_group), "All Blood Groups");
     populateSelectFilter("donorMuniFilter", allDonors.map(d => d.municipality), "All Municipalities");
     document.getElementById("donorLastUpdated").textContent = formatTime();
+    renderDonorEntryBreakdown();
     renderDonors();
   } catch (err) {
     showToast("Network error: " + err.message, "error");
   }
+}
+
+// Count of donor records entered by each volunteer (data_entry_by), sorted highest first
+function renderDonorEntryBreakdown() {
+  const counts = {};
+  allDonors.forEach(d => {
+    const who = d.data_entry_by || "Unknown";
+    counts[who] = (counts[who] || 0) + 1;
+  });
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(1, ...sorted.map(([, c]) => c));
+  document.getElementById("donorEntryBreakdown").innerHTML = sorted.map(([name, c]) => `
+    <div class="bar-row">
+      <span class="bar-label" style="width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(name)}</span>
+      <span class="bar-track"><span class="bar-fill" style="width:${(c / max * 100).toFixed(0)}%"></span></span>
+      <span class="bar-count">${c}</span>
+    </div>`).join("") || `<p style="color:var(--muted);font-size:13px;">No data yet.</p>`;
 }
 
 function renderDonors() {

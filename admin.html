@@ -611,6 +611,16 @@ footer.app-footer{ padding:1.5rem 2.2rem 2.5rem; color:var(--text-faint); font-s
                 <span class="meta"><span id="tableCountSm">0</span> tables · <span id="rowCountSm">0</span> rows</span>
             </div>
             <div class="stat-grid" id="statGrid"></div>
+
+            <div class="schema-card" style="margin-top:1.2rem;">
+                <div class="section-heading" style="margin-bottom:0.8rem;">
+                    <h3 style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;display:flex;align-items:center;gap:0.5rem;"><i class="fa-solid fa-bell" style="color:var(--accent);"></i> Live notifications</h3>
+                    <span class="meta">watching <span id="notifTableCount">0</span> tables · toast + sound on new entries</span>
+                </div>
+                <div class="notif-panel-list" id="snapshotNotifList">
+                    <div class="notif-panel-empty">No notifications yet — new entries in any table will show up here.</div>
+                </div>
+            </div>
         </section>
 
         <!-- ===== VIEW: LIVE DATA ===== -->
@@ -1100,13 +1110,85 @@ footer.app-footer{ padding:1.5rem 2.2rem 2.5rem; color:var(--text-faint); font-s
     // is inserted into the database, showing the person's name.
     // ============================================================
     const NOTIFY_TABLES = {
-        inquiries:               { label: 'New inquiry',            icon: 'fa-envelope',         nameField: 'full_name' },
-        course_inquiries:        { label: 'New course inquiry',     icon: 'fa-graduation-cap',   nameField: 'full_name' },
-        member_registrations:    { label: 'New membership sign-up', icon: 'fa-user-plus',        nameField: 'full_name' },
-        rotaract_galkot_members: { label: 'New Rotaract member',    icon: 'fa-users',            nameField: 'full_name' },
-        project_applications:    { label: 'New project application', icon: 'fa-diagram-project', nameField: 'applicant_name' },
-        page_visits:             { label: 'New website visit',      icon: 'fa-globe',            nameField: null, isVisit: true }
+        inquiries:                  { label: 'New inquiry',                icon: 'fa-envelope' },
+        course_inquiries:           { label: 'New course inquiry',         icon: 'fa-graduation-cap' },
+        member_registrations:       { label: 'New membership sign-up',     icon: 'fa-user-plus' },
+        rotaract_galkot_members:    { label: 'New Rotaract member',        icon: 'fa-users' },
+        project_applications:      { label: 'New project application',    icon: 'fa-diagram-project' },
+        page_visits:                { label: 'New website visit',          icon: 'fa-globe', nameField: null, isVisit: true },
+        members:                    { label: 'New member added',           icon: 'fa-user' },
+        blogs:                      { label: 'New blog post',              icon: 'fa-newspaper' },
+        upcoming_projects:          { label: 'New upcoming project',       icon: 'fa-calendar-check' },
+        approved_applications:      { label: 'New approved application',   icon: 'fa-check-circle' },
+        certifications:             { label: 'New certification',          icon: 'fa-certificate' },
+        blood_bridge_galkot:        { label: 'New blood donor',            icon: 'fa-droplet' },
+        bloodbridge_register:       { label: 'New blood donor registration', icon: 'fa-droplet' },
+        blood_bridge_registration:  { label: 'New blood donor registration', icon: 'fa-droplet' },
+        blood_bridge_admins:        { label: 'New blood bridge admin',     icon: 'fa-user-shield' },
+        attendance_registrations:   { label: 'New attendance registration', icon: 'fa-clipboard-check' },
+        course_records:             { label: 'New course record',          icon: 'fa-file-lines' },
+        live_chat_sessions:         { label: 'New live chat session',      icon: 'fa-comments' },
+        live_chat_messages:         { label: 'New chat message',           icon: 'fa-comment-dots' },
+        admin_activity_log:         { label: 'Admin activity',             icon: 'fa-user-shield' },
+        admin_users:                { label: 'New admin user',             icon: 'fa-user-shield' },
+        role_audit_log:             { label: 'Role change',                icon: 'fa-user-gear' },
+        user_roles:                 { label: 'User role updated',          icon: 'fa-user-gear' },
+        rotaract_lhe:               { label: 'New letterhead',             icon: 'fa-file-signature' },
+        rotaract_lhe_requests:      { label: 'New letterhead request',     icon: 'fa-circle-question' },
+        rotaract_verify:            { label: 'New verification letter',    icon: 'fa-shield-halved' },
+        verification_logs:          { label: 'New verification check',     icon: 'fa-magnifying-glass' },
+        running_programs:           { label: 'New running program',        icon: 'fa-calendar-check' },
+        next_event:                 { label: 'Next event updated',         icon: 'fa-calendar-days' },
+        partners_sponsors:          { label: 'New partner/sponsor',        icon: 'fa-handshake' },
+        project2026_coordinators:   { label: 'New project coordinator',    icon: 'fa-user-tie' },
+        spiritual_quotes:           { label: 'New spiritual quote',        icon: 'fa-quote-left' },
+        meetings:                   { label: 'New meeting',                icon: 'fa-users' },
+        meeting_minutes:            { label: 'New meeting minutes',        icon: 'fa-file-lines' },
+        meeting_minutes_history:    { label: 'Meeting minutes updated',    icon: 'fa-file-lines' },
+        meeting_minutes_v2:         { label: 'New meeting minutes',        icon: 'fa-file-lines' },
+        banner_settings:            { label: 'Banner updated',             icon: 'fa-image' },
+        banner_backgrounds:         { label: 'New banner background',      icon: 'fa-image' },
+        app_settings:                { label: 'Setting updated',            icon: 'fa-gear' },
+        certificate_settings:       { label: 'Certificate setting updated', icon: 'fa-gear' },
+        profiles:                   { label: 'New profile',                icon: 'fa-id-badge' },
+        pages:                      { label: 'Page updated',               icon: 'fa-file-pen' }
     };
+
+    // Every real (non-view, non-aggregate) table in the database — used so
+    // ANY new row, in ANY table, triggers a notification, not just the
+    // curated subset above. Tables that are pure views or single-row
+    // rollups (e.g. *_view, *_stats, role_summary, setting_value) are left
+    // out since they have no INSERT events of their own.
+    const ALL_DB_TABLES = [
+        'admin_activity_log', 'admin_users', 'app_settings', 'approved_applications',
+        'attendance_registrations', 'banner_backgrounds', 'banner_settings', 'blogs',
+        'blood_bridge_admins', 'blood_bridge_galkot', 'blood_bridge_registration',
+        'bloodbridge_register', 'certificate_settings', 'certifications', 'course_inquiries',
+        'course_records', 'inquiries', 'live_chat_messages', 'live_chat_sessions',
+        'meeting_minutes', 'meeting_minutes_history', 'meeting_minutes_v2', 'meetings',
+        'member_registrations', 'members', 'next_event', 'page_visits', 'pages',
+        'partners_sponsors', 'profiles', 'project2026_coordinators', 'project_applications',
+        'role_audit_log', 'rotaract_galkot_members', 'rotaract_lhe', 'rotaract_lhe_requests',
+        'rotaract_verify', 'running_programs', 'spiritual_quotes', 'upcoming_projects',
+        'user_roles', 'verification_logs'
+    ];
+    if ($('notifTableCount')) $('notifTableCount').textContent = ALL_DB_TABLES.length;
+
+    // Common name-ish columns to try, in order, when a table isn't in
+    // NOTIFY_TABLES or doesn't specify a nameField — so a sensible label
+    // still shows up instead of just "Someone".
+    const GENERIC_NAME_FIELDS = [
+        'full_name', 'person_name', 'applicant_name', 'participant_name', 'visitor_name',
+        'student_name', 'coordinator_name', 'admin_email', 'program_name', 'program_event_name',
+        'project_name', 'meeting_name', 'title', 'name', 'subject', 'email'
+    ];
+    function resolveRecordName(record) {
+        if (!record) return null;
+        for (const f of GENERIC_NAME_FIELDS) {
+            if (record[f]) return record[f];
+        }
+        return null;
+    }
 
     let notifList = [];
     let notifUnread = 0;
@@ -1182,12 +1264,7 @@ footer.app-footer{ padding:1.5rem 2.2rem 2.5rem; color:var(--text-faint); font-s
     }
 
     function renderNotifPanel() {
-        const list = $('notifPanelList');
-        if (notifList.length === 0) {
-            list.innerHTML = '<div class="notif-panel-empty">No notifications yet.</div>';
-            return;
-        }
-        list.innerHTML = notifList.slice(0, 30).map(n => `
+        const rowsHtml = (limit) => notifList.slice(0, limit).map(n => `
             <div class="notif-row">
                 <div class="ni-icon"><i class="fa-solid ${n.icon}"></i></div>
                 <div class="ni-body">
@@ -1196,14 +1273,26 @@ footer.app-footer{ padding:1.5rem 2.2rem 2.5rem; color:var(--text-faint); font-s
                     <div class="ni-time">${timeAgo(n.time)}</div>
                 </div>
             </div>`).join('');
+
+        const list = $('notifPanelList');
+        list.innerHTML = notifList.length === 0
+            ? '<div class="notif-panel-empty">No notifications yet.</div>'
+            : rowsHtml(30);
+
+        const snapList = document.getElementById('snapshotNotifList');
+        if (snapList) {
+            snapList.innerHTML = notifList.length === 0
+                ? '<div class="notif-panel-empty">No notifications yet — new entries in any table will show up here.</div>'
+                : rowsHtml(8);
+        }
     }
 
     function notifyFormEvent(table, record) {
-        const def = NOTIFY_TABLES[table];
-        if (!def) return;
-        const name = def.isVisit
-            ? null
-            : (record && (record[def.nameField] || record.full_name || record.applicant_name)) || 'Someone';
+        const def = NOTIFY_TABLES[table] || {
+            label: 'New entry — ' + table.replace(/_/g, ' '),
+            icon: 'fa-database'
+        };
+        const name = def.isVisit ? null : (resolveRecordName(record) || 'Someone');
         notifList.unshift({ label: def.label, icon: def.icon, name, table, time: new Date() });
         if (notifList.length > 50) notifList.pop();
         notifUnread++;
@@ -1707,13 +1796,12 @@ footer.app-footer{ padding:1.5rem 2.2rem 2.5rem; color:var(--text-faint); font-s
     }
 
     function subscribeAll() {
-        const tables = ['inquiries', 'members', 'member_registrations', 'blogs', 'upcoming_projects', 'approved_applications', 'project_applications', 'course_inquiries', 'rotaract_galkot_members', 'page_visits'];
-        for (const table of tables) {
+        for (const table of ALL_DB_TABLES) {
             try {
                 supabase.channel(`rt-${table}`)
                     .on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
                         pushFeed(`${table} · ${payload.eventType.toUpperCase()}`, payload.eventType.toLowerCase());
-                        if (payload.eventType === 'INSERT' && NOTIFY_TABLES[table]) {
+                        if (payload.eventType === 'INSERT') {
                             notifyFormEvent(table, payload.new);
                         }
                         refreshDashboard();
