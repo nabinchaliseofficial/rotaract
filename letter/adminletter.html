@@ -1956,7 +1956,7 @@
                 const dateFormatted = letter.date || '—';
                 const vid = letter.verification_id || generateVerificationId(letter.fiscal_year || '0000', letter.ref_no ||
                     '0');
-                const qrUrl = `https://galkot.netlify.app/verify?vid=${encodeURIComponent(vid)}`;
+                const qrUrl = `https://galkotbaglung.vercel.app/letter/verify?vid=${encodeURIComponent(vid)}`;
 
                 const refDisplay = isSuchana ? '—' : (letter.ref_no || '—');
                 const refLabel = isSuchana ? 'सूचना' : `द. नं. ${refDisplay}`;

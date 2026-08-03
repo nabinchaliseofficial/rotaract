@@ -451,6 +451,11 @@
             color: var(--success);
         }
 
+        .letter-card .letter-body .details-grid .value .status-badge.suchana {
+            background: #E8F0FE;
+            color: var(--blue-mid);
+        }
+
         .letter-card .letter-signature {
             margin-top: 2rem;
             border-top: 1px solid var(--gray-200);
@@ -956,6 +961,11 @@
                 verifyBanner.className = 'verify-banner';
             }
 
+            // ─── Check if letter is Suchana ──────────────────────────────────────
+            function isSuchanaLetter(letter) {
+                return letter.ref_no === 'सूचना' || letter.ref_no === '--' || !letter.ref_no;
+            }
+
             // ─── Render Letter ────────────────────────────────────────────────────
             function renderLetter(letter) {
                 if (!letter) {
@@ -970,19 +980,23 @@
                     return;
                 }
 
-                // Build details grid (only show Active status)
+                // Check if this is a Suchana letter
+                const isSuchana = isSuchanaLetter(letter);
+
+                // Build details grid
                 const details = [
-                    { label: 'पत्र प्रकार (Type)', value: letter.letter_type || 'सामान्य' },
+                    { label: 'पत्र प्रकार (Type)', value: isSuchana ? '📢 सूचना' : (letter.letter_type || 'सामान्य') },
                     { label: 'जारीकर्ता (Issued By)', value: letter.issued_by },
                 ];
 
                 if (letter.signed_by) details.push({ label: 'हस्ताक्षरकर्ता (Signed By)', value: letter.signed_by });
                 if (letter.designation) details.push({ label: 'पद (Designation)', value: letter.designation });
 
-                // Only show status if it's Active (but we already filter)
+                // Status badge
+                const statusClass = isSuchana ? 'active suchana' : 'active';
                 details.push({
                     label: 'स्थिति (Status)',
-                    value: `<span class="status-badge active">✅ Active</span>`
+                    value: `<span class="status-badge ${statusClass}">${isSuchana ? '📢 सूचना' : '✅ Active'}</span>`
                 });
 
                 if (letter.created_at) {
@@ -997,7 +1011,7 @@
                 }
 
                 const vid = letter.verification_id || `ROT-${letter.fiscal_year}-${letter.ref_no}`;
-                const qrUrl = `https://galkot.netlify.app/verify?vid=${encodeURIComponent(vid)}`;
+                const qrUrl = `https://galkotbaglung.vercel.app/letter/verify?vid=${encodeURIComponent(vid)}`;
 
                 const detailsHtml = details.map(d => `
                     <span class="label">${escapeHtml(d.label)}</span>
@@ -1005,6 +1019,7 @@
                 `).join('');
 
                 const dateDisplay = letter.date || '—';
+                const refDisplay = isSuchana ? '📢 सूचना' : (letter.ref_no || '—');
 
                 const html = `
                     <div class="letter-card" id="letterCard">
@@ -1018,7 +1033,7 @@
                                 <span class="sub">${escapeHtml(letter.issued_by || 'Rotaract Club of Galkot Baglung')}</span>
                             </div>
                             <div class="ref-badge">
-                                दर्ता नं. ${escapeHtml(letter.ref_no)}  •  आ.व. ${escapeHtml(letter.fiscal_year)}
+                                ${isSuchana ? '📢 सूचना' : `दर्ता नं. ${escapeHtml(letter.ref_no)}`}  •  आ.व. ${escapeHtml(letter.fiscal_year)}
                             </div>
                         </div>
 
@@ -1037,7 +1052,7 @@
 
                             <div class="meta-line">
                                 <span class="fiscal-left">आ.व. ${escapeHtml(letter.fiscal_year || '—')}</span>
-                                <span class="ref-right">दर्ता नं. ${escapeHtml(letter.ref_no || '—')}</span>
+                                <span class="ref-right">${refDisplay}</span>
                             </div>
 
                             <div class="date-right">
@@ -1141,18 +1156,36 @@
                 }
 
                 try {
-                    // 🔥 Only fetch letters with status 'Active'
-                    const { data, error } = await supabaseClient
+                    // 🔥 Search in BOTH tables: rotaract_verify AND rotaract_suchana
+                    const [verifyResult, suchanaResult] = await Promise.all([
+                        supabaseClient
                         .from('rotaract_verify')
                         .select('*')
                         .eq('verification_id', vid)
                         .eq('letter_status', 'Active')
-                        .maybeSingle();
+                        .maybeSingle(),
+                        supabaseClient
+                        .from('rotaract_suchana')
+                        .select('*')
+                        .eq('verification_id', vid)
+                        .eq('letter_status', 'Active')
+                        .maybeSingle()
+                    ]);
 
-                    if (error) throw error;
+                    if (verifyResult.error) throw verifyResult.error;
+                    if (suchanaResult.error) throw suchanaResult.error;
+
+                    const data = verifyResult.data || suchanaResult.data;
 
                     if (data) {
-                        showBanner('✅', '✅ VERIFIED DOCUMENT', 'This document is authentic and officially issued by Rotaract Club of Galkot Baglung.', 'success');
+                        const isSuchana = !!suchanaResult.data;
+                        showBanner(
+                            '✅',
+                            '✅ VERIFIED DOCUMENT',
+                            isSuchana ? 'This is an official "Suchana" (Notice) document authenticated by Rotaract Club of Galkot Baglung.' :
+                            'This document is authentic and officially issued by Rotaract Club of Galkot Baglung.',
+                            'success'
+                        );
                         renderLetter(data);
                     } else {
                         showBanner('❌', '❌ DOCUMENT NOT FOUND', 'This document is either inactive, archived, or does not exist in our records.', 'error');
