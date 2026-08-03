@@ -4,30 +4,25 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Blood Bridge Galkot | New Donor Registration</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta name="description" content="Register as a blood donor with Blood Bridge Galkot. Takes less than a minute — help save a life in your community." />
+<meta name="theme-color" content="#b91c1c" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <style>
   :root{
-    --red:#b91c1c;
-    --red-dark:#7f1d1d;
-    --bg:#fdf2f2;
-    --card:#ffffff;
-    --text:#1f1a1a;
-    --muted:#6b7280;
-    --border:#f1d6d6;
-    --success:#15803d;
-    --success-bg:#dcfce7;
-    --error:#b91c1c;
-    --error-bg:#fee2e2;
+    --red:#b91c1c; --red-dark:#7f1d1d; --bg:#fdf2f2; --card:#ffffff;
+    --text:#1f1a1a; --muted:#6b7280; --border:#f1d6d6;
+    --success:#15803d; --success-bg:#dcfce7;
+    --error:#b91c1c; --error-bg:#fee2e2;
+    --focus: 3px solid #93c5fd;
   }
   *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
   body{
-    margin:0;
-    font-family:'Segoe UI', Roboto, -apple-system, sans-serif;
+    margin:0;font-family:'Segoe UI', Roboto, -apple-system, sans-serif;
     background:linear-gradient(180deg,var(--bg),#fff 40%);
-    color:var(--text);
-    min-height:100vh;
-    padding:24px 16px 60px;
+    color:var(--text);min-height:100vh;padding:24px 16px 60px;
   }
+  :focus-visible{outline:var(--focus);outline-offset:2px;}
   .wrap{max-width:560px;margin:0 auto;}
   .header{text-align:center;margin-bottom:24px;}
   .header .drop{
@@ -38,98 +33,102 @@
   .header h1{font-size:22px;margin:0 0 4px;color:var(--red-dark);}
   .header p{margin:0;color:var(--muted);font-size:14px;}
   .card{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:16px;
-    padding:24px 20px;
-    box-shadow:0 4px 24px rgba(185,28,28,0.06);
+    background:var(--card);border:1px solid var(--border);border-radius:16px;
+    padding:24px 20px;box-shadow:0 4px 24px rgba(185,28,28,0.06);
   }
   .field{margin-bottom:16px;}
   label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#374151;}
   label .req{color:var(--red);}
   input, select{
-    width:100%;
-    padding:11px 12px;
-    border:1.5px solid var(--border);
-    border-radius:10px;
-    font-size:15px;
-    background:#fff;
-    color:var(--text);
-    transition:border-color .15s;
+    width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;
+    font-size:15px;background:#fff;color:var(--text);transition:border-color .15s;
   }
-  input:focus, select:focus{
-    outline:none;
-    border-color:var(--red);
-  }
+  input:focus, select:focus{outline:none;border-color:var(--red);}
+  input.invalid{border-color:var(--error);}
+  input.valid{border-color:var(--success);}
+  .field-error{font-size:12px;color:var(--error);margin-top:5px;display:none;}
+  .field-error.show{display:block;}
+  .field-hint{font-size:12px;color:var(--muted);margin-top:5px;}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .bg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px;}
   .bg-option{
-    border:1.5px solid var(--border);
-    border-radius:10px;
-    text-align:center;
-    padding:10px 4px;
-    font-weight:700;
-    font-size:14px;
-    cursor:pointer;
-    user-select:none;
-    transition:all .15s;
-    color:var(--text);
+    border:1.5px solid var(--border);border-radius:10px;text-align:center;padding:10px 4px;
+    font-weight:700;font-size:14px;cursor:pointer;user-select:none;transition:all .15s;color:var(--text);
   }
-  .bg-option.selected{
-    background:var(--red);
-    color:#fff;
-    border-color:var(--red);
-  }
+  .bg-option:hover{border-color:var(--red);}
+  .bg-option.selected{background:var(--red);color:#fff;border-color:var(--red);}
+  .bg-option:focus-visible{outline:var(--focus);}
   button.submit{
-    width:100%;
-    padding:14px;
-    border:none;
-    border-radius:12px;
-    background:var(--red);
-    color:#fff;
-    font-size:16px;
-    font-weight:700;
-    cursor:pointer;
-    margin-top:8px;
-    transition:background .15s;
+    width:100%;padding:14px;border:none;border-radius:12px;background:var(--red);color:#fff;
+    font-size:16px;font-weight:700;cursor:pointer;margin-top:8px;transition:background .15s;
   }
   button.submit:hover{background:var(--red-dark);}
   button.submit:disabled{background:#d1a3a3;cursor:not-allowed;}
-  .msg{
-    margin-top:14px;
-    padding:12px 14px;
-    border-radius:10px;
-    font-size:14px;
-    display:none;
-  }
+  .msg{margin-top:14px;padding:12px 14px;border-radius:10px;font-size:14px;display:none;}
   .msg.show{display:block;}
   .msg.success{background:var(--success-bg);color:var(--success);}
   .msg.error{background:var(--error-bg);color:var(--error);}
+  .msg.warn{background:#fef3c7;color:#b45309;}
   .note{font-size:12px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.5;}
+
+  /* Honeypot — hidden from real users, catches basic bots */
+  .hp-field{position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;overflow:hidden;}
+
+  /* Confirmation modal */
+  .modal-overlay{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);
+    align-items:center;justify-content:center;z-index:50;padding:16px;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal{background:#fff;border-radius:16px;padding:24px;max-width:420px;width:100%;}
+  .modal h3{margin-top:0;color:var(--red-dark);}
+  .review-list{list-style:none;padding:0;margin:14px 0;font-size:14px;}
+  .review-list li{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);}
+  .review-list li span:first-child{color:var(--muted);}
+  .review-list li span:last-child{font-weight:600;}
+  .modal-actions{display:flex;gap:10px;margin-top:16px;}
+  .modal-actions button{flex:1;padding:11px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;}
+  .btn-confirm{background:var(--red);color:#fff;}
+  .btn-back{background:#f3f4f6;color:#374151;}
+
+  /* Success screen */
+  .success-screen{text-align:center;padding:10px 0;}
+  .success-screen .big-check{
+    width:64px;height:64px;border-radius:50%;background:var(--success-bg);color:var(--success);
+    display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 16px;
+  }
+  .success-screen h2{color:var(--success);margin:0 0 8px;}
+  .success-screen p{color:var(--muted);font-size:14px;line-height:1.6;}
+  .success-screen button{
+    margin-top:16px;background:var(--red);color:#fff;border:none;padding:11px 20px;
+    border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="header">
-    <div class="drop">🩸</div>
+    <div class="drop" aria-hidden="true">🩸</div>
     <h1>Blood Bridge Galkot</h1>
     <p>New Donor Registration Form</p>
   </div>
 
   <div class="card">
-    <form id="registerForm">
+    <form id="registerForm" novalidate>
       <div class="field">
-        <label>Full Name <span class="req">*</span></label>
-        <input type="text" id="person_name" required placeholder="e.g. Ram Bahadur Thapa" />
+        <label for="person_name">Full Name <span class="req">*</span></label>
+        <input type="text" id="person_name" required placeholder="e.g. Ram Bahadur Thapa" autocomplete="name" aria-describedby="err_person_name" />
+        <div class="field-error" id="err_person_name"></div>
       </div>
 
       <div class="row2">
         <div class="field">
-          <label>Age</label>
-          <input type="number" id="age" min="16" max="70" placeholder="e.g. 25" />
+          <label for="age">Age <span class="req">*</span></label>
+          <input type="number" id="age" min="16" max="70" placeholder="e.g. 25" aria-describedby="err_age" />
+          <div class="field-error" id="err_age"></div>
         </div>
         <div class="field">
-          <label>Sex</label>
+          <label for="sex">Sex</label>
           <select id="sex">
             <option value="">Select</option>
             <option value="Male">Male</option>
@@ -140,134 +139,355 @@
       </div>
 
       <div class="field">
-        <label>Blood Group <span class="req">*</span></label>
-        <div class="bg-grid" id="bgGrid">
-          <div class="bg-option" data-value="A+">A+</div>
-          <div class="bg-option" data-value="A-">A-</div>
-          <div class="bg-option" data-value="B+">B+</div>
-          <div class="bg-option" data-value="B-">B-</div>
-          <div class="bg-option" data-value="AB+">AB+</div>
-          <div class="bg-option" data-value="AB-">AB-</div>
-          <div class="bg-option" data-value="O+">O+</div>
-          <div class="bg-option" data-value="O-">O-</div>
+        <label id="bgLabel">Blood Group <span class="req">*</span></label>
+        <div class="bg-grid" id="bgGrid" role="radiogroup" aria-labelledby="bgLabel">
+          <div class="bg-option" role="radio" aria-checked="false" tabindex="0" data-value="A+">A+</div>
+          <div class="bg-option" role="radio" aria-checked="false" tabindex="0" data-value="A-">A-</div>
+          <div class="bg-option" role="radio" aria-checked="false" tabindex="0" data-value="B+">B+</div>
+          <div class="bg-option" role="radio" aria-checked="false" tabindex="0" data-value="B-">B-</div>
+          <div class="bg-option" role="radio" aria-checked="false" tabindex="0" data-value="AB+">AB+</div>
+          <div class="bg-option" role="radio" aria-checked="false" tabindex="0" data-value="AB-">AB-</div>
+          <div class="bg-option" role="radio" aria-checked="false" tabindex="0" data-value="O+">O+</div>
+          <div class="bg-option" role="radio" aria-checked="false" tabindex="0" data-value="O-">O-</div>
         </div>
+        <div class="field-error" id="err_bg"></div>
       </div>
 
       <div class="row2">
         <div class="field">
-          <label>Municipality <span class="req">*</span></label>
-          <input type="text" id="municipality" required placeholder="e.g. Galkot Municipality" />
+          <label for="municipality">Municipality <span class="req">*</span></label>
+          <input type="text" id="municipality" required placeholder="e.g. Galkot Municipality" aria-describedby="err_municipality" />
+          <div class="field-error" id="err_municipality"></div>
         </div>
         <div class="field">
-          <label>Ward No.</label>
-          <input type="text" id="ward_number" placeholder="e.g. 5" />
+          <label for="ward_number">Ward No.</label>
+          <input type="number" id="ward_number" min="1" max="35" placeholder="e.g. 5" aria-describedby="err_ward" />
+          <div class="field-error" id="err_ward"></div>
         </div>
       </div>
 
       <div class="field">
-        <label>Phone Number <span class="req">*</span></label>
-        <input type="tel" id="phone_number" required placeholder="e.g. 98XXXXXXXX" pattern="[0-9]{7,15}" />
+        <label for="phone_number">Phone Number <span class="req">*</span></label>
+        <input type="tel" id="phone_number" required placeholder="e.g. 98XXXXXXXX" inputmode="numeric" aria-describedby="err_phone" />
+        <div class="field-error" id="err_phone"></div>
+        <div class="field-hint" id="phoneHint"></div>
       </div>
 
       <div class="field">
-        <label>Your Name (entered by)</label>
+        <label for="data_entry_by">Your Name (entered by)</label>
         <input type="text" id="data_entry_by" placeholder="Optional" />
       </div>
 
-      <button type="submit" class="submit" id="submitBtn">Register</button>
+      <!-- Honeypot field: real users never see or fill this. Bots often do. -->
+      <div class="hp-field" aria-hidden="true">
+        <label for="website">Leave this field blank</label>
+        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+      </div>
 
-      <div class="msg" id="msgBox"></div>
+      <button type="submit" class="submit" id="submitBtn">Review &amp; Register</button>
+
+      <div class="msg" id="msgBox" role="alert"></div>
     </form>
 
-    <p class="note">Your information will appear in the public list only after it is approved by an admin.</p>
+    <div class="success-screen" id="successScreen" style="display:none;" role="status">
+      <div class="big-check" aria-hidden="true">✓</div>
+      <h2>Thank you!</h2>
+      <p>Your registration was received and is awaiting admin approval.<br>You'll appear in the public donor list once approved.</p>
+      <button id="registerAnotherBtn">Register Another Donor</button>
+    </div>
+
+    <p class="note" id="formNote">Your information will appear in the public list only after it is approved by an admin.</p>
+  </div>
+</div>
+
+<!-- Confirmation modal -->
+<div class="modal-overlay" id="confirmOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <h3 id="confirmTitle">Confirm Your Details</h3>
+    <ul class="review-list" id="reviewList"></ul>
+    <div class="modal-actions">
+      <button type="button" class="btn-back" id="backBtn">Go Back</button>
+      <button type="button" class="btn-confirm" id="confirmSubmitBtn">Confirm &amp; Submit</button>
+    </div>
   </div>
 </div>
 
 <script>
-  // ---- SUPABASE CONFIG ----
-  const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  // --------------------------
+// ==================== CONFIG ====================
+const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+let supabaseClient = null;
+let selectedBloodGroup = "";
+let isSubmitting = false;
 
-  let selectedBloodGroup = "";
-  const bgGrid = document.getElementById("bgGrid");
-  bgGrid.addEventListener("click", (e) => {
+const form = document.getElementById("registerForm");
+const submitBtn = document.getElementById("submitBtn");
+const msgBox = document.getElementById("msgBox");
+
+// ==================== BLOOD GROUP PICKER ====================
+const bgGrid = document.getElementById("bgGrid");
+function selectBloodGroup(opt){
+  document.querySelectorAll(".bg-option").forEach(el => { el.classList.remove("selected"); el.setAttribute("aria-checked", "false"); });
+  opt.classList.add("selected");
+  opt.setAttribute("aria-checked", "true");
+  selectedBloodGroup = opt.dataset.value;
+  clearFieldError("bg");
+}
+bgGrid.addEventListener("click", (e) => {
+  const opt = e.target.closest(".bg-option");
+  if (opt) selectBloodGroup(opt);
+});
+bgGrid.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") {
     const opt = e.target.closest(".bg-option");
-    if (!opt) return;
-    document.querySelectorAll(".bg-option").forEach(el => el.classList.remove("selected"));
-    opt.classList.add("selected");
-    selectedBloodGroup = opt.dataset.value;
+    if (opt) { e.preventDefault(); selectBloodGroup(opt); }
+  }
+});
+
+// ==================== PHONE AUTO-FORMAT ====================
+const phoneInput = document.getElementById("phone_number");
+phoneInput.addEventListener("input", () => {
+  let digits = phoneInput.value.replace(/\D/g, "").slice(0, 10);
+  phoneInput.value = digits;
+  validatePhone();
+});
+
+// ==================== VALIDATION ====================
+function setFieldError(field, message){
+  const el = document.getElementById("err_" + field);
+  const input = document.getElementById(field === "bg" ? "bgGrid" : field);
+  if (el) { el.textContent = message; el.classList.add("show"); }
+  if (input && input.classList) input.classList.add("invalid");
+}
+function clearFieldError(field){
+  const el = document.getElementById("err_" + field);
+  const input = document.getElementById(field === "bg" ? "bgGrid" : field);
+  if (el) { el.textContent = ""; el.classList.remove("show"); }
+  if (input && input.classList) { input.classList.remove("invalid"); }
+}
+
+function validateName(){
+  const v = document.getElementById("person_name").value.trim();
+  if (!v) { setFieldError("person_name", "Full name is required."); return false; }
+  if (v.length < 2) { setFieldError("person_name", "Name looks too short."); return false; }
+  clearFieldError("person_name");
+  return true;
+}
+function validateAge(){
+  const v = document.getElementById("age").value.trim();
+  if (!v) { setFieldError("age", "Age is required."); return false; }
+  const n = Number(v);
+  if (!Number.isFinite(n) || n < 16 || n > 70) {
+    setFieldError("age", "Donors must be between 16 and 70 years old.");
+    return false;
+  }
+  clearFieldError("age");
+  return true;
+}
+function validateMunicipality(){
+  const v = document.getElementById("municipality").value.trim();
+  if (!v) { setFieldError("municipality", "Municipality is required."); return false; }
+  clearFieldError("municipality");
+  return true;
+}
+function validateWard(){
+  const v = document.getElementById("ward_number").value.trim();
+  if (v && (Number(v) < 1 || Number(v) > 35)) {
+    setFieldError("ward", "Ward number looks invalid.");
+    return false;
+  }
+  clearFieldError("ward");
+  return true;
+}
+function validatePhone(){
+  const v = phoneInput.value.trim();
+  const hint = document.getElementById("phoneHint");
+  if (!v) { setFieldError("phone", "Phone number is required."); hint.textContent = ""; return false; }
+  if (!/^\d{7,10}$/.test(v)) {
+    setFieldError("phone", "Enter a valid 7–10 digit phone number.");
+    hint.textContent = "";
+    return false;
+  }
+  clearFieldError("phone");
+  hint.textContent = "";
+  return true;
+}
+function validateBloodGroup(){
+  if (!selectedBloodGroup) { setFieldError("bg", "Please select your blood group."); return false; }
+  clearFieldError("bg");
+  return true;
+}
+
+// Live inline validation as the user types/leaves fields
+["person_name", "age", "municipality", "ward_number"].forEach(id => {
+  document.getElementById(id).addEventListener("blur", () => {
+    ({ person_name: validateName, age: validateAge, municipality: validateMunicipality, ward_number: validateWard }[id])();
   });
+});
+phoneInput.addEventListener("blur", checkDuplicatePhone);
 
-  const form = document.getElementById("registerForm");
-  const submitBtn = document.getElementById("submitBtn");
-  const msgBox = document.getElementById("msgBox");
+function showMsg(text, type) {
+  msgBox.textContent = text;
+  msgBox.className = "msg show " + type;
+}
 
-  function showMsg(text, type) {
-    msgBox.textContent = text;
-    msgBox.className = "msg show " + type;
+// ==================== DUPLICATE PHONE CHECK ====================
+async function checkDuplicatePhone(){
+  const valid = validatePhone();
+  if (!valid || !supabaseClient) return;
+  const phone = phoneInput.value.trim();
+  const hint = document.getElementById("phoneHint");
+  hint.textContent = "Checking...";
+  try {
+    const [{ data: activeMatch }, { data: pendingMatch }] = await Promise.all([
+      supabaseClient.from("blood_bridge_galkot").select("id").eq("phone_number", phone).limit(1),
+      supabaseClient.from("bloodbridge_register").select("id,status").eq("phone_number", phone).eq("status", "pending").limit(1)
+    ]);
+    if (activeMatch && activeMatch.length) {
+      hint.textContent = "⚠ This number is already registered as an active donor.";
+      hint.style.color = "#b45309";
+    } else if (pendingMatch && pendingMatch.length) {
+      hint.textContent = "⚠ This number already has a pending registration.";
+      hint.style.color = "#b45309";
+    } else {
+      hint.textContent = "";
+    }
+  } catch {
+    hint.textContent = "";
+  }
+}
+
+// ==================== SUBMIT FLOW ====================
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  msgBox.className = "msg";
+
+  const nameOk = validateName();
+  const ageOk = validateAge();
+  const muniOk = validateMunicipality();
+  const wardOk = validateWard();
+  const phoneOk = validatePhone();
+  const bgOk = validateBloodGroup();
+
+  if (!nameOk || !ageOk || !muniOk || !wardOk || !phoneOk || !bgOk) {
+    showMsg("Please fix the highlighted fields before continuing.", "error");
+    const firstInvalid = document.querySelector(".invalid, .field-error.show");
+    if (firstInvalid) firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
   }
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    msgBox.className = "msg";
+  // Honeypot check — silently drop obvious bot submissions
+  if (document.getElementById("website").value.trim() !== "") {
+    showMsg("Something went wrong. Please try again.", "error");
+    return;
+  }
 
-    const person_name = document.getElementById("person_name").value.trim();
-    const age = document.getElementById("age").value.trim();
-    const sex = document.getElementById("sex").value;
-    const municipality = document.getElementById("municipality").value.trim();
-    const ward_number = document.getElementById("ward_number").value.trim();
-    const phone_number = document.getElementById("phone_number").value.trim();
-    const data_entry_by = document.getElementById("data_entry_by").value.trim();
+  openConfirmModal();
+});
 
-    if (!selectedBloodGroup) {
-      showMsg("Please select your blood group.", "error");
-      return;
-    }
-    if (!person_name || !municipality || !phone_number) {
-      showMsg("Please fill in all required (*) fields.", "error");
-      return;
-    }
+function openConfirmModal(){
+  const data = getFormData();
+  const list = document.getElementById("reviewList");
+  list.innerHTML = `
+    <li><span>Name</span><span>${escapeHtml(data.person_name)}</span></li>
+    <li><span>Age / Sex</span><span>${escapeHtml(data.age)} / ${escapeHtml(data.sex || "-")}</span></li>
+    <li><span>Blood Group</span><span>${escapeHtml(data.blood_group)}</span></li>
+    <li><span>Municipality</span><span>${escapeHtml(data.municipality)}${data.ward_number ? ", Ward " + escapeHtml(data.ward_number) : ""}</span></li>
+    <li><span>Phone</span><span>${escapeHtml(data.phone_number)}</span></li>
+  `;
+  document.getElementById("confirmOverlay").classList.add("show");
+}
+document.getElementById("backBtn").addEventListener("click", () => {
+  document.getElementById("confirmOverlay").classList.remove("show");
+});
 
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Submitting...";
+function getFormData(){
+  return {
+    person_name: document.getElementById("person_name").value.trim(),
+    age: document.getElementById("age").value.trim(),
+    sex: document.getElementById("sex").value,
+    blood_group: selectedBloodGroup,
+    municipality: document.getElementById("municipality").value.trim(),
+    ward_number: document.getElementById("ward_number").value.trim(),
+    phone_number: phoneInput.value.trim(),
+    data_entry_by: document.getElementById("data_entry_by").value.trim()
+  };
+}
 
-    try {
-      const { error } = await supabaseClient.from("bloodbridge_register").insert([{
-        person_name,
-        age: age || null,
-        sex: sex || null,
-        blood_group: selectedBloodGroup,
-        municipality,
-        ward_number: ward_number || null,
-        phone_number,
-        data_entry_by: data_entry_by || null,
-        status: "pending"
-      }]);
+function escapeHtml(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
 
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Register";
+document.getElementById("confirmSubmitBtn").addEventListener("click", async () => {
+  if (isSubmitting) return; // guard against double submission (e.g. double-click)
+  isSubmitting = true;
 
-      if (error) {
-        if (error.code === "23505") {
-          showMsg("This phone number is already registered.", "error");
-        } else {
-          showMsg("Error: " + error.message, "error");
-        }
-        return;
+  const confirmBtn = document.getElementById("confirmSubmitBtn");
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = "Submitting...";
+  submitBtn.disabled = true;
+
+  const payload = getFormData();
+
+  try {
+    const { error } = await supabaseClient.from("bloodbridge_register").insert([{
+      person_name: payload.person_name,
+      age: payload.age || null,
+      sex: payload.sex || null,
+      blood_group: payload.blood_group,
+      municipality: payload.municipality,
+      ward_number: payload.ward_number || null,
+      phone_number: payload.phone_number,
+      data_entry_by: payload.data_entry_by || null,
+      status: "pending"
+    }]);
+
+    document.getElementById("confirmOverlay").classList.remove("show");
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = "Confirm & Submit";
+    submitBtn.disabled = false;
+    isSubmitting = false;
+
+    if (error) {
+      if (error.code === "23505") {
+        showMsg("This phone number is already registered.", "error");
+      } else {
+        showMsg("Error: " + error.message, "error");
       }
-
-      showMsg("Thank you! Your registration was successful. It is awaiting approval.", "success");
-      form.reset();
-      document.querySelectorAll(".bg-option").forEach(el => el.classList.remove("selected"));
-      selectedBloodGroup = "";
-    } catch (err) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Register";
-      showMsg("Network error: could not reach the server. Check your internet connection and try again. (" + err.message + ")", "error");
+      return;
     }
-  });
+
+    // Success — show success screen instead of the form
+    form.style.display = "none";
+    document.getElementById("formNote").style.display = "none";
+    document.getElementById("successScreen").style.display = "block";
+  } catch (err) {
+    document.getElementById("confirmOverlay").classList.remove("show");
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = "Confirm & Submit";
+    submitBtn.disabled = false;
+    isSubmitting = false;
+    showMsg("Network error: could not reach the server. Check your internet connection and try again. (" + err.message + ")", "error");
+  }
+});
+
+document.getElementById("registerAnotherBtn").addEventListener("click", () => {
+  form.reset();
+  document.querySelectorAll(".bg-option").forEach(el => { el.classList.remove("selected"); el.setAttribute("aria-checked", "false"); });
+  selectedBloodGroup = "";
+  document.querySelectorAll(".invalid").forEach(el => el.classList.remove("invalid"));
+  document.querySelectorAll(".field-error").forEach(el => el.classList.remove("show"));
+  form.style.display = "block";
+  document.getElementById("formNote").style.display = "block";
+  document.getElementById("successScreen").style.display = "none";
+  msgBox.className = "msg";
+});
+
+window.addEventListener("DOMContentLoaded", () => {
+  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+});
 </script>
 </body>
 </html>

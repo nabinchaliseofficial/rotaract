@@ -4,7 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Blood Bridge Galkot | Admin Panel</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta name="robots" content="noindex, nofollow" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <style>
   :root{
     --red:#b91c1c; --red-dark:#7f1d1d; --bg:#f8f9fb; --card:#fff;
@@ -12,21 +13,32 @@
     --green:#15803d; --green-bg:#dcfce7;
     --amber:#b45309; --amber-bg:#fef3c7;
     --blue:#1d4ed8; --blue-bg:#dbeafe;
+    --focus: 3px solid #93c5fd;
+  }
+  [data-theme="dark"]{
+    --bg:#121212; --card:#1c1c1c; --text:#eee; --muted:#9ca3af; --border:#333;
+    --green-bg:#123a22; --amber-bg:#3a2c08; --blue-bg:#0f2747;
   }
   *{box-sizing:border-box;}
   body{margin:0;font-family:'Segoe UI',Roboto,-apple-system,sans-serif;background:var(--bg);color:var(--text);}
+  :focus-visible{outline:var(--focus);outline-offset:2px;}
   .topbar{
     background:var(--red);color:#fff;padding:14px 20px;
-    display:flex;align-items:center;justify-content:space-between;
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
     position:sticky;top:0;z-index:20;
   }
   .topbar h1{font-size:18px;margin:0;}
-  .topbar .user-info{display:flex;align-items:center;gap:12px;font-size:13px;}
-  .topbar button{
+  .topbar .user-info{display:flex;align-items:center;gap:10px;font-size:13px;flex-wrap:wrap;}
+  .topbar button, .icon-btn{
     background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);
     color:#fff;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;
   }
-  .topbar button:hover{background:rgba(255,255,255,0.28);}
+  .topbar button:hover, .icon-btn:hover{background:rgba(255,255,255,0.28);}
+  #offlineBanner{
+    display:none;background:var(--amber-bg);color:var(--amber);text-align:center;
+    padding:8px;font-size:13px;font-weight:600;
+  }
+  #offlineBanner.show{display:block;}
 
   /* Login screen */
   #loginScreen{
@@ -36,20 +48,22 @@
   #loginScreen h2{margin-top:0;color:var(--red-dark);}
   #loginScreen input{
     width:100%;padding:11px 12px;margin-bottom:12px;border:1.5px solid var(--border);
-    border-radius:10px;font-size:14px;
+    border-radius:10px;font-size:14px;background:var(--card);color:var(--text);
   }
   #loginScreen button{
     width:100%;padding:12px;background:var(--red);color:#fff;border:none;
     border-radius:10px;font-weight:700;cursor:pointer;font-size:15px;
   }
+  #loginScreen button:disabled{opacity:.6;cursor:not-allowed;}
   #loginScreen .err{color:var(--red);font-size:13px;margin-top:10px;display:none;}
+  #loginScreen .hint{font-size:12px;color:var(--muted);margin-top:14px;text-align:center;line-height:1.5;}
 
-  #app{display:none;max-width:1200px;margin:0 auto;padding:20px 16px 60px;}
+  #app{display:none;max-width:1280px;margin:0 auto;padding:20px 16px 60px;}
 
-  .tabs{display:flex;gap:8px;margin-bottom:20px;border-bottom:2px solid var(--border);}
+  .tabs{display:flex;gap:8px;margin-bottom:20px;border-bottom:2px solid var(--border);flex-wrap:wrap;}
   .tab{
     padding:10px 18px;cursor:pointer;font-weight:600;font-size:14px;color:var(--muted);
-    border-bottom:2px solid transparent;margin-bottom:-2px;
+    border-bottom:2px solid transparent;margin-bottom:-2px;background:none;border-top:none;border-left:none;border-right:none;
   }
   .tab.active{color:var(--red);border-bottom-color:var(--red);}
   .badge-count{
@@ -60,35 +74,83 @@
   .panel{display:none;}
   .panel.active{display:block;}
 
+  /* Dashboard */
+  .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px;}
+  .dash-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+  .dash-card .num{font-size:26px;font-weight:800;}
+  .dash-card .label{font-size:12px;color:var(--muted);margin-top:4px;}
+  .dash-card.total .num{color:var(--red);}
+  .dash-card.active .num{color:var(--green);}
+  .dash-card.pending .num{color:var(--amber);}
+  .dash-card.rejected .num{color:var(--red);}
+  .dash-card.inactive .num{color:var(--muted);}
+
+  .dash-columns{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+  @media (max-width:760px){ .dash-columns{grid-template-columns:1fr;} }
+  .dash-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;}
+  .dash-panel h3{margin:0 0 12px;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;}
+  .bar-label{width:60px;flex-shrink:0;font-weight:700;}
+  .bar-track{flex:1;background:var(--bg);border-radius:6px;height:14px;overflow:hidden;}
+  .bar-fill{height:100%;background:var(--red);border-radius:6px;}
+  .bar-count{width:32px;text-align:right;color:var(--muted);flex-shrink:0;}
+  .recent-list{list-style:none;margin:0;padding:0;font-size:13px;}
+  .recent-list li{padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:8px;}
+  .recent-list li:last-child{border-bottom:none;}
+  .recent-list .name{font-weight:600;}
+  .recent-list .meta{color:var(--muted);font-size:12px;}
+
   .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
   .toolbar input, .toolbar select{
     padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;
+    background:var(--card);color:var(--text);
   }
   .toolbar input[type=text]{flex:1;min-width:180px;}
 
+  .bulk-bar{
+    display:none;align-items:center;gap:10px;flex-wrap:wrap;background:var(--blue-bg);color:var(--blue);
+    padding:10px 14px;border-radius:10px;margin-bottom:14px;font-size:13px;font-weight:600;
+  }
+  .bulk-bar.show{display:flex;}
+  .bulk-bar button{border:none;border-radius:6px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;}
+  .bulk-bar .bb-approve{background:var(--green);color:#fff;}
+  .bulk-bar .bb-reject{background:var(--red);color:#fff;}
+  .bulk-bar .bb-delete{background:#374151;color:#fff;}
+  .bulk-bar .bb-export{background:#fff;color:var(--blue);border:1px solid var(--blue);}
+  .bulk-bar .bb-clear{background:transparent;color:var(--blue);text-decoration:underline;}
+
   table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
-  thead{background:#f3f4f6;}
+  thead{background:var(--bg);}
   th, td{padding:10px 12px;text-align:left;font-size:13px;border-bottom:1px solid var(--border);white-space:nowrap;}
-  th{color:var(--muted);font-weight:600;}
-  tbody tr:hover{background:#fafafa;}
+  th{color:var(--muted);font-weight:600;cursor:pointer;user-select:none;}
+  th.sortable:hover{color:var(--red);}
+  tbody tr:hover{background:rgba(0,0,0,0.02);}
+  [data-theme="dark"] tbody tr:hover{background:rgba(255,255,255,0.03);}
   .table-wrap{overflow-x:auto;border-radius:12px;}
 
   .pill{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;}
   .pill.pending{background:var(--amber-bg);color:var(--amber);}
   .pill.approved, .pill.active{background:var(--green-bg);color:var(--green);}
   .pill.rejected, .pill.inactive{background:#fee2e2;color:var(--red);}
+  [data-theme="dark"] .pill.rejected, [data-theme="dark"] .pill.inactive{background:#3a1616;}
 
   .actions{display:flex;gap:6px;}
-  .btn{
-    border:none;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;
-  }
+  .btn{border:none;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;}
   .btn-approve{background:var(--green-bg);color:var(--green);}
   .btn-reject{background:#fee2e2;color:var(--red);}
   .btn-delete{background:#f3f4f6;color:#374151;}
   .btn-edit{background:var(--blue-bg);color:var(--blue);}
+  .btn-view{background:#f3f4f6;color:#374151;}
+  .btn-toggle{background:var(--amber-bg);color:var(--amber);}
   .btn:hover{filter:brightness(0.95);}
+  [data-theme="dark"] .btn-delete, [data-theme="dark"] .btn-view{background:#2a2a2a;color:#ddd;}
 
   .empty{padding:40px;text-align:center;color:var(--muted);}
+  .skeleton-row td{background:linear-gradient(90deg,var(--border) 25%,var(--bg) 50%,var(--border) 75%);
+    background-size:200% 100%;animation:shimmer 1.3s infinite;height:18px;}
+  @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+  .last-updated{font-size:12px;color:var(--muted);margin-bottom:10px;}
 
   /* Modal */
   .modal-overlay{
@@ -96,33 +158,51 @@
     align-items:center;justify-content:center;z-index:50;padding:16px;
   }
   .modal-overlay.show{display:flex;}
-  .modal{background:#fff;border-radius:14px;padding:24px;max-width:420px;width:100%;}
+  .modal{background:var(--card);color:var(--text);border-radius:14px;padding:24px;max-width:440px;width:100%;max-height:88vh;overflow:auto;}
   .modal h3{margin-top:0;}
   .modal .field{margin-bottom:12px;}
-  .modal label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:#374151;}
-  .modal input, .modal select{width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;}
+  .modal label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--muted);}
+  .modal input, .modal select{width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--card);color:var(--text);}
   .modal .modal-actions{display:flex;gap:10px;margin-top:16px;}
   .modal .modal-actions button{flex:1;padding:10px;border:none;border-radius:8px;font-weight:700;cursor:pointer;}
   .modal .btn-save{background:var(--red);color:#fff;}
   .modal .btn-cancel{background:#f3f4f6;color:#374151;}
+  .detail-list{list-style:none;padding:0;margin:0;font-size:14px;}
+  .detail-list li{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);gap:10px;}
+  .detail-list li span:first-child{color:var(--muted);}
+  .detail-list li span:last-child{font-weight:600;text-align:right;}
 
   .toast{
     position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-    background:#1f1a1a;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;
-    display:none;z-index:60;
+    color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;
+    display:none;z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.2);
   }
   .toast.show{display:block;}
+  .toast.success{background:var(--green);}
+  .toast.error{background:var(--red);}
+  .toast.info{background:#1f1a1a;}
+
+  @media print{
+    .topbar, .tabs, .toolbar, .bulk-bar, .actions, th:first-child, td:first-child, #offlineBanner{display:none !important;}
+    body{background:#fff;}
+    table{box-shadow:none;}
+  }
 </style>
 </head>
 <body>
 
+<div id="offlineBanner" role="status">⚠ You're offline. Changes will fail until your connection returns.</div>
+
 <!-- LOGIN SCREEN -->
 <div id="loginScreen">
   <h2>🩸 Admin Login</h2>
-  <input type="email" id="loginEmail" name="email" placeholder="Email" autocomplete="username" />
-  <input type="password" id="loginPassword" name="password" placeholder="Password" autocomplete="current-password" />
-  <button id="loginBtn">Log In</button>
-  <div class="err" id="loginErr"></div>
+  <form id="loginForm">
+    <input type="email" id="loginEmail" name="email" placeholder="Email" autocomplete="username" required />
+    <input type="password" id="loginPassword" name="password" placeholder="Password" autocomplete="current-password" required />
+    <button type="submit" id="loginBtn">Log In</button>
+  </form>
+  <div class="err" id="loginErr" role="alert"></div>
+  <p class="hint">Access is restricted to approved admins. Contact the system owner if you need an account.</p>
 </div>
 
 <!-- ADMIN APP -->
@@ -131,20 +211,43 @@
     <h1>🩸 Blood Bridge Galkot — Admin</h1>
     <div class="user-info">
       <span id="userEmail"></span>
+      <button id="themeToggle" class="icon-btn" aria-label="Toggle dark mode">🌙</button>
       <button id="logoutBtn">Log Out</button>
     </div>
   </div>
 
   <div style="padding:20px 20px 0;">
-    <div class="tabs">
-      <div class="tab active" data-panel="pending">Registration Requests <span class="badge-count" id="pendingCount">0</span></div>
-      <div class="tab" data-panel="donors">Donor List (blood_bridge_galkot)</div>
+    <div class="tabs" role="tablist">
+      <button class="tab active" role="tab" data-panel="dashboard">Dashboard</button>
+      <button class="tab" role="tab" data-panel="pending">Registration Requests <span class="badge-count" id="pendingCount">0</span></button>
+      <button class="tab" role="tab" data-panel="donors">Donor List</button>
     </div>
   </div>
 
   <div style="padding:0 20px;">
+
+    <!-- DASHBOARD PANEL -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="dash-grid" id="dashGrid"></div>
+      <div class="dash-columns">
+        <div class="dash-panel">
+          <h3>Donors by Blood Group</h3>
+          <div id="bgBreakdown"></div>
+        </div>
+        <div class="dash-panel">
+          <h3>Top Municipalities</h3>
+          <div id="muniBreakdown"></div>
+        </div>
+      </div>
+      <div class="dash-panel">
+        <h3>Recent Registrations</h3>
+        <ul class="recent-list" id="recentList"></ul>
+      </div>
+    </div>
+
     <!-- PENDING REGISTRATIONS PANEL -->
-    <div class="panel active" id="panel-pending">
+    <div class="panel" id="panel-pending">
+      <div class="last-updated" id="regLastUpdated"></div>
       <div class="toolbar">
         <select id="statusFilter">
           <option value="pending">Pending</option>
@@ -152,12 +255,23 @@
           <option value="rejected">Rejected</option>
           <option value="all">All</option>
         </select>
+        <select id="regBgFilter"><option value="">All Blood Groups</option></select>
+        <select id="regMuniFilter"><option value="">All Municipalities</option></select>
         <input type="text" id="regSearch" placeholder="Search by name, phone, or blood group..." />
+        <button class="icon-btn" style="color:var(--red);border-color:var(--red);" id="exportRegCsv">⬇ Export CSV</button>
+      </div>
+      <div class="bulk-bar" id="regBulkBar">
+        <span id="regBulkCount">0 selected</span>
+        <button class="bb-approve" data-bulk="approve">Approve</button>
+        <button class="bb-reject" data-bulk="reject">Reject</button>
+        <button class="bb-delete" data-bulk="delete">Delete</button>
+        <button class="bb-clear" data-bulk="clear">Clear selection</button>
       </div>
       <div class="table-wrap">
         <table id="regTable">
           <thead>
             <tr>
+              <th><input type="checkbox" id="regSelectAll" aria-label="Select all registrations" /></th>
               <th>Name</th><th>Age</th><th>Sex</th><th>Blood Group</th>
               <th>Municipality</th><th>Ward</th><th>Phone</th><th>Status</th><th>Actions</th>
             </tr>
@@ -170,6 +284,7 @@
 
     <!-- DONORS PANEL -->
     <div class="panel" id="panel-donors">
+      <div class="last-updated" id="donorLastUpdated"></div>
       <div class="toolbar">
         <input type="text" id="donorSearch" placeholder="Search by name, phone, municipality, or blood group..." />
         <select id="donorStatusFilter">
@@ -177,11 +292,22 @@
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
+        <select id="donorBgFilter"><option value="">All Blood Groups</option></select>
+        <select id="donorMuniFilter"><option value="">All Municipalities</option></select>
+        <button class="icon-btn" style="color:var(--red);border-color:var(--red);" id="exportDonorCsv">⬇ Export CSV</button>
+        <button class="icon-btn" style="color:var(--red);border-color:var(--red);" id="printDonors">🖨 Print</button>
+      </div>
+      <div class="bulk-bar" id="donorBulkBar">
+        <span id="donorBulkCount">0 selected</span>
+        <button class="bb-export" data-bulk="export">Export Selected</button>
+        <button class="bb-delete" data-bulk="delete">Delete</button>
+        <button class="bb-clear" data-bulk="clear">Clear selection</button>
       </div>
       <div class="table-wrap">
         <table id="donorTable">
           <thead>
             <tr>
+              <th><input type="checkbox" id="donorSelectAll" aria-label="Select all donors" /></th>
               <th>S.N.</th><th>Name</th><th>Age</th><th>Sex</th><th>Blood Group</th>
               <th>Municipality</th><th>Ward</th><th>Phone</th><th>Status</th><th>Actions</th>
             </tr>
@@ -196,433 +322,806 @@
 
 <!-- EDIT DONOR MODAL -->
 <div class="modal-overlay" id="editModalOverlay">
-  <div class="modal">
-    <h3>Edit Donor</h3>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+    <h3 id="editModalTitle">Edit Donor</h3>
     <input type="hidden" id="edit_id" />
-    <div class="field"><label>Name</label><input type="text" id="edit_person_name" /></div>
-    <div class="field"><label>Age</label><input type="text" id="edit_age" /></div>
-    <div class="field"><label>Sex</label>
+    <div class="field"><label for="edit_person_name">Name</label><input type="text" id="edit_person_name" /></div>
+    <div class="field"><label for="edit_age">Age</label><input type="text" id="edit_age" /></div>
+    <div class="field"><label for="edit_sex">Sex</label>
       <select id="edit_sex"><option value="">--</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select>
     </div>
-    <div class="field"><label>Blood Group</label>
+    <div class="field"><label for="edit_blood_group">Blood Group</label>
       <select id="edit_blood_group">
         <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
         <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
       </select>
     </div>
-    <div class="field"><label>Municipality</label><input type="text" id="edit_municipality" /></div>
-    <div class="field"><label>Ward No.</label><input type="text" id="edit_ward_number" /></div>
-    <div class="field"><label>Phone Number</label><input type="text" id="edit_phone_number" /></div>
-    <div class="field"><label>Status</label>
+    <div class="field"><label for="edit_municipality">Municipality</label><input type="text" id="edit_municipality" /></div>
+    <div class="field"><label for="edit_ward_number">Ward No.</label><input type="text" id="edit_ward_number" /></div>
+    <div class="field"><label for="edit_phone_number">Phone Number</label><input type="text" id="edit_phone_number" /></div>
+    <div class="field"><label for="edit_status">Status</label>
       <select id="edit_status"><option value="active">Active</option><option value="inactive">Inactive</option></select>
     </div>
     <div class="modal-actions">
-      <button class="btn-cancel" id="editCancelBtn">Cancel</button>
-      <button class="btn-save" id="editSaveBtn">Save</button>
+      <button class="btn-cancel" id="editCancelBtn" type="button">Cancel</button>
+      <button class="btn-save" id="editSaveBtn" type="button">Save</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- VIEW DETAILS MODAL (donor or registration) -->
+<div class="modal-overlay" id="viewModalOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="viewModalTitle">
+    <h3 id="viewModalTitle">Details</h3>
+    <ul class="detail-list" id="viewDetailList"></ul>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="viewCloseBtn" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- GENERIC CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModalOverlay">
+  <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="confirmModalTitle" style="max-width:380px;">
+    <h3 id="confirmModalTitle">Are you sure?</h3>
+    <p id="confirmModalMsg" style="color:var(--muted);font-size:14px;"></p>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="confirmModalCancel" type="button">Cancel</button>
+      <button class="btn-save" id="confirmModalOk" type="button">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-  // ---- SUPABASE CONFIG ----
-  const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  // --------------------------
+// ==================== CONFIG ====================
+// SECURITY NOTE: This is the Supabase *anon/publishable* key, which is safe to
+// expose client-side ONLY because every table this app touches must have
+// Row Level Security (RLS) enabled with policies that:
+//   - allow public SELECT on blood_bridge_galkot where status = 'active'
+//   - allow public INSERT on bloodbridge_register (status forced to 'pending')
+//   - restrict SELECT/UPDATE/DELETE/INSERT on blood_bridge_galkot and
+//     UPDATE/DELETE on bloodbridge_register to rows where the caller is
+//     verified as an active admin (e.g. via a policy that checks
+//     auth.uid() against blood_bridge_admins).
+// Never use a service_role key in any client-side file — it bypasses RLS entirely.
+const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+let supabaseClient = null;
 
-  const loginScreen = document.getElementById("loginScreen");
-  const app = document.getElementById("app");
-  const toast = document.getElementById("toast");
+const loginScreen = document.getElementById("loginScreen");
+const app = document.getElementById("app");
+const toast = document.getElementById("toast");
 
-  function showToast(msg) {
-    toast.textContent = msg;
-    toast.className = "toast show";
-    setTimeout(() => toast.className = "toast", 2500);
+// ==================== UTIL ====================
+function escapeHtml(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function showToast(msg, type = "info") {
+  toast.textContent = msg;
+  toast.className = "toast show " + type;
+  setTimeout(() => toast.className = "toast", 2800);
+}
+function formatTime(d = new Date()) {
+  return "Last updated: " + d.toLocaleTimeString();
+}
+function debounce(fn, ms) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+
+// Generic confirm modal — replaces window.confirm() for a consistent, accessible UI
+function confirmDialog(message, title = "Are you sure?") {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById("confirmModalOverlay");
+    document.getElementById("confirmModalTitle").textContent = title;
+    document.getElementById("confirmModalMsg").textContent = message;
+    overlay.classList.add("show");
+    const okBtn = document.getElementById("confirmModalOk");
+    const cancelBtn = document.getElementById("confirmModalCancel");
+    function cleanup(result) {
+      overlay.classList.remove("show");
+      okBtn.removeEventListener("click", onOk);
+      cancelBtn.removeEventListener("click", onCancel);
+      resolve(result);
+    }
+    function onOk() { cleanup(true); }
+    function onCancel() { cleanup(false); }
+    okBtn.addEventListener("click", onOk);
+    cancelBtn.addEventListener("click", onCancel);
+  });
+}
+
+function downloadCsv(filename, rows, columns) {
+  const header = columns.map(c => `"${c.label.replace(/"/g, '""')}"`).join(",");
+  const lines = rows.map(r => columns.map(c => {
+    const val = r[c.key] ?? "";
+    return `"${String(val).replace(/"/g, '""')}"`;
+  }).join(","));
+  const csv = [header, ...lines].join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+// Note: for an "Excel export" experience, this CSV opens directly and cleanly
+// in Excel/Google Sheets — a dedicated .xlsx library isn't needed for this use case.
+
+const DONOR_CSV_COLUMNS = [
+  { key: "id", label: "ID" }, { key: "person_name", label: "Name" }, { key: "age", label: "Age" },
+  { key: "sex", label: "Sex" }, { key: "blood_group", label: "Blood Group" },
+  { key: "municipality", label: "Municipality" }, { key: "ward_number", label: "Ward" },
+  { key: "phone_number", label: "Phone" }, { key: "status", label: "Status" }
+];
+const REG_CSV_COLUMNS = [...DONOR_CSV_COLUMNS, { key: "created_at", label: "Submitted At" }];
+
+// ==================== OFFLINE DETECTION ====================
+function updateOfflineBanner() {
+  document.getElementById("offlineBanner").classList.toggle("show", !navigator.onLine);
+}
+window.addEventListener("online", updateOfflineBanner);
+window.addEventListener("offline", updateOfflineBanner);
+updateOfflineBanner();
+
+// ==================== THEME ====================
+function initTheme() {
+  const saved = localStorage.getItem("bb_admin_theme") || "light";
+  document.documentElement.setAttribute("data-theme", saved);
+  document.getElementById("themeToggle").textContent = saved === "dark" ? "☀️" : "🌙";
+}
+document.getElementById("themeToggle").addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme");
+  const next = cur === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("bb_admin_theme", next);
+  document.getElementById("themeToggle").textContent = next === "dark" ? "☀️" : "🌙";
+});
+initTheme();
+
+// ==================== AUTH ====================
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const errBox = document.getElementById("loginErr");
+  const loginBtn = document.getElementById("loginBtn");
+  errBox.style.display = "none";
+
+  if (!email || !password) {
+    errBox.textContent = "Please enter both email and password.";
+    errBox.style.display = "block";
+    return;
   }
 
-  // ---------------- AUTH ----------------
-  document.getElementById("loginBtn").addEventListener("click", async () => {
-    const email = document.getElementById("loginEmail").value.trim();
-    const password = document.getElementById("loginPassword").value;
-    const errBox = document.getElementById("loginErr");
-    errBox.style.display = "none";
-
-    if (!email || !password) {
-      errBox.textContent = "Please enter both email and password.";
-      errBox.style.display = "block";
-      return;
-    }
-
-    try {
-      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-      if (error) {
-        errBox.textContent = "Login failed: " + error.message;
-        errBox.style.display = "block";
-        return;
-      }
-      await checkAdminAndInit();
-    } catch (err) {
-      errBox.textContent = "Network error: could not reach the server. (" + err.message + ")";
-      errBox.style.display = "block";
-    }
-  });
-
-  document.getElementById("logoutBtn").addEventListener("click", async () => {
-    await supabaseClient.auth.signOut();
-    location.reload();
-  });
-
-  async function checkAdminAndInit() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) {
-      loginScreen.style.display = "block";
-      app.style.display = "none";
-      return;
-    }
-    // Check admin access via blood_bridge_admins table
-    const { data: adminRow, error } = await supabaseClient
-      .from("blood_bridge_admins")
-      .select("status")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    // Log full details to console for debugging
-    console.log("Admin check — user:", user.id, user.email);
-    console.log("Admin check — row:", adminRow, "error:", error);
-
-    const isAdmin = adminRow && adminRow.status === "active";
-
+  loginBtn.disabled = true;
+  loginBtn.textContent = "Logging in...";
+  try {
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) {
-      // A real query error (e.g. RLS blocking the select) — show it so it's
-      // clear this isn't just "no matching row"
-      document.getElementById("loginErr").textContent =
-        "Could not verify admin access: " + error.message + " (check console for details)";
-      document.getElementById("loginErr").style.display = "block";
-      await supabaseClient.auth.signOut();
-      loginScreen.style.display = "block";
-      app.style.display = "none";
+      errBox.textContent = "Login failed: " + error.message;
+      errBox.style.display = "block";
       return;
     }
+    await checkAdminAndInit();
+  } catch (err) {
+    errBox.textContent = "Network error: could not reach the server. (" + err.message + ")";
+    errBox.style.display = "block";
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = "Log In";
+  }
+});
 
-    if (!isAdmin) {
-      document.getElementById("loginErr").textContent =
-        adminRow
-          ? "Your admin access is inactive. Contact another admin to reactivate it."
-          : "You do not have admin access. (No admin record found for " + user.email + ")";
-      document.getElementById("loginErr").style.display = "block";
-      await supabaseClient.auth.signOut();
-      loginScreen.style.display = "block";
-      app.style.display = "none";
-      return;
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  await supabaseClient.auth.signOut();
+  location.reload();
+});
+
+async function checkAdminAndInit() {
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) {
+    loginScreen.style.display = "block";
+    app.style.display = "none";
+    return;
+  }
+  // Admin verification relies on server-side RLS on blood_bridge_admins —
+  // a row only becomes visible to this SELECT if the policy allows it for
+  // the current auth.uid(), so this check cannot be bypassed by editing
+  // client-side JS.
+  const { data: adminRow, error } = await supabaseClient
+    .from("blood_bridge_admins")
+    .select("status")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  const isAdmin = adminRow && adminRow.status === "active";
+
+  if (error) {
+    document.getElementById("loginErr").textContent =
+      "Could not verify admin access: " + error.message;
+    document.getElementById("loginErr").style.display = "block";
+    await supabaseClient.auth.signOut();
+    loginScreen.style.display = "block";
+    app.style.display = "none";
+    return;
+  }
+
+  if (!isAdmin) {
+    document.getElementById("loginErr").textContent =
+      adminRow
+        ? "Your admin access is inactive. Contact another admin to reactivate it."
+        : "You do not have admin access for " + user.email + ".";
+    document.getElementById("loginErr").style.display = "block";
+    await supabaseClient.auth.signOut();
+    loginScreen.style.display = "block";
+    app.style.display = "none";
+    return;
+  }
+
+  document.getElementById("userEmail").textContent = user.email;
+  loginScreen.style.display = "none";
+  app.style.display = "block";
+  await Promise.all([loadRegistrations(), loadDonors()]);
+  renderDashboard();
+}
+
+// ==================== TABS ====================
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("panel-" + tab.dataset.panel).classList.add("active");
+    if (tab.dataset.panel === "dashboard") renderDashboard();
+  });
+});
+
+// ==================== DASHBOARD ====================
+function renderDashboard() {
+  const totalDonors = allDonors.length;
+  const activeDonors = allDonors.filter(d => d.status === "active").length;
+  const inactiveDonors = allDonors.filter(d => d.status === "inactive").length;
+  const pendingRegs = allRegistrations.filter(r => r.status === "pending").length;
+  const rejectedRegs = allRegistrations.filter(r => r.status === "rejected").length;
+
+  document.getElementById("dashGrid").innerHTML = `
+    <div class="dash-card total"><div class="num">${totalDonors}</div><div class="label">Total Donors</div></div>
+    <div class="dash-card active"><div class="num">${activeDonors}</div><div class="label">Active Donors</div></div>
+    <div class="dash-card inactive"><div class="num">${inactiveDonors}</div><div class="label">Inactive Donors</div></div>
+    <div class="dash-card pending"><div class="num">${pendingRegs}</div><div class="label">Pending Requests</div></div>
+    <div class="dash-card rejected"><div class="num">${rejectedRegs}</div><div class="label">Rejected Requests</div></div>
+  `;
+
+  const bgCounts = {};
+  allDonors.forEach(d => { const g = d.blood_group || "Unknown"; bgCounts[g] = (bgCounts[g] || 0) + 1; });
+  const maxBg = Math.max(1, ...Object.values(bgCounts));
+  document.getElementById("bgBreakdown").innerHTML = Object.keys(bgCounts).sort().map(g => `
+    <div class="bar-row">
+      <span class="bar-label">${escapeHtml(g)}</span>
+      <span class="bar-track"><span class="bar-fill" style="width:${(bgCounts[g] / maxBg * 100).toFixed(0)}%"></span></span>
+      <span class="bar-count">${bgCounts[g]}</span>
+    </div>`).join("") || `<p style="color:var(--muted);font-size:13px;">No data yet.</p>`;
+
+  const muniCounts = {};
+  allDonors.forEach(d => { const m = d.municipality || "Unknown"; muniCounts[m] = (muniCounts[m] || 0) + 1; });
+  const topMuni = Object.entries(muniCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const maxMuni = Math.max(1, ...topMuni.map(([, c]) => c));
+  document.getElementById("muniBreakdown").innerHTML = topMuni.map(([m, c]) => `
+    <div class="bar-row">
+      <span class="bar-label" style="width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(m)}</span>
+      <span class="bar-track"><span class="bar-fill" style="width:${(c / maxMuni * 100).toFixed(0)}%"></span></span>
+      <span class="bar-count">${c}</span>
+    </div>`).join("") || `<p style="color:var(--muted);font-size:13px;">No data yet.</p>`;
+
+  const recent = [...allRegistrations].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 8);
+  document.getElementById("recentList").innerHTML = recent.map(r => `
+    <li>
+      <span><span class="name">${escapeHtml(r.person_name)}</span> — ${escapeHtml(r.blood_group || "-")}</span>
+      <span class="meta">${r.created_at ? new Date(r.created_at).toLocaleDateString() : ""} · <span class="pill ${r.status}">${escapeHtml(r.status)}</span></span>
+    </li>`).join("") || `<li style="color:var(--muted);">No registrations yet.</li>`;
+}
+
+// ==================== REGISTRATIONS (bloodbridge_register) ====================
+let allRegistrations = [];
+let selectedRegIds = new Set();
+
+async function loadRegistrations() {
+  const tbody = document.getElementById("regTbody");
+  tbody.innerHTML = Array.from({length: 4}).map(() => `<tr class="skeleton-row"><td colspan="9">&nbsp;</td></tr>`).join("");
+  try {
+    const { data, error } = await supabaseClient
+      .from("bloodbridge_register")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) { showToast("Error: " + error.message, "error"); return; }
+    allRegistrations = data || [];
+    populateSelectFilter("regBgFilter", allRegistrations.map(r => r.blood_group), "All Blood Groups");
+    populateSelectFilter("regMuniFilter", allRegistrations.map(r => r.municipality), "All Municipalities");
+    const pendingCount = allRegistrations.filter(r => r.status === "pending").length;
+    document.getElementById("pendingCount").textContent = pendingCount;
+    document.getElementById("regLastUpdated").textContent = formatTime();
+    renderRegistrations();
+  } catch (err) {
+    showToast("Network error: " + err.message, "error");
+  }
+}
+
+function populateSelectFilter(id, values, allLabel) {
+  const select = document.getElementById(id);
+  const cur = select.value;
+  const uniq = [...new Set(values.filter(Boolean))].sort();
+  select.innerHTML = `<option value="">${allLabel}</option>` + uniq.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+  select.value = cur;
+}
+
+function renderRegistrations() {
+  const statusFilter = document.getElementById("statusFilter").value;
+  const bgFilter = document.getElementById("regBgFilter").value;
+  const muniFilter = document.getElementById("regMuniFilter").value;
+  const search = document.getElementById("regSearch").value.trim().toLowerCase();
+  let rows = allRegistrations;
+
+  if (statusFilter !== "all") rows = rows.filter(r => r.status === statusFilter);
+  if (bgFilter) rows = rows.filter(r => r.blood_group === bgFilter);
+  if (muniFilter) rows = rows.filter(r => r.municipality === muniFilter);
+  if (search) {
+    rows = rows.filter(r =>
+      (r.person_name || "").toLowerCase().includes(search) ||
+      (r.phone_number || "").toLowerCase().includes(search) ||
+      (r.blood_group || "").toLowerCase().includes(search) ||
+      (r.municipality || "").toLowerCase().includes(search)
+    );
+  }
+
+  const tbody = document.getElementById("regTbody");
+  const empty = document.getElementById("regEmpty");
+  tbody.innerHTML = "";
+
+  if (rows.length === 0) {
+    empty.style.display = "block";
+    updateRegBulkBar();
+    return;
+  }
+  empty.style.display = "none";
+
+  rows.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><input type="checkbox" class="reg-check" data-id="${r.id}" ${selectedRegIds.has(r.id) ? "checked" : ""} aria-label="Select ${escapeHtml(r.person_name)}" /></td>
+      <td>${escapeHtml(r.person_name)}</td>
+      <td>${escapeHtml(r.age || "-")}</td>
+      <td>${escapeHtml(r.sex || "-")}</td>
+      <td><b>${escapeHtml(r.blood_group || "-")}</b></td>
+      <td>${escapeHtml(r.municipality || "-")}</td>
+      <td>${escapeHtml(r.ward_number || "-")}</td>
+      <td>${escapeHtml(r.phone_number)}</td>
+      <td><span class="pill ${r.status}">${statusLabel(r.status)}</span></td>
+      <td class="actions">
+        <button class="btn btn-view" data-id="${r.id}" data-action="view-reg">View</button>
+        ${r.status === "pending" ? `
+          <button class="btn btn-approve" data-id="${r.id}" data-action="approve">Approve</button>
+          <button class="btn btn-reject" data-id="${r.id}" data-action="reject">Reject</button>
+        ` : ""}
+        <button class="btn btn-delete" data-id="${r.id}" data-action="delete-reg">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  updateRegBulkBar();
+}
+
+function statusLabel(s) {
+  return { pending: "Pending", approved: "Approved", rejected: "Rejected" }[s] || s;
+}
+
+document.getElementById("statusFilter").addEventListener("change", renderRegistrations);
+document.getElementById("regBgFilter").addEventListener("change", renderRegistrations);
+document.getElementById("regMuniFilter").addEventListener("change", renderRegistrations);
+document.getElementById("regSearch").addEventListener("input", debounce(renderRegistrations, 250));
+
+document.getElementById("exportRegCsv").addEventListener("click", () => {
+  downloadCsv("blood_bridge_registrations.csv", allRegistrations, REG_CSV_COLUMNS);
+});
+
+// Row selection
+document.getElementById("regTbody").addEventListener("change", (e) => {
+  if (!e.target.classList.contains("reg-check")) return;
+  const id = Number(e.target.dataset.id);
+  if (e.target.checked) selectedRegIds.add(id); else selectedRegIds.delete(id);
+  updateRegBulkBar();
+});
+document.getElementById("regSelectAll").addEventListener("change", (e) => {
+  document.querySelectorAll(".reg-check").forEach(cb => {
+    cb.checked = e.target.checked;
+    const id = Number(cb.dataset.id);
+    if (e.target.checked) selectedRegIds.add(id); else selectedRegIds.delete(id);
+  });
+  updateRegBulkBar();
+});
+function updateRegBulkBar() {
+  const bar = document.getElementById("regBulkBar");
+  const count = selectedRegIds.size;
+  document.getElementById("regBulkCount").textContent = `${count} selected`;
+  bar.classList.toggle("show", count > 0);
+}
+document.getElementById("regBulkBar").addEventListener("click", async (e) => {
+  const action = e.target.dataset.bulk;
+  if (!action) return;
+  if (action === "clear") { selectedRegIds.clear(); renderRegistrations(); return; }
+
+  const ids = [...selectedRegIds];
+  if (ids.length === 0) return;
+
+  if (action === "delete") {
+    const ok = await confirmDialog(`Delete ${ids.length} registration(s)? This cannot be undone.`, "Bulk Delete");
+    if (!ok) return;
+    const { error } = await supabaseClient.from("bloodbridge_register").delete().in("id", ids);
+    if (error) { showToast("Error: " + error.message, "error"); return; }
+    showToast(`${ids.length} registration(s) deleted.`, "success");
+    selectedRegIds.clear();
+    loadRegistrations();
+    return;
+  }
+
+  if (action === "approve" || action === "reject") {
+    const ok = await confirmDialog(`${action === "approve" ? "Approve" : "Reject"} ${ids.length} registration(s)?`, "Bulk " + (action === "approve" ? "Approve" : "Reject"));
+    if (!ok) return;
+    if (action === "reject") {
+      const { error } = await supabaseClient.from("bloodbridge_register")
+        .update({ status: "rejected", reviewed_at: new Date().toISOString() }).in("id", ids);
+      if (error) { showToast("Error: " + error.message, "error"); return; }
+    } else {
+      // Approve each individually since approval also inserts into blood_bridge_galkot
+      for (const id of ids) {
+        const record = allRegistrations.find(r => r.id === id);
+        if (record) await approveRegistration(record, { silent: true });
+      }
     }
-
-    document.getElementById("userEmail").textContent = user.email;
-    loginScreen.style.display = "none";
-    app.style.display = "block";
+    showToast(`${ids.length} registration(s) ${action === "approve" ? "approved" : "rejected"}.`, "success");
+    selectedRegIds.clear();
     loadRegistrations();
     loadDonors();
   }
+});
 
-  // On page load, check existing session
-  checkAdminAndInit();
+document.getElementById("regTbody").addEventListener("click", async (e) => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  const id = Number(btn.dataset.id);
+  const action = btn.dataset.action;
+  const record = allRegistrations.find(r => r.id === id);
+  if (!record) return;
 
-  // ---------------- TABS ----------------
-  document.querySelectorAll(".tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-      tab.classList.add("active");
-      document.getElementById("panel-" + tab.dataset.panel).classList.add("active");
-    });
-  });
-
-  // ---------------- REGISTRATIONS (bloodbridge_register) ----------------
-  let allRegistrations = [];
-
-  async function loadRegistrations() {
+  if (action === "view-reg") {
+    openViewModal("Registration Details", record, [
+      ["Name", record.person_name], ["Age", record.age], ["Sex", record.sex],
+      ["Blood Group", record.blood_group], ["Municipality", record.municipality],
+      ["Ward", record.ward_number], ["Phone", record.phone_number],
+      ["Entered By", record.data_entry_by], ["Status", statusLabel(record.status)],
+      ["Submitted", record.created_at ? new Date(record.created_at).toLocaleString() : "-"]
+    ]);
+  } else if (action === "approve") {
+    const ok = await confirmDialog(`Approve ${record.person_name} as an active donor?`, "Approve Registration");
+    if (ok) await approveRegistration(record);
+  } else if (action === "reject") {
+    const ok = await confirmDialog(`Reject ${record.person_name}'s registration?`, "Reject Registration");
+    if (ok) await updateRegistrationStatus(id, "rejected");
+  } else if (action === "delete-reg") {
+    const ok = await confirmDialog(`Delete ${record.person_name}'s registration permanently?`, "Delete Registration");
+    if (!ok) return;
     try {
-      const { data, error } = await supabaseClient
-        .from("bloodbridge_register")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) { showToast("Error: " + error.message); return; }
-      allRegistrations = data || [];
-      const pendingCount = allRegistrations.filter(r => r.status === "pending").length;
-      document.getElementById("pendingCount").textContent = pendingCount;
-      renderRegistrations();
-    } catch (err) {
-      showToast("Network error: " + err.message);
-    }
-  }
-
-  function renderRegistrations() {
-    const statusFilter = document.getElementById("statusFilter").value;
-    const search = document.getElementById("regSearch").value.trim().toLowerCase();
-    let rows = allRegistrations;
-
-    if (statusFilter !== "all") rows = rows.filter(r => r.status === statusFilter);
-    if (search) {
-      rows = rows.filter(r =>
-        (r.person_name || "").toLowerCase().includes(search) ||
-        (r.phone_number || "").toLowerCase().includes(search) ||
-        (r.blood_group || "").toLowerCase().includes(search) ||
-        (r.municipality || "").toLowerCase().includes(search)
-      );
-    }
-
-    const tbody = document.getElementById("regTbody");
-    const empty = document.getElementById("regEmpty");
-    tbody.innerHTML = "";
-
-    if (rows.length === 0) {
-      empty.style.display = "block";
-      return;
-    }
-    empty.style.display = "none";
-
-    rows.forEach(r => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${escapeHtml(r.person_name)}</td>
-        <td>${escapeHtml(r.age || "-")}</td>
-        <td>${escapeHtml(r.sex || "-")}</td>
-        <td><b>${escapeHtml(r.blood_group || "-")}</b></td>
-        <td>${escapeHtml(r.municipality || "-")}</td>
-        <td>${escapeHtml(r.ward_number || "-")}</td>
-        <td>${escapeHtml(r.phone_number)}</td>
-        <td><span class="pill ${r.status}">${statusLabel(r.status)}</span></td>
-        <td class="actions">
-          ${r.status === "pending" ? `
-            <button class="btn btn-approve" data-id="${r.id}" data-action="approve">Approve</button>
-            <button class="btn btn-reject" data-id="${r.id}" data-action="reject">Reject</button>
-          ` : ""}
-          <button class="btn btn-delete" data-id="${r.id}" data-action="delete-reg">Delete</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function statusLabel(s) {
-    return { pending: "Pending", approved: "Approved", rejected: "Rejected" }[s] || s;
-  }
-
-  document.getElementById("statusFilter").addEventListener("change", renderRegistrations);
-  document.getElementById("regSearch").addEventListener("input", renderRegistrations);
-
-  document.getElementById("regTbody").addEventListener("click", async (e) => {
-    const btn = e.target.closest("button");
-    if (!btn) return;
-    const id = btn.dataset.id;
-    const action = btn.dataset.action;
-    const record = allRegistrations.find(r => String(r.id) === String(id));
-    if (!record) return;
-
-    if (action === "approve") {
-      await approveRegistration(record);
-    } else if (action === "reject") {
-      await updateRegistrationStatus(id, "rejected");
-    } else if (action === "delete-reg") {
-      if (!confirm("Are you sure you want to delete this registration?")) return;
-      try {
-        const { error } = await supabaseClient.from("bloodbridge_register").delete().eq("id", id);
-        if (error) { showToast("Error: " + error.message); return; }
-        showToast("Registration deleted.");
-        loadRegistrations();
-      } catch (err) {
-        showToast("Network error: " + err.message);
-      }
-    }
-  });
-
-  async function updateRegistrationStatus(id, status) {
-    try {
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      const { error } = await supabaseClient
-        .from("bloodbridge_register")
-        .update({ status, reviewed_at: new Date().toISOString(), reviewed_by: user?.email || null })
-        .eq("id", id);
-      if (error) { showToast("Error: " + error.message); return; }
-      showToast(status === "rejected" ? "Registration rejected." : "Updated.");
+      const { error } = await supabaseClient.from("bloodbridge_register").delete().eq("id", id);
+      if (error) { showToast("Error: " + error.message, "error"); return; }
+      showToast("Registration deleted.", "success");
       loadRegistrations();
     } catch (err) {
-      showToast("Network error: " + err.message);
+      showToast("Network error: " + err.message, "error");
     }
   }
+});
 
-  async function approveRegistration(record) {
-    try {
-      // 1. Insert into blood_bridge_galkot as active donor
-      const { error: insertError } = await supabaseClient.from("blood_bridge_galkot").insert([{
-        person_name: record.person_name,
-        age: record.age,
-        sex: record.sex,
-        blood_group: record.blood_group,
-        municipality: record.municipality,
-        ward_number: record.ward_number,
-        phone_number: record.phone_number,
-        data_entry_by: record.data_entry_by,
-        status: "active"
-      }]);
-
-      if (insertError) {
-        showToast("Error approving: " + insertError.message);
-        return;
-      }
-
-      // 2. Mark registration as approved
-      await updateRegistrationStatus(record.id, "approved");
-      loadDonors();
-    } catch (err) {
-      showToast("Network error: " + err.message);
-    }
+async function updateRegistrationStatus(id, status) {
+  try {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    const { error } = await supabaseClient
+      .from("bloodbridge_register")
+      .update({ status, reviewed_at: new Date().toISOString(), reviewed_by: user?.email || null })
+      .eq("id", id);
+    if (error) { showToast("Error: " + error.message, "error"); return; }
+    showToast(status === "rejected" ? "Registration rejected." : "Updated.", "success");
+    loadRegistrations();
+    renderDashboard();
+  } catch (err) {
+    showToast("Network error: " + err.message, "error");
   }
+}
 
-  // ---------------- DONORS (blood_bridge_galkot) ----------------
-  let allDonors = [];
+async function approveRegistration(record, opts = {}) {
+  try {
+    const { error: insertError } = await supabaseClient.from("blood_bridge_galkot").insert([{
+      person_name: record.person_name,
+      age: record.age,
+      sex: record.sex,
+      blood_group: record.blood_group,
+      municipality: record.municipality,
+      ward_number: record.ward_number,
+      phone_number: record.phone_number,
+      data_entry_by: record.data_entry_by,
+      status: "active"
+    }]);
 
-  async function loadDonors() {
-    try {
-      const { data, error } = await supabaseClient
-        .from("blood_bridge_galkot")
-        .select("*")
-        .order("id", { ascending: false });
-
-      if (error) { showToast("Error: " + error.message); return; }
-      allDonors = data || [];
-      renderDonors();
-    } catch (err) {
-      showToast("Network error: " + err.message);
-    }
-  }
-
-  function renderDonors() {
-    const search = document.getElementById("donorSearch").value.trim().toLowerCase();
-    const statusFilter = document.getElementById("donorStatusFilter").value;
-    let rows = allDonors;
-
-    if (statusFilter !== "all") rows = rows.filter(d => d.status === statusFilter);
-    if (search) {
-      rows = rows.filter(d =>
-        (d.person_name || "").toLowerCase().includes(search) ||
-        (d.phone_number || "").toLowerCase().includes(search) ||
-        (d.blood_group || "").toLowerCase().includes(search) ||
-        (d.municipality || "").toLowerCase().includes(search)
-      );
-    }
-
-    const tbody = document.getElementById("donorTbody");
-    const empty = document.getElementById("donorEmpty");
-    tbody.innerHTML = "";
-
-    if (rows.length === 0) {
-      empty.style.display = "block";
+    if (insertError) {
+      showToast("Error approving: " + insertError.message, "error");
       return;
     }
-    empty.style.display = "none";
 
-    rows.forEach(d => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${d.sn ?? d.id}</td>
-        <td>${escapeHtml(d.person_name || "-")}</td>
-        <td>${escapeHtml(d.age || "-")}</td>
-        <td>${escapeHtml(d.sex || "-")}</td>
-        <td><b>${escapeHtml(d.blood_group || "-")}</b></td>
-        <td>${escapeHtml(d.municipality || "-")}</td>
-        <td>${escapeHtml(d.ward_number || "-")}</td>
-        <td>${escapeHtml(d.phone_number || "-")}</td>
-        <td><span class="pill ${d.status}">${d.status === "active" ? "Active" : "Inactive"}</span></td>
-        <td class="actions">
-          <button class="btn btn-edit" data-id="${d.id}" data-action="edit">Edit</button>
-          <button class="btn btn-delete" data-id="${d.id}" data-action="delete-donor">Delete</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
+    await updateRegistrationStatus(record.id, "approved");
+    if (!opts.silent) loadDonors();
+  } catch (err) {
+    showToast("Network error: " + err.message, "error");
+  }
+}
+
+// ==================== DONORS (blood_bridge_galkot) ====================
+let allDonors = [];
+let selectedDonorIds = new Set();
+
+async function loadDonors() {
+  const tbody = document.getElementById("donorTbody");
+  tbody.innerHTML = Array.from({length: 4}).map(() => `<tr class="skeleton-row"><td colspan="10">&nbsp;</td></tr>`).join("");
+  try {
+    const { data, error } = await supabaseClient
+      .from("blood_bridge_galkot")
+      .select("*")
+      .order("id", { ascending: false });
+
+    if (error) { showToast("Error: " + error.message, "error"); return; }
+    allDonors = data || [];
+    populateSelectFilter("donorBgFilter", allDonors.map(d => d.blood_group), "All Blood Groups");
+    populateSelectFilter("donorMuniFilter", allDonors.map(d => d.municipality), "All Municipalities");
+    document.getElementById("donorLastUpdated").textContent = formatTime();
+    renderDonors();
+  } catch (err) {
+    showToast("Network error: " + err.message, "error");
+  }
+}
+
+function renderDonors() {
+  const search = document.getElementById("donorSearch").value.trim().toLowerCase();
+  const statusFilter = document.getElementById("donorStatusFilter").value;
+  const bgFilter = document.getElementById("donorBgFilter").value;
+  const muniFilter = document.getElementById("donorMuniFilter").value;
+  let rows = allDonors;
+
+  if (statusFilter !== "all") rows = rows.filter(d => d.status === statusFilter);
+  if (bgFilter) rows = rows.filter(d => d.blood_group === bgFilter);
+  if (muniFilter) rows = rows.filter(d => d.municipality === muniFilter);
+  if (search) {
+    rows = rows.filter(d =>
+      (d.person_name || "").toLowerCase().includes(search) ||
+      (d.phone_number || "").toLowerCase().includes(search) ||
+      (d.blood_group || "").toLowerCase().includes(search) ||
+      (d.municipality || "").toLowerCase().includes(search)
+    );
   }
 
-  document.getElementById("donorSearch").addEventListener("input", renderDonors);
-  document.getElementById("donorStatusFilter").addEventListener("change", renderDonors);
+  const tbody = document.getElementById("donorTbody");
+  const empty = document.getElementById("donorEmpty");
+  tbody.innerHTML = "";
 
-  document.getElementById("donorTbody").addEventListener("click", async (e) => {
-    const btn = e.target.closest("button");
-    if (!btn) return;
-    const id = btn.dataset.id;
-    const action = btn.dataset.action;
-    const record = allDonors.find(d => String(d.id) === String(id));
-    if (!record) return;
+  if (rows.length === 0) {
+    empty.style.display = "block";
+    updateDonorBulkBar();
+    return;
+  }
+  empty.style.display = "none";
 
-    if (action === "edit") {
-      openEditModal(record);
-    } else if (action === "delete-donor") {
-      if (!confirm("Are you sure you want to delete this donor?")) return;
-      try {
-        const { error } = await supabaseClient.from("blood_bridge_galkot").delete().eq("id", id);
-        if (error) { showToast("Error: " + error.message); return; }
-        showToast("Donor deleted.");
-        loadDonors();
-      } catch (err) {
-        showToast("Network error: " + err.message);
-      }
-    }
+  rows.forEach(d => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><input type="checkbox" class="donor-check" data-id="${d.id}" ${selectedDonorIds.has(d.id) ? "checked" : ""} aria-label="Select ${escapeHtml(d.person_name)}" /></td>
+      <td>${d.sn ?? d.id}</td>
+      <td>${escapeHtml(d.person_name || "-")}</td>
+      <td>${escapeHtml(d.age || "-")}</td>
+      <td>${escapeHtml(d.sex || "-")}</td>
+      <td><b>${escapeHtml(d.blood_group || "-")}</b></td>
+      <td>${escapeHtml(d.municipality || "-")}</td>
+      <td>${escapeHtml(d.ward_number || "-")}</td>
+      <td>${escapeHtml(d.phone_number || "-")}</td>
+      <td><span class="pill ${d.status}">${d.status === "active" ? "Active" : "Inactive"}</span></td>
+      <td class="actions">
+        <button class="btn btn-view" data-id="${d.id}" data-action="view-donor">View</button>
+        <button class="btn btn-edit" data-id="${d.id}" data-action="edit">Edit</button>
+        <button class="btn btn-toggle" data-id="${d.id}" data-action="toggle">${d.status === "active" ? "Deactivate" : "Activate"}</button>
+        <button class="btn btn-delete" data-id="${d.id}" data-action="delete-donor">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
   });
+  updateDonorBulkBar();
+}
 
-  // ---------------- EDIT MODAL ----------------
-  const editModalOverlay = document.getElementById("editModalOverlay");
+document.getElementById("donorSearch").addEventListener("input", debounce(renderDonors, 250));
+document.getElementById("donorStatusFilter").addEventListener("change", renderDonors);
+document.getElementById("donorBgFilter").addEventListener("change", renderDonors);
+document.getElementById("donorMuniFilter").addEventListener("change", renderDonors);
 
-  function openEditModal(record) {
-    document.getElementById("edit_id").value = record.id;
-    document.getElementById("edit_person_name").value = record.person_name || "";
-    document.getElementById("edit_age").value = record.age || "";
-    document.getElementById("edit_sex").value = record.sex || "";
-    document.getElementById("edit_blood_group").value = record.blood_group || "A+";
-    document.getElementById("edit_municipality").value = record.municipality || "";
-    document.getElementById("edit_ward_number").value = record.ward_number || "";
-    document.getElementById("edit_phone_number").value = record.phone_number || "";
-    document.getElementById("edit_status").value = record.status || "active";
-    editModalOverlay.classList.add("show");
+document.getElementById("exportDonorCsv").addEventListener("click", () => {
+  downloadCsv("blood_bridge_donors.csv", allDonors, DONOR_CSV_COLUMNS);
+});
+document.getElementById("printDonors").addEventListener("click", () => window.print());
+
+// Row selection
+document.getElementById("donorTbody").addEventListener("change", (e) => {
+  if (!e.target.classList.contains("donor-check")) return;
+  const id = Number(e.target.dataset.id);
+  if (e.target.checked) selectedDonorIds.add(id); else selectedDonorIds.delete(id);
+  updateDonorBulkBar();
+});
+document.getElementById("donorSelectAll").addEventListener("change", (e) => {
+  document.querySelectorAll(".donor-check").forEach(cb => {
+    cb.checked = e.target.checked;
+    const id = Number(cb.dataset.id);
+    if (e.target.checked) selectedDonorIds.add(id); else selectedDonorIds.delete(id);
+  });
+  updateDonorBulkBar();
+});
+function updateDonorBulkBar() {
+  const bar = document.getElementById("donorBulkBar");
+  const count = selectedDonorIds.size;
+  document.getElementById("donorBulkCount").textContent = `${count} selected`;
+  bar.classList.toggle("show", count > 0);
+}
+document.getElementById("donorBulkBar").addEventListener("click", async (e) => {
+  const action = e.target.dataset.bulk;
+  if (!action) return;
+  const ids = [...selectedDonorIds];
+
+  if (action === "clear") { selectedDonorIds.clear(); renderDonors(); return; }
+
+  if (action === "export") {
+    const rows = allDonors.filter(d => ids.includes(d.id));
+    downloadCsv("blood_bridge_donors_selected.csv", rows, DONOR_CSV_COLUMNS);
+    return;
   }
 
-  document.getElementById("editCancelBtn").addEventListener("click", () => {
-    editModalOverlay.classList.remove("show");
-  });
+  if (action === "delete") {
+    if (ids.length === 0) return;
+    const ok = await confirmDialog(`Delete ${ids.length} donor(s)? This cannot be undone.`, "Bulk Delete");
+    if (!ok) return;
+    const { error } = await supabaseClient.from("blood_bridge_galkot").delete().in("id", ids);
+    if (error) { showToast("Error: " + error.message, "error"); return; }
+    showToast(`${ids.length} donor(s) deleted.`, "success");
+    selectedDonorIds.clear();
+    loadDonors();
+    renderDashboard();
+  }
+});
 
-  document.getElementById("editSaveBtn").addEventListener("click", async () => {
-    const id = document.getElementById("edit_id").value;
-    const updated = {
-      person_name: document.getElementById("edit_person_name").value.trim(),
-      age: document.getElementById("edit_age").value.trim() || null,
-      sex: document.getElementById("edit_sex").value || null,
-      blood_group: document.getElementById("edit_blood_group").value,
-      municipality: document.getElementById("edit_municipality").value.trim(),
-      ward_number: document.getElementById("edit_ward_number").value.trim() || null,
-      phone_number: document.getElementById("edit_phone_number").value.trim(),
-      status: document.getElementById("edit_status").value
-    };
+document.getElementById("donorTbody").addEventListener("click", async (e) => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  const id = Number(btn.dataset.id);
+  const action = btn.dataset.action;
+  const record = allDonors.find(d => d.id === id);
+  if (!record) return;
 
+  if (action === "edit") {
+    openEditModal(record);
+  } else if (action === "view-donor") {
+    openViewModal("Donor Details", record, [
+      ["Name", record.person_name], ["Age", record.age], ["Sex", record.sex],
+      ["Blood Group", record.blood_group], ["Municipality", record.municipality],
+      ["Ward", record.ward_number], ["Phone", record.phone_number],
+      ["Entered By", record.data_entry_by], ["Status", record.status === "active" ? "Active" : "Inactive"]
+    ]);
+  } else if (action === "toggle") {
+    const newStatus = record.status === "active" ? "inactive" : "active";
+    const ok = await confirmDialog(`Mark ${record.person_name} as ${newStatus}?`, "Change Status");
+    if (!ok) return;
+    const { error } = await supabaseClient.from("blood_bridge_galkot").update({ status: newStatus }).eq("id", id);
+    if (error) { showToast("Error: " + error.message, "error"); return; }
+    showToast(`Donor marked ${newStatus}.`, "success");
+    loadDonors();
+    renderDashboard();
+  } else if (action === "delete-donor") {
+    const ok = await confirmDialog(`Delete ${record.person_name} permanently?`, "Delete Donor");
+    if (!ok) return;
     try {
-      const { error } = await supabaseClient.from("blood_bridge_galkot").update(updated).eq("id", id);
-      if (error) { showToast("Error: " + error.message); return; }
-      showToast("Update saved.");
-      editModalOverlay.classList.remove("show");
+      const { error } = await supabaseClient.from("blood_bridge_galkot").delete().eq("id", id);
+      if (error) { showToast("Error: " + error.message, "error"); return; }
+      showToast("Donor deleted.", "success");
       loadDonors();
+      renderDashboard();
     } catch (err) {
-      showToast("Network error: " + err.message);
+      showToast("Network error: " + err.message, "error");
     }
-  });
-
-  // ---------------- UTIL ----------------
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
   }
+});
+
+// ==================== VIEW DETAILS MODAL ====================
+function openViewModal(title, record, fields) {
+  document.getElementById("viewModalTitle").textContent = title;
+  document.getElementById("viewDetailList").innerHTML = fields.map(([label, val]) =>
+    `<li><span>${escapeHtml(label)}</span><span>${escapeHtml(val || "-")}</span></li>`
+  ).join("");
+  document.getElementById("viewModalOverlay").classList.add("show");
+}
+document.getElementById("viewCloseBtn").addEventListener("click", () => {
+  document.getElementById("viewModalOverlay").classList.remove("show");
+});
+
+// ==================== EDIT MODAL ====================
+const editModalOverlay = document.getElementById("editModalOverlay");
+
+function openEditModal(record) {
+  document.getElementById("edit_id").value = record.id;
+  document.getElementById("edit_person_name").value = record.person_name || "";
+  document.getElementById("edit_age").value = record.age || "";
+  document.getElementById("edit_sex").value = record.sex || "";
+  document.getElementById("edit_blood_group").value = record.blood_group || "A+";
+  document.getElementById("edit_municipality").value = record.municipality || "";
+  document.getElementById("edit_ward_number").value = record.ward_number || "";
+  document.getElementById("edit_phone_number").value = record.phone_number || "";
+  document.getElementById("edit_status").value = record.status || "active";
+  editModalOverlay.classList.add("show");
+}
+
+document.getElementById("editCancelBtn").addEventListener("click", () => {
+  editModalOverlay.classList.remove("show");
+});
+
+document.getElementById("editSaveBtn").addEventListener("click", async () => {
+  const id = document.getElementById("edit_id").value;
+  const name = document.getElementById("edit_person_name").value.trim();
+  const phone = document.getElementById("edit_phone_number").value.trim();
+  const municipality = document.getElementById("edit_municipality").value.trim();
+
+  if (!name || !phone || !municipality) {
+    showToast("Name, phone, and municipality are required.", "error");
+    return;
+  }
+
+  const updated = {
+    person_name: name,
+    age: document.getElementById("edit_age").value.trim() || null,
+    sex: document.getElementById("edit_sex").value || null,
+    blood_group: document.getElementById("edit_blood_group").value,
+    municipality,
+    ward_number: document.getElementById("edit_ward_number").value.trim() || null,
+    phone_number: phone,
+    status: document.getElementById("edit_status").value
+  };
+
+  const saveBtn = document.getElementById("editSaveBtn");
+  saveBtn.disabled = true;
+  saveBtn.textContent = "Saving...";
+  try {
+    const { error } = await supabaseClient.from("blood_bridge_galkot").update(updated).eq("id", id);
+    if (error) { showToast("Error: " + error.message, "error"); return; }
+    showToast("Update saved.", "success");
+    editModalOverlay.classList.remove("show");
+    loadDonors();
+    renderDashboard();
+  } catch (err) {
+    showToast("Network error: " + err.message, "error");
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = "Save";
+  }
+});
+
+// ==================== INIT ====================
+window.addEventListener("DOMContentLoaded", () => {
+  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  checkAdminAndInit();
+});
 </script>
 </body>
 </html>

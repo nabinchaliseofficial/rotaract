@@ -3,251 +3,516 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Blood Bridge Galkot | Donor List</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>Blood Bridge Galkot | Find Blood Donors Near You</title>
+<meta name="description" content="Search verified blood donors in Galkot Municipality by blood group, name, municipality or ward. Free, fast, community-run blood donor directory." />
+<meta name="theme-color" content="#b91c1c" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Blood Bridge Galkot | Find Blood Donors Near You" />
+<meta property="og:description" content="Search verified blood donors in Galkot Municipality by blood group, name, municipality or ward." />
+<meta property="og:image" content="https://placehold.co/1200x630/b91c1c/ffffff?text=Blood+Bridge+Galkot" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🩸</text></svg>" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <style>
   :root{
-    --red:#b91c1c; --red-dark:#7f1d1d; --bg:#fdf2f2; --card:#fff;
-    --text:#1f1a1a; --muted:#6b7280; --border:#f1d6d6;
+    --red:#b91c1c; --red-dark:#7f1d1d; --red-light:#fee2e2;
+    --bg:#fdf5f5; --bg-elevated:#ffffff; --card:#ffffff;
+    --text:#1a1414; --muted:#6b7280; --border:#f1d6d6;
+    --shadow: 0 2px 12px rgba(185,28,28,0.06);
+    --shadow-lg: 0 8px 30px rgba(185,28,28,0.12);
+    --radius:16px; --radius-sm:10px;
+    --green:#15803d; --green-bg:#dcfce7;
+    --focus: 3px solid #93c5fd;
+  }
+  [data-theme="dark"]{
+    --red:#ef4444; --red-dark:#f87171; --red-light:#3f1d1d;
+    --bg:#141010; --bg-elevated:#1c1616; --card:#201818;
+    --text:#f0e6e6; --muted:#a89999; --border:#3a2626;
+    --shadow: 0 2px 12px rgba(0,0,0,0.4);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.55);
+    --green:#4ade80; --green-bg:#123a22;
   }
   *{box-sizing:border-box;}
-  body{margin:0;font-family:'Segoe UI',Roboto,-apple-system,sans-serif;background:var(--bg);color:var(--text);}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;font-family:'Segoe UI',Roboto,-apple-system,sans-serif;
+    background:var(--bg);color:var(--text);transition:background .2s,color .2s;
+  }
+  a{color:inherit;}
+  :focus-visible{outline:var(--focus);outline-offset:2px;border-radius:4px;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+  .skip-link{
+    position:absolute;left:-999px;top:0;background:var(--red);color:#fff;padding:10px 16px;
+    z-index:100;border-radius:0 0 8px 0;
+  }
+  .skip-link:focus{left:0;}
+
   .header{
     background:linear-gradient(135deg,var(--red),var(--red-dark));
-    color:#fff;padding:32px 16px 24px;text-align:center;
+    color:#fff;padding:36px 16px 44px;text-align:center;position:relative;
   }
-  .header .drop{font-size:36px;margin-bottom:6px;}
-  .header h1{margin:0 0 4px;font-size:24px;}
-  .header p{margin:0;opacity:.9;font-size:14px;}
+  .theme-toggle{
+    position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.18);
+    border:1px solid rgba(255,255,255,0.35);color:#fff;width:40px;height:40px;
+    border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;
+  }
+  .theme-toggle:hover{background:rgba(255,255,255,0.3);}
+  .header .drop{font-size:38px;margin-bottom:6px;}
+  .header h1{margin:0 0 4px;font-size:clamp(20px,4vw,26px);}
+  .header p{margin:0;opacity:.92;font-size:14px;}
   .live-dot{
-    display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);
-    padding:4px 12px;border-radius:20px;font-size:12px;margin-top:10px;
+    display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.16);
+    padding:5px 13px;border-radius:20px;font-size:12px;margin-top:12px;
   }
   .live-dot .dot{width:8px;height:8px;border-radius:50%;background:#4ade80;animation:pulse 1.5s infinite;}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+  #connStatus{margin-top:6px;font-size:12px;}
+  #connStatus.offline{color:#fecaca;}
 
-  .wrap{max-width:1000px;margin:-20px auto 0;padding:0 16px 60px;}
+  .wrap{max-width:1080px;margin:-8px auto 0;padding:0 16px 70px;position:relative;z-index:5;}
 
   .toolbar{
-    background:var(--card);border-radius:14px;padding:16px;box-shadow:0 4px 20px rgba(185,28,28,0.08);
-    display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;
+    background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-lg);
+    display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;position:sticky;top:10px;z-index:20;
   }
+  .search-field{position:relative;flex:2;min-width:220px;}
+  .search-field input{width:100%;padding:11px 12px 11px 36px;}
+  .search-field .icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.55;pointer-events:none;}
   .toolbar input, .toolbar select{
-    padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;
+    padding:11px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;
+    background:var(--bg-elevated);color:var(--text);
   }
-  .toolbar input[type=text]{flex:2;min-width:200px;}
-  .toolbar select{flex:1;min-width:120px;}
+  .toolbar select{flex:1;min-width:130px;}
+  .toolbar .clear-btn{
+    background:transparent;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+    padding:0 14px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;
+  }
+  .toolbar .clear-btn:hover{background:var(--red-light);color:var(--red);}
+
+  .sort-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .result-count{font-size:13px;color:var(--muted);}
+  .sort-row select{padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg-elevated);color:var(--text);}
 
   .stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
   .stat-card{
-    background:var(--card);border-radius:12px;padding:14px 18px;flex:1;min-width:110px;
-    text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.04);
+    background:var(--card);border-radius:12px;padding:14px 12px;flex:1;min-width:82px;
+    text-align:center;box-shadow:var(--shadow);border:1px solid var(--border);
   }
   .stat-card .num{font-size:22px;font-weight:800;color:var(--red);}
   .stat-card .label{font-size:11px;color:var(--muted);margin-top:2px;}
 
-  .donor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+  .donor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;}
   .donor-card{
-    background:var(--card);border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);
-    border:1px solid var(--border);position:relative;
+    background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);
+    border:1px solid var(--border);position:relative;animation:fadeUp .3s ease both;
   }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
   .bg-badge{
-    position:absolute;top:14px;right:14px;background:var(--red);color:#fff;
-    font-weight:800;font-size:15px;padding:4px 10px;border-radius:8px;
+    position:absolute;top:14px;right:14px;color:#fff;
+    font-weight:800;font-size:15px;padding:4px 11px;border-radius:8px;
   }
-  .donor-name{font-size:16px;font-weight:700;margin:0 0 6px;padding-right:60px;}
-  .donor-detail{font-size:13px;color:var(--muted);margin:3px 0;display:flex;gap:6px;align-items:center;}
-  .donor-detail .icon{width:14px;text-align:center;}
-  .call-btn{
-    display:inline-block;margin-top:10px;background:var(--red);color:#fff;text-decoration:none;
-    padding:8px 14px;border-radius:8px;font-size:13px;font-weight:700;
+  .donor-name{font-size:16px;font-weight:700;margin:0 0 8px;padding-right:64px;}
+  .donor-detail{font-size:13px;color:var(--muted);margin:4px 0;display:flex;gap:7px;align-items:center;}
+  .donor-detail .icon{width:15px;text-align:center;}
+  .card-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+  .btn-pill{
+    display:inline-flex;align-items:center;gap:5px;text-decoration:none;
+    padding:8px 12px;border-radius:8px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;
   }
-  .call-btn:hover{background:var(--red-dark);}
+  .btn-call{background:var(--red);color:#fff;}
+  .btn-call:hover{background:var(--red-dark);}
+  .btn-wa{background:#25D366;color:#fff;}
+  .btn-wa:hover{filter:brightness(0.95);}
+  .btn-copy{background:var(--bg);color:var(--text);border:1px solid var(--border);}
+  .btn-copy:hover{background:var(--red-light);}
 
   .empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
-  .empty-state .big-icon{font-size:40px;margin-bottom:12px;}
+  .empty-state .big-icon{font-size:42px;margin-bottom:12px;}
 
   .load-error{
-    text-align:center;padding:20px;color:var(--red);background:#fee2e2;border-radius:12px;
+    text-align:center;padding:18px;color:var(--red);background:var(--red-light);border-radius:12px;
     margin-bottom:20px;font-size:14px;display:none;
   }
+  .load-error button{margin-top:8px;background:var(--red);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600;}
+
+  /* skeletons */
+  .skeleton-card{background:var(--card);border-radius:var(--radius);padding:16px;border:1px solid var(--border);}
+  .sk-line{background:linear-gradient(90deg,var(--border) 25%,var(--bg) 50%,var(--border) 75%);
+    background-size:200% 100%;animation:shimmer 1.3s infinite;border-radius:6px;height:12px;margin-bottom:10px;}
+  @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+  .load-more-wrap{text-align:center;margin-top:22px;}
+  .load-more{background:var(--card);border:1.5px solid var(--border);color:var(--red);
+    padding:11px 24px;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;}
+  .load-more:hover{background:var(--red-light);}
 
   .cta-footer{
-    text-align:center;margin-top:32px;padding:20px;background:var(--card);border-radius:14px;
-    box-shadow:0 2px 10px rgba(0,0,0,0.04);
+    text-align:center;margin-top:32px;padding:22px;background:var(--card);border-radius:var(--radius);
+    box-shadow:var(--shadow);border:1px solid var(--border);
   }
   .cta-footer a{
     display:inline-block;margin-top:10px;background:var(--red);color:#fff;text-decoration:none;
-    padding:10px 20px;border-radius:10px;font-weight:700;font-size:14px;
+    padding:11px 22px;border-radius:10px;font-weight:700;font-size:14px;
+  }
+  .cta-footer a:hover{background:var(--red-dark);}
+
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--text);color:var(--bg);padding:12px 20px;border-radius:10px;font-size:14px;
+    display:none;z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.2);
+  }
+  .toast.show{display:block;}
+
+  @media (max-width:480px){
+    .toolbar{position:static;}
+    .card-actions{gap:6px;}
+    .btn-pill{flex:1;justify-content:center;}
   }
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to donor list</a>
 
 <div class="header">
-  <div class="drop">🩸</div>
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
+  <div class="drop" aria-hidden="true">🩸</div>
   <h1>Blood Bridge Galkot</h1>
   <p>List of Available Blood Donors</p>
-  <div class="live-dot"><span class="dot"></span> Live Updates</div>
+  <div class="live-dot"><span class="dot" aria-hidden="true"></span> Live Updates</div>
+  <div id="connStatus" role="status" aria-live="polite"></div>
 </div>
 
-<div class="wrap">
-  <div class="load-error" id="loadError"></div>
+<main class="wrap" id="main">
+  <div class="load-error" id="loadError" role="alert"></div>
 
-  <div class="stats" id="statsRow"></div>
+  <section class="stats" id="statsRow" aria-label="Donor statistics"></section>
 
-  <div class="toolbar">
-    <input type="text" id="searchInput" placeholder="Search by name, phone, or municipality..." />
-    <select id="bgFilter">
+  <form class="toolbar" role="search" aria-label="Search donors" onsubmit="return false;">
+    <div class="search-field">
+      <span class="icon" aria-hidden="true">🔍</span>
+      <input type="text" id="searchInput" aria-label="Search by name, phone, municipality or ward"
+             placeholder="Search by name, phone, municipality, or ward..." autocomplete="off" />
+    </div>
+    <select id="bgFilter" aria-label="Filter by blood group">
       <option value="">All Blood Groups</option>
       <option value="A+">A+</option><option value="A-">A-</option>
       <option value="B+">B+</option><option value="B-">B-</option>
       <option value="AB+">AB+</option><option value="AB-">AB-</option>
       <option value="O+">O+</option><option value="O-">O-</option>
     </select>
-    <select id="muniFilter">
+    <select id="muniFilter" aria-label="Filter by municipality">
       <option value="">All Municipalities</option>
     </select>
+    <select id="wardFilter" aria-label="Filter by ward">
+      <option value="">All Wards</option>
+    </select>
+    <button type="button" class="clear-btn" id="clearFilters">Clear</button>
+  </form>
+
+  <div class="sort-row">
+    <span class="result-count" id="resultCount" role="status" aria-live="polite"></span>
+    <label>
+      <span class="sr-only">Sort by</span>
+      <select id="sortBy" aria-label="Sort donors">
+        <option value="recent">Newest first</option>
+        <option value="name">Name (A–Z)</option>
+        <option value="bg">Blood group</option>
+      </select>
+    </label>
   </div>
 
+  <div id="skeletonGrid" class="donor-grid" aria-hidden="true"></div>
   <div id="donorGrid" class="donor-grid"></div>
+  <div class="load-more-wrap" id="loadMoreWrap" style="display:none;">
+    <button class="load-more" id="loadMoreBtn">Show more donors</button>
+  </div>
+
   <div class="empty-state" id="emptyState" style="display:none;">
-    <div class="big-icon">🔍</div>
-    <p>No donors found.</p>
+    <div class="big-icon" aria-hidden="true">🔍</div>
+    <p>No donors found. Try adjusting your search or filters.</p>
   </div>
 
   <div class="cta-footer">
     <p>Want to become a blood donor?</p>
     <a href="bloodgroupregister.html">Register as a New Donor →</a>
   </div>
-</div>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-  // ---- SUPABASE CONFIG ----
-  const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  // --------------------------
+// ==================== CONFIG ====================
+const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+const WHATSAPP_COUNTRY_CODE = "977"; // Nepal — prepended to local numbers for wa.me links
+const PAGE_SIZE = 12;
 
-  let allDonors = [];
+const BG_COLORS = {
+  "A+": "#dc2626", "A-": "#b91c1c", "B+": "#2563eb", "B-": "#1d4ed8",
+  "AB+": "#7c3aed", "AB-": "#6d28d9", "O+": "#059669", "O-": "#047857"
+};
 
-  async function fetchDonors() {
-    const errBox = document.getElementById("loadError");
-    try {
-      const { data, error } = await supabaseClient
-        .from("blood_bridge_galkot")
-        .select("*")
-        .eq("status", "active")
-        .order("id", { ascending: false });
+let supabaseClient = null;
+let allDonors = [];
+let visibleCount = PAGE_SIZE;
 
-      if (error) {
-        errBox.textContent = "Error loading donors: " + error.message;
-        errBox.style.display = "block";
-        return;
-      }
-      errBox.style.display = "none";
-      allDonors = data || [];
-      populateMunicipalityFilter();
-      renderStats();
-      renderDonors();
-    } catch (err) {
-      errBox.textContent = "Network error: could not reach the server. Check your internet connection. (" + err.message + ")";
+// ==================== THEME ====================
+function initTheme(){
+  const saved = localStorage.getItem("bb_theme");
+  const prefers = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const theme = saved || (prefers ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", theme);
+  document.getElementById("themeToggle").textContent = theme === "dark" ? "☀️" : "🌙";
+}
+document.getElementById("themeToggle").addEventListener("click", () => {
+  const current = document.documentElement.getAttribute("data-theme");
+  const next = current === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("bb_theme", next);
+  document.getElementById("themeToggle").textContent = next === "dark" ? "☀️" : "🌙";
+});
+initTheme();
+
+// ==================== UTIL ====================
+function escapeHtml(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function digitsOnly(str){ return String(str ?? "").replace(/\D/g, ""); }
+function debounce(fn, ms){
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+function showToast(msg){
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.className = "toast show";
+  setTimeout(() => toast.className = "toast", 2200);
+}
+function sexLabel(s) {
+  return { Male: "Male", Female: "Female", Other: "Other" }[s] || "-";
+}
+
+// ==================== OFFLINE DETECTION ====================
+function updateConnStatus(){
+  const el = document.getElementById("connStatus");
+  if (!navigator.onLine) {
+    el.textContent = "⚠ You are offline — showing last loaded data.";
+    el.classList.add("offline");
+  } else {
+    el.textContent = "";
+    el.classList.remove("offline");
+  }
+}
+window.addEventListener("online", () => { updateConnStatus(); fetchDonors(); });
+window.addEventListener("offline", updateConnStatus);
+updateConnStatus();
+
+// ==================== SKELETON ====================
+function renderSkeletons(count = 6){
+  const wrap = document.getElementById("skeletonGrid");
+  wrap.innerHTML = Array.from({length: count}).map(() => `
+    <div class="skeleton-card">
+      <div class="sk-line" style="width:60%"></div>
+      <div class="sk-line" style="width:40%"></div>
+      <div class="sk-line" style="width:80%"></div>
+      <div class="sk-line" style="width:50%"></div>
+    </div>
+  `).join("");
+}
+function clearSkeletons(){ document.getElementById("skeletonGrid").innerHTML = ""; }
+
+// ==================== DATA FETCH ====================
+async function fetchDonors() {
+  const errBox = document.getElementById("loadError");
+  renderSkeletons();
+  try {
+    // select only the columns the UI needs — minimizes bandwidth
+    const { data, error } = await supabaseClient
+      .from("blood_bridge_galkot")
+      .select("id, person_name, age, sex, blood_group, municipality, ward_number, phone_number")
+      .eq("status", "active")
+      .order("id", { ascending: false });
+
+    if (error) {
+      errBox.innerHTML = "Error loading donors: " + escapeHtml(error.message);
       errBox.style.display = "block";
-    }
-  }
-
-  function populateMunicipalityFilter() {
-    const select = document.getElementById("muniFilter");
-    const current = select.value;
-    const munis = [...new Set(allDonors.map(d => d.municipality).filter(Boolean))].sort();
-    select.innerHTML = '<option value="">All Municipalities</option>' +
-      munis.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join("");
-    select.value = current;
-  }
-
-  function renderStats() {
-    const total = allDonors.length;
-    const groups = {};
-    allDonors.forEach(d => {
-      const g = d.blood_group || "Unknown";
-      groups[g] = (groups[g] || 0) + 1;
-    });
-    const statsRow = document.getElementById("statsRow");
-    let html = `<div class="stat-card"><div class="num">${total}</div><div class="label">Total Donors</div></div>`;
-    Object.keys(groups).sort().forEach(g => {
-      html += `<div class="stat-card"><div class="num">${groups[g]}</div><div class="label">${escapeHtml(g)}</div></div>`;
-    });
-    statsRow.innerHTML = html;
-  }
-
-  function renderDonors() {
-    const search = document.getElementById("searchInput").value.trim().toLowerCase();
-    const bg = document.getElementById("bgFilter").value;
-    const muni = document.getElementById("muniFilter").value;
-
-    let rows = allDonors;
-    if (bg) rows = rows.filter(d => d.blood_group === bg);
-    if (muni) rows = rows.filter(d => d.municipality === muni);
-    if (search) {
-      rows = rows.filter(d =>
-        (d.person_name || "").toLowerCase().includes(search) ||
-        (d.phone_number || "").toLowerCase().includes(search) ||
-        (d.municipality || "").toLowerCase().includes(search)
-      );
-    }
-
-    const grid = document.getElementById("donorGrid");
-    const empty = document.getElementById("emptyState");
-
-    if (rows.length === 0) {
-      grid.innerHTML = "";
-      empty.style.display = "block";
+      clearSkeletons();
       return;
     }
-    empty.style.display = "none";
+    errBox.style.display = "none";
+    allDonors = data || [];
+    visibleCount = PAGE_SIZE;
+    populateFilters();
+    renderStats();
+    renderDonors();
+  } catch (err) {
+    errBox.innerHTML = "Network error: could not reach the server. Check your internet connection." +
+      `<br><button id="retryBtn">Retry</button>`;
+    errBox.style.display = "block";
+    clearSkeletons();
+    const retryBtn = document.getElementById("retryBtn");
+    if (retryBtn) retryBtn.addEventListener("click", fetchDonors);
+  }
+}
 
-    grid.innerHTML = rows.map(d => `
-      <div class="donor-card">
-        <span class="bg-badge">${escapeHtml(d.blood_group || "-")}</span>
-        <p class="donor-name">${escapeHtml(d.person_name || "-")}</p>
-        <div class="donor-detail"><span class="icon">🎂</span> ${escapeHtml(d.age || "-")} yrs • ${escapeHtml(sexLabel(d.sex))}</div>
-        <div class="donor-detail"><span class="icon">📍</span> ${escapeHtml(d.municipality || "-")}${d.ward_number ? ", Ward " + escapeHtml(d.ward_number) : ""}</div>
-        <div class="donor-detail"><span class="icon">📞</span> ${escapeHtml(d.phone_number || "-")}</div>
-        ${d.phone_number ? `<a class="call-btn" href="tel:${escapeHtml(d.phone_number)}">📞 Call</a>` : ""}
-      </div>
-    `).join("");
+function populateFilters() {
+  const muniSelect = document.getElementById("muniFilter");
+  const wardSelect = document.getElementById("wardFilter");
+  const curMuni = muniSelect.value, curWard = wardSelect.value;
+
+  const munis = [...new Set(allDonors.map(d => d.municipality).filter(Boolean))].sort();
+  muniSelect.innerHTML = '<option value="">All Municipalities</option>' +
+    munis.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join("");
+  muniSelect.value = curMuni;
+
+  const wards = [...new Set(allDonors.map(d => d.ward_number).filter(Boolean))]
+    .sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
+  wardSelect.innerHTML = '<option value="">All Wards</option>' +
+    wards.map(w => `<option value="${escapeHtml(w)}">Ward ${escapeHtml(w)}</option>`).join("");
+  wardSelect.value = curWard;
+}
+
+function renderStats() {
+  const total = allDonors.length;
+  const groups = {};
+  allDonors.forEach(d => {
+    const g = d.blood_group || "Unknown";
+    groups[g] = (groups[g] || 0) + 1;
+  });
+  const statsRow = document.getElementById("statsRow");
+  let html = `<div class="stat-card"><div class="num">${total}</div><div class="label">Total Donors</div></div>`;
+  Object.keys(groups).sort().forEach(g => {
+    html += `<div class="stat-card"><div class="num" style="color:${BG_COLORS[g] || 'var(--red)'}">${groups[g]}</div><div class="label">${escapeHtml(g)}</div></div>`;
+  });
+  statsRow.innerHTML = html;
+}
+
+// ==================== FILTER / SORT / RENDER ====================
+function getFilteredSorted() {
+  const search = document.getElementById("searchInput").value.trim().toLowerCase();
+  const bg = document.getElementById("bgFilter").value;
+  const muni = document.getElementById("muniFilter").value;
+  const ward = document.getElementById("wardFilter").value;
+  const sortBy = document.getElementById("sortBy").value;
+
+  let rows = allDonors;
+  if (bg) rows = rows.filter(d => d.blood_group === bg);
+  if (muni) rows = rows.filter(d => d.municipality === muni);
+  if (ward) rows = rows.filter(d => String(d.ward_number) === String(ward));
+  if (search) {
+    rows = rows.filter(d =>
+      (d.person_name || "").toLowerCase().includes(search) ||
+      (d.phone_number || "").toLowerCase().includes(search) ||
+      (d.municipality || "").toLowerCase().includes(search) ||
+      String(d.ward_number || "").toLowerCase().includes(search)
+    );
   }
 
-  function sexLabel(s) {
-    return { Male: "Male", Female: "Female", Other: "Other" }[s] || "-";
+  rows = [...rows];
+  if (sortBy === "name") rows.sort((a, b) => (a.person_name || "").localeCompare(b.person_name || ""));
+  else if (sortBy === "bg") rows.sort((a, b) => (a.blood_group || "").localeCompare(b.blood_group || ""));
+  else rows.sort((a, b) => (b.id || 0) - (a.id || 0));
+
+  return rows;
+}
+
+function renderDonors() {
+  clearSkeletons();
+  const filtered = getFilteredSorted();
+  const grid = document.getElementById("donorGrid");
+  const empty = document.getElementById("emptyState");
+  const loadMoreWrap = document.getElementById("loadMoreWrap");
+  const resultCount = document.getElementById("resultCount");
+
+  resultCount.textContent = `${filtered.length} donor${filtered.length === 1 ? "" : "s"} found`;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = "";
+    empty.style.display = "block";
+    loadMoreWrap.style.display = "none";
+    return;
   }
+  empty.style.display = "none";
 
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+  const visible = filtered.slice(0, visibleCount);
+
+  grid.innerHTML = visible.map(d => {
+    const bgColor = BG_COLORS[d.blood_group] || "var(--red)";
+    const rawPhone = digitsOnly(d.phone_number);
+    const waPhone = rawPhone.length <= 10 ? WHATSAPP_COUNTRY_CODE + rawPhone : rawPhone;
+    return `
+      <article class="donor-card">
+        <span class="bg-badge" style="background:${bgColor}">${escapeHtml(d.blood_group || "-")}</span>
+        <h3 class="donor-name">${escapeHtml(d.person_name || "-")}</h3>
+        <div class="donor-detail"><span class="icon" aria-hidden="true">🎂</span> ${escapeHtml(d.age || "-")} yrs • ${escapeHtml(sexLabel(d.sex))}</div>
+        <div class="donor-detail"><span class="icon" aria-hidden="true">📍</span> ${escapeHtml(d.municipality || "-")}${d.ward_number ? ", Ward " + escapeHtml(d.ward_number) : ""}</div>
+        <div class="donor-detail"><span class="icon" aria-hidden="true">📞</span> ${escapeHtml(d.phone_number || "-")}</div>
+        <div class="card-actions">
+          ${d.phone_number ? `<a class="btn-pill btn-call" href="tel:${escapeHtml(rawPhone)}" aria-label="Call ${escapeHtml(d.person_name)}">📞 Call</a>` : ""}
+          ${d.phone_number ? `<a class="btn-pill btn-wa" target="_blank" rel="noopener" href="https://wa.me/${escapeHtml(waPhone)}" aria-label="WhatsApp ${escapeHtml(d.person_name)}">💬 WhatsApp</a>` : ""}
+          ${d.phone_number ? `<button type="button" class="btn-pill btn-copy" data-phone="${escapeHtml(d.phone_number)}" aria-label="Copy phone number">📋 Copy</button>` : ""}
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  loadMoreWrap.style.display = filtered.length > visible.length ? "block" : "none";
+}
+
+document.getElementById("donorGrid").addEventListener("click", async (e) => {
+  const btn = e.target.closest(".btn-copy");
+  if (!btn) return;
+  try {
+    await navigator.clipboard.writeText(btn.dataset.phone);
+    showToast("Phone number copied.");
+  } catch {
+    showToast("Could not copy — please copy manually.");
   }
+});
 
-  document.getElementById("searchInput").addEventListener("input", renderDonors);
-  document.getElementById("bgFilter").addEventListener("change", renderDonors);
-  document.getElementById("muniFilter").addEventListener("change", renderDonors);
+document.getElementById("loadMoreBtn").addEventListener("click", () => {
+  visibleCount += PAGE_SIZE;
+  renderDonors();
+});
 
-  // Initial load
+document.getElementById("searchInput").addEventListener("input", debounce(() => {
+  visibleCount = PAGE_SIZE;
+  renderDonors();
+}, 300));
+["bgFilter", "muniFilter", "wardFilter", "sortBy"].forEach(id => {
+  document.getElementById(id).addEventListener("change", () => {
+    visibleCount = PAGE_SIZE;
+    renderDonors();
+  });
+});
+document.getElementById("clearFilters").addEventListener("click", () => {
+  document.getElementById("searchInput").value = "";
+  document.getElementById("bgFilter").value = "";
+  document.getElementById("muniFilter").value = "";
+  document.getElementById("wardFilter").value = "";
+  document.getElementById("sortBy").value = "recent";
+  visibleCount = PAGE_SIZE;
+  renderDonors();
+});
+
+// ==================== INIT ====================
+window.addEventListener("DOMContentLoaded", () => {
+  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   fetchDonors();
 
-  // ---------------- REALTIME SUBSCRIPTION ----------------
+  // Realtime subscription — debounced refetch so bursts of changes don't
+  // trigger repeated full reloads.
+  const debouncedRefetch = debounce(fetchDonors, 600);
   supabaseClient
     .channel("blood_bridge_galkot_changes")
     .on("postgres_changes",
       { event: "*", schema: "public", table: "blood_bridge_galkot" },
-      (payload) => {
-        // Simplest reliable approach: refetch on any change
-        fetchDonors();
-      }
+      () => debouncedRefetch()
     )
     .subscribe();
+});
 </script>
 </body>
 </html>
