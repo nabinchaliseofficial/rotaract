@@ -1577,9 +1577,11 @@
             </div>
             <div class="checklist-search">
                 <input type="text" id="memberSearch" placeholder="🔍 Search members..." oninput="filterMembers()" />
+                <button type="button" class="btn-add" id="selectAllActiveBtn" onclick="toggleAllActiveMembers()">✅ Select All Active</button>
             </div>
             <div class="checklist-container" id="members-checklist"></div>
             <div id="additional-members-container" class="additional-members-margin"></div>
+            <datalist id="memberNamesDatalist"></datalist>
 
             <div class="card-header-wrapper guest-header-margin">
                 <div class="card-title-group">
@@ -1934,6 +1936,7 @@
             if (mainContent) mainContent.style.display = 'block';
 
             fetchAllMeetings();
+            loadResponsibleNames();
             calculateAttendanceCounts();
             applyRolePermissionsToUI();
 
@@ -2176,15 +2179,25 @@
             return opts.join('');
         }
 
+        // Datalist options for the "Add Rotaractor" name field - this lets
+        // that field work as BOTH a select (pick a name from the live
+        // members list) AND a free-edit text input (type a name that
+        // isn't in the list yet), instead of forcing a dropdown-only pick.
+        function memberDatalistHTML() {
+            return liveMemberNames.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
+        }
+
+        function refreshMemberDatalist() {
+            const dl = document.getElementById('memberNamesDatalist');
+            if (dl) dl.innerHTML = memberDatalistHTML();
+        }
+
         function refreshAllPersonSelects() {
             document.querySelectorAll('.ai-person').forEach(sel => {
                 const current = sel.value;
                 sel.innerHTML = memberOptionsHTML(current);
             });
-            document.querySelectorAll('.add-member-name').forEach(sel => {
-                const current = sel.value;
-                sel.innerHTML = memberOptionsHTML(current);
-            });
+            refreshMemberDatalist();
             const chairSel = document.getElementById('meetChair');
             if (chairSel) {
                 const current = chairSel.value;
@@ -2206,13 +2219,25 @@
                 const activeMembers = (data || [])
                     .filter(m => (m.status || '').toLowerCase() !== 'inactive' && m.name);
                 if (activeMembers.length) {
-                    liveMemberNames = [...new Set(activeMembers.map(m => m.name))].sort();
+                    // Dedupe on a normalized key (trim + collapse spaces +
+                    // case-insensitive) so near-duplicate rows in the
+                    // `members` table (e.g. trailing space, different
+                    // casing) don't show up twice; keep the first-seen
+                    // exact spelling for display.
+                    const seen = new Map();
+                    activeMembers.forEach(m => {
+                        const key = normalizeChecklistKey(m.name);
+                        if (key && !seen.has(key)) seen.set(key, m);
+                    });
+                    const dedupedMembers = [...seen.values()];
+
+                    liveMemberNames = dedupedMembers.map(m => m.name).sort();
                     refreshAllPersonSelects();
 
                     // Rebuild the attendance checklist from the same live
                     // roster the dropdowns use, so a name only ever has
                     // to match itself.
-                    const liveRoster = activeMembers
+                    const liveRoster = dedupedMembers
                         .map(m => ({ name: m.name, role: m.position || m.designation || 'CLUB MEMBER' }))
                         .sort((a, b) => a.name.localeCompare(b.name));
                     renderMembersChecklist(liveRoster);
@@ -2292,11 +2317,21 @@
         //  UTILITY FUNCTIONS
         // ============================================================
         function calculateAttendanceCounts() {
-            const checkedOfficial = document.querySelectorAll('.member-checkbox:checked').length;
-            const checkedAdditional = document.querySelectorAll('.add-member-checkbox:checked').length;
+            // Count unique people only - the same rotaractor can end up
+            // checked in the main checklist AND typed/selected again in an
+            // "Add Rotaractor" row, which used to count (and later save)
+            // them twice. Dedupe on the same normalized key used elsewhere.
+            const seenNames = new Set();
+            document.querySelectorAll('.member-checkbox:checked').forEach(cb => {
+                seenNames.add(normalizeChecklistKey(cb.dataset.name));
+            });
+            document.querySelectorAll('.add-member-checkbox:checked').forEach(cb => {
+                const name = cb.parentElement.querySelector('.add-member-name')?.value.trim();
+                if (name) seenNames.add(normalizeChecklistKey(name));
+            });
             const countPresent = document.getElementById('countPresent');
             const countGuests = document.getElementById('countGuests');
-            if (countPresent) countPresent.value = checkedOfficial + checkedAdditional;
+            if (countPresent) countPresent.value = seenNames.size;
             if (countGuests) countGuests.value = document.querySelectorAll('.guest-input-name').length;
         }
 
@@ -2308,6 +2343,27 @@
             });
         }
 
+        // ============================================================
+        //  SELECT ALL ACTIVE MEMBERS (one-click tick/untick)
+        //  Ticks every status=active member currently visible in the
+        //  checklist (respects the search filter). Clicking again
+        //  when all are already checked un-ticks them all.
+        // ============================================================
+        function toggleAllActiveMembers() {
+            const visibleBoxes = Array.from(
+                document.querySelectorAll('#members-checklist .checklist-item:not(.hidden) .member-checkbox')
+            );
+            if (!visibleBoxes.length) return;
+
+            const allChecked = visibleBoxes.every(cb => cb.checked);
+            visibleBoxes.forEach(cb => { cb.checked = !allChecked; });
+
+            const btn = document.getElementById('selectAllActiveBtn');
+            if (btn) btn.textContent = allChecked ? '✅ Select All Active' : '⬜ Unselect All';
+
+            calculateAttendanceCounts();
+        }
+
         function addNewMemberRow() {
             const container = document.getElementById('additional-members-container');
             if (!container) return;
@@ -2315,7 +2371,7 @@
             row.className = 'dynamic-row';
             row.innerHTML = `
                 <input type="checkbox" class="add-member-checkbox" checked onchange="calculateAttendanceCounts()" style="width:auto; margin-top:14px; transform:scale(1.25); accent-color:var(--primary);">
-                <select class="add-member-name" style="flex:1;" onchange="calculateAttendanceCounts()">${memberOptionsHTML('')}</select>
+                <input type="text" class="add-member-name" list="memberNamesDatalist" placeholder="Select or type a name" style="flex:1;" oninput="calculateAttendanceCounts()">
                 <input type="text" class="add-member-role" value="CLUB MEMBER" placeholder="Designation" style="flex:1;">
             `;
             container.appendChild(row);
@@ -2669,7 +2725,7 @@
                         row.className = 'dynamic-row';
                         row.innerHTML = `
                             <input type="checkbox" class="add-member-checkbox" checked onchange="calculateAttendanceCounts()" style="width:auto; margin-top:14px; transform:scale(1.25); accent-color:var(--primary);">
-                            <select class="add-member-name" style="flex:1;" onchange="calculateAttendanceCounts()">${memberOptionsHTML(member.name)}</select>
+                            <input type="text" class="add-member-name" list="memberNamesDatalist" value="${escapeHtml(member.name)}" placeholder="Select or type a name" style="flex:1;" oninput="calculateAttendanceCounts()">
                             <input type="text" class="add-member-role" value="${escapeHtml(member.role || 'CLUB MEMBER')}" style="flex:1;">
                         `;
                         container.appendChild(row);
@@ -2788,14 +2844,26 @@
             const meetType = document.getElementById('meetType')?.value.trim() || 'General Meeting';
 
             const members = [];
+            const seenMemberKeys = new Set();
             document.querySelectorAll('.member-checkbox:checked').forEach(cb => {
+                const key = normalizeChecklistKey(cb.dataset.name);
+                if (seenMemberKeys.has(key)) return;
+                seenMemberKeys.add(key);
                 members.push({ name: cb.dataset.name, role: cb.dataset.role });
             });
             document.querySelectorAll('.add-member-checkbox:checked').forEach(cb => {
                 const row = cb.parentElement;
                 const name = row.querySelector('.add-member-name')?.value.trim();
+                if (!name) return;
+                // Skip if this same person is already counted (checked in
+                // the main checklist, or already added in an earlier
+                // Add Rotaractor row) - this is what was causing members
+                // to be saved/printed twice.
+                const key = normalizeChecklistKey(name);
+                if (seenMemberKeys.has(key)) return;
+                seenMemberKeys.add(key);
                 const role = row.querySelector('.add-member-role')?.value.trim() || 'CLUB MEMBER';
-                if (name) members.push({ name, role });
+                members.push({ name, role });
             });
 
             const guests = [];
@@ -3041,6 +3109,7 @@
         // ============================================================
         window.calculateAttendanceCounts = calculateAttendanceCounts;
         window.filterMembers = filterMembers;
+        window.toggleAllActiveMembers = toggleAllActiveMembers;
         window.addNewMemberRow = addNewMemberRow;
         window.addGuestRow = addGuestRow;
         window.addAgendaRow = addAgendaRow;
@@ -3067,7 +3136,6 @@
 
             if (hasSession) {
                 await fetchAllMeetings();
-                await loadResponsibleNames();
                 calculateAttendanceCounts();
 
                 const searchInput = document.getElementById('searchMeetingNo');

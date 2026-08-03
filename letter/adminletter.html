@@ -313,12 +313,6 @@
             gap: 0.3rem;
         }
 
-        .form-grid .field label .required-star {
-            color: var(--magenta);
-            font-weight: 700;
-            font-size: 1rem;
-        }
-
         .form-grid .field input,
         .form-grid .field select,
         .form-grid .field textarea {
@@ -355,6 +349,47 @@
         .form-grid .field .hint-text {
             font-size: 0.68rem;
             color: var(--gray-400);
+        }
+
+        /* ─── Suchana Button ───────────────────────────────────────────────── */
+        .ref-field-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .ref-field-wrapper input {
+            flex: 1;
+        }
+
+        .btn-suchana {
+            background: var(--blue-dark);
+            color: white;
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            flex-shrink: 0;
+        }
+
+        .btn-suchana:hover {
+            background: var(--magenta);
+            transform: scale(1.02);
+        }
+
+        .btn-suchana.active {
+            background: var(--magenta);
+            box-shadow: 0 0 0 3px var(--magenta-glow);
         }
 
         .form-actions {
@@ -612,6 +647,11 @@
             color: var(--blue-mid);
         }
 
+        .table-wrap table .actions .btn-icon.suchana:hover {
+            background: var(--blue-dark);
+            color: white;
+        }
+
         .no-records {
             text-align: center;
             padding: 2rem 1rem;
@@ -839,7 +879,6 @@
             margin-bottom: 1rem;
         }
 
-        /* New: आ.व.(द. नं.) on left, मिति on right — same line, spaced apart */
         .letter-preview .ref-date-row {
             display: flex;
             justify-content: space-between;
@@ -914,7 +953,7 @@
         }
 
         .letter-preview .qr-section .qr-url {
-            display: none; /* hide the link text in print */
+            display: none;
         }
 
         /* ─── Print overrides ────────────────────────────────────────────── */
@@ -1033,6 +1072,13 @@
             .letter-preview .letter-date-right {
                 text-align: left;
             }
+            .ref-field-wrapper {
+                flex-wrap: wrap;
+            }
+            .btn-suchana {
+                width: 100%;
+                justify-content: center;
+            }
         }
 
         @media print {
@@ -1138,20 +1184,26 @@
 
                 <form id="letterForm" class="form-grid">
                     <input type="hidden" id="editId" value="" />
+                    <input type="hidden" id="isSuchanaMode" value="false" />
 
                     <div class="field">
-                        <label>आ.व. <span class="required-star">*</span></label>
-                        <input type="text" id="fiscalYear" placeholder="जस्तै: 026/027" value="026/027" required />
+                        <label>आ.व.</label>
+                        <input type="text" id="fiscalYear" placeholder="जस्तै: 026/027" value="026/027" />
                     </div>
 
                     <div class="field">
-                        <label>दर्ता नम्बर <span class="required-star">*</span></label>
-                        <input type="text" id="refNo" placeholder="स्वत: जनरेट हुन्छ" readonly />
+                        <label>दर्ता नम्बर</label>
+                        <div class="ref-field-wrapper">
+                            <input type="text" id="refNo" placeholder="स्वत: जनरेट हुन्छ" readonly />
+                            <button type="button" class="btn-suchana" id="suchanaBtn" title="सूचना मोड: दर्ता नम्बर बिना प्रिन्ट गर्नुहोस्">
+                                📢 सूचना
+                            </button>
+                        </div>
                     </div>
 
                     <div class="field">
-                        <label>मिति <span class="required-star">*</span></label>
-                        <input type="date" id="letterDate" required />
+                        <label>मिति</label>
+                        <input type="date" id="letterDate" />
                     </div>
 
                     <div class="field">
@@ -1160,19 +1212,19 @@
                     </div>
 
                     <div class="field full">
-                        <label>प्रति (To Address) <span class="required-star">*</span></label>
-                        <textarea id="toAddress" placeholder="जस्तै: श्री गलकोट नगरपालिका, गलकोट, बागलुङ" rows="3" required></textarea>
+                        <label>प्रति (To Address)</label>
+                        <textarea id="toAddress" placeholder="जस्तै: श्री गलकोट नगरपालिका, गलकोट, बागलुङ" rows="3"></textarea>
                         <span class="hint-text">धेरै लाइनमा लेख्न Enter थिच्नुहोस्</span>
                     </div>
 
                     <div class="field full">
-                        <label>विषय (Subject) <span class="required-star">*</span></label>
-                        <input type="text" id="subject" placeholder="पत्रको विषय" required />
+                        <label>विषय (Subject)</label>
+                        <input type="text" id="subject" placeholder="पत्रको विषय" />
                     </div>
 
                     <div class="field full">
-                        <label>सामग्री (Body) <span class="required-star">*</span></label>
-                        <textarea id="body" placeholder="पत्रको मुख्य सामग्री यहाँ लेख्नुहोस्..." rows="5" required></textarea>
+                        <label>सामग्री (Body)</label>
+                        <textarea id="body" placeholder="पत्रको मुख्य सामग्री यहाँ लेख्नुहोस्..." rows="5"></textarea>
                         <span class="hint-text">पत्रको मुख्य विवरण, अनुरोध वा जानकारी</span>
                     </div>
 
@@ -1243,7 +1295,7 @@
                                 <th>विषय</th>
                                 <th>प्रति</th>
                                 <th>स्थिति</th>
-                                <th style="min-width:160px;">कार्य</th>
+                                <th style="min-width:200px;">कार्य</th>
                             </tr>
                         </thead>
                         <tbody id="letterTableBody">
@@ -1295,6 +1347,7 @@
             // ─── DOM refs ──────────────────────────────────────────────────────────
             const form = document.getElementById('letterForm');
             const editId = document.getElementById('editId');
+            const isSuchanaMode = document.getElementById('isSuchanaMode');
             const fiscalYear = document.getElementById('fiscalYear');
             const refNo = document.getElementById('refNo');
             const letterDate = document.getElementById('letterDate');
@@ -1327,7 +1380,10 @@
             const modalCloseBtn = document.getElementById('modalCloseBtn');
             const toastContainer = document.getElementById('toastContainer');
 
+            const suchanaBtn = document.getElementById('suchanaBtn');
+
             let supabaseClient = null;
+            let suchanaMode = false;
 
             // ─── Init Supabase ─────────────────────────────────────────────────────
             try {
@@ -1428,7 +1484,6 @@
             // ─── Validate form ────────────────────────────────────────────────────
             function validateForm(data) {
                 if (!data.fiscal_year) { showToast('कृपया आर्थिक वर्ष प्रविष्ट गर्नुहोस्।', 'error'); return false; }
-                if (!data.ref_no) { showToast('कृपया दर्ता नम्बर प्रविष्ट गर्नुहोस्।', 'error'); return false; }
                 if (!data.date) { showToast('कृपया मिति चयन गर्नुहोस्।', 'error'); return false; }
                 if (!data.to_address) { showToast('कृपया प्रति (To Address) प्रविष्ट गर्नुहोस्।', 'error'); return false; }
                 if (!data.subject) { showToast('कृपया विषय प्रविष्ट गर्नुहोस्।', 'error'); return false; }
@@ -1469,7 +1524,6 @@
                     letter_status: 'Active',
                     verification_id: '',
                 });
-                // Set today's date
                 const today = new Date().toISOString().split('T')[0];
                 letterDate.value = today;
                 verificationId.value = generateVerificationId(fy, nextRef);
@@ -1482,10 +1536,21 @@
             async function saveLetter(e) {
                 e.preventDefault();
                 const data = getFormData();
+                const isSuchana = suchanaMode || isSuchanaMode.value === 'true';
 
                 if (!validateForm(data)) return;
 
-                // Ensure verification ID
+                // If suchana mode, don't require ref_no
+                if (isSuchana) {
+                    data.ref_no = 'सूचना';
+                } else {
+                    if (!data.ref_no || data.ref_no === '--') {
+                        const nextRef = await getNextRefNo(data.fiscal_year);
+                        data.ref_no = nextRef;
+                        refNo.value = nextRef;
+                    }
+                }
+
                 if (!data.verification_id) {
                     data.verification_id = generateVerificationId(data.fiscal_year, data.ref_no);
                 }
@@ -1496,11 +1561,11 @@
                     if (!supabaseClient) throw new Error('Supabase client not initialized.');
 
                     const isEdit = !!editId.value;
+                    const tableName = isSuchana ? 'rotaract_suchana' : 'rotaract_verify';
 
                     if (isEdit) {
-                        // ── PRE-CHECK: Verify the row exists ────────────────────
                         const { data: existing, error: checkError } = await supabaseClient
-                            .from('rotaract_verify')
+                            .from(tableName)
                             .select('id')
                             .eq('id', editId.value)
                             .maybeSingle();
@@ -1519,25 +1584,30 @@
                             return;
                         }
 
-                        // ── Proceed with update ─────────────────────────────────
+                        const updateData = {
+                            fiscal_year: data.fiscal_year,
+                            date: data.date,
+                            letter_type: data.letter_type,
+                            to_address: data.to_address,
+                            subject: data.subject,
+                            body: data.body,
+                            club: data.club,
+                            issued_by: data.issued_by,
+                            signed_by: data.signed_by,
+                            designation: data.designation,
+                            letter_status: data.letter_status,
+                            verification_id: data.verification_id,
+                            updated_at: new Date().toISOString(),
+                        };
+
+                        // Add ref_no only if not suchana mode
+                        if (!isSuchana) {
+                            updateData.ref_no = data.ref_no;
+                        }
+
                         const { data: updated, error } = await supabaseClient
-                            .from('rotaract_verify')
-                            .update({
-                                fiscal_year: data.fiscal_year,
-                                ref_no: data.ref_no,
-                                date: data.date,
-                                letter_type: data.letter_type,
-                                to_address: data.to_address,
-                                subject: data.subject,
-                                body: data.body,
-                                club: data.club,
-                                issued_by: data.issued_by,
-                                signed_by: data.signed_by,
-                                designation: data.designation,
-                                letter_status: data.letter_status,
-                                verification_id: data.verification_id,
-                                updated_at: new Date().toISOString(),
-                            })
+                            .from(tableName)
+                            .update(updateData)
                             .eq('id', editId.value)
                             .select()
                             .maybeSingle();
@@ -1555,24 +1625,29 @@
 
                         showToast('✅ पत्र सफलतापूर्वक अद्यावधिक गरियो!', 'success');
                     } else {
-                        // Insert
+                        const insertData = {
+                            fiscal_year: data.fiscal_year,
+                            date: data.date,
+                            letter_type: data.letter_type,
+                            to_address: data.to_address,
+                            subject: data.subject,
+                            body: data.body,
+                            club: data.club,
+                            issued_by: data.issued_by,
+                            signed_by: data.signed_by,
+                            designation: data.designation,
+                            letter_status: data.letter_status,
+                            verification_id: data.verification_id,
+                        };
+
+                        // Add ref_no only if not suchana mode
+                        if (!isSuchana) {
+                            insertData.ref_no = data.ref_no;
+                        }
+
                         const { data: inserted, error } = await supabaseClient
-                            .from('rotaract_verify')
-                            .insert({
-                                fiscal_year: data.fiscal_year,
-                                ref_no: data.ref_no,
-                                date: data.date,
-                                letter_type: data.letter_type,
-                                to_address: data.to_address,
-                                subject: data.subject,
-                                body: data.body,
-                                club: data.club,
-                                issued_by: data.issued_by,
-                                signed_by: data.signed_by,
-                                designation: data.designation,
-                                letter_status: data.letter_status,
-                                verification_id: data.verification_id,
-                            })
+                            .from(tableName)
+                            .insert(insertData)
                             .select()
                             .maybeSingle();
 
@@ -1582,7 +1657,6 @@
                         showToast('✅ नयाँ पत्र सफलतापूर्वक सिर्जना गरियो!', 'success');
                     }
 
-                    // Refresh list and stats
                     loadLetters(searchInput.value);
                     loadStats();
                     resetForm();
@@ -1600,23 +1674,47 @@
                 if (!supabaseClient) return;
 
                 try {
-                    let query = supabaseClient
+                    // Load from both tables
+                    const [verifyData, suchanaData] = await Promise.all([
+                        supabaseClient
                         .from('rotaract_verify')
                         .select('*')
-                        .order('created_at', { ascending: false });
+                        .order('created_at', { ascending: false }),
+                        supabaseClient
+                        .from('rotaract_suchana')
+                        .select('*')
+                        .order('created_at', { ascending: false })
+                    ]);
 
+                    if (verifyData.error) throw verifyData.error;
+                    if (suchanaData.error) throw suchanaData.error;
+
+                    // Combine both results
+                    let allLetters = [...(verifyData.data || []), ...(suchanaData.data || [])];
+                    
+                    // Mark suchana items
+                    allLetters = allLetters.map(item => {
+                        const isSuchana = item.ref_no === 'सूचना' || !item.ref_no;
+                        return { ...item, isSuchana };
+                    });
+
+                    // Sort by created_at
+                    allLetters.sort((a, b) => {
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    });
+
+                    // Apply search filter
                     if (search.trim()) {
-                        const s = `%${search.trim()}%`;
-                        query = query.or(
-                            `fiscal_year.ilike.${s},ref_no.ilike.${s},subject.ilike.${s},to_address.ilike.${s},body.ilike.${s},letter_type.ilike.${s}`
-                        );
+                        const s = search.trim().toLowerCase();
+                        allLetters = allLetters.filter(item => {
+                            return (item.fiscal_year || '').toLowerCase().includes(s) ||
+                                (item.subject || '').toLowerCase().includes(s) ||
+                                (item.to_address || '').toLowerCase().includes(s) ||
+                                (item.body || '').toLowerCase().includes(s);
+                        });
                     }
 
-                    const { data, error } = await query;
-
-                    if (error) throw error;
-
-                    renderTable(data);
+                    renderTable(allLetters);
 
                 } catch (err) {
                     console.error('Load error:', err);
@@ -1644,19 +1742,21 @@
                 letters.forEach(letter => {
                     const statusClass = (letter.letter_status || 'Active').toLowerCase();
                     const statusDisplay = letter.letter_status || 'Active';
+                    const refDisplay = letter.isSuchana ? '📢 सूचना' : (letter.ref_no || '—');
                     html += `
                         <tr>
                             <td><strong>${escapeHtml(letter.fiscal_year || '—')}</strong></td>
-                            <td>${escapeHtml(letter.ref_no || '—')}</td>
+                            <td>${escapeHtml(refDisplay)}</td>
                             <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(letter.subject || '—')}</td>
                             <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(letter.to_address || '—')}</td>
                             <td><span class="status-badge ${statusClass}">${escapeHtml(statusDisplay)}</span></td>
                             <td>
                                 <div class="actions">
-                                    <button class="btn-icon edit" data-id="${letter.id}" title="सम्पादन गर्नुहोस्">✏️</button>
-                                    <button class="btn-icon clone" data-id="${letter.id}" title="क्लोन गर्नुहोस्">📋</button>
-                                    <button class="btn-icon print" data-id="${letter.id}" title="प्रिन्ट गर्नुहोस्">🖨️</button>
-                                    <button class="btn-icon delete" data-id="${letter.id}" title="मेट्नुहोस्">🗑️</button>
+                                    <button class="btn-icon edit" data-id="${letter.id}" data-suchana="${letter.isSuchana}" title="सम्पादन गर्नुहोस्">✏️</button>
+                                    <button class="btn-icon clone" data-id="${letter.id}" data-suchana="${letter.isSuchana}" title="क्लोन गर्नुहोस्">📋</button>
+                                    <button class="btn-icon print" data-id="${letter.id}" data-suchana="${letter.isSuchana}" title="प्रिन्ट गर्नुहोस्">🖨️</button>
+                                    ${letter.isSuchana ? '' : `<button class="btn-icon suchana" data-id="${letter.id}" title="सूचना (दर्ता नं. बिना) प्रिन्ट गर्नुहोस्">📢</button>`}
+                                    <button class="btn-icon delete" data-id="${letter.id}" data-suchana="${letter.isSuchana}" title="मेट्नुहोस्">🗑️</button>
                                 </div>
                             </td>
                         </tr>
@@ -1669,49 +1769,74 @@
                 tableBody.querySelectorAll('.edit').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const id = this.dataset.id;
-                        editLetter(id);
+                        const isSuchana = this.dataset.suchana === 'true';
+                        editLetter(id, isSuchana);
                     });
                 });
 
                 tableBody.querySelectorAll('.clone').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const id = this.dataset.id;
-                        cloneLetter(id);
+                        const isSuchana = this.dataset.suchana === 'true';
+                        cloneLetter(id, isSuchana);
                     });
                 });
 
                 tableBody.querySelectorAll('.print').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const id = this.dataset.id;
-                        printLetter(id);
+                        const isSuchana = this.dataset.suchana === 'true';
+                        printLetter(id, isSuchana);
+                    });
+                });
+
+                tableBody.querySelectorAll('.suchana').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        printLetter(id, true);
                     });
                 });
 
                 tableBody.querySelectorAll('.delete').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const id = this.dataset.id;
+                        const isSuchana = this.dataset.suchana === 'true';
                         if (confirm('के तपाईं यो पत्र मेट्न चाहनुहुन्छ? यो कार्य पछि फिर्ता गर्न सकिँदैन।')) {
-                            deleteLetter(id);
+                            deleteLetter(id, isSuchana);
                         }
                     });
                 });
             }
 
             // Edit letter
-            async function editLetter(id) {
+            async function editLetter(id, isSuchana = false) {
                 if (!supabaseClient) return;
 
                 try {
+                    const tableName = isSuchana ? 'rotaract_suchana' : 'rotaract_verify';
                     const { data, error } = await supabaseClient
-                        .from('rotaract_verify')
+                        .from(tableName)
                         .select('*')
                         .eq('id', id)
                         .single();
 
                     if (error) throw error;
 
+                    if (isSuchana) {
+                        suchanaMode = true;
+                        suchanaBtn.classList.add('active');
+                        suchanaBtn.textContent = '✅ सूचना मोड';
+                        isSuchanaMode.value = 'true';
+                        formTitle.textContent = '✏️ सूचना पत्र सम्पादन गर्नुहोस्';
+                    } else {
+                        suchanaMode = false;
+                        suchanaBtn.classList.remove('active');
+                        suchanaBtn.textContent = '📢 सूचना';
+                        isSuchanaMode.value = 'false';
+                        formTitle.textContent = '✏️ पत्र सम्पादन गर्नुहोस्';
+                    }
+
                     setFormData(data);
-                    formTitle.textContent = '✏️ पत्र सम्पादन गर्नुहोस्';
                     deleteBtn.style.display = 'inline-flex';
                     document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' });
 
@@ -1722,29 +1847,49 @@
             }
 
             // Clone letter
-            async function cloneLetter(id) {
+            async function cloneLetter(id, isSuchana = false) {
                 if (!supabaseClient) return;
 
                 try {
+                    const tableName = isSuchana ? 'rotaract_suchana' : 'rotaract_verify';
                     const { data, error } = await supabaseClient
-                        .from('rotaract_verify')
+                        .from(tableName)
                         .select('*')
                         .eq('id', id)
                         .single();
 
                     if (error) throw error;
 
+                    if (isSuchana) {
+                        suchanaMode = true;
+                        suchanaBtn.classList.add('active');
+                        suchanaBtn.textContent = '✅ सूचना मोड';
+                        isSuchanaMode.value = 'true';
+                        formTitle.textContent = '📋 क्लोन गरिएको सूचना पत्र (नयाँ)';
+                    } else {
+                        suchanaMode = false;
+                        suchanaBtn.classList.remove('active');
+                        suchanaBtn.textContent = '📢 सूचना';
+                        isSuchanaMode.value = 'false';
+                        formTitle.textContent = '📋 क्लोन गरिएको पत्र (नयाँ)';
+                    }
+
                     setFormData(data);
                     editId.value = '';
-                    // Generate new ref and verification ID
-                    const fy = data.fiscal_year || fiscalYear.value.trim() || '026/027';
-                    const nextRef = await getNextRefNo(fy);
-                    refNo.value = nextRef;
-                    verificationId.value = generateVerificationId(fy, nextRef);
-                    // Set today's date
+                    
+                    if (!isSuchana) {
+                        const fy = data.fiscal_year || fiscalYear.value.trim() || '026/027';
+                        const nextRef = await getNextRefNo(fy);
+                        refNo.value = nextRef;
+                        verificationId.value = generateVerificationId(fy, nextRef);
+                    } else {
+                        refNo.value = 'सूचना';
+                        const fy = data.fiscal_year || fiscalYear.value.trim() || '026/027';
+                        verificationId.value = generateVerificationId(fy, 'SUCHANA');
+                    }
+                    
                     const today = new Date().toISOString().split('T')[0];
                     letterDate.value = today;
-                    formTitle.textContent = '📋 क्लोन गरिएको पत्र (नयाँ)';
                     deleteBtn.style.display = 'none';
                     document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' });
                     showToast('✅ पत्र क्लोन गरियो। अब सुरक्षित गर्नुहोस्।', 'info');
@@ -1756,19 +1901,20 @@
             }
 
             // Print letter
-            async function printLetter(id) {
+            async function printLetter(id, isSuchana = false) {
                 if (!supabaseClient) return;
 
                 try {
+                    const tableName = isSuchana ? 'rotaract_suchana' : 'rotaract_verify';
                     const { data, error } = await supabaseClient
-                        .from('rotaract_verify')
+                        .from(tableName)
                         .select('*')
                         .eq('id', id)
                         .single();
 
                     if (error) throw error;
 
-                    renderPrintPreview(data);
+                    renderPrintPreview(data, isSuchana);
                     printModal.classList.add('open');
                     document.body.style.overflow = 'hidden';
 
@@ -1779,12 +1925,13 @@
             }
 
             // Delete letter
-            async function deleteLetter(id) {
+            async function deleteLetter(id, isSuchana = false) {
                 if (!supabaseClient) return;
 
                 try {
+                    const tableName = isSuchana ? 'rotaract_suchana' : 'rotaract_verify';
                     const { error } = await supabaseClient
-                        .from('rotaract_verify')
+                        .from(tableName)
                         .delete()
                         .eq('id', id);
 
@@ -1805,16 +1952,15 @@
             }
 
             // ─── Render Print Preview ──────────────────────────────────────────
-            function renderPrintPreview(letter) {
-                // Format date
+            function renderPrintPreview(letter, isSuchana = false) {
                 const dateFormatted = letter.date || '—';
-
-                // Build the HTML
                 const vid = letter.verification_id || generateVerificationId(letter.fiscal_year || '0000', letter.ref_no ||
-                '0');
+                    '0');
                 const qrUrl = `https://galkot.netlify.app/verify?vid=${encodeURIComponent(vid)}`;
 
-                // Signature block
+                const refDisplay = isSuchana ? '—' : (letter.ref_no || '—');
+                const refLabel = isSuchana ? 'सूचना' : `द. नं. ${refDisplay}`;
+
                 const sigHtml = `
                     <div class="letter-signature">
                         <div class="sig-dots">.................................</div>
@@ -1833,7 +1979,7 @@
                     </div>
 
                     <div class="ref-date-row">
-                        <div class="ref-left">आ.व. ${escapeHtml(letter.fiscal_year || '—')} (द. नं. ${escapeHtml(letter.ref_no || '—')})</div>
+                        <div class="ref-left">आ.व. ${escapeHtml(letter.fiscal_year || '—')} (${refLabel})</div>
                         <div class="date-right">मिति: ${dateFormatted}</div>
                     </div>
 
@@ -1862,7 +2008,6 @@
 
                 printContent.innerHTML = html;
 
-                // Generate QR code
                 setTimeout(() => {
                     const qrContainer = document.getElementById('qrCodeContainer');
                     if (qrContainer && typeof QRCode !== 'undefined') {
@@ -1886,14 +2031,17 @@
                 if (!supabaseClient) return;
 
                 try {
-                    const { data, error } = await supabaseClient
-                        .from('rotaract_verify')
-                        .select('*');
+                    const [verifyData, suchanaData] = await Promise.all([
+                        supabaseClient.from('rotaract_verify').select('*'),
+                        supabaseClient.from('rotaract_suchana').select('*')
+                    ]);
 
-                    if (error) throw error;
+                    if (verifyData.error) throw verifyData.error;
+                    if (suchanaData.error) throw suchanaData.error;
 
-                    const total = data.length;
-                    const active = data.filter(r => (r.letter_status || 'Active') === 'Active').length;
+                    const total = (verifyData.data?.length || 0) + (suchanaData.data?.length || 0);
+                    const active = [...(verifyData.data || []), ...(suchanaData.data || [])]
+                        .filter(r => (r.letter_status || 'Active') === 'Active').length;
                     const currentFiscal = fiscalYear.value.trim() || '026/027';
 
                     statTotal.textContent = total;
@@ -1923,8 +2071,9 @@
 
             deleteBtn.addEventListener('click', function() {
                 const id = editId.value;
+                const isSuchana = suchanaMode || isSuchanaMode.value === 'true';
                 if (id && confirm('के तपाईं यो पत्र मेट्न चाहनुहुन्छ?')) {
-                    deleteLetter(id);
+                    deleteLetter(id, isSuchana);
                 }
             });
 
@@ -1932,9 +2081,30 @@
                 loadLetters(this.value);
             });
 
-            // When fiscal year changes, update ref number (if not editing)
+            // ─── Suchana Button Toggle ──────────────────────────────────────────
+            suchanaBtn.addEventListener('click', function() {
+                suchanaMode = !suchanaMode;
+                this.classList.toggle('active');
+                this.textContent = suchanaMode ? '✅ सूचना मोड' : '📢 सूचना';
+                isSuchanaMode.value = suchanaMode ? 'true' : 'false';
+                
+                if (suchanaMode) {
+                    refNo.value = 'सूचना';
+                    formTitle.textContent = '📢 सूचना पत्र सिर्जना गर्नुहोस्';
+                    showToast('📢 सूचना मोड सक्रिय: दर्ता नम्बर बिना पत्र सुरक्षित हुनेछ', 'info');
+                } else {
+                    const fy = fiscalYear.value.trim() || '026/027';
+                    getNextRefNo(fy).then(nextRef => {
+                        refNo.value = nextRef;
+                    });
+                    formTitle.textContent = 'नयाँ पत्र सिर्जना गर्नुहोस्';
+                    showToast('सामान्य मोड: दर्ता नम्बर सहित पत्र सुरक्षित हुनेछ', 'info');
+                }
+            });
+
+            // When fiscal year changes, update ref number (if not editing and not suchana mode)
             fiscalYear.addEventListener('change', async function() {
-                if (!editId.value) {
+                if (!editId.value && !suchanaMode) {
                     const fy = this.value.trim();
                     const nextRef = await getNextRefNo(fy);
                     refNo.value = nextRef;
@@ -2022,17 +2192,14 @@
 
             // ─── Init ─────────────────────────────────────────────────────────────
             async function init() {
-                // Set today's date
                 const today = new Date().toISOString().split('T')[0];
                 letterDate.value = today;
 
-                // Generate first ref
                 const fy = fiscalYear.value.trim() || '026/027';
                 const nextRef = await getNextRefNo(fy);
                 refNo.value = nextRef;
                 verificationId.value = generateVerificationId(fy, nextRef);
 
-                // Load letters and stats
                 loadLetters();
                 loadStats();
 
