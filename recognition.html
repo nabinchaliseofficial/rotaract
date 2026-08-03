@@ -194,6 +194,7 @@
       border-radius: 40px;
     }
     .bonus-badge { background: #fef9c3 !important; color: #854d0e !important; }
+    .blood-badge { background: #fee2e2 !important; color: #b91c1c !important; }
     .no-winner {
       color: #64748b;
       font-size: 0.95rem;
@@ -267,6 +268,7 @@
   <div class="footer-note">
     <span><i class="fas fa-calendar-check"></i> Attendance computed from Published meeting minutes</span>
     <span><i class="fas fa-check-circle"></i> Bonus: +1 per completed action item (any meeting type)</span>
+    <span><i class="fas fa-droplet"></i> Bonus: +1 per 10 blood donor entries (data_entry_by, any status)</span>
     <span><i class="fas fa-users"></i> Leader: Fixed board roster (all meeting types), President excluded</span>
     <span><i class="fas fa-star"></i> Rising Star: Club Members (General/Assembly/Special General/AGM meetings only)</span>
   </div>
@@ -327,6 +329,9 @@
       const photo = member.photoUrl || null;
       const name = getFullNameWithPrefix(member.fullName);
       const designation = member.designation || 'Member';
+      const bloodBadge = member.bloodEntryCount > 0
+        ? `<span class="blood-badge"><i class="fas fa-droplet"></i> ${member.bloodEntryCount} (+${member.bloodBonus})</span>`
+        : '';
       return `
         <div class="winner-item">
           <div class="avatar">${getAvatarHtml(name, photo)}</div>
@@ -336,6 +341,7 @@
             <div class="winner-stats">
               <span><i class="fas fa-user-check"></i> ${attendancePct}%</span>
               <span class="bonus-badge"><i class="fas fa-plus-circle"></i> +${bonus}</span>
+              ${bloodBadge}
               <span class="final-score"><i class="fas fa-star"></i> ${score.toFixed(1)}</span>
             </div>
           </div>
@@ -453,6 +459,29 @@
 
         if (memError) throw new Error('Members fetch failed: ' + memError.message);
 
+        // Blood donor data-entry bonus: every 10 rows a member entered into
+        // blood_bridge_galkot (data_entry_by) is worth +1 point, same scale
+        // as the action-item bonus. Counts every row regardless of status
+        // (active/inactive) since the credit is for the entry work done, not
+        // for whether that donor record is still active today. Soft-fails
+        // (logs a warning, contributes 0) so a problem with this table never
+        // breaks attendance/action-item scoring for everyone else.
+        const bloodEntryCountMap = {}; // normalizedName -> row count
+        try {
+          const { data: bloodRows, error: bloodError } = await supabase
+            .from('blood_bridge_galkot')
+            .select('data_entry_by');
+          if (bloodError) throw bloodError;
+          (bloodRows || []).forEach(row => {
+            const who = row.data_entry_by;
+            if (!who) return;
+            const key = normalizeKey(who);
+            bloodEntryCountMap[key] = (bloodEntryCountMap[key] || 0) + 1;
+          });
+        } catch (bloodErr) {
+          console.warn('Blood donor entry bonus skipped:', bloodErr.message || bloodErr);
+        }
+
         // Only count meetings whose minutes are finalized. Draft minutes are
         // excluded from attendance % and bonus points since they aren't
         // official yet - remove the .filter() below if drafts should count too.
@@ -523,7 +552,10 @@
           const totalMeetings = classification.isBoard ? totalMeetingsAll : totalMeetingsClub;
           const attended = presentSets.filter(s => s.has(key)).length;
           const attendancePct = totalMeetings > 0 ? Math.round((attended / totalMeetings) * 1000) / 10 : 0;
-          const bonus = bonusMap[key] || 0;
+          const actionBonus = bonusMap[key] || 0;
+          const bloodEntryCount = bloodEntryCountMap[key] || 0;
+          const bloodBonus = Math.floor(bloodEntryCount / 10); // 10 entries = 1 point
+          const bonus = actionBonus + bloodBonus;
           const photoUrl = m.photo_url || m.photo || m.profile_image || null;
           const finalScore = attendancePct + bonus;
 
@@ -534,6 +566,9 @@
             photoUrl,
             attendancePct,
             bonus,
+            actionBonus,
+            bloodEntryCount,
+            bloodBonus,
             finalScore,
             isBoard: classification.isBoard,
             isPresident: classification.isPresident,
@@ -585,7 +620,7 @@
         if (exportBtn) exportBtn.disabled = latestExportData.length === 0;
 
         // Troubleshooting details go to the browser console only (not shown on page)
-        console.log('Recognition data loaded:', { publishedMinutes, members, bonusMap, memberScores, leaderWinners, risingWinners });
+        console.log('Recognition data loaded:', { publishedMinutes, members, bonusMap, bloodEntryCountMap, memberScores, leaderWinners, risingWinners });
 
       } catch (err) {
         console.error('Recognition page error:', err);
@@ -615,7 +650,10 @@
         'Meetings Counted': m.totalMeetings,
         'Meetings Attended': m.attended,
         'Attendance %': m.attendancePct,
-        'Bonus (Action Items)': m.bonus,
+        'Action Item Bonus': m.actionBonus,
+        'Blood Donor Entries': m.bloodEntryCount,
+        'Blood Entry Bonus': m.bloodBonus,
+        'Total Bonus': m.bonus,
         'Final Score': Number(m.finalScore.toFixed(1)),
         'Award': m.award
       }));
@@ -623,7 +661,8 @@
       const worksheet = XLSX.utils.json_to_sheet(rows);
       worksheet['!cols'] = [
         { wch: 26 }, { wch: 20 }, { wch: 22 }, { wch: 16 },
-        { wch: 16 }, { wch: 13 }, { wch: 18 }, { wch: 12 }, { wch: 24 }
+        { wch: 16 }, { wch: 13 }, { wch: 16 }, { wch: 18 },
+        { wch: 16 }, { wch: 13 }, { wch: 12 }, { wch: 24 }
       ];
 
       const workbook = XLSX.utils.book_new();
