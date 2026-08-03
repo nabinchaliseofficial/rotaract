@@ -812,6 +812,18 @@
       align-items: center;
       gap: 4px;
     }
+    .blood-badge {
+      background: rgba(217, 26, 92, 0.1);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 4px 14px;
+      border-radius: 40px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
     .no-winner {
       color: var(--text-muted);
       font-size: 0.95rem;
@@ -2341,6 +2353,27 @@
 
         if (memError) throw new Error('Members fetch failed: ' + memError.message);
 
+        // Blood donor data-entry bonus: every 10 rows a member entered into
+        // blood_bridge_galkot (data_entry_by) is worth +1 point, same scale
+        // as the action-item bonus. Counts every row regardless of status
+        // (active/inactive). Soft-fails (logs a warning, contributes 0) so a
+        // problem with this table never breaks the rest of the widget.
+        const bloodEntryCountMap = {};
+        try {
+          const { data: bloodRows, error: bloodError } = await supabase
+            .from('blood_bridge_galkot')
+            .select('data_entry_by');
+          if (bloodError) throw bloodError;
+          (bloodRows || []).forEach(row => {
+            const who = row.data_entry_by;
+            if (!who) return;
+            const key = normalizeKey(who);
+            bloodEntryCountMap[key] = (bloodEntryCountMap[key] || 0) + 1;
+          });
+        } catch (bloodErr) {
+          console.warn('Blood donor entry bonus skipped:', bloodErr.message || bloodErr);
+        }
+
         const BOARD_DESIGNATIONS = [
           'President', 'President Elect', 'Secretary', 'Joint Secretary', 'Treasurer',
           'Vice President', 'IPP / Mentor', 'Membership Chair', 'Public Image Chair',
@@ -2420,7 +2453,10 @@
           const totalMeetings = classification.isBoard ? totalMeetingsAll : totalMeetingsClub;
           const attended = presentSets.filter(s => s.has(key)).length;
           const attendancePct = totalMeetings > 0 ? Math.round((attended / totalMeetings) * 1000) / 10 : 0;
-          const bonus = bonusMap[key] || 0;
+          const actionBonus = bonusMap[key] || 0;
+          const bloodEntryCount = bloodEntryCountMap[key] || 0;
+          const bloodBonus = Math.floor(bloodEntryCount / 10); // 10 entries = 1 point
+          const bonus = actionBonus + bloodBonus;
           const photoUrl = m.photo_url || m.photo || m.profile_image || null;
           const finalScore = attendancePct + bonus;
           return {
@@ -2430,6 +2466,9 @@
             photoUrl,
             attendancePct,
             bonus,
+            actionBonus,
+            bloodEntryCount,
+            bloodBonus,
             finalScore,
             isBoard: classification.isBoard,
             isPresident: classification.isPresident
@@ -2463,6 +2502,7 @@
                 <span class="winner-name">${w.fullName || 'Member'}</span>
                 <span class="winner-designation">${w.designation || 'Member'}</span>
               </div>
+              ${w.bloodEntryCount > 0 ? `<div class="blood-badge"><i class="fas fa-droplet"></i> ${w.bloodEntryCount} (+${w.bloodBonus})</div>` : ''}
               <div class="winner-score"><i class="fas fa-star"></i> ${w.finalScore.toFixed(1)}</div>
             </div>
           `).join('');
