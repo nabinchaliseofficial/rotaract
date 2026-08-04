@@ -524,6 +524,11 @@
             color: var(--blue-mid);
         }
 
+        .btn-icon.clone:hover {
+            background: #E6F7EE;
+            color: #1DAA61;
+        }
+
         .no-records {
             text-align: center;
             padding: 2rem 1rem;
@@ -1848,6 +1853,45 @@
                 }
             }
 
+            // ─── Clone document ───────────────────────────────────────────────────
+            // Copies every field of an existing document into the form as a
+            // brand-new (not-yet-saved) document, only regenerating the ref_no
+            // and verification_id so it doesn't collide with the original —
+            // this makes drafting a similar new letter fast.
+            async function cloneDoc(id) {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('rotaract_verify')
+                        .select('*')
+                        .eq('id', id)
+                        .single();
+                    if (error) throw error;
+
+                    const type = data.doc_type || 'letter';
+                    const fy = data.fiscal_year || docFiscalYear.value.trim() || '026/027';
+                    const nextRef = await getNextRefNo(fy, type);
+
+                    const cloned = { ...data };
+                    delete cloned.id;
+                    delete cloned.created_at;
+                    delete cloned.updated_at;
+                    cloned.ref_no = nextRef;
+                    cloned.verification_id = generateVerificationId(fy, nextRef);
+                    cloned.date = new Date().toISOString().split('T')[0];
+
+                    setDocFormData(cloned);
+                    docEditId.value = ''; // force save as a new record, never overwrite the original
+                    docFormTitle.textContent = '📄 प्रतिलिपि — नयाँ कागजातको रूपमा जाँच गरी सेभ गर्नुहोस्';
+                    docDeleteBtn.style.display = 'none';
+                    docFormContainer.style.display = 'block';
+                    docFormContainer.scrollIntoView({ behavior: 'smooth' });
+                    showToast('📄 कागजात प्रतिलिपि भयो — विवरण जाँच गरी सेभ गर्नुहोस्।', 'info');
+                } catch (err) {
+                    console.error('Clone error:', err);
+                    showToast('⚠️ कागजात प्रतिलिपि गर्न असफल', 'error');
+                }
+            }
+
             // ─── Delete document ──────────────────────────────────────────────────
             async function deleteDoc(id) {
                 try {
@@ -2015,6 +2059,7 @@ Thank you!`;
                             <td>
                                 <div class="actions">
                                     <button class="btn-icon edit" data-id="${doc.id}" title="सम्पादन">✏️</button>
+                                    <button class="btn-icon clone" data-id="${doc.id}" title="प्रतिलिपि बनाउनुहोस् (Clone)">📄</button>
                                     <button class="btn-icon print" data-id="${doc.id}" title="प्रिन्ट">🖨️</button>
                                     <button class="btn-icon delete" data-id="${doc.id}" title="मेट्नुहोस्">🗑️</button>
                                 </div>
@@ -2025,6 +2070,9 @@ Thank you!`;
 
                 docTableBody.querySelectorAll('.edit').forEach(btn => {
                     btn.addEventListener('click', function() { editDoc(this.dataset.id); });
+                });
+                docTableBody.querySelectorAll('.clone').forEach(btn => {
+                    btn.addEventListener('click', function() { cloneDoc(this.dataset.id); });
                 });
                 docTableBody.querySelectorAll('.print').forEach(btn => {
                     btn.addEventListener('click', function() { printDoc(this.dataset.id); });
