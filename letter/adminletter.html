@@ -730,6 +730,133 @@
             flex-wrap: wrap;
         }
 
+        /* ─── Login Modal ─────────────────────────────────────────────────── */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+            z-index: 20000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .login-overlay.hidden {
+            display: none !important;
+        }
+
+        .login-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            width: 100%;
+            max-width: 400px;
+            padding: 2.2rem 2rem;
+            text-align: center;
+        }
+
+        .login-card .login-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--magenta);
+            margin-bottom: 0.8rem;
+        }
+
+        .login-card h2 {
+            font-size: 1.1rem;
+            color: var(--blue-dark);
+            margin-bottom: 0.2rem;
+        }
+
+        .login-card .login-sub {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-bottom: 1.4rem;
+        }
+
+        .login-card .field {
+            text-align: left;
+            margin-bottom: 1rem;
+        }
+
+        .login-card .field label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            margin-bottom: 0.35rem;
+        }
+
+        .login-card .field input {
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border: 1.5px solid var(--gray-300);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: border-color var(--transition);
+        }
+
+        .login-card .field input:focus {
+            outline: none;
+            border-color: var(--magenta);
+            box-shadow: 0 0 0 3px var(--magenta-glow);
+        }
+
+        .login-card .field input.invalid {
+            border-color: var(--error);
+        }
+
+        .login-card .login-error {
+            display: none;
+            background: var(--error-bg);
+            color: var(--error);
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.6rem 0.9rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .login-card .login-error.visible {
+            display: block;
+        }
+
+        .login-card .btn-login {
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: var(--magenta);
+            color: var(--white);
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: var(--shadow-btn);
+            transition: all var(--transition);
+        }
+
+        .login-card .btn-login:hover:not(:disabled) {
+            background: var(--magenta-dark);
+            transform: translateY(-1px);
+        }
+
+        .login-card .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .app.app-locked {
+            filter: blur(4px);
+            pointer-events: none;
+            user-select: none;
+        }
+
         /* ─── Footer ──────────────────────────────────────────────────────── */
         .app-footer {
             background: var(--blue-dark);
@@ -824,11 +951,68 @@
         .hidden {
             display: none !important;
         }
+
+        /* ─── Pagination ──────────────────────────────────────────────────── */
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            padding: 0.9rem 0.2rem 0.2rem;
+            font-size: 0.78rem;
+            color: var(--gray-600);
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pagination-controls select {
+            padding: 0.3rem 0.5rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.75rem;
+        }
+
+        .pagination-controls .btn-icon:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .status-badge.archived {
+            background: var(--gray-200);
+            color: var(--gray-600);
+        }
     </style>
 </head>
 <body>
 
-    <div class="app">
+    <!-- ═══ LOGIN MODAL (auto popup, blocks access until admin auth) ═══ -->
+    <div class="login-overlay hidden no-print" id="loginOverlay">
+        <div class="login-card">
+            <img src="rotaract.jpg" alt="Rotaract Logo" class="login-logo" onerror="this.style.display='none'" />
+            <h2>Admin Login</h2>
+            <div class="login-sub">Rotaract Club of Galkot Baglung — Admin Panel</div>
+            <div class="login-error" id="loginError"></div>
+            <form id="loginForm" novalidate>
+                <div class="field">
+                    <label for="loginEmail">इमेल</label>
+                    <input type="email" id="loginEmail" autocomplete="username" required />
+                </div>
+                <div class="field">
+                    <label for="loginPassword">पासवर्ड</label>
+                    <input type="password" id="loginPassword" autocomplete="current-password" required />
+                </div>
+                <button type="submit" class="btn-login" id="loginSubmitBtn">🔐 लगइन गर्नुहोस्</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="app app-locked" id="appRoot">
 
         <!-- ═══ HEADER ═══ -->
         <header class="app-header no-print">
@@ -889,6 +1073,7 @@
                     <button data-filter="letter">📝 पत्र</button>
                     <button data-filter="suchana">📢 सूचना</button>
                     <button data-filter="lhe">📨 LHE</button>
+                    <button data-filter="archived">📦 Archived</button>
                 </div>
                 <button class="btn btn-secondary" id="newDocBtn">➕ नयाँ</button>
             </div>
@@ -1066,6 +1251,22 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Pagination -->
+            <div class="pagination-bar no-print" id="paginationBar">
+                <span class="pagination-info" id="paginationInfo">—</span>
+                <div class="pagination-controls">
+                    <button type="button" class="btn-icon" id="pagePrev" title="अघिल्लो">◀</button>
+                    <span id="pageCurrentLabel">1 / 1</span>
+                    <button type="button" class="btn-icon" id="pageNext" title="अर्को">▶</button>
+                    <select id="pageSizeSelect" title="पृष्ठ आकार">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <!-- ═══ FOOTER ═══ -->
@@ -1206,37 +1407,125 @@
             }
 
             // ─── Auth ──────────────────────────────────────────────────────────────
-            async function checkAuth() {
-                if (!supabaseClient) return false;
+            const loginOverlay = document.getElementById('loginOverlay');
+            const loginForm = document.getElementById('loginForm');
+            const loginEmail = document.getElementById('loginEmail');
+            const loginPassword = document.getElementById('loginPassword');
+            const loginError = document.getElementById('loginError');
+            const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+            const appRoot = document.getElementById('appRoot');
+
+            function showLoginError(msg) {
+                loginError.textContent = msg;
+                loginError.classList.add('visible');
+            }
+
+            function clearLoginError() {
+                loginError.textContent = '';
+                loginError.classList.remove('visible');
+            }
+
+            function showLoginModal() {
+                loginOverlay.classList.remove('hidden');
+                appRoot.classList.add('app-locked');
+            }
+
+            function hideLoginModal() {
+                loginOverlay.classList.add('hidden');
+                appRoot.classList.remove('app-locked');
+                clearLoginError();
+                loginForm.reset();
+            }
+
+            // Returns true only if there is a valid session AND the user has an
+            // active 'admin' row in user_roles. Never redirects — shows the
+            // login popup instead so a stray page load never bounces the admin
+            // out to another page.
+            async function checkAuth(silent) {
+                if (!supabaseClient) {
+                    if (!silent) showLoginError('⚠️ सर्भरसँग जडान हुन सकेन। पछि पुन: प्रयास गर्नुहोस्।');
+                    showLoginModal();
+                    return false;
+                }
                 try {
                     const { data: { session } } = await supabaseClient.auth.getSession();
                     if (!session || !session.user) {
-                        window.location.href = 'index.html';
+                        showLoginModal();
                         return false;
                     }
                     currentUser = session.user;
-                    const { data: roleRow } = await supabaseClient
+                    const { data: roleRow, error: roleErr } = await supabaseClient
                         .from('user_roles')
                         .select('role, status')
                         .eq('user_id', session.user.id)
                         .single();
 
-                    if (!roleRow || roleRow.role !== 'admin' || roleRow.status !== 'active') {
-                        window.location.href = 'index.html';
+                    if (roleErr || !roleRow || roleRow.role !== 'admin' || roleRow.status !== 'active') {
+                        await supabaseClient.auth.signOut();
+                        currentUser = null;
+                        if (!silent) showLoginError('⛔ यो खाता admin अनुमति प्राप्त छैन वा निष्क्रिय छ।');
+                        showLoginModal();
                         return false;
                     }
+                    hideLoginModal();
                     return true;
                 } catch (e) {
                     console.error('Auth error:', e);
-                    window.location.href = 'index.html';
+                    if (!silent) showLoginError('⚠️ प्रमाणीकरणमा त्रुटि भयो। पुन: प्रयास गर्नुहोस्।');
+                    showLoginModal();
                     return false;
                 }
             }
 
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                clearLoginError();
+                const email = loginEmail.value.trim();
+                const password = loginPassword.value;
+                if (!email || !password) {
+                    showLoginError('कृपया इमेल र पासवर्ड दुवै भर्नुहोस्।');
+                    return;
+                }
+                loginSubmitBtn.disabled = true;
+                loginSubmitBtn.textContent = '⏳ लगइन हुँदैछ...';
+                try {
+                    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                    if (error) {
+                        showLoginError(error.message === 'Invalid login credentials' ?
+                            '❌ इमेल वा पासवर्ड मिलेन।' : '❌ ' + error.message);
+                        return;
+                    }
+                    const authorized = await checkAuth(true);
+                    if (authorized) {
+                        showToast('✅ स्वागत छ, लगइन सफल भयो।', 'success');
+                        await startApp();
+                    } else if (!loginError.classList.contains('visible')) {
+                        showLoginError('⛔ यो खाता admin अनुमति प्राप्त छैन वा निष्क्रिय छ।');
+                    }
+                } catch (err) {
+                    console.error('Login error:', err);
+                    showLoginError('⚠️ लगइन गर्न सकिएन। पछि पुन: प्रयास गर्नुहोस्।');
+                } finally {
+                    loginSubmitBtn.disabled = false;
+                    loginSubmitBtn.textContent = '🔐 लगइन गर्नुहोस्';
+                }
+            });
+
             document.getElementById('logoutBtn').addEventListener('click', async () => {
                 if (supabaseClient) await supabaseClient.auth.signOut();
-                window.location.href = 'index.html';
+                currentUser = null;
+                showLoginModal();
             });
+
+            // Keep the popup in sync if the session expires or the user logs
+            // out from another tab.
+            if (supabaseClient) {
+                supabaseClient.auth.onAuthStateChange((event) => {
+                    if (event === 'SIGNED_OUT') {
+                        showLoginModal();
+                    }
+                });
+            }
 
             // ─── Utility ──────────────────────────────────────────────────────────
             function escapeHtml(text) {
@@ -1268,14 +1557,9 @@
             // ─── Form helpers ─────────────────────────────────────────────────────
             function toggleLHEFields(show) {
                 lheFields.classList.toggle('visible', show);
-                if (show) {
-                    docFiscalYear.value = '026/027';
-                    docRefNo.value = 'LHE_001';
-                    docLetterType.value = 'LHE';
-                }
             }
 
-            docTypeSelect.addEventListener('change', function() {
+            docTypeSelect.addEventListener('change', async function() {
                 const type = this.value;
                 docType.value = type;
                 toggleLHEFields(type === 'lhe');
@@ -1284,57 +1568,56 @@
                     docLetterType.value = 'निवेदन';
                 } else if (type === 'suchana') {
                     docLetterType.value = 'सूचना';
-                    docRefNo.value = 'सूचना';
                 } else if (type === 'lhe') {
                     docLetterType.value = 'LHE';
-                    docRefNo.value = 'LHE_001';
+                }
+
+                // Only auto-generate a fresh ref number for a brand-new document.
+                // Editing an existing one must keep its already-stored ref_no.
+                if (!docEditId.value) {
+                    const fy = docFiscalYear.value.trim() || '026/027';
+                    const nextRef = await getNextRefNo(fy, type);
+                    docRefNo.value = nextRef;
+                    docVerificationId.value = generateVerificationId(fy, nextRef);
                 }
             });
 
             // ─── Get next ref number ─────────────────────────────────────────────
+            // Letter (LTR_xxx) and LHE (LHE_xxx) share ONE common numeric counter
+            // per fiscal year — e.g. LTR_005, LHE_006, LTR_007 — so the number
+            // keeps advancing across both document types regardless of prefix.
+            const REF_PREFIXES = { letter: 'LTR_', lhe: 'LHE_' };
+
             async function getNextRefNo(fiscal, type) {
-                if (!supabaseClient || !fiscal) return '1';
-
-                if (type === 'lhe') {
-                    try {
-                        const { data, error } = await supabaseClient
-                            .from('rotaract_verify')
-                            .select('ref_no')
-                            .eq('doc_type', 'lhe')
-                            .order('ref_no', { ascending: false })
-                            .limit(1);
-                        if (error) throw error;
-                        if (!data || data.length === 0) return 'LHE_001';
-                        const lastRef = data[0].ref_no;
-                        const match = lastRef.match(/LHE_(\d+)/);
-                        if (!match) return 'LHE_001';
-                        const num = parseInt(match[1], 10);
-                        return `LHE_${String(num + 1).padStart(3, '0')}`;
-                    } catch (e) {
-                        console.warn('Error fetching LHE ref:', e);
-                        return 'LHE_001';
-                    }
-                }
-
                 if (type === 'suchana') {
                     return 'सूचना';
                 }
+
+                const prefix = REF_PREFIXES[type] || 'LTR_';
+                if (!supabaseClient || !fiscal) return `${prefix}001`;
 
                 try {
                     const { data, error } = await supabaseClient
                         .from('rotaract_verify')
                         .select('ref_no')
                         .eq('fiscal_year', fiscal.trim())
-                        .eq('doc_type', 'letter')
-                        .order('ref_no', { ascending: false })
-                        .limit(1);
+                        .in('doc_type', ['letter', 'lhe'])
+                        .not('ref_no', 'is', null);
                     if (error) throw error;
-                    if (!data || data.length === 0) return '1';
-                    const num = parseInt(data[0].ref_no, 10);
-                    return isNaN(num) ? '1' : String(num + 1);
+
+                    let maxNum = 0;
+                    (data || []).forEach((row) => {
+                        const match = String(row.ref_no || '').match(/(\d+)\s*$/);
+                        if (match) {
+                            const n = parseInt(match[1], 10);
+                            if (!isNaN(n) && n > maxNum) maxNum = n;
+                        }
+                    });
+
+                    return `${prefix}${String(maxNum + 1).padStart(3, '0')}`;
                 } catch (e) {
                     console.warn('Error fetching next ref:', e);
-                    return '1';
+                    return `${prefix}001`;
                 }
             }
 
@@ -1897,9 +2180,11 @@ Thank you!`;
             }
 
             // ─── Init ─────────────────────────────────────────────────────────────
-            async function init() {
-                const authorized = await checkAuth();
-                if (!authorized) return;
+            let appStarted = false;
+
+            async function startApp() {
+                if (appStarted) return;
+                appStarted = true;
 
                 const today = new Date().toISOString().split('T')[0];
                 docDate.value = today;
@@ -1913,6 +2198,16 @@ Thank you!`;
                 console.log('✅ Admin Panel v2.0 — single table — ready.');
             }
 
+            async function init() {
+                showLoginModal();
+                const authorized = await checkAuth(true);
+                if (!authorized) {
+                    // Login popup is already showing; wait for loginForm submit.
+                    return;
+                }
+                await startApp();
+            }
+
             init();
 
         })();
@@ -1922,4 +2217,4 @@ Thank you!`;
     </script>
 
 </body>
-</html>xlo
+</html>

@@ -713,7 +713,7 @@ input:read-only, input:disabled, textarea:disabled {
               for (let i = 0; i < binary.length; i++) {
                 arr[i] = binary.charCodeAt(i);
               }
-              const blob = new Blob([arr], { type: file.type || 'image/jpeg' });
+              const blob = new File([arr], file.name || 'logo.jpg', { type: file.type || 'image/jpeg' });
               resolve(blob);
             } else if (quality > 0.1) {
               // Try lower quality
@@ -917,7 +917,7 @@ input:read-only, input:disabled, textarea:disabled {
     if (!supabaseClient) throw new Error('Connection not ready.');
     if (!file) return '';
     
-    const fileExt = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const fileExt = ((file.name || '').split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
     const safeName = `lhe_logos/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${fileExt}`;
     
     // Upload the compressed file
@@ -931,20 +931,30 @@ input:read-only, input:disabled, textarea:disabled {
   }
 
   // ─── Get next LHE ref number ──────────────────────────────────
+  // Letter (LTR_xxx) and LHE (LHE_xxx) share ONE common numeric counter
+  // per fiscal year — e.g. LTR_005, LHE_006, LTR_007 — so the number keeps
+  // advancing across both document types regardless of prefix.
   async function getNextLheRef() {
     if (!supabaseClient) return 'LHE_001';
     try {
       const { data, error } = await supabaseClient
         .from('rotaract_verify')
         .select('ref_no')
-        .eq('doc_type', 'lhe')
-        .order('ref_no', { ascending: false })
-        .limit(1);
+        .eq('fiscal_year', CONFIG.fiscalYear)
+        .in('doc_type', ['letter', 'lhe'])
+        .not('ref_no', 'is', null);
       if (error) throw error;
-      if (!data || data.length === 0) return 'LHE_001';
-      const match = String(data[0].ref_no || '').match(/LHE_(\d+)/);
-      const num = match ? parseInt(match[1], 10) : 0;
-      return `LHE_${String(num + 1).padStart(3, '0')}`;
+
+      let maxNum = 0;
+      (data || []).forEach((row) => {
+        const match = String(row.ref_no || '').match(/(\d+)\s*$/);
+        if (match) {
+          const n = parseInt(match[1], 10);
+          if (!isNaN(n) && n > maxNum) maxNum = n;
+        }
+      });
+
+      return `LHE_${String(maxNum + 1).padStart(3, '0')}`;
     } catch (e) {
       console.warn('Error fetching LHE ref:', e);
       return 'LHE_001';

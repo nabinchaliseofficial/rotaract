@@ -329,6 +329,54 @@
             color: var(--gray-400);
         }
 
+        .letter-card .letter-header .org {
+            flex-direction: row;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .letter-card .org-logo {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--gray-200);
+            flex-shrink: 0;
+        }
+
+        .letter-card .org-text {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+        }
+
+        .letter-card .sig-images {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1.4rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.4rem;
+        }
+
+        .letter-card .sig-images .sig-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .letter-card .sig-images img {
+            height: 44px;
+            max-width: 110px;
+            object-fit: contain;
+        }
+
+        .letter-card .sig-images .sig-block .name {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--gray-600);
+        }
+
         .letter-card .letter-header .ref-badge {
             background: var(--magenta-light);
             padding: 0.25rem 1.2rem;
@@ -1028,21 +1076,22 @@ Wishing you and your club a successful Rotary Year ahead.
 
 Thank you!`;
 
+                    const lheBody = (data.body && data.body.trim()) ? data.body : bodyText;
                     contentHtml = `
                         <div class="to-line">
                             <strong>To:</strong>\n${escapeHtml(data.recipient_name || '—')}, President, RY ${escapeHtml(data.rotary_year || '2026-27')}, ${escapeHtml(data.recipient_club_name || '—')}
                         </div>
                         <div class="subject">📌 विषय: Letterhead Exchange</div>
-                        <div class="body-text">${escapeHtml(data.body || bodyText)}</div>
-                        ${data.message ? `<div class="body-text" style="margin-top:-0.5rem;">${escapeHtml(data.message)}</div>` : ''}
+                        ${lheBody.trim() ? `<div class="body-text">${escapeHtml(lheBody)}</div>` : ''}
+                        ${(data.message && data.message.trim()) ? `<div class="body-text" style="margin-top:-0.5rem;">${escapeHtml(data.message)}</div>` : ''}
                     `;
                 } else {
                     contentHtml = `
                         <div class="to-line">
                             <strong>प्रति :</strong>\n${escapeHtml(data.to_address || '')}
                         </div>
-                        <div class="subject">📌 विषय: ${escapeHtml(data.subject || '')}</div>
-                        <div class="body-text">${escapeHtml(data.body || '')}</div>
+                        ${!isSuchana ? `<div class="subject">📌 विषय: ${escapeHtml(data.subject || '')}</div>` : `<div class="subject">📌 विषय: ${escapeHtml(data.subject || 'सूचना')}</div>`}
+                        ${(data.body && data.body.trim()) ? `<div class="body-text">${escapeHtml(data.body)}</div>` : ''}
                     `;
                 }
 
@@ -1057,8 +1106,11 @@ Thank you!`;
 
                         <div class="letter-header">
                             <div class="org">
-                                <span class="name">${escapeHtml(data.club || 'Rotaract Club of Galkot Baglung')}</span>
-                                <span class="sub">${escapeHtml(data.issued_by || 'Rotaract Club of Galkot Baglung')}</span>
+                                ${data.logo_url ? `<img class="org-logo" src="${escapeHtml(data.logo_url)}" alt="Club Logo" onerror="this.style.display='none'" />` : ''}
+                                <div class="org-text">
+                                    <span class="name">${escapeHtml(data.club || 'Rotaract Club of Galkot Baglung')}</span>
+                                    <span class="sub">${escapeHtml(data.issued_by || 'Rotaract Club of Galkot Baglung')}</span>
+                                </div>
                             </div>
                             <div class="ref-badge">
                                 ${refDisplay} • ${isLHE ? 'LHE' : 'आ.व. ' + escapeHtml(data.fiscal_year || '—')}
@@ -1081,6 +1133,14 @@ Thank you!`;
                                 ${detailsHtml}
                             </div>
                         </div>
+
+                        ${(data.president_signature_url || data.secretary_signature_url || data.international_chair_signature_url) ? `
+                        <div class="sig-images">
+                            ${data.president_signature_url ? `<div class="sig-block"><img src="${escapeHtml(data.president_signature_url)}" alt="President Signature" onerror="this.parentElement.style.display='none'" /><span class="name">${escapeHtml(data.signed_by || 'President')}</span></div>` : ''}
+                            ${data.secretary_signature_url ? `<div class="sig-block"><img src="${escapeHtml(data.secretary_signature_url)}" alt="Secretary Signature" onerror="this.parentElement.style.display='none'" /><span class="name">${escapeHtml(data.secretary_name || 'Secretary')}</span></div>` : ''}
+                            ${data.international_chair_signature_url ? `<div class="sig-block"><img src="${escapeHtml(data.international_chair_signature_url)}" alt="International Chair Signature" onerror="this.parentElement.style.display='none'" /><span class="name">${escapeHtml(data.international_chair_name || 'International Chair')}</span></div>` : ''}
+                        </div>
+                        ` : ''}
 
                         ${data.signed_by || data.designation || data.president_name ? `
                         <div class="letter-signature">
