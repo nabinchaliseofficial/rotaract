@@ -924,6 +924,9 @@
             .no-print {
                 display: none !important;
             }
+            .app {
+                display: none !important;
+            }
             .modal-overlay {
                 position: static !important;
                 background: none !important;
@@ -941,10 +944,6 @@
             body {
                 padding: 0 !important;
                 background: white !important;
-            }
-            .app {
-                box-shadow: none !important;
-                border-radius: 0 !important;
             }
         }
 
@@ -1933,7 +1932,7 @@ Thank you!`;
 
                     printContent.innerHTML = `
                         <div style="text-align:center;margin-bottom:0.3rem;">
-                            <img src="clubheading.jpg" alt="Club Header" style="max-width:100%;max-height:110px;object-fit:contain;" />
+                            <img src="/clubheading.jpg" alt="Club Header" style="max-width:100%;max-height:110px;object-fit:contain;" />
                         </div>
                         <div style="text-align:center;border-bottom:2px solid var(--gray-200);padding-bottom:0.5rem;margin-bottom:0.6rem;">
                             <div style="font-size:1.4rem;font-weight:700;color:var(--blue-dark);">${escapeHtml(data.club || 'रोटर्याक्ट क्लब अफ गलकोट बागलुङ')}</div>
@@ -1956,7 +1955,7 @@ Thank you!`;
                             <div id="qrCodeContainer" style="width:120px;height:120px;background:var(--white);border:1px solid var(--gray-200);border-radius:12px;display:flex;align-items:center;justify-content:center;padding:6px;"></div>
                             <div style="font-size:0.65rem;color:var(--gray-400);word-break:break-all;text-align:center;">${escapeHtml(qrUrl)}</div>
                         </div>
-                        <div style="text-align:center;margin-top:0.5rem;"><img src="footer.jpg" alt="Footer" style="max-width:100%;max-height:49px;object-fit:contain;" /></div>
+                        <div style="text-align:center;margin-top:0.5rem;"><img src="/footer.jpg" alt="Footer" style="max-width:100%;max-height:49px;object-fit:contain;" /></div>
                     `;
 
                     printModal.classList.add('open');
