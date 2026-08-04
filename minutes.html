@@ -1678,7 +1678,7 @@
             <div class="signature-grid">
                 <div class="signature-field">
                     <label>Prepared By</label>
-                    <input type="text" id="sigPrepared" value="Rtr. Madan Subedi" />
+                    <input type="text" id="sigPrepared" value="Rtr. Madan Sharma" />
                 </div>
                 <div class="signature-field">
                     <label>Reviewed By</label>
@@ -1729,7 +1729,7 @@
         </table>
         <div class="content-section" id="print-section-members"><h4>Attended Members</h4><div id="outPresentMembersNames"></div></div>
         <div class="content-section" id="print-section-guests" style="display:none;"><h4>Special Guests</h4><div id="outGuestsNames"></div></div>
-        <div class="content-section"><h4>Meeting Discussions</h4><div id="outDiscussions"></div></div>
+        <div class="content-section" id="print-section-discussions"><h4>Meeting Discussions</h4><div id="outDiscussions"></div></div>
         <div class="content-section"><h4>Agendas &amp; Resolutions</h4><div id="outAgendas"></div></div>
         <div class="content-section"><h4>Action Items</h4><div id="outActionItems"></div></div>
         <div class="content-section" id="print-section-closing" style="display:none;"><h4>Closing Remarks</h4><div id="outClosingRemarks"></div></div>
@@ -1737,8 +1737,8 @@
             <table class="print-table" style="width:100%;">
                 <tr><th>Prepared By</th><th>Reviewed By</th><th>Approved By</th></tr>
                 <tr>
-                    <td id="outSigPrepared" style="text-align:center;">Rtr. Madan Subedi</td>
-                    <td id="outSigReviewed" style="text-align:center;">Rtr. Anil Shrestha</td>
+                    <td id="outSigPrepared" style="text-align:center;">Rtr. Madan Sharma</td>
+                    <td id="outSigReviewed" style="text-align:center;">Rtr. Anil Shrestha<br><span class="sign-role" style="font-size:0.75em;color:#666;">ISD Advisor</span></td>
                     <td id="outSigApproved" style="text-align:center;">Rtr. Nabin Chalise</td>
                 </tr>
             </table>
@@ -1751,7 +1751,7 @@
             </div>
             <div class="sign-line">
                 <img id="outSigPreparedImg" src="secretarysign.png" class="footer-sign-img" onerror="this.style.display='none'" />
-                <p id="outSecretarySign">Rtr. Madan Subedi</p>
+                <p id="outSecretarySign">Rtr. Madan Sharma</p>
                 <p class="sign-role">Club Secretary</p>
             </div>
         </div>
@@ -2267,7 +2267,9 @@
             return (str || '').toString().trim().toLowerCase()
                 .replace(/^rtr\.?\s+/, '')
                 .replace(/^dr\.?\s+/, '')
-                .replace(/\s+/g, ' ');
+                .replace(/\s*\([^)]*\)\s*/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
         }
 
         function renderMembersChecklist(list) {
@@ -2817,7 +2819,7 @@
             const sigReviewed = document.getElementById('sigReviewed');
             const sigApproved = document.getElementById('sigApproved');
 
-            if (sigPrepared) sigPrepared.value = sig.prepared || 'Rtr. Madan Subedi';
+            if (sigPrepared) sigPrepared.value = sig.prepared || 'Rtr. Madan Sharma';
             if (sigReviewed) sigReviewed.value = sig.reviewed || 'Rtr. Anil Shrestha';
             if (sigApproved) sigApproved.value = sig.approved || 'Rtr. Nabin Chalise';
 
@@ -2961,12 +2963,19 @@
                 saa: 'Sergeant-at-Arms', happy: 'Happy Moments', president: "Opening Remarks",
                 committee: 'Committee Updates', announcements: 'Announcements', openFloor: 'Open Floor'
             };
+            const discussionsSection = document.getElementById('print-section-discussions');
             const discussionsEl = document.getElementById('outDiscussions');
             if (discussionsEl) {
                 const parts = Object.entries(discussionLabels)
                     .filter(([key]) => payload.discussions[key])
                     .map(([key, label]) => `<div class="agenda-item"><strong>${label}:</strong> ${escapeHtml(payload.discussions[key])}</div>`);
-                discussionsEl.innerHTML = parts.length ? parts.join('') : '<p>No discussion notes recorded.</p>';
+                if (parts.length) {
+                    discussionsEl.innerHTML = parts.join('');
+                    if (discussionsSection) discussionsSection.style.display = 'block';
+                } else {
+                    discussionsEl.innerHTML = '';
+                    if (discussionsSection) discussionsSection.style.display = 'none';
+                }
             }
 
             const agendasEl = document.getElementById('outAgendas');
@@ -2986,7 +2995,10 @@
             }
 
             setText('outSigPrepared', payload.signatures.prepared || '—');
-            setText('outSigReviewed', payload.signatures.reviewed || '—');
+            const reviewedEl = document.getElementById('outSigReviewed');
+            if (reviewedEl) {
+                reviewedEl.innerHTML = `${escapeHtml(payload.signatures.reviewed || '—')}<br><span class="sign-role" style="font-size:0.75em;color:#666;">ISD Advisor</span>`;
+            }
             setText('outSigApproved', payload.signatures.approved || '—');
 
             const closingSection = document.getElementById('print-section-closing');
