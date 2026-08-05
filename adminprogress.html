@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Progress Tracker · Rotaract Club of Galkot Baglung</title>
-<meta name="description" content="Website development progress tracker and printable report for Rotaract Club of Galkot Baglung admin team." />
+<title>Projects &amp; Meetings Tracker · Rotaract Club of Galkot Baglung</title>
+<meta name="description" content="Live projects and meetings tracker for Rotaract Club of Galkot Baglung admin team, built from upcoming_projects and meeting_minutes." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -64,47 +64,143 @@ button{ font-family:inherit; }
 :focus-visible{ outline:2px solid var(--accent-2); outline-offset:2px; border-radius:4px; }
 
 /* ============================================================
-   LOADING SCREEN
+   ADMIN LOGIN MODAL (same as index.html)
    ============================================================ */
-.boot-screen{
-    position:fixed; inset:0; background:var(--bg); z-index:10000; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:1rem; transition:opacity .4s var(--ease), visibility .4s;
+.admin-login-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(6, 8, 12, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10002;
+  padding: 20px;
 }
-.boot-screen.hidden{ opacity:0; visibility:hidden; pointer-events:none; }
-.boot-spinner{ width:38px; height:38px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--accent); animation:spin 0.8s linear infinite; }
-@keyframes spin{ to{ transform:rotate(360deg); } }
-.boot-screen span{ color:var(--text-faint); font-size:0.82rem; font-family:var(--font-mono); }
+.admin-login-overlay.active { display: flex; }
+.admin-login-card {
+  background: var(--bg-white);
+  border-radius: var(--radius-lg);
+  padding: 40px 32px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.35);
+  transform: scale(0.92) translateY(20px);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: center;
+  position: relative;
+}
+.admin-login-overlay.active .admin-login-card { transform: scale(1) translateY(0); }
+.admin-login-card .popup-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+.admin-login-card .popup-close:hover { color: var(--text-primary); background: #f1f5f9; }
+.admin-login-card .hero-badge { display: inline-block; margin-bottom: 12px; }
+.admin-login-card .admin-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.admin-login-card .admin-sub {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+.admin-login-card form { display: flex; flex-direction: column; gap: 16px; text-align: left; }
+.admin-login-card .field label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.admin-login-card .field input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid rgba(226, 232, 240, 0.9);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.admin-login-card .field input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(217, 26, 92, 0.12);
+}
+.admin-login-card .pass-wrap { position: relative; }
+.admin-login-card .pass-wrap input { padding-right: 44px; }
+.admin-login-card .toggle-pass {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 6px 8px;
+  color: var(--text-muted);
+}
+.admin-login-card .form-error {
+  color: var(--primary);
+  font-size: 0.85rem;
+  min-height: 1.1em;
+  font-weight: 500;
+  text-align: center;
+}
+.admin-login-card .submit-btn {
+  margin-top: 4px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px 20px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+.admin-login-card .submit-btn:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); }
+.admin-login-card .submit-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+.admin-login-card .submit-btn .spinner {
+  display: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: adminSpin 0.7s linear infinite;
+}
+.admin-login-card .submit-btn.loading .btn-text { visibility: hidden; position: absolute; }
+.admin-login-card .submit-btn.loading .spinner { display: inline-block; }
+@keyframes adminSpin { to { transform: rotate(360deg); } }
 
 /* ============================================================
-   ACCESS DENIED OVERLAY
-   ============================================================ */
-.access-denied-overlay{
-    display:none; position:fixed; inset:0; background:rgba(6,8,12,0.94);
-    backdrop-filter:blur(10px); z-index:9999; justify-content:center; align-items:center;
-    flex-direction:column; padding:20px;
-}
-.access-denied-overlay.active{ display:flex; animation:fadeIn 0.4s var(--ease); }
-@keyframes fadeIn{ from{opacity:0} to{opacity:1} }
-@keyframes slideUp{ from{opacity:0; transform:translateY(24px)} to{opacity:1; transform:translateY(0)} }
-.access-denied-card{
-    background:var(--surface); border:1px solid var(--border-strong); border-radius:20px;
-    padding:48px 40px; max-width:460px; width:100%; text-align:center;
-    box-shadow:0 30px 60px rgba(0,0,0,0.5); animation:slideUp 0.5s var(--ease);
-}
-.access-denied-card .icon-big{ font-size:2.6rem; color:var(--danger); margin-bottom:18px; display:block; }
-.access-denied-card h2{ font-family:var(--font-display); font-size:1.6rem; font-weight:700; margin-bottom:10px; }
-.access-denied-card p{ color:var(--text-muted); font-size:0.95rem; margin-bottom:22px; }
-.btn-redirect{
-    display:inline-block; background:var(--accent); color:#0a0d13; padding:13px 36px;
-    border-radius:10px; text-decoration:none; font-weight:700; font-size:0.95rem; transition:transform 0.3s var(--ease);
-    border:none; cursor:pointer;
-}
-.btn-redirect:hover{ transform:translateY(-2px); }
-.countdown-timer{ color:var(--text-faint); font-size:0.85rem; margin-top:18px; font-family:var(--font-mono); }
-.countdown-timer span{ color:var(--accent); font-weight:700; }
-
-/* ============================================================
-   APP SHELL
+   APP SHELL (unchanged)
    ============================================================ */
 .app-shell{ display:flex; min-height:100vh; }
 .sidebar{
@@ -232,6 +328,43 @@ button{ font-family:inherit; }
 .cat-bar-track{ height:8px; background:var(--surface-2); border-radius:99px; overflow:hidden; }
 .cat-bar-fill{ height:100%; border-radius:99px; background:var(--accent); transition:width 0.6s var(--ease); }
 
+/* ---- EXECUTIVE SUMMARY ---- */
+.exec-summary-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1rem; margin-bottom:1.6rem; }
+.exec-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:1.2rem 1.3rem; display:flex; flex-direction:column; gap:0.7rem; }
+.exec-card h4{ font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); font-weight:700; display:flex; align-items:center; gap:0.4rem; }
+.exec-card h4 i{ color:var(--accent); }
+.exec-health-row{ display:flex; align-items:center; gap:1.1rem; }
+.exec-health-ring-wrap{ position:relative; width:88px; height:88px; flex-shrink:0; border-radius:50%; }
+.exec-health-ring-wrap::after{ content:''; position:absolute; inset:8px; background:var(--surface); border-radius:50%; }
+.exec-health-num{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; z-index:1; }
+.exec-health-num .n{ font-family:var(--font-display); font-size:1.5rem; font-weight:700; }
+.exec-health-num .s{ font-size:0.6rem; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.04em; }
+.exec-grade-badge{ display:inline-flex; align-items:center; justify-content:center; padding:0.32rem 0.85rem; border-radius:99px; font-family:var(--font-display); font-weight:700; font-size:1.05rem; }
+.exec-grade-badge.grade-a{ background:var(--success-dim); color:var(--success); }
+.exec-grade-badge.grade-b{ background:var(--accent-2-dim); color:var(--accent-2); }
+.exec-grade-badge.grade-c{ background:var(--accent-dim); color:var(--accent); }
+.exec-grade-badge.grade-d{ background:var(--danger-dim); color:var(--danger); }
+.exec-grade-sub{ font-size:0.72rem; color:var(--text-faint); margin-top:0.5rem; }
+.exec-progress-track{ height:10px; background:var(--surface-2); border-radius:99px; overflow:hidden; }
+.exec-progress-fill{ height:100%; border-radius:99px; background:var(--accent); transition:width .6s var(--ease); }
+.exec-progress-label{ display:flex; justify-content:space-between; font-size:0.78rem; color:var(--text-muted); }
+.exec-goal-nums{ display:flex; gap:1.5rem; }
+.exec-goal-nums .n{ font-family:var(--font-mono); font-size:1.3rem; font-weight:700; }
+.exec-goal-nums .l{ font-size:0.63rem; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.03em; }
+.exec-month-list{ display:flex; flex-direction:column; gap:0.55rem; }
+.exec-month-row{ display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; color:var(--text-muted); }
+.exec-month-row b{ font-family:var(--font-mono); color:var(--text); font-size:0.95rem; }
+
+/* ---- RISK & WARNING CENTER ---- */
+.risk-chip-row{ display:flex; flex-wrap:wrap; gap:0.6rem; margin-bottom:1.1rem; }
+.risk-chip{ display:flex; align-items:center; gap:0.55rem; padding:0.5rem 0.9rem; border-radius:10px; background:var(--surface); border:1px solid var(--border); font-size:0.78rem; font-weight:600; color:var(--text-muted); }
+.risk-chip b{ font-family:var(--font-mono); color:var(--text); font-size:0.88rem; }
+.risk-chip .dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.risk-chip .dot.red{ background:var(--danger); box-shadow:0 0 0 3px var(--danger-dim); }
+.risk-chip .dot.yellow{ background:#e8b93f; box-shadow:0 0 0 3px rgba(232,185,63,0.16); }
+.risk-group-title{ font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-faint); font-weight:700; margin:1.1rem 0 0.5rem; }
+.risk-group-title:first-child{ margin-top:0; }
+
 /* ---- filters row ---- */
 .filters-row{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:1.1rem; align-items:center; }
 .filters-row select, .filters-row input[type="text"]{
@@ -334,7 +467,7 @@ button{ font-family:inherit; }
 /* ============================================================
    PRINT REPORT (hidden on screen, shown only when printing)
    ============================================================ */
-#printArea, #cpPrintArea{ display:none; }
+#cpPrintArea{ display:none; }
 .rpt-header{ display:flex; align-items:center; gap:1rem; border-bottom:3px solid #1D2A44; padding-bottom:14px; margin-bottom:18px; }
 .rpt-header img{ width:64px; height:64px; object-fit:cover; border-radius:8px; }
 .rpt-header .rh-club{ font-size:1.3rem; font-weight:800; color:#1D2A44; }
@@ -360,8 +493,8 @@ table.rpt-table tr:nth-child(even) td{ background:#f6f6f6; }
 
 @media print{
     body *{ visibility:hidden; }
-    #printArea, #printArea *, #cpPrintArea, #cpPrintArea *{ visibility:visible; }
-    #printArea, #cpPrintArea{ display:block !important; position:absolute; top:0; left:0; width:100%; color:#111; background:#fff; padding:0; }
+    #cpPrintArea, #cpPrintArea *{ visibility:visible; }
+    #cpPrintArea{ display:block !important; position:absolute; top:0; left:0; width:100%; color:#111; background:#fff; padding:0; }
     @page{ margin:14mm 12mm; }
 }
 
@@ -460,40 +593,36 @@ table.rpt-table tr:nth-child(even) td{ background:#f6f6f6; }
 </head>
 <body>
 
-<div class="boot-screen" id="bootScreen"><div class="boot-spinner"></div><span>Checking access…</span></div>
+<!-- ===== ADMIN LOGIN MODAL (same as index.html) ===== -->
+<div class="admin-login-overlay" id="adminLoginModal" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle" aria-hidden="true">
+  <div class="admin-login-card">
+    <button class="popup-close" id="adminLoginClose" aria-label="Close admin login">&times;</button>
+    <div class="hero-badge" style="display:inline-block;margin-bottom:12px;">🛡️ Admin Access</div>
+    <div class="admin-title" id="adminLoginTitle">Admin Login</div>
+    <div class="admin-sub">Sign in with your admin account to continue</div>
 
-<!-- ===== ACCESS DENIED OVERLAY ===== -->
-<div class="access-denied-overlay" id="accessDeniedOverlay">
-    <div class="access-denied-card">
-        <span class="icon-big"><i class="fa-solid fa-triangle-exclamation"></i></span>
-        <h2>Access denied</h2>
-        <p>Only active administrator accounts can open the Progress Tracker.</p>
-        <a href="/index.html" class="btn-redirect">Go to homepage</a>
-        <div class="countdown-timer">Returning to login in <span id="countdownNum">5</span>s</div>
-    </div>
+    <form id="adminLoginForm" autocomplete="off" novalidate>
+      <div class="field">
+        <label for="adminEmail">Email</label>
+        <input type="email" id="adminEmail" placeholder="you@example.com" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="adminPassword">Password</label>
+        <div class="pass-wrap">
+          <input type="password" id="adminPassword" placeholder="••••••••" required autocomplete="current-password">
+          <button type="button" class="toggle-pass" id="toggleAdminPass" aria-label="Show password">👁</button>
+        </div>
+      </div>
+      <div class="form-error" id="adminLoginError" role="alert"></div>
+      <button type="submit" class="submit-btn" id="adminSubmitBtn">
+        <span class="btn-text">Sign In</span>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+    </form>
+  </div>
 </div>
 
-<!-- ===== LOGIN OVERLAY (in-page, no redirect) ===== -->
-<div class="access-denied-overlay" id="loginOverlay">
-    <div class="access-denied-card" style="max-width:400px;">
-        <span class="icon-big"><i class="fa-solid fa-lock"></i></span>
-        <h2>Admin sign in</h2>
-        <p>Sign in with your admin account to open the Progress Tracker.</p>
-        <form id="loginForm" novalidate style="text-align:left;">
-            <div class="form-group">
-                <label for="loginEmail">Email</label>
-                <input type="email" id="loginEmail" required autocomplete="username" placeholder="you@club.org" />
-            </div>
-            <div class="form-group">
-                <label for="loginPassword">Password</label>
-                <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••" />
-            </div>
-            <div id="loginStatus" style="font-size:0.8rem; min-height:1.1em; margin-bottom:0.8rem;"></div>
-            <button type="submit" class="btn btn-accent" id="loginSubmitBtn" style="width:100%; justify-content:center;"><i class="fa-solid fa-right-to-bracket"></i> Sign in</button>
-        </form>
-    </div>
-</div>
-
+<!-- ===== APP SHELL (unchanged) ===== -->
 <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
 <div class="sidebar-scrim" id="sidebarScrim"></div>
 
@@ -502,18 +631,14 @@ table.rpt-table tr:nth-child(even) td{ background:#f6f6f6; }
         <div class="sidebar-brand">
             <span class="mark"><img src="rotaract-logo.jpg" alt="" onerror="this.parentElement.innerHTML='<i class=&quot;fa-solid fa-chart-line&quot;></i>'"></span>
             <div>
-                <div class="name">Progress Tracker</div>
+                <div class="name">Projects &amp; Meetings</div>
                 <div class="sub">Galkot Baglung</div>
             </div>
         </div>
         <div class="status-strip" id="statusStrip"><span class="status-dot"></span><span id="statusStripText">Connecting…</span></div>
         <nav class="sidebar-nav" aria-label="Sections">
-            <div class="nav-group-label">Tracker</div>
-            <button class="nav-item active" data-view="overview"><i class="fa-solid fa-gauge-high"></i> Overview</button>
-            <button class="nav-item" data-view="modules"><i class="fa-solid fa-list-check"></i> Modules</button>
-            <button class="nav-item" data-view="snapshot"><i class="fa-solid fa-database"></i> Site Data Snapshot</button>
             <div class="nav-group-label">Club Activity</div>
-            <button class="nav-item" data-view="clubprogress"><i class="fa-solid fa-diagram-project"></i> Projects &amp; Meetings</button>
+            <button class="nav-item active" data-view="clubprogress"><i class="fa-solid fa-diagram-project"></i> Projects &amp; Meetings</button>
             <div class="nav-group-label">Account</div>
             <a class="nav-item" href="admin.html"><i class="fa-solid fa-arrow-left"></i> Back to Central Hub</a>
         </nav>
@@ -526,78 +651,25 @@ table.rpt-table tr:nth-child(even) td{ background:#f6f6f6; }
     <div class="main">
         <div class="topbar">
             <div class="topbar-title">
-                <h1 id="pageTitle">Overview</h1>
-                <p id="pageSubtitle">Website development progress — tracked module by module, with live charts.</p>
+                <h1 id="pageTitle">Projects &amp; Meetings</h1>
+                <p id="pageSubtitle">Live tracker built from upcoming_projects and meeting_minutes — nothing else.</p>
             </div>
             <div class="topbar-actions">
                 <div class="topbar-clock" id="liveClock"><span id="clockTime">--:--:--</span><span class="date" id="clockDate">---- --, ----</span></div>
                 <button class="btn btn-ghost" id="refreshBtn" title="Refresh data"><i class="fa-solid fa-rotate"></i></button>
-                <button class="btn btn-accent" id="printReportBtn"><i class="fa-solid fa-print"></i> Print report</button>
             </div>
         </div>
 
-        <!-- ===== VIEW: OVERVIEW ===== -->
-        <section class="view active" id="view-overview">
-            <div class="stat-grid" id="kpiGrid"></div>
-
-            <div class="panel-row">
-                <div class="panel" style="flex:0.8;">
-                    <h3><i class="fa-solid fa-circle-half-stroke"></i> Overall completion</h3>
-                    <div class="big-ring-wrap"><canvas id="chartOverall"></canvas>
-                        <div class="big-ring-label"><div class="pct" id="overallPctLabel">0%</div><div class="sub">Complete</div></div>
-                    </div>
-                </div>
-                <div class="panel" style="flex:1;">
-                    <h3><i class="fa-solid fa-chart-pie"></i> Status distribution</h3>
-                    <div class="chart-wrap"><canvas id="chartStatus"></canvas></div>
-                </div>
-                <div class="panel" style="flex:1.2;">
-                    <h3><i class="fa-solid fa-chart-simple"></i> Progress by category</h3>
-                    <div class="chart-wrap"><canvas id="chartCategory"></canvas></div>
-                </div>
-            </div>
-
-            <div class="section-heading"><h2><i class="fa-solid fa-layer-group"></i> Category breakdown</h2></div>
-            <div class="panel" id="catBreakdownPanel"><div id="catBreakdownList"></div></div>
-        </section>
-
-        <!-- ===== VIEW: MODULES ===== -->
-        <section class="view" id="view-modules">
-            <div class="section-heading">
-                <h2><i class="fa-solid fa-list-check"></i> All modules</h2>
-                <span class="meta"><span id="moduleCountMeta">0</span> tracked · last updated <span id="lastUpdatedMeta">—</span></span>
-            </div>
-            <div class="filters-row">
-                <select id="filterCategory"><option value="">All categories</option></select>
-                <select id="filterStatus">
-                    <option value="">All statuses</option>
-                    <option value="not_started">Not started</option>
-                    <option value="in_progress">In progress</option>
-                    <option value="completed">Completed</option>
-                    <option value="blocked">Blocked</option>
-                    <option value="on_hold">On hold</option>
-                </select>
-                <input type="text" id="filterSearch" placeholder="Search modules…" />
-                <button class="btn btn-accent btn-sm" id="addItemBtn" style="margin-left:auto;"><i class="fa-solid fa-plus"></i> Add module</button>
-            </div>
-            <div class="item-grid" id="itemGrid"></div>
-        </section>
-
-        <!-- ===== VIEW: SITE DATA SNAPSHOT ===== -->
-        <section class="view" id="view-snapshot">
-            <div class="section-heading">
-                <h2><i class="fa-solid fa-database"></i> Live site data snapshot</h2>
-                <span class="meta">Row counts pulled directly from Supabase</span>
-            </div>
-            <div class="stat-grid" id="snapshotGrid"></div>
-        </section>
-
         <!-- ===== VIEW: CLUB PROGRESS (Projects + Meetings integration) ===== -->
-        <section class="view" id="view-clubprogress">
+        <section class="view active" id="view-clubprogress">
+
+            <div class="section-heading"><h2><i class="fa-solid fa-bullseye"></i> Executive summary</h2><span class="meta" id="execRotaryYearLabel">—</span></div>
+            <div class="exec-summary-grid" id="execSummaryGrid"></div>
 
             <div class="stat-grid" id="cpKpiGrid"></div>
 
-            <div class="section-heading"><h2><i class="fa-solid fa-bell"></i> Smart alerts</h2></div>
+            <div class="section-heading"><h2><i class="fa-solid fa-triangle-exclamation"></i> Risk &amp; warning center</h2></div>
+            <div class="risk-chip-row" id="cpRiskChips"></div>
             <div class="alert-stack" id="cpAlerts"></div>
 
             <div class="panel-row">
@@ -698,64 +770,20 @@ table.rpt-table tr:nth-child(even) td{ background:#f6f6f6; }
 <!-- ===== CLUB PROGRESS PRINT AREA ===== -->
 <div id="cpPrintArea"></div>
 
-<!-- ===== ADD/EDIT MODAL ===== -->
-<div class="modal-overlay" id="itemModal">
-    <div class="modal-content">
-        <button class="modal-close" id="modalCloseBtn"><i class="fa-solid fa-xmark"></i></button>
-        <div class="modal-title"><i class="fa-solid fa-list-check"></i> <span id="modalTitleText">Add module</span></div>
-        <form id="itemForm">
-            <input type="hidden" id="fItemId" />
-            <div class="form-row">
-                <div class="form-group"><label>Module name</label><input type="text" id="fName" required placeholder="e.g. Blood Bridge System" /></div>
-                <div class="form-group"><label>Category</label><input type="text" id="fCategory" list="categoryOptions" required placeholder="e.g. Public Website" /><datalist id="categoryOptions"></datalist></div>
-            </div>
-            <div class="form-group"><label>Description</label><textarea id="fDescription" placeholder="What this module covers…"></textarea></div>
-            <div class="form-row-3">
-                <div class="form-group"><label>Status</label>
-                    <select id="fStatus">
-                        <option value="not_started">Not started</option>
-                        <option value="in_progress" selected>In progress</option>
-                        <option value="completed">Completed</option>
-                        <option value="blocked">Blocked</option>
-                        <option value="on_hold">On hold</option>
-                    </select>
-                </div>
-                <div class="form-group"><label>Priority</label>
-                    <select id="fPriority"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select>
-                </div>
-                <div class="form-group"><label>Owner</label><input type="text" id="fOwner" placeholder="e.g. Nabin" /></div>
-            </div>
-            <div class="form-group">
-                <label>Progress</label>
-                <div class="range-row"><input type="range" min="0" max="100" step="5" id="fProgress" value="0" /><span class="range-val" id="fProgressVal">0%</span></div>
-            </div>
-            <div class="form-group"><label>Notes</label><textarea id="fNotes" placeholder="Optional notes for the report…"></textarea></div>
-            <div class="form-actions">
-                <button type="button" class="btn btn-ghost" id="modalCancelBtn">Cancel</button>
-                <button type="submit" class="btn btn-accent" id="modalSaveBtn"><i class="fa-solid fa-check"></i> Save module</button>
-            </div>
-        </form>
-    </div>
-</div>
-
 <div class="toast-stack" id="toastStack"></div>
-
-<!-- ===== PRINT-ONLY REPORT ===== -->
-<div id="printArea"></div>
 
 <script>
 (() => {
 "use strict";
 
 // ============================================================
-// SUPABASE
+// SUPABASE & GLOBALS
 // ============================================================
 const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-const PROGRESS_KEY = "website_progress_tracker";
 const CLUB_NAME = "Rotaract Club of Galkot Baglung";
-const CLUB_SUB = "RI District 3292 · Web Progress Tracker";
+const CLUB_SUB = "RI District 3292 · Projects & Meetings Tracker";
 
 const $ = (id) => document.getElementById(id);
 const escapeHtml = (str) => {
@@ -764,9 +792,7 @@ const escapeHtml = (str) => {
         .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 };
 let currentUser = null;
-let appSettingsRowId = null;
-let progressItems = [];
-let charts = { overall: null, status: null, category: null };
+let charts = { cpStatus: null, cpFreq: null, cpActions: null, cpMembers: null };
 
 // ============================================================
 // TOASTS
@@ -784,1047 +810,811 @@ function showToast(title, sub, isError) {
 }
 
 // ============================================================
-// ACCESS CONTROL — in-page login popup (no redirect away).
-// Any signed-in user with an ACTIVE 'admin' row in user_roles
-// gets in; everyone else sees the login form or access-denied.
+// AUTH — modal-based (same as admingallery.html)
 // ============================================================
-async function fetchRoleStatus(userId) {
-    try {
-        const { data, error } = await supabase.from('user_roles').select('role, status').eq('user_id', userId).maybeSingle();
-        if (error) return null;
-        return data;
-    } catch (e) { return null; }
-}
-function showLoginOverlay(message) {
-    $('bootScreen').classList.add('hidden');
-    $('accessDeniedOverlay').classList.remove('active');
-    $('loginOverlay').classList.add('active');
-    $('loginStatus').textContent = message || '';
-    setTimeout(() => $('loginEmail')?.focus(), 50);
-}
-function hideLoginOverlay() {
-    $('loginOverlay').classList.remove('active');
-    $('loginForm')?.reset();
-    $('loginStatus').textContent = '';
-}
-function showAccessDenied() {
-    $('bootScreen').classList.add('hidden');
-    $('loginOverlay').classList.remove('active');
-    const overlay = $('accessDeniedOverlay');
-    overlay.classList.add('active');
-    let countdown = 5;
-    const countdownEl = $('countdownNum');
-    const timer = setInterval(() => {
-        countdown--; countdownEl.textContent = countdown;
-        if (countdown <= 0) { clearInterval(timer); overlay.classList.remove('active'); showLoginOverlay('Session ended — please sign in again.'); }
-    }, 1000);
-}
-async function checkAdminAccess() {
-    try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !session) { showLoginOverlay(); return false; }
-        const roleData = await fetchRoleStatus(session.user.id);
-        if (!roleData || roleData.role !== 'admin' || roleData.status !== 'active') {
-            showAccessDenied();
-            return false;
-        }
-        currentUser = session.user;
-        return true;
-    } catch (err) {
-        console.error('Auth check error:', err);
-        showLoginOverlay('Something went wrong — please sign in again.');
-        return false;
-    }
-}
-async function bootDashboard() {
-    $('adminEmailChip').textContent = currentUser.email;
-    $('adminAvatar').textContent = (currentUser.email || '?').slice(0, 2).toUpperCase();
-    $('statusStripText').textContent = 'Connected';
-    await Promise.all([loadProgressData(), loadSnapshot(), loadClubProgressData()]);
-    refreshAll();
-    cpRefreshAll();
-    $('bootScreen').classList.add('hidden');
+const modal = document.getElementById('adminLoginModal');
+const closeBtn = document.getElementById('adminLoginClose');
+const form = document.getElementById('adminLoginForm');
+const emailInput = document.getElementById('adminEmail');
+const passwordInput = document.getElementById('adminPassword');
+const errorEl = document.getElementById('adminLoginError');
+const submitBtn = document.getElementById('adminSubmitBtn');
+const togglePass = document.getElementById('toggleAdminPass');
+
+function openModal() {
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    emailInput.focus();
+    errorEl.textContent = '';
 }
 
-// ---- login form ------------------------------------------------------
-$('loginForm').addEventListener('submit', async (e) => {
+function closeModal() {
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    submitBtn.classList.remove('loading');
+    submitBtn.disabled = false;
+}
+
+closeBtn.addEventListener('click', closeModal);
+modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
+
+togglePass.addEventListener('click', () => {
+    const isPass = passwordInput.type === 'password';
+    passwordInput.type = isPass ? 'text' : 'password';
+    togglePass.textContent = isPass ? '🙈' : '👁';
+});
+
+[emailInput, passwordInput].forEach(el => el.addEventListener('input', () => errorEl.textContent = ''));
+
+// ---- Login submission ----
+form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const btn = $('loginSubmitBtn');
-    const statusEl = $('loginStatus');
-    const email = $('loginEmail').value.trim();
-    const password = $('loginPassword').value;
-    if (!email || !password) return;
-    statusEl.style.color = 'var(--danger)';
-    statusEl.textContent = '';
-    btn.disabled = true;
-    const original = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Signing in…';
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    errorEl.textContent = '';
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errorEl.textContent = 'Please enter a valid email address.';
+        emailInput.focus();
+        return;
+    }
+    if (!password) {
+        errorEl.textContent = 'Please enter your password.';
+        passwordInput.focus();
+        return;
+    }
+
+    submitBtn.classList.add('loading');
+    submitBtn.disabled = true;
+
     try {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw new Error(error.message);
-        if (!data || !data.user) throw new Error('No user returned by Supabase.');
-        const roleData = await fetchRoleStatus(data.user.id);
-        if (!roleData || roleData.role !== 'admin' || roleData.status !== 'active') {
-            await supabase.auth.signOut().catch(() => {});
-            throw new Error('This account does not have active admin access.');
+        const user = data.user;
+        if (!user) throw new Error('No user data returned.');
+
+        // Check admin role
+        let { data: roleData, error: roleError } = await supabase
+            .from('user_roles')
+            .select('role, status')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+        if (!roleData && user.email) {
+            const { data: emailData } = await supabase
+                .from('user_roles')
+                .select('role, status')
+                .eq('email', user.email)
+                .maybeSingle();
+            roleData = emailData;
         }
-        currentUser = data.user;
-        hideLoginOverlay();
-        $('accessDeniedOverlay').classList.remove('active');
+
+        if (!roleData) throw new Error('No role assigned. Contact admin.');
+        if (roleData.status !== 'active') throw new Error(`Account is ${roleData.status}.`);
+
+        // Store session (same as auth.js)
+        sessionStorage.setItem('auth_user_id', user.id);
+        sessionStorage.setItem('auth_email', user.email);
+        sessionStorage.setItem('auth_role', roleData.role);
+        sessionStorage.setItem('auth_status', roleData.status);
+        sessionStorage.setItem('auth_verified', 'true');
+        sessionStorage.setItem('auth_timestamp', Date.now().toString());
+
+        closeModal();
+        currentUser = user;
         await bootDashboard();
         showToast('✅ Welcome', `Signed in as ${currentUser.email}`);
     } catch (err) {
         console.error('Login error:', err);
-        statusEl.textContent = err.message || 'Login failed — check your credentials.';
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = original;
+        errorEl.textContent = err.message || 'Login failed.';
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        passwordInput.value = '';
+        passwordInput.focus();
     }
 });
 
-supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_OUT' || !session) {
-        currentUser = null;
-        showLoginOverlay();
-    }
-});
-(function inactivityGuard() {
-    const INACTIVITY_TIMEOUT = 1800 * 1000;
-    let logoutTimer = null;
-    const performLogout = async () => {
-        try { await supabase.auth.signOut(); } catch (e) {}
-        currentUser = null;
-        showLoginOverlay('You were signed out due to inactivity.');
-    };
-    const resetTimer = () => { if (logoutTimer) clearTimeout(logoutTimer); logoutTimer = setTimeout(performLogout, INACTIVITY_TIMEOUT); };
-    ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click', 'wheel'].forEach(ev =>
-        document.addEventListener(ev, resetTimer, { passive: true }));
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) resetTimer(); });
-    resetTimer();
-})();
-$('logoutBtn').addEventListener('click', async () => {
+// ---- Logout ----
+document.getElementById('logoutBtn').addEventListener('click', async () => {
     await supabase.auth.signOut();
+    sessionStorage.removeItem('auth_user_id');
+    sessionStorage.removeItem('auth_email');
+    sessionStorage.removeItem('auth_role');
+    sessionStorage.removeItem('auth_status');
+    sessionStorage.removeItem('auth_verified');
+    sessionStorage.removeItem('auth_timestamp');
     currentUser = null;
-    showLoginOverlay('You have been logged out.');
+    openModal();
 });
 
-// ============================================================
-// NAV / VIEW SWITCHING
-// ============================================================
-const VIEW_META = {
-    overview: { title: 'Overview', sub: 'Website development progress — tracked module by module, with live charts.' },
-    modules: { title: 'Modules', sub: 'Every tracked module — edit status, progress and notes here.' },
-    snapshot: { title: 'Site Data Snapshot', sub: 'Live row counts pulled directly from your Supabase tables.' },
-    clubprogress: { title: 'Projects & Meetings', sub: 'Live progress dashboard integrating upcoming_projects and meeting_minutes.' }
-};
-function switchView(name) {
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.nav-item[data-view]').forEach(n => n.classList.remove('active'));
-    const target = $('view-' + name);
-    if (!target) return;
-    target.classList.add('active');
-    const btn = document.querySelector(`.nav-item[data-view="${name}"]`);
-    if (btn) btn.classList.add('active');
-    const meta = VIEW_META[name];
-    if (meta) { $('pageTitle').textContent = meta.title; $('pageSubtitle').textContent = meta.sub; }
-    closeSidebarMobile();
+// ---- Check session on load ----
+(async function initAuth() {
+    const stored = sessionStorage.getItem('auth_verified') === 'true';
+    if (stored) {
+        // Validate with supabase session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+            // Check role again (could have changed)
+            const { data: roleData } = await supabase
+                .from('user_roles')
+                .select('role, status')
+                .eq('user_id', session.user.id)
+                .maybeSingle();
+            if (roleData && roleData.role === 'admin' && roleData.status === 'active') {
+                currentUser = session.user;
+                await bootDashboard();
+                return;
+            } else {
+                // Invalid role — clear and show login
+                await supabase.auth.signOut();
+                sessionStorage.removeItem('auth_verified');
+                sessionStorage.removeItem('auth_user_id');
+                // fall through to open modal
+            }
+        } else {
+            // Session expired — clear storage
+            sessionStorage.removeItem('auth_verified');
+            sessionStorage.removeItem('auth_user_id');
+        }
+    }
+    // Not logged in — show modal
+    openModal();
+})();
+
+// ---- Boot dashboard after auth ----
+async function bootDashboard() {
+    // Update user info in sidebar
+    document.getElementById('adminEmailChip').textContent = currentUser.email;
+    document.getElementById('adminAvatar').textContent = (currentUser.email || '?').slice(0, 2).toUpperCase();
+    document.getElementById('statusStripText').textContent = 'Connected';
+
+    // Load data and render
+    await loadClubProgressData();
+    cpRefreshAll();
+
+    // Show the app shell (if hidden)
+    document.querySelector('.app-shell').style.display = 'flex';
 }
-document.querySelectorAll('.nav-item[data-view]').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
-
-function closeSidebarMobile() { $('sidebar').classList.remove('open'); $('sidebarScrim').classList.remove('active'); }
-$('menuToggle').addEventListener('click', () => { $('sidebar').classList.toggle('open'); $('sidebarScrim').classList.toggle('active'); });
-$('sidebarScrim').addEventListener('click', closeSidebarMobile);
 
 // ============================================================
-// CLOCK
+// NAV / SHELL: mobile menu, live clock
 // ============================================================
+document.querySelectorAll('.nav-item[data-view]').forEach(btn => btn.addEventListener('click', () => {
+    document.getElementById('sidebar').classList.remove('open');
+    $('sidebarScrim').classList.remove('active');
+}));
+
+const menuToggle = $('menuToggle');
+const sidebarScrim = $('sidebarScrim');
+if (menuToggle) {
+    menuToggle.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('open');
+        sidebarScrim.classList.toggle('active');
+    });
+}
+if (sidebarScrim) {
+    sidebarScrim.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('open');
+        sidebarScrim.classList.remove('active');
+    });
+}
+
 function tickClock() {
     const now = new Date();
-    $('clockTime').textContent = now.toLocaleTimeString('en-US', { hour12: false });
-    $('clockDate').textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    const ct = $('clockTime'); const cd = $('clockDate');
+    if (ct) ct.textContent = now.toLocaleTimeString('en-US', { hour12: true });
+    if (cd) cd.textContent = now.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
 }
-tickClock(); setInterval(tickClock, 1000);
+tickClock();
+setInterval(tickClock, 1000);
 
-// ============================================================
-// DEFAULT SEED DATA (used only the very first time, if nothing saved yet)
-// ============================================================
-function defaultSeed() {
-    const now = new Date().toISOString();
-    const mk = (category, name, description, status, progress, priority) => ({
-        id: crypto.randomUUID(), category, name, description, status, progress, priority,
-        owner: '', notes: '', updated_at: now
-    });
-    return [
-        mk('Public Website', 'Homepage & Public Pages', 'Main site, hero, about, projects, contact.', 'completed', 100, 'high'),
-        mk('Admin Console', 'Central Hub (Admin Panel)', 'Unified admin console for members, projects, minutes, inquiries.', 'in_progress', 90, 'high'),
-        mk('Membership System', 'Member Registration & Directory', 'Member records, registration form and directory.', 'in_progress', 90, 'medium'),
-        mk('Blood Bridge', 'Emergency Blood Donation System', 'Donor registration, admin review, Galkot register.', 'in_progress', 85, 'high'),
-        mk('Certificate System', 'Digital Certificate & Verification', 'Issue, verify and manage digital certificates.', 'in_progress', 80, 'medium'),
-        mk('Meeting Minutes', 'Minutes Recording System', 'Meeting minutes v2, history and attendance tracking.', 'in_progress', 85, 'medium'),
-        mk('Letterhead Exchange', 'LHE & Verification Letters', 'Letterhead exchange, RLI verification, suchana.', 'in_progress', 75, 'medium'),
-        mk('Blog System', 'Blog & Dashboard', 'Public blog with an editorial dashboard.', 'in_progress', 70, 'low'),
-        mk('Banner & Presentation', 'Live Meeting Banner', 'Live meeting banner, agenda and presentation display.', 'completed', 95, 'low'),
-        mk('Course Records', 'Education / Course Records', 'Student course records, verification and inquiries.', 'in_progress', 60, 'low'),
-        mk('Progress Tracker', 'This tracker page', 'Auth-gated progress dashboard with printable reports.', 'completed', 100, 'medium')
-    ];
-}
-
-// ============================================================
-// LOAD / SAVE PROGRESS DATA (stored in app_settings)
-// ============================================================
-async function loadProgressData() {
-    const { data, error } = await supabase.from('app_settings').select('id, setting_value').eq('setting_key', PROGRESS_KEY).maybeSingle();
-    if (error) { console.error(error); showToast('Load failed', error.message, true); progressItems = []; return; }
-    if (!data) {
-        progressItems = defaultSeed();
-        await persistProgressData('seed default checklist');
-        return;
-    }
-    appSettingsRowId = data.id;
-    try {
-        const parsed = JSON.parse(data.setting_value);
-        progressItems = Array.isArray(parsed.items) ? parsed.items : [];
-    } catch (e) { progressItems = []; }
-}
-async function persistProgressData(actionLabel) {
-    const payload = JSON.stringify({ items: progressItems, last_updated: new Date().toISOString(), updated_by: currentUser ? currentUser.email : null });
-    let err;
-    if (appSettingsRowId) {
-        const { error } = await supabase.from('app_settings').update({ setting_value: payload, updated_at: new Date().toISOString(), updated_by: currentUser ? currentUser.email : null }).eq('id', appSettingsRowId);
-        err = error;
-    } else {
-        const { data, error } = await supabase.from('app_settings').insert({ setting_key: PROGRESS_KEY, setting_value: payload, updated_by: currentUser ? currentUser.email : null }).select('id').maybeSingle();
-        err = error;
-        if (!error && data) appSettingsRowId = data.id;
-    }
-    if (err) { console.error(err); showToast('Save failed', err.message, true); return false; }
-    logActivity(actionLabel || 'Updated progress tracker');
-    return true;
-}
-async function logActivity(action) {
-    try {
-        await supabase.from('admin_activity_log').insert({
-            admin_id: currentUser ? currentUser.id : null,
-            admin_email: currentUser ? currentUser.email : null,
-            action: 'Progress Tracker: ' + action,
-            details: null
-        });
-    } catch (e) { /* non-blocking */ }
-}
-
-// ============================================================
-// COMPUTED HELPERS
-// ============================================================
-const STATUS_LABEL = { not_started: 'Not started', in_progress: 'In progress', completed: 'Completed', blocked: 'Blocked', on_hold: 'On hold' };
-const STATUS_COLOR = { not_started: '#5b6272', in_progress: '#e2823f', completed: '#43c98a', blocked: '#f0555f', on_hold: '#9b8cf0' };
-
-function computeStats() {
-    const total = progressItems.length;
-    const overallPct = total ? Math.round(progressItems.reduce((s, i) => s + Number(i.progress || 0), 0) / total) : 0;
-    const byStatus = { not_started: 0, in_progress: 0, completed: 0, blocked: 0, on_hold: 0 };
-    progressItems.forEach(i => { if (byStatus[i.status] !== undefined) byStatus[i.status]++; });
-    const catMap = {};
-    progressItems.forEach(i => {
-        const c = i.category || 'Uncategorized';
-        if (!catMap[c]) catMap[c] = { sum: 0, count: 0 };
-        catMap[c].sum += Number(i.progress || 0); catMap[c].count++;
-    });
-    const categories = Object.keys(catMap).sort().map(c => ({ name: c, pct: Math.round(catMap[c].sum / catMap[c].count) }));
-    return { total, overallPct, byStatus, categories };
-}
-
-// ============================================================
-// RENDER: KPI CARDS
-// ============================================================
-function renderKpis() {
-    const s = computeStats();
-    $('kpiGrid').innerHTML = `
-        <div class="stat-card"><i class="fa-solid fa-layer-group"></i><div class="num">${s.total}</div><div class="label">Modules tracked</div></div>
-        <div class="stat-card c-accent2"><i class="fa-solid fa-percent"></i><div class="num">${s.overallPct}%</div><div class="label">Overall complete</div></div>
-        <div class="stat-card c-success"><i class="fa-solid fa-circle-check"></i><div class="num">${s.byStatus.completed}</div><div class="label">Completed</div></div>
-        <div class="stat-card"><i class="fa-solid fa-spinner"></i><div class="num">${s.byStatus.in_progress}</div><div class="label">In progress</div></div>
-        <div class="stat-card c-danger"><i class="fa-solid fa-triangle-exclamation"></i><div class="num">${s.byStatus.blocked}</div><div class="label">Blocked</div></div>
-        <div class="stat-card c-purple"><i class="fa-solid fa-pause"></i><div class="num">${s.byStatus.on_hold}</div><div class="label">On hold</div></div>`;
-    $('overallPctLabel').textContent = s.overallPct + '%';
-}
-
-// ============================================================
-// RENDER: CHARTS
-// ============================================================
-function destroyCharts() { Object.keys(charts).forEach(k => { if (charts[k]) { charts[k].destroy(); charts[k] = null; } }); }
-function renderCharts() {
-    destroyCharts();
-    const s = computeStats();
-
-    charts.overall = new Chart($('chartOverall'), {
-        type: 'doughnut',
-        data: { datasets: [{ data: [s.overallPct, 100 - s.overallPct], backgroundColor: ['#e2823f', '#1c2230'], borderWidth: 0 }] },
-        options: { cutout: '78%', plugins: { legend: { display: false }, tooltip: { enabled: false } }, animation: { duration: 500 } }
-    });
-
-    const statusLabels = Object.keys(s.byStatus).map(k => STATUS_LABEL[k]);
-    const statusData = Object.values(s.byStatus);
-    const statusColors = Object.keys(s.byStatus).map(k => STATUS_COLOR[k]);
-    charts.status = new Chart($('chartStatus'), {
-        type: 'pie',
-        data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: statusColors, borderColor: '#12161f', borderWidth: 2 }] },
-        options: { plugins: { legend: { position: 'bottom', labels: { color: '#8b93a3', font: { size: 10 }, boxWidth: 10, padding: 10 } } }, animation: { duration: 500 } }
-    });
-
-    charts.category = new Chart($('chartCategory'), {
-        type: 'bar',
-        data: { labels: s.categories.map(c => c.name), datasets: [{ label: 'Progress %', data: s.categories.map(c => c.pct), backgroundColor: '#33d6c0', borderRadius: 6, maxBarThickness: 26 }] },
-        options: {
-            indexAxis: 'y',
-            scales: {
-                x: { min: 0, max: 100, ticks: { color: '#8b93a3', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.06)' } },
-                y: { ticks: { color: '#8b93a3', font: { size: 10 } }, grid: { display: false } }
-            },
-            plugins: { legend: { display: false } },
-            animation: { duration: 500 }
-        }
-    });
-}
-
-function renderCategoryBreakdown() {
-    const s = computeStats();
-    if (!s.categories.length) { $('catBreakdownList').innerHTML = '<div class="empty-state"><i class="fa-solid fa-inbox"></i>No modules yet — add one from the Modules tab.</div>'; return; }
-    $('catBreakdownList').innerHTML = s.categories.map(c => `
-        <div class="cat-bar-row">
-            <div class="cat-bar-top"><span class="cname">${escapeHtml(c.name)}</span><span class="cpct">${c.pct}%</span></div>
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${c.pct}%;"></div></div>
-        </div>`).join('');
-}
-
-// ============================================================
-// RENDER: MODULES LIST
-// ============================================================
-function populateCategoryFilter() {
-    const cats = Array.from(new Set(progressItems.map(i => i.category).filter(Boolean))).sort();
-    const sel = $('filterCategory');
-    const current = sel.value;
-    sel.innerHTML = '<option value="">All categories</option>' + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-    sel.value = current;
-    $('categoryOptions').innerHTML = cats.map(c => `<option value="${escapeHtml(c)}"></option>`).join('');
-}
-function renderItemGrid() {
-    const catF = $('filterCategory').value;
-    const statusF = $('filterStatus').value;
-    const searchF = $('filterSearch').value.trim().toLowerCase();
-    let items = progressItems.slice().sort((a, b) => (a.category || '').localeCompare(b.category || '') || (a.name || '').localeCompare(b.name || ''));
-    if (catF) items = items.filter(i => i.category === catF);
-    if (statusF) items = items.filter(i => i.status === statusF);
-    if (searchF) items = items.filter(i => (i.name || '').toLowerCase().includes(searchF) || (i.description || '').toLowerCase().includes(searchF));
-
-    $('moduleCountMeta').textContent = progressItems.length;
-    const lastUpd = progressItems.reduce((max, i) => { const t = i.updated_at ? new Date(i.updated_at).getTime() : 0; return t > max ? t : max; }, 0);
-    $('lastUpdatedMeta').textContent = lastUpd ? new Date(lastUpd).toLocaleString() : '—';
-
-    if (!items.length) { $('itemGrid').innerHTML = '<div class="empty-state"><i class="fa-solid fa-inbox"></i>No modules match these filters.</div>'; return; }
-    $('itemGrid').innerHTML = items.map(i => `
-        <div class="item-card">
-            <div class="item-top">
-                <div class="item-title-wrap">
-                    <span class="item-cat">${escapeHtml(i.category || 'Uncategorized')}</span>
-                    <span class="item-title">${escapeHtml(i.name)}</span>
-                    ${i.description ? `<span class="item-desc">${escapeHtml(i.description)}</span>` : ''}
-                </div>
-                <div class="item-actions">
-                    <button class="icon-btn" data-edit="${i.id}" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                    <button class="icon-btn danger" data-del="${i.id}" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                </div>
-            </div>
-            <div class="item-meta-row">
-                <span class="pill pill-status-${i.status}"><i class="fa-solid fa-circle"></i> ${STATUS_LABEL[i.status] || i.status}</span>
-                <span class="pill pill-priority-${i.priority}">${(i.priority || 'medium').toUpperCase()} PRIORITY</span>
-                ${i.owner ? `<span class="item-owner"><i class="fa-solid fa-user"></i> ${escapeHtml(i.owner)}</span>` : ''}
-            </div>
-            <div class="item-progress-row">
-                <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${i.progress || 0}%; background:${STATUS_COLOR[i.status] || '#e2823f'};"></div></div>
-                <span class="pval">${i.progress || 0}%</span>
-            </div>
-            ${i.notes ? `<div class="item-notes"><i class="fa-solid fa-note-sticky"></i> ${escapeHtml(i.notes)}</div>` : ''}
-        </div>`).join('');
-
-    $('itemGrid').querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => openItemModal(b.dataset.edit)));
-    $('itemGrid').querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => deleteItem(b.dataset.del)));
-}
-['filterCategory', 'filterStatus'].forEach(id => $(id).addEventListener('change', renderItemGrid));
-$('filterSearch').addEventListener('input', renderItemGrid);
-
-function refreshAll() {
-    renderKpis();
-    renderCharts();
-    renderCategoryBreakdown();
-    populateCategoryFilter();
-    renderItemGrid();
-}
-
-// ============================================================
-// MODAL: ADD / EDIT
-// ============================================================
-$('fProgress').addEventListener('input', () => { $('fProgressVal').textContent = $('fProgress').value + '%'; });
-function openItemModal(id) {
-    const item = id ? progressItems.find(i => i.id === id) : null;
-    $('modalTitleText').textContent = item ? 'Edit module' : 'Add module';
-    $('fItemId').value = item ? item.id : '';
-    $('fName').value = item ? item.name : '';
-    $('fCategory').value = item ? item.category : '';
-    $('fDescription').value = item ? (item.description || '') : '';
-    $('fStatus').value = item ? item.status : 'in_progress';
-    $('fPriority').value = item ? (item.priority || 'medium') : 'medium';
-    $('fOwner').value = item ? (item.owner || '') : '';
-    $('fProgress').value = item ? (item.progress || 0) : 0;
-    $('fProgressVal').textContent = (item ? (item.progress || 0) : 0) + '%';
-    $('fNotes').value = item ? (item.notes || '') : '';
-    $('itemModal').classList.add('active');
-    setTimeout(() => $('fName').focus(), 50);
-}
-function closeItemModal() { $('itemModal').classList.remove('active'); }
-$('addItemBtn').addEventListener('click', () => openItemModal(null));
-$('modalCloseBtn').addEventListener('click', closeItemModal);
-$('modalCancelBtn').addEventListener('click', closeItemModal);
-$('itemModal').addEventListener('click', (e) => { if (e.target === $('itemModal')) closeItemModal(); });
-
-$('itemForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const id = $('fItemId').value;
-    const now = new Date().toISOString();
-    const record = {
-        id: id || crypto.randomUUID(),
-        category: $('fCategory').value.trim() || 'Uncategorized',
-        name: $('fName').value.trim(),
-        description: $('fDescription').value.trim(),
-        status: $('fStatus').value,
-        priority: $('fPriority').value,
-        owner: $('fOwner').value.trim(),
-        progress: Number($('fProgress').value),
-        notes: $('fNotes').value.trim(),
-        updated_at: now
-    };
-    if (!record.name) return;
-    const saveBtn = $('modalSaveBtn'); saveBtn.disabled = true;
-    const idx = progressItems.findIndex(i => i.id === record.id);
-    if (idx >= 0) progressItems[idx] = record; else progressItems.push(record);
-    const ok = await persistProgressData((idx >= 0 ? 'Updated' : 'Added') + ' module: ' + record.name);
-    saveBtn.disabled = false;
-    if (ok) { showToast(idx >= 0 ? 'Module updated' : 'Module added', record.name); closeItemModal(); refreshAll(); }
+$('refreshBtn').addEventListener('click', async () => {
+    showToast('Refreshing…', 'Pulling latest data from Supabase');
+    await loadClubProgressData();
+    cpRefreshAll();
+    showToast('✅ Refreshed', 'All data is up to date');
 });
-async function deleteItem(id) {
-    const item = progressItems.find(i => i.id === id);
-    if (!item) return;
-    if (!confirm(`Delete "${item.name}"? This can't be undone.`)) return;
-    progressItems = progressItems.filter(i => i.id !== id);
-    const ok = await persistProgressData('Deleted module: ' + item.name);
-    if (ok) { showToast('Module deleted', item.name); refreshAll(); }
-}
+
 
 // ============================================================
-// SITE DATA SNAPSHOT (real Supabase counts)
+// CLUB PROGRESS — data loading
 // ============================================================
-const SNAPSHOT_TABLES = [
-    { table: 'members', label: 'Active members', icon: 'fa-users' },
-    { table: 'attendance_registrations', label: 'Attendance records', icon: 'fa-clipboard-check' },
-    { table: 'upcoming_projects', label: 'Upcoming projects', icon: 'fa-diagram-project' },
-    { table: 'project_applications', label: 'Project applications', icon: 'fa-file-circle-check' },
-    { table: 'blogs', label: 'Blog posts', icon: 'fa-newspaper' },
-    { table: 'meeting_minutes_v2', label: 'Meeting minutes', icon: 'fa-file-lines' },
-    { table: 'certifications', label: 'Certifications', icon: 'fa-certificate' },
-    { table: 'course_records', label: 'Course records', icon: 'fa-graduation-cap' },
-    { table: 'blood_bridge_registration', label: 'Blood bridge donors', icon: 'fa-droplet' },
-    { table: 'rotaract_lhe', label: 'Letterhead exchanges', icon: 'fa-file-signature' },
-    { table: 'rotaract_verify', label: 'Verification letters', icon: 'fa-shield-halved' },
-    { table: 'partners_sponsors', label: 'Partners & sponsors', icon: 'fa-handshake' },
-    { table: 'inquiries', label: 'Inquiries', icon: 'fa-envelope-open-text' },
-    { table: 'course_inquiries', label: 'Course inquiries', icon: 'fa-circle-question' }
-];
-let snapshotCounts = [];
-async function loadSnapshot() {
-    const results = await Promise.all(SNAPSHOT_TABLES.map(async (t) => {
-        try {
-            const { count, error } = await supabase.from(t.table).select('*', { count: 'exact', head: true });
-            return { ...t, count: error ? null : (count || 0) };
-        } catch (e) { return { ...t, count: null }; }
-    }));
-    snapshotCounts = results;
-    $('snapshotGrid').innerHTML = results.map(r => `
-        <div class="stat-card"><i class="fa-solid ${r.icon}"></i><div class="num">${r.count === null ? '—' : r.count}</div><div class="label">${escapeHtml(r.label)}</div></div>`).join('');
-}
-
-// ============================================================
-// PRINT REPORT — one click, builds the printable DOM then prints
-// ============================================================
-$('printReportBtn').addEventListener('click', async () => {
-    $('printReportBtn').disabled = true;
-    $('printReportBtn').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Preparing…';
-    try { await buildPrintReport(); window.print(); }
-    finally {
-        $('printReportBtn').disabled = false;
-        $('printReportBtn').innerHTML = '<i class="fa-solid fa-print"></i> Print report';
-    }
-});
-async function buildPrintReport() {
-    const s = computeStats();
-    const now = new Date();
-    const genBy = currentUser ? currentUser.email : 'Unknown admin';
-
-    // Offscreen charts rendered fresh at print-friendly size for crisp raster images
-    const overallImg = await renderOffscreenChart('doughnut',
-        { datasets: [{ data: [s.overallPct, 100 - s.overallPct], backgroundColor: ['#1D2A44', '#e5e5e5'], borderWidth: 0 }] },
-        { cutout: '72%', plugins: { legend: { display: false } } });
-    const statusImg = await renderOffscreenChart('pie',
-        { labels: Object.keys(s.byStatus).map(k => STATUS_LABEL[k]), datasets: [{ data: Object.values(s.byStatus), backgroundColor: ['#9aa0ad', '#e2823f', '#2f9e6f', '#d94550', '#7a6bd6'] }] },
-        { plugins: { legend: { position: 'bottom', labels: { color: '#222', boxWidth: 10, font: { size: 9 } } } } });
-    const catImg = await renderOffscreenChart('bar',
-        { labels: s.categories.map(c => c.name), datasets: [{ data: s.categories.map(c => c.pct), backgroundColor: '#1D2A44' }] },
-        { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { min: 0, max: 100, ticks: { color: '#333', font: { size: 9 } } }, y: { ticks: { color: '#333', font: { size: 9 } } } } });
-
-    const moduleRows = progressItems.slice().sort((a, b) => (a.category || '').localeCompare(b.category || '')).map(i => `
-        <tr>
-            <td>${escapeHtml(i.category || '—')}</td>
-            <td><strong>${escapeHtml(i.name)}</strong>${i.notes ? `<br><span style="color:#777;">${escapeHtml(i.notes)}</span>` : ''}</td>
-            <td>${STATUS_LABEL[i.status] || i.status}</td>
-            <td>${(i.priority || 'medium').toUpperCase()}</td>
-            <td><span class="rpt-progress-mini"><span style="width:${i.progress || 0}%;"></span></span>${i.progress || 0}%</td>
-            <td>${escapeHtml(i.owner || '—')}</td>
-            <td>${i.updated_at ? new Date(i.updated_at).toLocaleDateString() : '—'}</td>
-        </tr>`).join('');
-
-    const snapshotRows = (snapshotCounts.length ? snapshotCounts : []).map(r => `
-        <tr><td>${escapeHtml(r.label)}</td><td>${r.count === null ? 'N/A' : r.count}</td></tr>`).join('');
-
-    $('printArea').innerHTML = `
-        <div class="rpt-header">
-            <img src="rotaract-logo.jpg" onerror="this.style.display='none'" alt="" />
-            <div><div class="rh-club">${escapeHtml(CLUB_NAME)}</div><div class="rh-sub">${escapeHtml(CLUB_SUB)}</div></div>
-        </div>
-        <div class="rpt-title">Website Development Progress Report</div>
-        <div class="rpt-genline">Generated ${now.toLocaleString()} · by ${escapeHtml(genBy)}</div>
-
-        <div class="rpt-kpi-grid">
-            <div class="rpt-kpi"><div class="k-num">${s.total}</div><div class="k-lbl">Modules</div></div>
-            <div class="rpt-kpi"><div class="k-num">${s.overallPct}%</div><div class="k-lbl">Overall</div></div>
-            <div class="rpt-kpi"><div class="k-num">${s.byStatus.completed}</div><div class="k-lbl">Completed</div></div>
-            <div class="rpt-kpi"><div class="k-num">${s.byStatus.in_progress}</div><div class="k-lbl">In progress</div></div>
-            <div class="rpt-kpi"><div class="k-num">${s.byStatus.blocked}</div><div class="k-lbl">Blocked</div></div>
-        </div>
-
-        <div class="rpt-section-title">Progress Overview</div>
-        <div class="rpt-charts">
-            <img src="${overallImg}" alt="Overall completion" />
-            <img src="${statusImg}" alt="Status distribution" />
-            <img src="${catImg}" alt="Progress by category" />
-        </div>
-
-        <div class="rpt-section-title">Module Details</div>
-        <table class="rpt-table">
-            <thead><tr><th>Category</th><th>Module</th><th>Status</th><th>Priority</th><th>Progress</th><th>Owner</th><th>Updated</th></tr></thead>
-            <tbody>${moduleRows || '<tr><td colspan="7">No modules tracked yet.</td></tr>'}</tbody>
-        </table>
-
-        <div class="rpt-section-title">Live Site Data Snapshot</div>
-        <table class="rpt-table">
-            <thead><tr><th>Data set</th><th>Row count</th></tr></thead>
-            <tbody>${snapshotRows || '<tr><td colspan="2">Snapshot not loaded — open Site Data Snapshot tab first.</td></tr>'}</tbody>
-        </table>
-
-        <div class="rpt-footer">
-            <div class="rpt-sign">Prepared by</div>
-            <div class="rpt-sign">Approved by (President)</div>
-        </div>
-        <div class="rpt-pagefoot">${escapeHtml(CLUB_NAME)} — Confidential internal report — generated automatically by the Progress Tracker</div>
-    `;
-}
-function renderOffscreenChart(type, data, extraOptions) {
-    return new Promise((resolve) => {
-        const canvas = document.createElement('canvas');
-        canvas.width = 480; canvas.height = 300;
-        canvas.style.position = 'fixed'; canvas.style.left = '-9999px';
-        document.body.appendChild(canvas);
-        const chart = new Chart(canvas, {
-            type, data,
-            options: Object.assign({ responsive: false, animation: false, devicePixelRatio: 2 }, extraOptions)
-        });
-        setTimeout(() => {
-            const img = canvas.toDataURL('image/png');
-            chart.destroy();
-            canvas.remove();
-            resolve(img);
-        }, 60);
-    });
-}
-
-// ============================================================
-// CLUB PROGRESS DASHBOARD — integrates upcoming_projects,
-// meeting_minutes, members and project_applications (same
-// Supabase project, no new/duplicate tables).
-// ============================================================
-let cpProjects = [];       // rows from upcoming_projects
-let cpMeetings = [];       // rows from meeting_minutes {id, data, created_at}
-let cpMembers = [];        // rows from members {name, status, position, designation}
-let cpApplicationCount = 0;
-let cpCharts = { status: null, meetingFreq: null, actions: null, members: null };
+let cpProjects = [], cpCoordinators = [], cpMeetings = [], cpMembers = [];
+let cpActionItemsFlat = [];
 let cpCalDate = new Date();
-const CP_STATUS_COLOR = { upcoming: '#33d6c0', ongoing: '#e2823f', closing: '#9b8cf0', completed: '#43c98a', cancelled: '#f0555f' };
 
 async function loadClubProgressData() {
     try {
-        const [projRes, meetRes, memRes, appRes] = await Promise.all([
-            supabase.from('upcoming_projects').select('*').order('id', { ascending: false }),
-            supabase.from('meeting_minutes').select('id, data, meeting_type, closing_remarks, created_at, updated_at').order('created_at', { ascending: false }),
-            supabase.from('members').select('name, status, position, designation'),
-            supabase.from('project_applications').select('*', { count: 'exact', head: true })
+        const [proj, coord, meet, mem] = await Promise.all([
+            supabase.from('upcoming_projects').select('*').order('date', { ascending: false }),
+            supabase.from('project2026_coordinators').select('*'),
+            supabase.from('meeting_minutes').select('*').order('created_at', { ascending: false }),
+            supabase.from('member_attendance_from_meetings').select('*')
         ]);
-        cpProjects = projRes.data || [];
-        cpMeetings = meetRes.data || [];
-        cpMembers = (memRes.data || []).filter(m => (m.status || '').toLowerCase() !== 'inactive' && m.name);
-        cpApplicationCount = appRes.count || 0;
-    } catch (e) {
-        console.error('Club progress load error:', e);
-        showToast('Load failed', 'Could not load projects/meetings data.', true);
+        cpProjects = proj.data || [];
+        cpCoordinators = coord.data || [];
+        cpMeetings = (meet.data || []).map(row => {
+            const m = row.data || {};
+            return {
+                id: row.id,
+                meeting_number: m.meeting_number || row.meeting_number || 'Untitled Meeting',
+                meeting_date: m.meeting_date || row.meeting_date || row.created_at,
+                venue: m.venue || '—',
+                chairperson: m.chairperson || '—',
+                members: Array.isArray(m.members) ? m.members : [],
+                guests: Array.isArray(m.guests) ? m.guests : [],
+                agendas: Array.isArray(m.agendas) ? m.agendas : [],
+                actionItems: Array.isArray(m.actionItems) ? m.actionItems : [],
+                raw: m, created_at: row.created_at
+            };
+        });
+        cpMembers = (mem.data || []).slice().sort((a, b) => (b.attendance_percentage || 0) - (a.attendance_percentage || 0));
+
+        cpActionItemsFlat = [];
+        cpMeetings.forEach(m => {
+            m.actionItems.forEach((item, idx) => {
+                cpActionItemsFlat.push({
+                    meetingId: m.id, meetingLabel: m.meeting_number, meetingDate: m.meeting_date,
+                    itemIndex: idx, task: item.task || '', person: item.person || '',
+                    deadline: item.deadline || '', status: item.status || 'Pending'
+                });
+            });
+        });
+    } catch (err) {
+        console.error('loadClubProgressData error:', err);
+        showToast('Could not load club data', err.message, true);
     }
 }
 
-// ---- helpers -------------------------------------------------
-function cpParseDate(d) { if (!d) return null; const dt = new Date(d); return isNaN(dt.getTime()) ? null : dt; }
-function cpDaysBetween(a, b) { return Math.round((a.setHours(0,0,0,0) - b.setHours(0,0,0,0)) / 86400000); }
-function cpAgendaText(m) {
-    const p = m.data || {};
-    const parts = [p.meeting_number || ''];
-    (p.agendas || []).forEach(a => parts.push(a.title || '', a.description || ''));
-    Object.values(p.discussions || {}).forEach(v => parts.push(v || ''));
-    return parts.join(' ').toLowerCase();
-}
-// Match rule (per integration spec): link a meeting to a project when the
-// project name appears in the meeting's agenda/discussion text, or vice versa.
-function cpMeetingsForProject(project) {
-    const name = (project.name || '').trim().toLowerCase();
-    if (!name) return [];
-    return cpMeetings.filter(m => cpAgendaText(m).includes(name));
-}
-function cpAllActionItems() {
-    const rows = [];
-    cpMeetings.forEach(m => {
-        const p = m.data || {};
-        (p.actionItems || []).forEach((ai, idx) => rows.push({
-            meetingId: m.id, meetingLabel: p.meeting_number || 'Untitled meeting', itemIndex: idx,
-            task: ai.task || '', person: ai.person || '', deadline: ai.deadline || '', status: ai.status || 'Pending'
-        }));
-    });
-    return rows;
-}
-function cpActionItemsForProject(project, allItems) {
-    const name = (project.name || '').trim().toLowerCase();
-    const linkedIds = new Set(cpMeetingsForProject(project).map(m => m.id));
-    return allItems.filter(ai => linkedIds.has(ai.meetingId) || (ai.task || '').toLowerCase().includes(name));
-}
-function cpProjectProgress(project, allItems) {
-    const status = (project.status || 'upcoming').toLowerCase();
-    if (status === 'completed') return 100;
-    if (status === 'cancelled') return 0;
-    const linkedMeetings = cpMeetingsForProject(project).length;
-    const items = cpActionItemsForProject(project, allItems);
-    const doneRate = items.length ? items.filter(i => i.status === 'Completed').length / items.length : 0;
-    const base = { upcoming: 10, ongoing: 45, closing: 70 }[status] ?? 10;
-    const pct = base + Math.min(20, linkedMeetings * 8) + Math.round(doneRate * 20);
-    return Math.max(0, Math.min(97, pct));
-}
-function cpIsProjectOverdue(project) {
-    const status = (project.status || '').toLowerCase();
-    if (status === 'completed' || status === 'cancelled') return false;
-    const d = cpParseDate(project.date);
-    if (!d) return false;
-    return cpDaysBetween(new Date(d), new Date()) < 0;
+function coordinatorFor(projectId, projectName) {
+    const c = cpCoordinators.find(c => c.project_id === projectId || c.project_name === projectName);
+    return c ? c.coordinator_name : null;
 }
 
-// ---- KPIs ------------------------------------------------------
-function cpComputeStats() {
+function daysDiffLabel(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
     const now = new Date();
-    const allItems = cpAllActionItems();
-    const byStatus = { upcoming: 0, ongoing: 0, completed: 0, cancelled: 0 };
-    let overdue = 0;
-    cpProjects.forEach(p => {
-        const s = (p.status || 'upcoming').toLowerCase();
-        if (byStatus[s] === undefined) byStatus[s] = 0;
-        byStatus[s]++;
-        if (cpIsProjectOverdue(p)) overdue++;
-    });
-    const pendingActions = allItems.filter(a => a.status !== 'Completed').length;
-    const completedActions = allItems.filter(a => a.status === 'Completed').length;
-    const overallPct = cpProjects.length
-        ? Math.round(cpProjects.reduce((s, p) => s + cpProjectProgress(p, allItems), 0) / cpProjects.length)
-        : 0;
+    d.setHours(0,0,0,0); now.setHours(0,0,0,0);
+    const diff = Math.round((d - now) / 86400000);
+    if (diff === 0) return { text: 'Today', cls: 'soon' };
+    if (diff > 0) return { text: `In ${diff}d`, cls: diff <= 3 ? 'soon' : '' };
+    return { text: `${Math.abs(diff)}d ago`, cls: 'overdue' };
+}
 
-    // upcoming project / meeting dates
-    const futureProjects = cpProjects.filter(p => cpParseDate(p.date) && cpParseDate(p.date) >= new Date(now.toDateString()) && !['completed','cancelled'].includes((p.status||'').toLowerCase()));
-    futureProjects.sort((a, b) => cpParseDate(a.date) - cpParseDate(b.date));
-    const nextProject = futureProjects[0] || null;
+// ============================================================
+// CLUB PROGRESS — KPIs, alerts, charts
+// ============================================================
+function cpComputeStats() {
+    const statusCount = {};
+    cpProjects.forEach(p => { const st = p.status || 'upcoming'; statusCount[st] = (statusCount[st] || 0) + 1; });
+    const ongoing = statusCount.ongoing || 0;
+    const completedItems = cpActionItemsFlat.filter(a => a.status === 'Completed').length;
+    const actionPct = cpActionItemsFlat.length ? Math.round((completedItems / cpActionItemsFlat.length) * 100) : 0;
+    const avgAttendance = cpMembers.length ? Math.round(cpMembers.reduce((s, m) => s + (Number(m.attendance_percentage) || 0), 0) / cpMembers.length) : 0;
+    return { statusCount, ongoing, actionPct, avgAttendance, completedItems };
+}
 
-    const sortedMeetings = cpMeetings.slice().sort((a, b) => (cpParseDate(b.data?.meeting_date) || 0) - (cpParseDate(a.data?.meeting_date) || 0));
-    const lastMeeting = sortedMeetings.find(m => cpParseDate(m.data?.meeting_date) && cpParseDate(m.data?.meeting_date) <= now) || null;
-    const futureMeetings = cpMeetings.filter(m => cpParseDate(m.data?.meeting_date) && cpParseDate(m.data?.meeting_date) >= now)
-        .sort((a, b) => cpParseDate(a.data?.meeting_date) - cpParseDate(b.data?.meeting_date));
-    const nextMeeting = futureMeetings[0] || null;
+function cpRenderKPIs() {
+    const s = cpComputeStats();
+    $('cpKpiGrid').innerHTML = `
+        <div class="stat-card"><i class="fa-solid fa-diagram-project"></i><div class="num">${cpProjects.length}</div><div class="label">Total projects</div></div>
+        <div class="stat-card c-accent2"><i class="fa-solid fa-bolt"></i><div class="num">${s.ongoing}</div><div class="label">Ongoing</div></div>
+        <div class="stat-card"><i class="fa-solid fa-users-rectangle"></i><div class="num">${cpMeetings.length}</div><div class="label">Meetings held</div></div>
+        <div class="stat-card c-success"><i class="fa-solid fa-list-check"></i><div class="num">${s.actionPct}%</div><div class="label">Action items done</div></div>
+        <div class="stat-card c-purple"><i class="fa-solid fa-chart-simple"></i><div class="num">${s.avgAttendance}%</div><div class="label">Avg. attendance</div></div>
+    `;
+}
 
-    const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7);
-    const monthAgo = new Date(now); monthAgo.setDate(now.getDate() - 30);
-    const thisWeekMeetings = cpMeetings.filter(m => { const d = cpParseDate(m.data?.meeting_date); return d && d >= weekAgo && d <= now; }).length;
-    const thisMonthMeetings = cpMeetings.filter(m => { const d = cpParseDate(m.data?.meeting_date); return d && d >= monthAgo && d <= now; }).length;
+// ============================================================
+// CLUB PROGRESS — Executive Summary (goal tracking)
+// ============================================================
+const ROTARY_YEAR_START_MONTH = 6; // July, 0-indexed
+
+function cpGetRotaryYearBounds(now) {
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    const startYear = m >= ROTARY_YEAR_START_MONTH ? y : y - 1;
+    const start = new Date(startYear, ROTARY_YEAR_START_MONTH, 1);
+    const end = new Date(startYear + 1, ROTARY_YEAR_START_MONTH, 1); // exclusive
+    return { start, end, label: `${startYear}-${String(startYear + 1).slice(2)}` };
+}
+
+function cpComputeExecutiveSummary() {
+    const s = cpComputeStats();
+    const now = new Date();
+
+    // Annual goal progress — proxied from this Rotary year's non-cancelled projects
+    const totalGoals = cpProjects.filter(p => p.status !== 'cancelled').length;
+    const completedGoals = cpProjects.filter(p => p.status === 'completed').length;
+    const remainingGoals = Math.max(0, totalGoals - completedGoals);
+    const annualGoalPct = totalGoals ? Math.round((completedGoals / totalGoals) * 100) : 0;
+    const projectCompletionRate = totalGoals ? (completedGoals / totalGoals) * 100 : 0;
+
+    // Club health score (0-100): completion + actions + attendance + on-track
+    const overdueProjectsCount = cpProjects.filter(p => p.date && new Date(p.date) < now && !['completed', 'cancelled'].includes(p.status)).length;
+    const overdueActionsCount = cpActionItemsFlat.filter(a => a.deadline && a.status !== 'Completed' && new Date(a.deadline) < now).length;
+    const onTrackScore = Math.max(0, 100 - (overdueProjectsCount * 10 + overdueActionsCount * 5));
+    const healthScore = Math.max(0, Math.min(100, Math.round(
+        projectCompletionRate * 0.30 +
+        s.actionPct * 0.25 +
+        s.avgAttendance * 0.25 +
+        onTrackScore * 0.20
+    )));
+
+    let grade = 'D', gradeClass = 'grade-d';
+    if (healthScore >= 90) { grade = 'A+'; gradeClass = 'grade-a'; }
+    else if (healthScore >= 80) { grade = 'A'; gradeClass = 'grade-a'; }
+    else if (healthScore >= 70) { grade = 'B+'; gradeClass = 'grade-b'; }
+    else if (healthScore >= 60) { grade = 'B'; gradeClass = 'grade-b'; }
+    else if (healthScore >= 50) { grade = 'C'; gradeClass = 'grade-c'; }
+
+    // Rotary year progress
+    const { start: ryStart, end: ryEnd, label: ryLabel } = cpGetRotaryYearBounds(now);
+    const totalDays = Math.round((ryEnd - ryStart) / 86400000);
+    const elapsedDays = Math.min(totalDays, Math.max(0, Math.round((now - ryStart) / 86400000)));
+    const rotaryYearPct = totalDays ? Math.round((elapsedDays / totalDays) * 100) : 0;
+
+    // Monthly achievement summary (current calendar month)
+    const mStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const mEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const inMonth = (d) => d && new Date(d) >= mStart && new Date(d) < mEnd;
+    const monthProjectsCompleted = cpProjects.filter(p => p.status === 'completed' && inMonth(p.date)).length;
+    const monthMeetingsHeld = cpMeetings.filter(m => inMonth(m.meeting_date)).length;
+    const monthActionsCompleted = cpActionItemsFlat.filter(a => a.status === 'Completed' && inMonth(a.deadline)).length;
+    const monthLabel = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
     return {
-        total: cpProjects.length, byStatus, overdue,
-        totalMeetings: cpMeetings.length, pendingActions, completedActions, overallPct,
-        nextProject, nextMeeting, lastMeeting, thisWeekMeetings, thisMonthMeetings, allItems
+        healthScore, grade, gradeClass,
+        totalGoals, completedGoals, remainingGoals, annualGoalPct,
+        rotaryYearPct, ryLabel,
+        monthProjectsCompleted, monthMeetingsHeld, monthActionsCompleted, monthLabel
     };
 }
 
-function cpRenderKpis(s) {
-    $('cpKpiGrid').innerHTML = `
-        <div class="stat-card"><i class="fa-solid fa-diagram-project"></i><div class="num">${s.total}</div><div class="label">Total projects</div></div>
-        <div class="stat-card c-accent2"><i class="fa-solid fa-hourglass-half"></i><div class="num">${s.byStatus.upcoming || 0}</div><div class="label">Upcoming</div></div>
-        <div class="stat-card"><i class="fa-solid fa-spinner"></i><div class="num">${s.byStatus.ongoing || 0}</div><div class="label">Ongoing</div></div>
-        <div class="stat-card c-success"><i class="fa-solid fa-circle-check"></i><div class="num">${s.byStatus.completed || 0}</div><div class="label">Completed</div></div>
-        <div class="stat-card c-danger"><i class="fa-solid fa-ban"></i><div class="num">${s.byStatus.cancelled || 0}</div><div class="label">Cancelled</div></div>
-        <div class="stat-card c-danger"><i class="fa-solid fa-triangle-exclamation"></i><div class="num">${s.overdue}</div><div class="label">Overdue</div></div>
-        <div class="stat-card"><i class="fa-solid fa-people-group"></i><div class="num">${s.totalMeetings}</div><div class="label">Meetings held</div></div>
-        <div class="stat-card"><i class="fa-solid fa-list"></i><div class="num">${s.pendingActions}</div><div class="label">Pending actions</div></div>
-        <div class="stat-card c-success"><i class="fa-solid fa-square-check"></i><div class="num">${s.completedActions}</div><div class="label">Completed actions</div></div>
-        <div class="stat-card c-purple"><i class="fa-solid fa-percent"></i><div class="num">${s.overallPct}%</div><div class="label">Overall progress</div></div>`;
+function cpRenderExecutiveSummary() {
+    const e = cpComputeExecutiveSummary();
+    $('execRotaryYearLabel').textContent = 'Rotary Year ' + e.ryLabel;
+    $('execSummaryGrid').innerHTML = `
+        <div class="exec-card">
+            <h4><i class="fa-solid fa-heart-pulse"></i> Club health score</h4>
+            <div class="exec-health-row">
+                <div class="exec-health-ring-wrap" style="background:conic-gradient(var(--accent) ${e.healthScore * 3.6}deg, var(--surface-2) 0deg);">
+                    <div class="exec-health-num"><span class="n">${e.healthScore}</span><span class="s">/ 100</span></div>
+                </div>
+                <div>
+                    <span class="exec-grade-badge ${e.gradeClass}">${e.grade}</span>
+                    <div class="exec-grade-sub">Performance grade</div>
+                </div>
+            </div>
+        </div>
+        <div class="exec-card">
+            <h4><i class="fa-solid fa-bullseye"></i> Annual goal progress</h4>
+            <div class="exec-progress-track"><div class="exec-progress-fill" style="width:${e.annualGoalPct}%"></div></div>
+            <div class="exec-progress-label"><span>${e.annualGoalPct}% complete</span><span>${e.completedGoals}/${e.totalGoals} projects</span></div>
+            <div class="exec-goal-nums">
+                <div><div class="n" style="color:var(--success)">${e.completedGoals}</div><div class="l">Completed</div></div>
+                <div><div class="n" style="color:var(--accent)">${e.remainingGoals}</div><div class="l">Remaining</div></div>
+            </div>
+        </div>
+        <div class="exec-card">
+            <h4><i class="fa-solid fa-calendar-check"></i> Rotary year progress</h4>
+            <div class="exec-progress-track"><div class="exec-progress-fill" style="width:${e.rotaryYearPct}%;background:var(--accent-2);"></div></div>
+            <div class="exec-progress-label"><span>${e.rotaryYearPct}% elapsed</span><span>RY ${e.ryLabel}</span></div>
+        </div>
+        <div class="exec-card">
+            <h4><i class="fa-solid fa-award"></i> Monthly achievement — ${e.monthLabel}</h4>
+            <div class="exec-month-list">
+                <div class="exec-month-row"><span>Projects completed</span><b>${e.monthProjectsCompleted}</b></div>
+                <div class="exec-month-row"><span>Meetings held</span><b>${e.monthMeetingsHeld}</b></div>
+                <div class="exec-month-row"><span>Action items closed</span><b>${e.monthActionsCompleted}</b></div>
+            </div>
+        </div>
+    `;
 }
 
-// ---- alerts ------------------------------------------------------
-function cpRenderAlerts(s) {
+// ============================================================
+// CLUB PROGRESS — Risk & Warning Center
+// ============================================================
+function cpComputeRisks() {
     const now = new Date();
-    const alerts = [];
-    s.allItems.forEach(ai => {
-        if (ai.status === 'Completed' || !ai.deadline) return;
-        const d = cpParseDate(ai.deadline);
-        if (!d) return;
-        const diff = cpDaysBetween(new Date(d), new Date(now));
-        if (diff < 0) alerts.push({ type: 'danger', icon: 'fa-triangle-exclamation', title: `Overdue: ${ai.task || 'Untitled task'}`, sub: `${ai.person || 'Unassigned'} · was due ${d.toLocaleDateString()}` });
-        else if (diff === 0) alerts.push({ type: 'warn', icon: 'fa-bell', title: `Deadline today: ${ai.task || 'Untitled task'}`, sub: ai.person || 'Unassigned' });
-        else if (diff === 1) alerts.push({ type: 'warn', icon: 'fa-clock', title: `Deadline tomorrow: ${ai.task || 'Untitled task'}`, sub: ai.person || 'Unassigned' });
-    });
+    const overdueProjects = [];
+    const upcoming3 = [];
+    const upcoming7 = [];
+
     cpProjects.forEach(p => {
-        if (['completed', 'cancelled'].includes((p.status || '').toLowerCase())) return;
-        const d = cpParseDate(p.date);
-        if (!d) return;
-        const diff = cpDaysBetween(new Date(d), new Date(now));
-        if (diff >= 0 && diff <= 7) alerts.push({ type: 'info', icon: 'fa-calendar-days', title: `Upcoming project: ${p.name}`, sub: `In ${diff} day${diff === 1 ? '' : 's'} · ${d.toLocaleDateString()}` });
-    });
-    if (s.lastMeeting) {
-        const d = cpParseDate(s.lastMeeting.data?.meeting_date);
-        if (d && cpDaysBetween(new Date(now), new Date(d)) >= 30) {
-            alerts.push({ type: 'danger', icon: 'fa-people-arrows', title: 'No meeting conducted in 30+ days', sub: `Last meeting: ${d.toLocaleDateString()}` });
+        if (!p.date) return;
+        const diffDays = Math.round((new Date(p.date) - now) / 86400000);
+        if (diffDays < 0 && !['completed', 'cancelled'].includes(p.status)) {
+            overdueProjects.push({ p, diffDays });
+        } else if (diffDays >= 0 && diffDays <= 3 && (p.status === 'upcoming' || p.status === 'ongoing')) {
+            upcoming3.push({ kind: 'project', p, diffDays });
+        } else if (diffDays > 3 && diffDays <= 7 && (p.status === 'upcoming' || p.status === 'ongoing')) {
+            upcoming7.push({ kind: 'project', p, diffDays });
         }
-    } else if (!cpMeetings.length) {
-        alerts.push({ type: 'warn', icon: 'fa-people-arrows', title: 'No meetings recorded yet', sub: '' });
+    });
+
+    const overdueActions = [];
+    cpActionItemsFlat.forEach(a => {
+        if (!a.deadline || a.status === 'Completed') return;
+        const diffDays = Math.round((new Date(a.deadline) - now) / 86400000);
+        if (diffDays < 0) overdueActions.push({ a, diffDays });
+        else if (diffDays <= 3) upcoming3.push({ kind: 'action', a, diffDays });
+        else if (diffDays <= 7) upcoming7.push({ kind: 'action', a, diffDays });
+    });
+
+    const lowAttendance = cpMembers.filter(m => Number(m.attendance_percentage || 0) < 60);
+    const incompleteProjects = cpProjects.filter(p => ['upcoming', 'ongoing', 'closing'].includes(p.status) && p.date && new Date(p.date) < now);
+
+    let missingMinutes = null;
+    if (cpMeetings.length) {
+        const sorted = cpMeetings.slice().sort((a, b) => new Date(b.meeting_date) - new Date(a.meeting_date));
+        const last = sorted[0];
+        const gapDays = Math.round((now - new Date(last.meeting_date)) / 86400000);
+        if (gapDays > 21) missingMinutes = { last, gapDays };
     }
-    const el = $('cpAlerts');
-    if (!alerts.length) { el.innerHTML = '<div class="empty-state"><i class="fa-solid fa-circle-check"></i>No active alerts — everything looks on track.</div>'; return; }
-    el.innerHTML = alerts.map(a => `<div class="alert-card ${a.type}"><i class="fa-solid ${a.icon}"></i><div><div><b>${escapeHtml(a.title)}</b></div>${a.sub ? `<div class="a-sub">${escapeHtml(a.sub)}</div>` : ''}</div></div>`).join('');
+
+    return { overdueProjects, overdueActions, upcoming3, upcoming7, lowAttendance, incompleteProjects, missingMinutes };
 }
 
-// ---- charts ------------------------------------------------------
-function cpDestroyCharts() { Object.keys(cpCharts).forEach(k => { if (cpCharts[k]) { cpCharts[k].destroy(); cpCharts[k] = null; } }); }
-function cpRenderCharts(s) {
-    cpDestroyCharts();
-    const statusKeys = Object.keys(s.byStatus).filter(k => s.byStatus[k] > 0);
-    cpCharts.status = new Chart($('cpChartStatus'), {
+function cpRenderAlerts() {
+    const r = cpComputeRisks();
+
+    const chips = [
+        { label: 'Overdue projects', count: r.overdueProjects.length, dot: 'red' },
+        { label: 'Overdue action items', count: r.overdueActions.length, dot: 'red' },
+        { label: 'Deadlines ≤3 days', count: r.upcoming3.length, dot: 'red' },
+        { label: 'Deadlines 4–7 days', count: r.upcoming7.length, dot: 'yellow' },
+        { label: 'Low attendance', count: r.lowAttendance.length, dot: 'red' },
+        { label: 'Missing minutes', count: r.missingMinutes ? 1 : 0, dot: 'yellow' }
+    ];
+    $('cpRiskChips').innerHTML = chips.map(c => `<div class="risk-chip"><span class="dot ${c.dot}"></span>${c.label} <b>${c.count}</b></div>`).join('');
+
+    const groups = [];
+    if (r.overdueProjects.length) {
+        groups.push({ title: '🔴 Overdue projects', items: r.overdueProjects.map(({ p, diffDays }) =>
+            `<div class="alert-card danger"><i class="fa-solid fa-triangle-exclamation"></i><div><b>${escapeHtml(p.name)}</b><div class="a-sub">Scheduled ${Math.abs(diffDays)} day(s) ago · still "${escapeHtml(p.status || 'upcoming')}"</div></div></div>`
+        ) });
+    }
+    if (r.overdueActions.length) {
+        groups.push({ title: '🔴 Overdue action items', items: r.overdueActions.map(({ a, diffDays }) =>
+            `<div class="alert-card danger"><i class="fa-solid fa-bell"></i><div><b>${escapeHtml(a.task || 'Task')}</b><div class="a-sub">Assigned to ${escapeHtml(a.person || 'unassigned')} · overdue ${Math.abs(diffDays)} day(s) (${escapeHtml(a.meetingLabel)})</div></div></div>`
+        ) });
+    }
+    if (r.upcoming3.length) {
+        groups.push({ title: '🔴 Upcoming deadlines (≤3 days)', items: r.upcoming3.map(item => item.kind === 'project'
+            ? `<div class="alert-card danger"><i class="fa-solid fa-clock"></i><div><b>${escapeHtml(item.p.name)}</b><div class="a-sub">${item.diffDays === 0 ? 'Today' : 'In ' + item.diffDays + ' day(s)'} at ${escapeHtml(item.p.location || 'TBD')}</div></div></div>`
+            : `<div class="alert-card danger"><i class="fa-solid fa-clock"></i><div><b>${escapeHtml(item.a.task || 'Task')}</b><div class="a-sub">Due ${item.diffDays === 0 ? 'today' : 'in ' + item.diffDays + ' day(s)'} · ${escapeHtml(item.a.person || 'unassigned')}</div></div></div>`
+        ) });
+    }
+    if (r.upcoming7.length) {
+        groups.push({ title: '🟡 Upcoming deadlines (4–7 days)', items: r.upcoming7.map(item => item.kind === 'project'
+            ? `<div class="alert-card warn"><i class="fa-solid fa-clock"></i><div><b>${escapeHtml(item.p.name)}</b><div class="a-sub">In ${item.diffDays} day(s) at ${escapeHtml(item.p.location || 'TBD')}</div></div></div>`
+            : `<div class="alert-card warn"><i class="fa-solid fa-clock"></i><div><b>${escapeHtml(item.a.task || 'Task')}</b><div class="a-sub">Due in ${item.diffDays} day(s) · ${escapeHtml(item.a.person || 'unassigned')}</div></div></div>`
+        ) });
+    }
+    if (r.lowAttendance.length) {
+        groups.push({ title: '🔴 Low attendance members', items: r.lowAttendance.map(m =>
+            `<div class="alert-card danger"><i class="fa-solid fa-user-clock"></i><div><b>${escapeHtml(m.name || 'Member')}</b><div class="a-sub">Attendance ${m.attendance_percentage || 0}% (${m.meetings_attended || 0}/${m.total_meetings || 0} meetings)</div></div></div>`
+        ) });
+    }
+    if (r.missingMinutes) {
+        groups.push({ title: '🟡 Missing meeting minutes', items: [
+            `<div class="alert-card warn"><i class="fa-solid fa-file-circle-exclamation"></i><div><b>No new meeting minutes in ${r.missingMinutes.gapDays} days</b><div class="a-sub">Last recorded: ${escapeHtml(r.missingMinutes.last.meeting_number)} on ${new Date(r.missingMinutes.last.meeting_date).toLocaleDateString()}</div></div></div>`
+        ] });
+    }
+
+    const stack = $('cpAlerts');
+    const totalAlerts = groups.reduce((n, g) => n + g.items.length, 0);
+    if (!totalAlerts) {
+        stack.innerHTML = `<div class="alert-card info"><i class="fa-solid fa-circle-check"></i><div><b>All clear</b><div class="a-sub">No risks or warnings detected right now.</div></div></div>`;
+    } else {
+        stack.innerHTML = groups.map(g => `<div class="risk-group-title">${g.title}</div>${g.items.join('')}`).join('');
+    }
+}
+
+function cpRenderCharts() {
+    const s = cpComputeStats();
+    const statusKeys = Object.keys(s.statusCount);
+    const statusColors = { upcoming: '#33d6c0', ongoing: '#e2823f', closing: '#9b8cf0', completed: '#43c98a', cancelled: '#f0555f' };
+
+    if (charts.cpStatus) charts.cpStatus.destroy();
+    charts.cpStatus = new Chart($('cpChartStatus').getContext('2d'), {
         type: 'pie',
-        data: { labels: statusKeys.map(k => k[0].toUpperCase() + k.slice(1)), datasets: [{ data: statusKeys.map(k => s.byStatus[k]), backgroundColor: statusKeys.map(k => CP_STATUS_COLOR[k]), borderColor: '#12161f', borderWidth: 2 }] },
-        options: { plugins: { legend: { position: 'bottom', labels: { color: '#8b93a3', font: { size: 10 }, boxWidth: 10 } } } }
+        data: { labels: statusKeys, datasets: [{ data: statusKeys.map(k => s.statusCount[k]), backgroundColor: statusKeys.map(k => statusColors[k] || '#8b93a3'), borderColor: '#12161f', borderWidth: 2 }] },
+        options: { plugins: { legend: { position: 'bottom', labels: { color: '#8b93a3', boxWidth: 10, font: { size: 10 } } } } }
     });
 
-    const monthMap = {};
-    cpMeetings.forEach(m => { const d = cpParseDate(m.data?.meeting_date) || cpParseDate(m.created_at); if (!d) return; const key = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); monthMap[key] = (monthMap[key] || 0) + 1; });
-    const monthKeys = Object.keys(monthMap).slice(-8);
-    cpCharts.meetingFreq = new Chart($('cpChartMeetingFreq'), {
+    // meeting frequency by month, last 6 months
+    const months = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleDateString('en-US', { month: 'short' }), count: 0 });
+    }
+    cpMeetings.forEach(m => {
+        if (!m.meeting_date) return;
+        const d = new Date(m.meeting_date);
+        const key = `${d.getFullYear()}-${d.getMonth()}`;
+        const bucket = months.find(mo => mo.key === key);
+        if (bucket) bucket.count++;
+    });
+    if (charts.cpFreq) charts.cpFreq.destroy();
+    charts.cpFreq = new Chart($('cpChartMeetingFreq').getContext('2d'), {
         type: 'bar',
-        data: { labels: monthKeys, datasets: [{ label: 'Meetings', data: monthKeys.map(k => monthMap[k]), backgroundColor: '#33d6c0', borderRadius: 6, maxBarThickness: 30 }] },
-        options: { scales: { x: { ticks: { color: '#8b93a3', font: { size: 10 } }, grid: { display: false } }, y: { beginAtZero: true, ticks: { color: '#8b93a3', font: { size: 10 }, precision: 0 }, grid: { color: 'rgba(255,255,255,0.06)' } } }, plugins: { legend: { display: false } } }
+        data: { labels: months.map(m => m.label), datasets: [{ label: 'Meetings', data: months.map(m => m.count), backgroundColor: '#e2823f', borderRadius: 6, maxBarThickness: 34 }] },
+        options: { scales: { x: { grid: { display: false }, ticks: { color: '#8b93a3' } }, y: { beginAtZero: true, ticks: { color: '#8b93a3', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.06)' } } }, plugins: { legend: { display: false } } }
     });
 
-    const actionPct = s.allItems.length ? Math.round(s.completedActions / s.allItems.length * 100) : 0;
-    $('cpActionsPctLabel').textContent = actionPct + '%';
-    cpCharts.actions = new Chart($('cpChartActions'), {
+    if (charts.cpActions) charts.cpActions.destroy();
+    charts.cpActions = new Chart($('cpChartActions').getContext('2d'), {
         type: 'doughnut',
-        data: { datasets: [{ data: [actionPct, 100 - actionPct], backgroundColor: ['#43c98a', '#1c2230'], borderWidth: 0 }] },
+        data: { datasets: [{ data: [s.actionPct, 100 - s.actionPct], backgroundColor: ['#43c98a', 'rgba(255,255,255,0.06)'], borderWidth: 0 }] },
         options: { cutout: '78%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
     });
+    $('cpActionsPctLabel').textContent = s.actionPct + '%';
 
-    const memberCounts = {};
-    s.allItems.forEach(ai => { if (!ai.person) return; memberCounts[ai.person] = (memberCounts[ai.person] || 0) + 1; });
-    const topMembers = Object.entries(memberCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
-    cpCharts.members = new Chart($('cpChartMembers'), {
+    // member contribution (top 8 by attendance)
+    const topMembers = cpMembers.slice(0, 8);
+    if (charts.cpMembers) charts.cpMembers.destroy();
+    charts.cpMembers = new Chart($('cpChartMembers').getContext('2d'), {
         type: 'bar',
-        data: { labels: topMembers.map(m => m[0]), datasets: [{ label: 'Assigned tasks', data: topMembers.map(m => m[1]), backgroundColor: '#e2823f', borderRadius: 6, maxBarThickness: 22 }] },
-        options: { indexAxis: 'y', scales: { x: { beginAtZero: true, ticks: { color: '#8b93a3', font: { size: 10 }, precision: 0 }, grid: { color: 'rgba(255,255,255,0.06)' } }, y: { ticks: { color: '#8b93a3', font: { size: 10 } }, grid: { display: false } } }, plugins: { legend: { display: false } } }
+        data: { labels: topMembers.map(m => m.name || 'Member'), datasets: [{ label: 'Attendance %', data: topMembers.map(m => Number(m.attendance_percentage) || 0), backgroundColor: '#9b8cf0', borderRadius: 6, maxBarThickness: 22 }] },
+        options: { indexAxis: 'y', scales: { x: { min: 0, max: 100, ticks: { color: '#8b93a3' }, grid: { color: 'rgba(255,255,255,0.06)' } }, y: { ticks: { color: '#8b93a3', font: { size: 10 } }, grid: { display: false } } }, plugins: { legend: { display: false } } }
     });
 }
 
-// ---- project cards ------------------------------------------------------
-function cpRenderProjectGrid(s) {
+// ============================================================
+// CLUB PROGRESS — projects grid + detail modal
+// ============================================================
+function cpRenderProjects() {
     const statusF = $('cpFilterStatus').value;
     const searchF = $('cpFilterSearch').value.trim().toLowerCase();
-    let list = cpProjects.slice();
-    if (statusF) list = list.filter(p => (p.status || '').toLowerCase() === statusF);
-    if (searchF) list = list.filter(p => (p.name || '').toLowerCase().includes(searchF));
+    let items = cpProjects.slice();
+    if (statusF) items = items.filter(p => p.status === statusF);
+    if (searchF) items = items.filter(p => (p.name || '').toLowerCase().includes(searchF) || (p.location || '').toLowerCase().includes(searchF));
 
+    const grid = $('cpProjectGrid');
+    if (!items.length) {
+        grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-inbox"></i>No projects match your filters</div>';
+    } else {
+        grid.innerHTML = items.map(p => {
+            const dchip = daysDiffLabel(p.date);
+            const coord = coordinatorFor(p.id, p.name);
+            return `
+            <div class="progress-card" data-id="${p.id}">
+                <div class="pc-top">
+                    <div class="pc-title">${escapeHtml(p.name)}</div>
+                    <span class="pill pill-status-${p.status === 'completed' ? 'completed' : (p.status === 'cancelled' ? 'blocked' : 'in_progress')}">${escapeHtml(p.status || 'upcoming')}</span>
+                </div>
+                <div class="pc-meta">
+                    <span><i class="fa-solid fa-calendar"></i> ${p.date ? new Date(p.date).toLocaleDateString() : 'TBD'}</span>
+                    <span><i class="fa-solid fa-location-dot"></i> ${escapeHtml(p.location || 'TBD')}</span>
+                    ${dchip ? `<span class="days-chip ${dchip.cls}">${dchip.text}</span>` : ''}
+                </div>
+                <div class="pc-stats">
+                    ${coord ? `<span><i class="fa-solid fa-user-tie"></i> <b>${escapeHtml(coord)}</b></span>` : ''}
+                    ${p.target_audience ? `<span><i class="fa-solid fa-bullseye"></i> ${escapeHtml(p.target_audience)}</span>` : ''}
+                </div>
+            </div>`;
+        }).join('');
+        grid.querySelectorAll('.progress-card').forEach(card => card.addEventListener('click', () => cpOpenDetail(card.dataset.id)));
+    }
     $('cpProjectCountMeta').textContent = cpProjects.length;
-    $('cpLastUpdateMeta').textContent = new Date().toLocaleTimeString();
+    const lastUpd = cpProjects.reduce((max, p) => p.updated_at && p.updated_at > max ? p.updated_at : max, '');
+    $('cpLastUpdateMeta').textContent = lastUpd ? new Date(lastUpd).toLocaleString() : '—';
+}
+[$('cpFilterStatus')].forEach(el => el.addEventListener('change', cpRenderProjects));
+$('cpFilterSearch').addEventListener('input', cpRenderProjects);
 
-    if (!list.length) { $('cpProjectGrid').innerHTML = '<div class="empty-state"><i class="fa-solid fa-inbox"></i>No projects match these filters.</div>'; return; }
-    $('cpProjectGrid').innerHTML = list.map(p => {
-        const items = cpActionItemsForProject(p, s.allItems);
-        const done = items.filter(i => i.status === 'Completed').length;
-        const pct = cpProjectProgress(p, s.allItems);
-        const d = cpParseDate(p.date);
-        const overdue = cpIsProjectOverdue(p);
-        let daysChip = '';
-        if (d && !['completed', 'cancelled'].includes((p.status || '').toLowerCase())) {
-            const diff = cpDaysBetween(new Date(d), new Date());
-            daysChip = `<span class="days-chip ${overdue ? 'overdue' : diff <= 7 ? 'soon' : ''}">${overdue ? Math.abs(diff) + 'd overdue' : diff + 'd left'}</span>`;
-        }
-        return `<div class="progress-card" data-pid="${escapeHtml(String(p.id))}">
-            <div class="pc-top">
-                <div><div class="pc-title">${escapeHtml(p.name || 'Untitled')}</div>
-                <div class="pc-meta"><span>${escapeHtml(p.date || 'TBD')}</span><span>${escapeHtml(p.location || '—')}</span></div></div>
-                <span class="pill pill-status-${(p.status||'upcoming')==='ongoing'?'in_progress':(p.status||'upcoming')==='completed'?'completed':(p.status||'upcoming')==='cancelled'?'blocked':'not_started'}">${escapeHtml((p.status||'upcoming'))}</span>
-            </div>
-            <div class="item-progress-row"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%;"></div></div><span class="pval">${pct}%</span></div>
-            <div class="pc-stats">
-                <span><b>${cpMeetingsForProject(p).length}</b> meetings</span>
-                <span><b>${done}/${items.length}</b> actions done</span>
-                ${daysChip}
-            </div>
-        </div>`;
-    }).join('');
-    document.querySelectorAll('#cpProjectGrid .progress-card').forEach(card => card.addEventListener('click', () => cpOpenDetail(card.dataset.pid)));
+function cpOpenDetail(id) {
+    const p = cpProjects.find(p => String(p.id) === String(id));
+    if (!p) return;
+    const coord = coordinatorFor(p.id, p.name);
+    $('cpDetailTitle').textContent = p.name;
+    $('cpDetailBody').innerHTML = `
+        <div class="detail-block"><h4>Description</h4><div class="detail-mini-row">${escapeHtml(p.description || 'No description provided.')}</div></div>
+        <div class="detail-block"><h4>Details</h4>
+            <div class="detail-mini-row"><i class="fa-solid fa-calendar"></i> Date: ${p.date ? new Date(p.date).toLocaleDateString() : 'TBD'}</div>
+            <div class="detail-mini-row"><i class="fa-solid fa-location-dot"></i> Location: ${escapeHtml(p.location || 'TBD')}</div>
+            <div class="detail-mini-row"><i class="fa-solid fa-bullseye"></i> Target audience: ${escapeHtml(p.target_audience || '—')}</div>
+            <div class="detail-mini-row"><i class="fa-solid fa-flag"></i> Status: ${escapeHtml(p.status || 'upcoming')}</div>
+            ${coord ? `<div class="detail-mini-row"><i class="fa-solid fa-user-tie"></i> Coordinator: ${escapeHtml(coord)}</div>` : ''}
+        </div>
+    `;
+    $('cpDetailModal').classList.add('active');
+}
+$('cpDetailCloseBtn').addEventListener('click', () => $('cpDetailModal').classList.remove('active'));
+$('cpDetailModal').addEventListener('click', (e) => { if (e.target === $('cpDetailModal')) $('cpDetailModal').classList.remove('active'); });
+
+// ============================================================
+// CLUB PROGRESS — action item tracker
+// ============================================================
+function cpPopulateActionMemberFilter() {
+    const people = [...new Set(cpActionItemsFlat.map(a => a.person).filter(Boolean))].sort();
+    const sel = $('cpFilterActionMember');
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">All members</option>' + people.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+    sel.value = cur;
 }
 
-// ---- action item tracker ------------------------------------------------------
-function cpRenderActionTable(s) {
+function cpRenderActionTable() {
     const statusF = $('cpFilterActionStatus').value;
     const memberF = $('cpFilterActionMember').value;
     const searchF = $('cpFilterActionSearch').value.trim().toLowerCase();
-    const memberSel = $('cpFilterActionMember');
-    if (!memberSel.dataset.populated) {
-        const names = Array.from(new Set(s.allItems.map(a => a.person).filter(Boolean))).sort();
-        memberSel.innerHTML = '<option value="">All members</option>' + names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
-        memberSel.dataset.populated = '1';
-    }
-    let items = s.allItems.slice();
+    let items = cpActionItemsFlat.slice().sort((a, b) => new Date(b.meetingDate || 0) - new Date(a.meetingDate || 0));
     if (statusF) items = items.filter(a => a.status === statusF);
     if (memberF) items = items.filter(a => a.person === memberF);
     if (searchF) items = items.filter(a => (a.task || '').toLowerCase().includes(searchF));
-    items.sort((a, b) => { const da = cpParseDate(a.deadline), db = cpParseDate(b.deadline); if (!da) return 1; if (!db) return -1; return da - db; });
 
-    const now = new Date();
-    if (!items.length) { $('cpActionTableBody').innerHTML = `<tr><td colspan="6" class="empty-state">No action items match these filters.</td></tr>`; return; }
-    $('cpActionTableBody').innerHTML = items.map(ai => {
-        const d = cpParseDate(ai.deadline);
-        const overdue = d && ai.status !== 'Completed' && cpDaysBetween(new Date(d), new Date(now)) < 0;
-        return `<tr>
-            <td><input type="checkbox" class="chk-complete" ${ai.status === 'Completed' ? 'checked' : ''} data-mid="${escapeHtml(String(ai.meetingId))}" data-idx="${ai.itemIndex}" /></td>
-            <td>${escapeHtml(ai.task || '—')}</td>
-            <td>${escapeHtml(ai.person || 'Unassigned')}</td>
-            <td>${escapeHtml(ai.meetingLabel)}</td>
-            <td>${d ? d.toLocaleDateString() : '—'} ${overdue ? '<span class="pill pill-priority-high">Overdue</span>' : ''}</td>
-            <td><span class="pill pill-status-${ai.status === 'Completed' ? 'completed' : ai.status === 'In Progress' ? 'in_progress' : 'not_started'}">${escapeHtml(ai.status)}</span></td>
-        </tr>`;
-    }).join('');
-    document.querySelectorAll('#cpActionTableBody .chk-complete').forEach(cb => cb.addEventListener('change', cpToggleActionItem));
+    const tbody = $('cpActionTableBody');
+    if (!items.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fa-solid fa-inbox"></i>No action items found</td></tr>';
+    } else {
+        tbody.innerHTML = items.map(a => `
+            <tr data-meeting="${a.meetingId}" data-idx="${a.itemIndex}">
+                <td><input type="checkbox" class="chk-complete" ${a.status === 'Completed' ? 'checked' : ''} /></td>
+                <td>${escapeHtml(a.task || '—')}</td>
+                <td>${escapeHtml(a.person || '—')}</td>
+                <td>${escapeHtml(a.meetingLabel)}</td>
+                <td>${a.deadline ? new Date(a.deadline).toLocaleDateString() : '—'}</td>
+                <td><span class="pill pill-status-${a.status === 'Completed' ? 'completed' : (a.status === 'In Progress' ? 'in_progress' : 'not_started')}">${escapeHtml(a.status)}</span></td>
+            </tr>
+        `).join('');
+        tbody.querySelectorAll('.chk-complete').forEach(chk => chk.addEventListener('change', (e) => {
+            const tr = e.target.closest('tr');
+            cpToggleActionItem(tr.dataset.meeting, Number(tr.dataset.idx), e.target.checked);
+        }));
+    }
 }
-async function cpToggleActionItem(e) {
-    const cb = e.target;
-    const meetingId = cb.dataset.mid, idx = Number(cb.dataset.idx);
+[$('cpFilterActionStatus'), $('cpFilterActionMember')].forEach(el => el.addEventListener('change', cpRenderActionTable));
+$('cpFilterActionSearch').addEventListener('input', cpRenderActionTable);
+
+async function cpToggleActionItem(meetingId, itemIndex, checked) {
     const meeting = cpMeetings.find(m => String(m.id) === String(meetingId));
-    if (!meeting || !meeting.data?.actionItems?.[idx]) return;
-    const newStatus = cb.checked ? 'Completed' : 'Pending';
-    const updatedData = JSON.parse(JSON.stringify(meeting.data));
-    updatedData.actionItems[idx].status = newStatus;
-    const { error } = await supabase.from('meeting_minutes').update({ data: updatedData }).eq('id', meeting.id);
-    if (error) { showToast('Update failed', error.message, true); cb.checked = !cb.checked; return; }
-    meeting.data = updatedData;
-    cpRefreshAll();
-    showToast('Updated', `Action item marked ${newStatus.toLowerCase()}.`);
+    if (!meeting) return;
+    const newStatus = checked ? 'Completed' : 'Pending';
+    meeting.actionItems[itemIndex].status = newStatus;
+    const flat = cpActionItemsFlat.find(a => String(a.meetingId) === String(meetingId) && a.itemIndex === itemIndex);
+    if (flat) flat.status = newStatus;
+
+    try {
+        const updatedData = { ...meeting.raw, actionItems: meeting.actionItems };
+        const { error } = await supabase.from('meeting_minutes').update({ data: updatedData }).eq('id', meetingId);
+        if (error) throw error;
+        showToast('✅ Updated', 'Action item status saved');
+    } catch (err) {
+        showToast('Save failed', err.message, true);
+    }
+    cpRenderKPIs();
+    cpRenderCharts();
+    cpRenderActionTable();
 }
 
-// ---- member progress ------------------------------------------------------
-function cpRenderMembers(s) {
-    if (!cpMembers.length) { $('cpMemberList').innerHTML = '<div class="empty-state"><i class="fa-solid fa-users"></i>No members on file.</div>'; return; }
-    const rows = cpMembers.map(m => {
-        const mine = s.allItems.filter(a => (a.person || '').toLowerCase() === (m.name || '').toLowerCase());
-        const done = mine.filter(a => a.status === 'Completed').length;
-        const pending = mine.length - done;
-        const rate = mine.length ? Math.round(done / mine.length * 100) : 0;
-        return { name: m.name, role: m.position || m.designation || 'Member', total: mine.length, done, pending, rate };
-    }).filter(r => r.total > 0).sort((a, b) => b.total - a.total);
-    if (!rows.length) { $('cpMemberList').innerHTML = '<div class="empty-state"><i class="fa-solid fa-users"></i>No members have assigned action items yet.</div>'; return; }
-    $('cpMemberList').innerHTML = rows.map(r => `
+// ============================================================
+// CLUB PROGRESS — member progress list
+// ============================================================
+function cpRenderMembers() {
+    const list = $('cpMemberList');
+    if (!cpMembers.length) { list.innerHTML = '<div class="empty-state"><i class="fa-solid fa-users"></i>No attendance data yet</div>'; return; }
+    list.innerHTML = cpMembers.map(m => `
         <div class="member-row">
-            <span class="member-av">${escapeHtml((r.name || '?').slice(0, 2).toUpperCase())}</span>
-            <div class="member-info"><div class="member-name">${escapeHtml(r.name)}</div><div class="member-sub">${escapeHtml(r.role)} · ${r.done}/${r.total} done · ${r.pending} pending</div></div>
-            <div class="member-track"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${r.rate}%;"></div></div></div>
-        </div>`).join('');
+            <span class="member-av">${(m.name || '?').slice(0, 2).toUpperCase()}</span>
+            <div class="member-info">
+                <div class="member-name">${escapeHtml(m.name || 'Member')}</div>
+                <div class="member-sub">${escapeHtml(m.designation || '—')} · ${m.meetings_attended || 0}/${m.total_meetings || 0} meetings</div>
+            </div>
+            <div class="member-track"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${m.attendance_percentage || 0}%"></div></div></div>
+            <span class="pval" style="font-family:var(--font-mono);font-size:0.78rem;">${m.attendance_percentage || 0}%</span>
+        </div>
+    `).join('');
 }
 
-// ---- timeline ------------------------------------------------------
+// ============================================================
+// CLUB PROGRESS — timeline
+// ============================================================
 function cpRenderTimeline() {
     const events = [];
-    cpProjects.forEach(p => events.push({ date: cpParseDate(p.date), label: `Project: ${p.name || 'Untitled'}`, sub: (p.status || 'upcoming'), type: 'project' }));
-    cpMeetings.forEach(m => events.push({ date: cpParseDate(m.data?.meeting_date) || cpParseDate(m.created_at), label: `Meeting: ${m.data?.meeting_number || 'Untitled'}`, sub: m.data?.meeting_type || '', type: 'meeting' }));
-    const valid = events.filter(e => e.date).sort((a, b) => b.date - a.date).slice(0, 12);
-    if (!valid.length) { $('cpTimeline').innerHTML = '<div class="empty-state"><i class="fa-solid fa-timeline"></i>No dated events yet.</div>'; return; }
-    $('cpTimeline').innerHTML = valid.map((e, i) => `
+    cpProjects.forEach(p => { if (p.date) events.push({ date: p.date, title: p.name, type: 'project' }); });
+    cpMeetings.forEach(m => { if (m.meeting_date) events.push({ date: m.meeting_date, title: m.meeting_number, type: 'meeting' }); });
+    events.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const top = events.slice(0, 14);
+    const list = $('cpTimeline');
+    if (!top.length) { list.innerHTML = '<div class="empty-state"><i class="fa-solid fa-timeline"></i>No activity yet</div>'; return; }
+    list.innerHTML = top.map((e, i) => `
         <div class="tl-row">
-            <div class="tl-dot-wrap"><span class="tl-dot ${e.type}"></span>${i < valid.length - 1 ? '<span class="tl-line"></span>' : ''}</div>
-            <div class="tl-body"><div class="tl-title">${escapeHtml(e.label)}</div><div class="tl-date">${e.date.toLocaleDateString()} ${e.sub ? '· ' + escapeHtml(e.sub) : ''}</div></div>
-        </div>`).join('');
+            <div class="tl-dot-wrap"><div class="tl-dot ${e.type === 'meeting' ? 'meeting' : ''}"></div>${i < top.length - 1 ? '<div class="tl-line"></div>' : ''}</div>
+            <div class="tl-body">
+                <div class="tl-title">${e.type === 'meeting' ? '<i class="fa-solid fa-users-rectangle"></i> ' : '<i class="fa-solid fa-diagram-project"></i> '}${escapeHtml(e.title)}</div>
+                <div class="tl-date">${new Date(e.date).toLocaleDateString()}</div>
+            </div>
+        </div>
+    `).join('');
 }
 
-// ---- calendar ------------------------------------------------------
+// ============================================================
+// CLUB PROGRESS — calendar
+// ============================================================
 function cpRenderCalendar() {
-    const y = cpCalDate.getFullYear(), mo = cpCalDate.getMonth();
+    const year = cpCalDate.getFullYear(), month = cpCalDate.getMonth();
     $('cpCalTitle').textContent = cpCalDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    const firstDay = new Date(y, mo, 1).getDay();
-    const daysInMonth = new Date(y, mo + 1, 0).getDate();
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
     const today = new Date();
-    const dowHtml = ['S','M','T','W','T','F','S'].map(d => `<div class="cal-dow">${d}</div>`).join('');
-    let cells = '';
-    for (let i = 0; i < firstDay; i++) cells += '<div class="cal-cell empty"></div>';
+
+    const eventsByDay = {};
+    cpProjects.forEach(p => { if (p.date) { const d = new Date(p.date); if (d.getFullYear() === year && d.getMonth() === month) { (eventsByDay[d.getDate()] = eventsByDay[d.getDate()] || []).push({ type: 'project', label: p.name }); } } });
+    cpMeetings.forEach(m => { if (m.meeting_date) { const d = new Date(m.meeting_date); if (d.getFullYear() === year && d.getMonth() === month) { (eventsByDay[d.getDate()] = eventsByDay[d.getDate()] || []).push({ type: 'meeting', label: m.meeting_number }); } } });
+
+    const dow = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    let html = dow.map(d => `<div class="cal-dow">${d}</div>`).join('');
+    for (let i = 0; i < firstDay; i++) html += '<div class="cal-cell empty"></div>';
     for (let day = 1; day <= daysInMonth; day++) {
-        const cellDate = new Date(y, mo, day);
-        const isToday = cellDate.toDateString() === today.toDateString();
-        const meetingsToday = cpMeetings.filter(m => { const d = cpParseDate(m.data?.meeting_date); return d && d.toDateString() === cellDate.toDateString(); });
-        const projectsToday = cpProjects.filter(p => { const d = cpParseDate(p.date); return d && d.toDateString() === cellDate.toDateString(); });
-        cells += `<div class="cal-cell ${isToday ? 'today' : ''}"><span class="cal-daynum">${day}</span>
-            ${meetingsToday.map(m => `<span class="cal-tag meeting" title="${escapeHtml(m.data?.meeting_number || '')}">${escapeHtml(m.data?.meeting_number || 'Meeting')}</span>`).join('')}
-            ${projectsToday.map(p => `<span class="cal-tag project" title="${escapeHtml(p.name || '')}">${escapeHtml(p.name || 'Project')}</span>`).join('')}
-        </div>`;
+        const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+        const evs = eventsByDay[day] || [];
+        html += `<div class="cal-cell ${isToday ? 'today' : ''}"><div class="cal-daynum">${day}</div>${evs.slice(0, 2).map(e => `<span class="cal-tag ${e.type}">${escapeHtml(e.label)}</span>`).join('')}</div>`;
     }
-    $('cpCalGrid').innerHTML = dowHtml + cells;
+    $('cpCalGrid').innerHTML = html;
 }
 $('cpCalPrev').addEventListener('click', () => { cpCalDate.setMonth(cpCalDate.getMonth() - 1); cpRenderCalendar(); });
 $('cpCalNext').addEventListener('click', () => { cpCalDate.setMonth(cpCalDate.getMonth() + 1); cpRenderCalendar(); });
 
-// ---- detail modal ------------------------------------------------------
-function cpOpenDetail(pid) {
-    const p = cpProjects.find(x => String(x.id) === String(pid));
-    if (!p) return;
-    const s = cpComputeStats();
-    const meetings = cpMeetingsForProject(p);
-    const items = cpActionItemsForProject(p, s.allItems);
-    $('cpDetailTitle').textContent = p.name || 'Project detail';
-    $('cpDetailBody').innerHTML = `
-        <div class="detail-block">
-            <h4>Overview</h4>
-            <div class="detail-mini-row"><b>Status:</b> ${escapeHtml(p.status || 'upcoming')} · <b>Date:</b> ${escapeHtml(p.date || 'TBD')} · <b>Location:</b> ${escapeHtml(p.location || '—')}</div>
-            <div class="detail-mini-row">${escapeHtml(p.description || 'No description provided.')}</div>
-            <div class="detail-mini-row"><b>Progress:</b> ${cpProjectProgress(p, s.allItems)}%</div>
-        </div>
-        <div class="detail-block">
-            <h4>Related meeting minutes (${meetings.length})</h4>
-            ${meetings.length ? meetings.map(m => `<div class="detail-mini-row">${escapeHtml(m.data?.meeting_number || 'Untitled')} — ${cpParseDate(m.data?.meeting_date) ? cpParseDate(m.data?.meeting_date).toLocaleDateString() : '—'} (${escapeHtml(m.data?.meeting_type || '')})</div>`).join('') : '<div class="detail-mini-row">No linked meetings found — link by mentioning the project name in an agenda item.</div>'}
-        </div>
-        <div class="detail-block">
-            <h4>Action items (${items.length})</h4>
-            ${items.length ? items.map(a => `<div class="detail-mini-row">${escapeHtml(a.task)} — ${escapeHtml(a.person || 'Unassigned')} — <span class="pill pill-status-${a.status==='Completed'?'completed':a.status==='In Progress'?'in_progress':'not_started'}">${escapeHtml(a.status)}</span></div>`).join('') : '<div class="detail-mini-row">No related action items.</div>'}
-        </div>`;
-    $('cpDetailModal').classList.add('active');
-}
-$('cpDetailCloseBtn').addEventListener('click', () => $('cpDetailModal').classList.remove('active'));
-$('cpDetailModal').addEventListener('click', (e) => { if (e.target.id === 'cpDetailModal') $('cpDetailModal').classList.remove('active'); });
-
-// ---- filters wiring ------------------------------------------------------
-['cpFilterStatus', 'cpFilterSearch'].forEach(id => $(id).addEventListener('input', () => cpRenderProjectGrid(cpComputeStats())));
-['cpFilterActionStatus', 'cpFilterActionMember', 'cpFilterActionSearch'].forEach(id => $(id).addEventListener('input', () => cpRenderActionTable(cpComputeStats())));
-
-// ---- export CSV ------------------------------------------------------
+// ============================================================
+// CLUB PROGRESS — export & print
+// ============================================================
 $('cpExportCsvBtn').addEventListener('click', () => {
-    const s = cpComputeStats();
-    const rows = [['Project', 'Status', 'Date', 'Location', 'Progress %', 'Linked meetings', 'Actions done/total']];
-    cpProjects.forEach(p => {
-        const items = cpActionItemsForProject(p, s.allItems);
-        const done = items.filter(i => i.status === 'Completed').length;
-        rows.push([p.name || '', p.status || '', p.date || '', p.location || '', cpProjectProgress(p, s.allItems), cpMeetingsForProject(p).length, `${done}/${items.length}`]);
-    });
-    rows.push([]); rows.push(['Task', 'Assigned to', 'Meeting', 'Deadline', 'Status']);
-    s.allItems.forEach(a => rows.push([a.task || '', a.person || '', a.meetingLabel || '', a.deadline || '', a.status || '']));
-    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const rows = [['Type', 'Name', 'Status/Assigned', 'Date/Deadline', 'Location/Meeting']];
+    cpProjects.forEach(p => rows.push(['Project', p.name, p.status || '', p.date || '', p.location || '']));
+    cpActionItemsFlat.forEach(a => rows.push(['Action item', a.task, a.person + ' (' + a.status + ')', a.deadline || '', a.meetingLabel]));
+    const csv = rows.map(r => r.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = `club-progress-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+    a.href = url; a.download = 'club-progress-export.csv'; a.click();
     URL.revokeObjectURL(url);
 });
 
-// ---- print / export PDF ------------------------------------------------------
-$('cpPrintBtn').addEventListener('click', () => { cpBuildPrintReport(); window.print(); });
-function cpBuildPrintReport() {
+$('cpPrintBtn').addEventListener('click', () => {
     const s = cpComputeStats();
     const now = new Date();
-    const genBy = currentUser ? currentUser.email : 'Unknown admin';
-    const projectRows = cpProjects.map(p => {
-        const items = cpActionItemsForProject(p, s.allItems);
-        const done = items.filter(i => i.status === 'Completed').length;
-        return `<tr><td><strong>${escapeHtml(p.name || '—')}</strong></td><td>${escapeHtml(p.status || 'upcoming')}</td><td>${escapeHtml(p.date || 'TBD')}</td>
-            <td><span class="rpt-progress-mini"><span style="width:${cpProjectProgress(p, s.allItems)}%;"></span></span>${cpProjectProgress(p, s.allItems)}%</td>
-            <td>${cpMeetingsForProject(p).length}</td><td>${done}/${items.length}</td></tr>`;
-    }).join('');
-    const actionRows = s.allItems.map(a => `<tr><td>${escapeHtml(a.task)}</td><td>${escapeHtml(a.person || '—')}</td><td>${a.deadline ? new Date(a.deadline).toLocaleDateString() : '—'}</td><td>${escapeHtml(a.status)}</td></tr>`).join('');
+    const projRows = cpProjects.map(p => `<tr><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.status || '')}</td><td>${p.date ? new Date(p.date).toLocaleDateString() : ''}</td><td>${escapeHtml(p.location || '')}</td></tr>`).join('');
+    const actionRows = cpActionItemsFlat.map(a => `<tr><td>${escapeHtml(a.task)}</td><td>${escapeHtml(a.person)}</td><td>${a.deadline ? new Date(a.deadline).toLocaleDateString() : ''}</td><td>${escapeHtml(a.status)}</td></tr>`).join('');
     $('cpPrintArea').innerHTML = `
-        <div class="rpt-header"><img src="rotaract-logo.jpg" onerror="this.style.display='none'" alt="" />
-            <div><div class="rh-club">${escapeHtml(CLUB_NAME)}</div><div class="rh-sub">${escapeHtml(CLUB_SUB)}</div></div></div>
-        <div class="rpt-title">Project &amp; Meeting Progress Report</div>
-        <div class="rpt-genline">Generated ${now.toLocaleString()} · by ${escapeHtml(genBy)}</div>
+        <div class="rpt-header"><img src="rotaract-logo.jpg" onerror="this.style.display='none'" /><div><div class="rh-club">${escapeHtml(CLUB_NAME)}</div><div class="rh-sub">${escapeHtml(CLUB_SUB)}</div></div></div>
+        <div class="rpt-title">Club Projects &amp; Meetings Report</div>
+        <div class="rpt-genline">Generated ${now.toLocaleString()}</div>
         <div class="rpt-kpi-grid">
-            <div class="rpt-kpi"><div class="k-num">${s.total}</div><div class="k-lbl">Projects</div></div>
-            <div class="rpt-kpi"><div class="k-num">${s.overallPct}%</div><div class="k-lbl">Overall</div></div>
-            <div class="rpt-kpi"><div class="k-num">${s.totalMeetings}</div><div class="k-lbl">Meetings</div></div>
-            <div class="rpt-kpi"><div class="k-num">${s.completedActions}</div><div class="k-lbl">Actions done</div></div>
-            <div class="rpt-kpi"><div class="k-num">${s.pendingActions}</div><div class="k-lbl">Actions pending</div></div>
+            <div class="rpt-kpi"><div class="k-num">${cpProjects.length}</div><div class="k-lbl">Projects</div></div>
+            <div class="rpt-kpi"><div class="k-num">${s.ongoing}</div><div class="k-lbl">Ongoing</div></div>
+            <div class="rpt-kpi"><div class="k-num">${cpMeetings.length}</div><div class="k-lbl">Meetings</div></div>
+            <div class="rpt-kpi"><div class="k-num">${s.actionPct}%</div><div class="k-lbl">Actions done</div></div>
+            <div class="rpt-kpi"><div class="k-num">${s.avgAttendance}%</div><div class="k-lbl">Avg attendance</div></div>
         </div>
-        <div class="rpt-section-title">Project Progress</div>
-        <table class="rpt-table"><thead><tr><th>Project</th><th>Status</th><th>Date</th><th>Progress</th><th>Meetings</th><th>Actions</th></tr></thead><tbody>${projectRows || '<tr><td colspan="6">No projects tracked yet.</td></tr>'}</tbody></table>
-        <div class="rpt-section-title">Action Items</div>
-        <table class="rpt-table"><thead><tr><th>Task</th><th>Assigned to</th><th>Deadline</th><th>Status</th></tr></thead><tbody>${actionRows || '<tr><td colspan="4">No action items recorded.</td></tr>'}</tbody></table>
-        <div class="rpt-footer"><div class="rpt-sign">Prepared by</div><div class="rpt-sign">Approved by (President)</div></div>
-        <div class="rpt-pagefoot">${escapeHtml(CLUB_NAME)} — Confidential internal report — generated automatically</div>`;
-}
+        <div class="rpt-section-title">Projects</div>
+        <table class="rpt-table"><thead><tr><th>Name</th><th>Status</th><th>Date</th><th>Location</th></tr></thead><tbody>${projRows}</tbody></table>
+        <div class="rpt-section-title">Action items</div>
+        <table class="rpt-table"><thead><tr><th>Task</th><th>Assigned</th><th>Deadline</th><th>Status</th></tr></thead><tbody>${actionRows}</tbody></table>
+        <div class="rpt-pagefoot">${escapeHtml(CLUB_NAME)} · ${escapeHtml(CLUB_SUB)} · Confidential — internal use</div>
+    `;
+    window.print();
+});
 
-// ---- master refresh ------------------------------------------------------
 function cpRefreshAll() {
-    const s = cpComputeStats();
-    cpRenderKpis(s);
-    cpRenderAlerts(s);
-    cpRenderCharts(s);
-    cpRenderProjectGrid(s);
-    cpRenderActionTable(s);
-    cpRenderMembers(s);
+    cpRenderExecutiveSummary();
+    cpRenderKPIs();
+    cpRenderAlerts();
+    cpRenderCharts();
+    cpRenderProjects();
+    cpPopulateActionMemberFilter();
+    cpRenderActionTable();
+    cpRenderMembers();
     cpRenderTimeline();
     cpRenderCalendar();
 }
 
-// ============================================================
-// BOOT
-// ============================================================
-$('refreshBtn').addEventListener('click', async () => {
-    $('refreshBtn').querySelector('i').classList.add('fa-spin');
-    await Promise.all([loadProgressData(), loadSnapshot(), loadClubProgressData()]);
-    refreshAll();
-    cpRefreshAll();
-    $('refreshBtn').querySelector('i').classList.remove('fa-spin');
-    showToast('Refreshed', 'Latest data loaded.');
-});
-
-async function init() {
-    const ok = await checkAdminAccess();
-    if (!ok) { $('bootScreen').classList.add('hidden'); return; }
-    await bootDashboard();
-}
-init();
 
 })();
 </script>

@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Admin · Rotaract QR Manager</title>
+
+    <!-- QRCode.js for preview -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
+    </script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+
+    <style>
+        /* ---------- RESET & ROOT (same as before) ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0d47a1;
+            --primary-light: #1565c0;
+            --primary-dark: #0a2a6e;
+            --accent: #c62828;
+            --accent-light: #e53935;
+            --bg: #f1f4fa;
+            --card-bg: #ffffff;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.10);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: 0.25s ease;
+            --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --success: #1e7e34;
+            --danger: #b71c1c;
+            --gray: #6c7a8a;
+            --light-gray: #eef2f7;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            min-height: 100vh;
+            color: #1e1e2f;
+        }
+
+        /* ---------- LOGIN OVERLAY ---------- */
+        #loginOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 20, 40, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+
+        #loginOverlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .login-modal {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 40px 36px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+            text-align: center;
+            animation: loginFadeIn 0.4s ease;
+        }
+
+        @keyframes loginFadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.94) translateY(16px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .login-modal .lock-icon {
+            font-size: 48px;
+            color: var(--primary);
+            background: #e3edfb;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+
+        .login-modal h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 4px;
+        }
+
+        .login-modal p {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .login-modal .field {
+            text-align: left;
+            margin-bottom: 16px;
+        }
+
+        .login-modal .field label {
+            font-weight: 600;
+            font-size: 13px;
+            color: #2d3a4a;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .login-modal .field input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            transition: var(--transition);
+            background: #fafcff;
+        }
+
+        .login-modal .field input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.12);
+        }
+
+        .login-modal .login-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: var(--primary);
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .login-modal .login-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(13, 71, 161, 0.30);
+        }
+
+        .login-modal .login-btn:disabled {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .login-modal .login-error {
+            color: var(--danger);
+            font-size: 13px;
+            margin-top: 12px;
+            min-height: 20px;
+            font-weight: 500;
+        }
+
+        .login-modal .login-loading {
+            margin-top: 8px;
+            color: var(--gray);
+            font-size: 13px;
+        }
+
+        /* ---------- ADMIN DASHBOARD ---------- */
+        #dashboard {
+            display: none;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        #dashboard.active {
+            display: flex;
+        }
+
+        /* ---------- HEADER ---------- */
+        .admin-header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+            box-shadow: 0 4px 20px rgba(13, 71, 161, 0.30);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .admin-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+        }
+
+        .admin-header .brand i {
+            font-size: 28px;
+            color: #ffd54f;
+        }
+
+        .admin-header .brand h1 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .admin-header .brand span {
+            font-weight: 300;
+            opacity: 0.8;
+        }
+
+        .admin-header .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-header .header-actions .view-qr-btn {
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .admin-header .header-actions .view-qr-btn:hover {
+            background: rgba(255, 255, 255, 0.22);
+            transform: translateY(-2px);
+        }
+
+        .admin-header .header-actions .logout-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .admin-header .header-actions .logout-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* ---------- CONTAINER (same as before) ---------- */
+        .admin-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 28px 24px;
+            flex: 1;
+            width: 100%;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 18px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px 22px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .stat-card .stat-icon {
+            font-size: 32px;
+            color: var(--primary);
+            opacity: 0.7;
+        }
+
+        .stat-card .stat-info h4 {
+            font-size: 13px;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .stat-card .stat-info .number {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            line-height: 1.2;
+        }
+
+        .admin-form {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px 28px;
+            margin-bottom: 32px;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .admin-form .form-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-form .form-title i {
+            color: var(--primary);
+        }
+
+        .admin-form .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 14px;
+            align-items: end;
+        }
+
+        .admin-form .form-row .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .admin-form .form-row .field label {
+            font-weight: 600;
+            font-size: 13px;
+            color: #3d4a5c;
+        }
+
+        .admin-form .form-row .field input {
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            transition: var(--transition);
+            background: #fafcff;
+            width: 100%;
+        }
+
+        .admin-form .form-row .field input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.10);
+        }
+
+        .admin-form .form-row .btn-submit {
+            padding: 10px 28px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: var(--primary);
+            color: #fff;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 44px;
+            white-space: nowrap;
+        }
+
+        .admin-form .form-row .btn-submit:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(13, 71, 161, 0.25);
+        }
+
+        .admin-form .form-row .btn-submit.cancel {
+            background: #9aa6b5;
+        }
+        .admin-form .form-row .btn-submit.cancel:hover {
+            background: #7a8a9e;
+        }
+
+        .table-wrapper {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .table-header {
+            padding: 18px 24px;
+            background: #f8faff;
+            border-bottom: 2px solid #eef2f7;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .table-header h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .table-header .search-box {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 40px;
+            padding: 4px 16px 4px 14px;
+            transition: var(--transition);
+        }
+
+        .table-header .search-box:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.08);
+        }
+
+        .table-header .search-box input {
+            border: none;
+            padding: 6px 0;
+            font-size: 14px;
+            background: transparent;
+            width: 160px;
+            outline: none;
+        }
+
+        .table-header .search-box i {
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+            padding: 0 4px 4px 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        table thead {
+            background: #f5f8fe;
+        }
+
+        table th {
+            text-align: left;
+            padding: 14px 18px;
+            font-weight: 700;
+            color: #2d3a4a;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        table td {
+            padding: 14px 18px;
+            border-bottom: 1px solid #eef2f7;
+            vertical-align: middle;
+            word-break: break-word;
+        }
+
+        table tr:last-child td {
+            border-bottom: none;
+        }
+
+        table tr:hover td {
+            background: #fafcff;
+        }
+
+        table .qr-preview {
+            width: 52px;
+            height: 52px;
+            background: #fafcff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #eef2f7;
+        }
+
+        table .qr-preview img {
+            max-width: 48px;
+            max-height: 48px;
+        }
+
+        table .title-cell {
+            font-weight: 600;
+            color: #1e2a3a;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        table .url-cell {
+            color: var(--gray);
+            font-size: 12px;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        table .actions-cell {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        table .actions-cell button {
+            border: none;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        table .actions-cell .btn-edit {
+            background: #e3edfb;
+            color: var(--primary);
+        }
+        table .actions-cell .btn-edit:hover {
+            background: #c5d9f7;
+            transform: scale(1.03);
+        }
+
+        table .actions-cell .btn-delete {
+            background: #fde8e8;
+            color: var(--danger);
+        }
+        table .actions-cell .btn-delete:hover {
+            background: #fcd5d5;
+            transform: scale(1.03);
+        }
+
+        .empty-table {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--gray);
+        }
+        .empty-table i {
+            font-size: 40px;
+            color: #d0d9e6;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        /* ---------- EDIT MODAL ---------- */
+        .edit-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 20, 40, 0.65);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .edit-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .edit-modal {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 32px 36px;
+            max-width: 520px;
+            width: 92%;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+            animation: loginFadeIn 0.3s ease;
+        }
+
+        .edit-modal h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .edit-modal .field {
+            margin-bottom: 16px;
+        }
+
+        .edit-modal .field label {
+            font-weight: 600;
+            font-size: 13px;
+            color: #2d3a4a;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .edit-modal .field input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            transition: var(--transition);
+            background: #fafcff;
+        }
+
+        .edit-modal .field input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.10);
+        }
+
+        .edit-modal .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+            justify-content: flex-end;
+        }
+
+        .edit-modal .modal-actions button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .edit-modal .modal-actions .btn-save {
+            background: var(--primary);
+            color: #fff;
+        }
+        .edit-modal .modal-actions .btn-save:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .edit-modal .modal-actions .btn-cancel-modal {
+            background: #eef2f7;
+            color: #3d4a5c;
+        }
+        .edit-modal .modal-actions .btn-cancel-modal:hover {
+            background: #dce3ed;
+        }
+
+        /* ---------- TOAST ---------- */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #1e2a3a;
+            color: #fff;
+            padding: 14px 26px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+            transform: translateY(80px);
+            opacity: 0;
+            transition: all 0.4s ease;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .toast.success {
+            background: #1b5e20;
+        }
+        .toast.error {
+            background: #b71c1c;
+        }
+        .toast.info {
+            background: #0d47a1;
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 820px) {
+            .admin-form .form-row {
+                grid-template-columns: 1fr;
+            }
+            .admin-form .form-row .btn-submit {
+                width: 100%;
+                justify-content: center;
+            }
+            .admin-header {
+                padding: 14px 18px;
+            }
+            .admin-container {
+                padding: 18px 12px;
+            }
+            .stats-row {
+                grid-template-columns: 1fr 1fr;
+            }
+            .login-modal {
+                padding: 28px 20px;
+            }
+            .edit-modal {
+                padding: 24px 18px;
+            }
+            table .title-cell,
+            table .url-cell {
+                max-width: 120px;
+            }
+            .table-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .table-header .search-box input {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+            .admin-header .brand h1 {
+                font-size: 16px;
+            }
+            .admin-header .brand span {
+                display: none;
+            }
+            .admin-header .header-actions .view-qr-btn span {
+                display: none;
+            }
+            table td,
+            table th {
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+            table .actions-cell button {
+                font-size: 11px;
+                padding: 4px 10px;
+            }
+            .edit-modal .modal-actions {
+                flex-direction: column;
+            }
+            .edit-modal .modal-actions button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #eef2f7;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-light);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== LOGIN OVERLAY ===== -->
+    <div id="loginOverlay">
+        <div class="login-modal">
+            <div class="lock-icon"><i class="fas fa-lock"></i></div>
+            <h2>Admin Login</h2>
+            <p>Sign in with your Supabase account</p>
+            <div class="field">
+                <label><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" id="loginEmail" placeholder="admin@example.com" />
+            </div>
+            <div class="field">
+                <label><i class="fas fa-key"></i> Password</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" />
+            </div>
+            <button class="login-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Login</button>
+            <div class="login-error" id="loginError"></div>
+            <div class="login-loading" id="loginLoading" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Authenticating...</div>
+            <div style="margin-top:14px;font-size:12px;color:var(--gray);">
+                <i class="fas fa-info-circle"></i> Only users with <strong>admin</strong> role in <code>user_roles</code> can access.
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== DASHBOARD ===== -->
+    <div id="dashboard">
+        <!-- Admin Header -->
+        <header class="admin-header">
+            <div class="brand">
+                <i class="fas fa-qrcode"></i>
+                <h1>QR <span>Manager</span></h1>
+            </div>
+            <div class="header-actions">
+                <a href="qr.html" class="view-qr-btn" target="_blank">
+                    <i class="fas fa-eye"></i> <span>View QR Page</span>
+                </a>
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="admin-container">
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-qrcode"></i></div>
+                    <div class="stat-info">
+                        <h4>Total QR Codes</h4>
+                        <div class="number" id="statTotal">0</div>
+                    </div>
+                </div>
+                <div class="stat-card" style="border-left-color:var(--accent);">
+                    <div class="stat-icon" style="color:var(--accent);"><i class="fas fa-link"></i></div>
+                    <div class="stat-info">
+                        <h4>Active Links</h4>
+                        <div class="number" id="statActive">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add / Edit Form -->
+            <div class="admin-form" id="adminForm">
+                <div class="form-title">
+                    <i class="fas fa-plus-circle"></i>
+                    <span id="formTitle">Add New QR Code</span>
+                </div>
+                <div class="form-row">
+                    <div class="field">
+                        <label><i class="fas fa-tag"></i> Title</label>
+                        <input type="text" id="inputTitle" placeholder="e.g. Join Rotaract Club" />
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-link"></i> URL</label>
+                        <input type="url" id="inputUrl" placeholder="https://example.com/page" />
+                    </div>
+                    <button class="btn-submit" id="formSubmitBtn">
+                        <i class="fas fa-save"></i> <span id="submitBtnText">Add QR</span>
+                    </button>
+                    <button class="btn-submit cancel" id="formCancelBtn" style="display:none;">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+                <input type="hidden" id="editId" value="" />
+            </div>
+
+            <!-- Table -->
+            <div class="table-wrapper">
+                <div class="table-header">
+                    <h3><i class="fas fa-list"></i> All QR Codes</h3>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Search title or URL..." />
+                    </div>
+                </div>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:70px;">QR</th>
+                                <th>Title</th>
+                                <th>URL</th>
+                                <th style="width:160px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- rows rendered by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== EDIT MODAL ===== -->
+    <div class="edit-modal-overlay" id="editModalOverlay">
+        <div class="edit-modal">
+            <h3><i class="fas fa-pen"></i> Edit QR Code</h3>
+            <div class="field">
+                <label>Title</label>
+                <input type="text" id="editModalTitle" />
+            </div>
+            <div class="field">
+                <label>URL</label>
+                <input type="url" id="editModalUrl" />
+            </div>
+            <input type="hidden" id="editModalId" />
+            <div class="modal-actions">
+                <button class="btn-cancel-modal" id="editModalCancel">Cancel</button>
+                <button class="btn-save" id="editModalSave"><i class="fas fa-check"></i> Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMsg">Done!</span>
+    </div>
+
+    <script>
+        // ============================================================
+        //  SUPABASE CONFIGURATION – REPLACE WITH YOUR OWN
+        // ============================================================
+        const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
+
+        // ============================================================
+        //  INITIALIZE SUPABASE CLIENT
+        //  (guarded: if the CDN script failed to load — slow network,
+        //   ad-blocker, offline — this used to throw here and silently
+        //   kill the rest of the script, so the login button never got
+        //   its click listener attached below. Now we catch it and
+        //   surface a real error message instead.)
+        // ============================================================
+        let supabaseClient = null;
+        let supabaseInitError = '';
+        try {
+            if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+                throw new Error('Supabase library did not load (check internet connection / ad-blocker).');
+            }
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch (err) {
+            console.error('Supabase init failed:', err);
+            supabaseInitError = err.message || 'Failed to connect to Supabase.';
+        }
+
+        // ============================================================
+        //  DATA LAYER – Supabase table: 'qr_codes'
+        //  (previously localStorage-only, which meant entries an admin
+        //   added never showed up for real visitors on other devices)
+        // ============================================================
+
+        // ---------- helpers ----------
+        async function loadData() {
+            const { data, error } = await supabaseClient
+                .from('qr_codes')
+                .select('*')
+                .order('sort_order', { ascending: true })
+                .order('created_at', { ascending: true });
+
+            if (error) {
+                console.error('Error loading QR codes:', error);
+                showToast('Failed to load QR codes: ' + error.message, 'error');
+                return [];
+            }
+            return data || [];
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML;
+        }
+
+        // ---------- toast ----------
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const msg = document.getElementById('toastMsg');
+            toast.className = 'toast ' + type;
+            msg.textContent = message;
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ============================================================
+        //  RENDER TABLE
+        // ============================================================
+        async function renderTable(filter = '') {
+            const data = await loadData();
+            const tbody = document.getElementById('tableBody');
+            const statTotal = document.getElementById('statTotal');
+            const statActive = document.getElementById('statActive');
+
+            statTotal.textContent = data.length;
+            statActive.textContent = data.length;
+
+            let filtered = data;
+            if (filter.trim()) {
+                const f = filter.trim().toLowerCase();
+                filtered = data.filter(item =>
+                    item.title.toLowerCase().includes(f) ||
+                    item.url.toLowerCase().includes(f)
+                );
+            }
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                            <tr>
+                                <td colspan="4">
+                                    <div class="empty-table">
+                                        <i class="fas fa-qrcode"></i>
+                                        <p>${data.length === 0 ? 'No QR codes yet. Add one above!' : 'No matches found.'}</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(item => {
+                const qrSrc =
+                    `https://api.qrserver.com/v1/create-qr-code/?size=80x80&margin=8&data=${encodeURIComponent(item.url)}`;
+                html += `
+                            <tr>
+                                <td>
+                                    <div class="qr-preview">
+                                        <img src="${qrSrc}" alt="QR" loading="lazy" 
+                                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22%3E%3Crect fill=%22%23f0f2f5%22 width=%2248%22 height=%2248%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%239aa6b5%22 font-size=%2210%22 font-family=%22sans-serif%22%3EQR%3C/text%3E%3C/svg%3E'">
+                                    </div>
+                                </td>
+                                <td class="title-cell" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</td>
+                                <td class="url-cell" title="${escapeHtml(item.url)}">${escapeHtml(item.url)}</td>
+                                <td>
+                                    <div class="actions-cell">
+                                        <button class="btn-edit" data-id="${item.id}">
+                                            <i class="fas fa-pen"></i> Edit
+                                        </button>
+                                        <button class="btn-delete" data-id="${item.id}">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+            });
+            tbody.innerHTML = html;
+
+            // Attach event listeners
+            tbody.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    populateFormForEdit(id);
+                });
+            });
+
+            tbody.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    deleteEntry(id);
+                });
+            });
+        }
+
+        // ============================================================
+        //  CRUD OPERATIONS — all persisted to Supabase (visible to
+        //  everyone, on every device, immediately)
+        // ============================================================
+        async function addEntry(title, url) {
+            const { error } = await supabaseClient
+                .from('qr_codes')
+                .insert([{ title: title.trim(), url: url.trim() }]);
+
+            if (error) {
+                console.error('Error adding QR code:', error);
+                showToast('Failed to add QR code: ' + error.message, 'error');
+                return;
+            }
+            await renderTable(document.getElementById('searchInput').value);
+            showToast('QR code added successfully!', 'success');
+        }
+
+        async function updateEntry(id, title, url) {
+            const { error } = await supabaseClient
+                .from('qr_codes')
+                .update({
+                    title: title.trim(),
+                    url: url.trim(),
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', id);
+
+            if (error) {
+                console.error('Error updating QR code:', error);
+                showToast('Failed to update QR code: ' + error.message, 'error');
+                return;
+            }
+            await renderTable(document.getElementById('searchInput').value);
+            showToast('QR code updated!', 'success');
+        }
+
+        async function deleteEntry(id) {
+            if (!confirm('Are you sure you want to delete this QR code?')) return;
+
+            const { error } = await supabaseClient
+                .from('qr_codes')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                console.error('Error deleting QR code:', error);
+                showToast('Failed to delete QR code: ' + error.message, 'error');
+                return;
+            }
+            await renderTable(document.getElementById('searchInput').value);
+            showToast('QR code deleted.', 'info');
+        }
+
+        // ============================================================
+        //  EDIT MODAL (inline form)
+        // ============================================================
+        async function populateFormForEdit(id) {
+            const { data: item, error } = await supabaseClient
+                .from('qr_codes')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (error || !item) {
+                console.error('Error fetching QR code for edit:', error);
+                showToast('Entry not found!', 'error');
+                return;
+            }
+            document.getElementById('inputTitle').value = item.title;
+            document.getElementById('inputUrl').value = item.url;
+            document.getElementById('editId').value = item.id;
+            document.getElementById('formTitle').innerHTML = '<i class="fas fa-pen"></i> Edit QR Code';
+            document.getElementById('submitBtnText').textContent = 'Update';
+            document.getElementById('formCancelBtn').style.display = 'inline-flex';
+            document.getElementById('formSubmitBtn').style.background = 'var(--accent)';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            document.getElementById('inputTitle').value = '';
+            document.getElementById('inputUrl').value = '';
+            document.getElementById('editId').value = '';
+            document.getElementById('formTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Add New QR Code';
+            document.getElementById('submitBtnText').textContent = 'Add QR';
+            document.getElementById('formCancelBtn').style.display = 'none';
+            document.getElementById('formSubmitBtn').style.background = '';
+        }
+
+        // ============================================================
+        //  SUPABASE AUTH + ROLE CHECK
+        // ============================================================
+
+        // DOM references
+        const loginOverlay = document.getElementById('loginOverlay');
+        const dashboard = document.getElementById('dashboard');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginEmail = document.getElementById('loginEmail');
+        const loginPassword = document.getElementById('loginPassword');
+        const loginError = document.getElementById('loginError');
+        const loginLoading = document.getElementById('loginLoading');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // Check if user is already logged in and has admin role
+        async function checkSession() {
+            if (!supabaseClient) {
+                showLogin(supabaseInitError || 'Could not connect to Supabase.');
+                return;
+            }
+            try {
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                if (error || !session) {
+                    showLogin();
+                    return;
+                }
+
+                // Verify admin role
+                const isAdmin = await checkAdminRole(session.user.id);
+                if (isAdmin) {
+                    showDashboard();
+                } else {
+                    // Not admin, sign out and show login with error
+                    await supabaseClient.auth.signOut();
+                    showLogin('Your account does not have admin privileges.');
+                }
+            } catch (err) {
+                console.error('Session check error:', err);
+                showLogin('Session error. Please login again.');
+            }
+        }
+
+        // Check user_roles table for admin
+        async function checkAdminRole(userId) {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('user_roles')
+                    .select('role')
+                    .eq('user_id', userId)
+                    .maybeSingle();
+
+                if (error) {
+                    console.error('Error fetching user_roles:', error);
+                    return false;
+                }
+                return data && data.role === 'admin';
+            } catch (err) {
+                console.error('Role check error:', err);
+                return false;
+            }
+        }
+
+        // Login handler
+        async function handleLogin() {
+            if (!supabaseClient) {
+                loginError.textContent = '❌ ' + (supabaseInitError || 'Could not connect to Supabase.');
+                return;
+            }
+            const email = loginEmail.value.trim();
+            const password = loginPassword.value.trim();
+
+            if (!email || !password) {
+                loginError.textContent = 'Please enter email and password.';
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginLoading.style.display = 'block';
+            loginError.textContent = '';
+
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (error) {
+                    loginError.textContent = '❌ ' + error.message;
+                    loginBtn.disabled = false;
+                    loginLoading.style.display = 'none';
+                    return;
+                }
+
+                // Check admin role
+                const isAdmin = await checkAdminRole(data.user.id);
+                if (isAdmin) {
+                    showDashboard();
+                    showToast('Welcome, Admin!', 'success');
+                } else {
+                    // Not admin – sign out and show error
+                    await supabaseClient.auth.signOut();
+                    loginError.textContent = '❌ You are not authorized as admin.';
+                    loginBtn.disabled = false;
+                    loginLoading.style.display = 'none';
+                }
+            } catch (err) {
+                loginError.textContent = '❌ An unexpected error occurred.';
+                console.error(err);
+                loginBtn.disabled = false;
+                loginLoading.style.display = 'none';
+            }
+        }
+
+        // Logout handler
+        async function handleLogout() {
+            if (!supabaseClient) return;
+            if (confirm('Log out of admin session?')) {
+                await supabaseClient.auth.signOut();
+                showLogin();
+                showToast('Logged out.', 'info');
+            }
+        }
+
+        // UI helpers
+        function showLogin(errorMsg = '') {
+            loginOverlay.classList.remove('hidden');
+            dashboard.classList.remove('active');
+            loginBtn.disabled = false;
+            loginLoading.style.display = 'none';
+            if (errorMsg) {
+                loginError.textContent = '❌ ' + errorMsg;
+            } else {
+                loginError.textContent = '';
+            }
+        }
+
+        function showDashboard() {
+            loginOverlay.classList.add('hidden');
+            dashboard.classList.add('active');
+            renderTable('');
+        }
+
+        // ============================================================
+        //  EVENT BINDING
+        // ============================================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // --- Login ---
+            loginBtn.addEventListener('click', handleLogin);
+            loginPassword.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') handleLogin();
+            });
+            loginEmail.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') handleLogin();
+            });
+
+            // --- Logout ---
+            logoutBtn.addEventListener('click', handleLogout);
+
+            // --- Add / Update form ---
+            document.getElementById('formSubmitBtn').addEventListener('click', async function() {
+                const title = document.getElementById('inputTitle').value.trim();
+                const url = document.getElementById('inputUrl').value.trim();
+                const editId = document.getElementById('editId').value;
+
+                if (!title || !url) {
+                    showToast('Please fill in both fields.', 'error');
+                    return;
+                }
+
+                if (editId) {
+                    await updateEntry(editId, title, url);
+                    resetForm();
+                } else {
+                    await addEntry(title, url);
+                    document.getElementById('inputTitle').value = '';
+                    document.getElementById('inputUrl').value = '';
+                }
+            });
+
+            document.getElementById('formCancelBtn').addEventListener('click', resetForm);
+
+            // --- Search ---
+            document.getElementById('searchInput').addEventListener('input', function() {
+                renderTable(this.value); // async, fire-and-forget
+            });
+
+            // --- Check session on load ---
+            checkSession();
+        });
+
+        // Expose resetForm for global use
+        window.resetForm = resetForm;
+    </script>
+
+</body>
+</html>

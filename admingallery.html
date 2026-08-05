@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gallery Admin | Rotaract Club of Galkot Baglung</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Load centralized auth -->
+<script src="auth.js"></script>
+
+<style>
+  :root{
+    --primary:#D91A5C; --primary-dark:#A61042; --primary-light:#FDE8F0;
+    --gold:#D4AF37; --gold-light:#F4E08A;
+    --dark:#0B1120; --dark-card:#111827;
+    --text-primary:#0F172A; --text-secondary:#475569; --text-muted:#94A3B8;
+    --bg-light:#F8FAFC; --bg-white:#FFFFFF;
+    --radius-sm:12px; --radius-md:20px; --radius-lg:28px;
+    --shadow-sm:0 4px 20px rgba(0,0,0,.06); --shadow-md:0 10px 40px rgba(0,0,0,.08); --shadow-lg:0 20px 60px rgba(0,0,0,.12);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:var(--bg-light);color:var(--text-primary);line-height:1.6;min-height:100vh;}
+
+  /* ---------- ADMIN DASHBOARD (always visible, but hidden until auth) ---------- */
+  #dashboard{display:none;}
+  .topbar{background:var(--dark);color:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  .topbar .brand{font-weight:800;font-size:1.05rem;display:flex;align-items:center;gap:10px;}
+  .topbar .brand i{color:var(--gold);}
+  .topbar .who{font-size:.8rem;color:rgba(255,255,255,.6);}
+  .topbar .actions{display:flex;gap:10px;align-items:center;}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:50px;font-weight:600;font-size:.85rem;
+    text-decoration:none;border:none;cursor:pointer;font-family:inherit;transition:.25s;}
+  .btn-outline-light{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.2);}
+  .btn-outline-light:hover{background:rgba(255,255,255,.16);}
+  .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;box-shadow:0 6px 20px rgba(217,26,92,.3);}
+  .btn-primary:hover:not(:disabled){transform:translateY(-2px);}
+  .btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+  .btn-danger{background:#EF4444;color:#fff;padding:7px 14px;font-size:.75rem;}
+  .btn-danger:hover{background:#DC2626;}
+  .btn-toggle{background:#F1F5F9;color:var(--text-primary);padding:7px 14px;font-size:.75rem;}
+
+  .container{max-width:1100px;margin:0 auto;padding:32px 20px 60px;}
+  .grid-2{display:grid;grid-template-columns:380px 1fr;gap:28px;align-items:start;}
+  @media (max-width:900px){.grid-2{grid-template-columns:1fr;}}
+
+  .card{background:var(--bg-white);border-radius:var(--radius-lg);padding:26px 24px;box-shadow:var(--shadow-sm);border:1px solid rgba(226,232,240,.5);}
+  .card h2{font-size:1.15rem;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+  .card h2 i{color:var(--primary);}
+  .card .card-sub{color:var(--text-muted);font-size:.8rem;margin-bottom:18px;}
+
+  #uploadForm{display:flex;flex-direction:column;gap:14px;}
+  textarea{width:100%;padding:12px 14px;border-radius:var(--radius-sm);border:1.5px solid #E2E8F0;font-size:.9rem;font-family:inherit;resize:vertical;min-height:70px;}
+  textarea:focus,input[type=number]:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(217,26,92,.12);}
+  input[type=number]{width:100%;padding:12px 14px;border-radius:var(--radius-sm);border:1.5px solid #E2E8F0;font-size:.9rem;font-family:inherit;}
+
+  .file-drop{border:2px dashed #CBD5E1;border-radius:var(--radius-sm);padding:20px;text-align:center;cursor:pointer;transition:.2s;position:relative;}
+  .file-drop:hover{border-color:var(--primary);background:var(--primary-light);}
+  .file-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+  .file-drop i{font-size:1.6rem;color:var(--text-muted);margin-bottom:6px;display:block;}
+  .file-drop .hint{font-size:.78rem;color:var(--text-muted);}
+  #previewWrap{display:none;margin-top:10px;text-align:center;}
+  #previewWrap img{max-width:100%;max-height:180px;border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);}
+
+  .upload-progress{display:none;height:6px;background:#E2E8F0;border-radius:6px;overflow:hidden;margin-top:4px;}
+  .upload-progress .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--primary),var(--gold));transition:width .2s ease;}
+
+  .msg{font-size:.85rem;font-weight:600;padding:10px 14px;border-radius:var(--radius-sm);display:none;}
+  .msg.success{display:block;background:#DCFCE7;color:#166534;}
+  .msg.error{display:block;background:#FEE2E2;color:#991B1B;}
+
+  .gallery-manage-list{display:flex;flex-direction:column;gap:14px;max-height:70vh;overflow-y:auto;padding-right:4px;}
+  .g-item{display:flex;gap:14px;align-items:center;border:1px solid rgba(226,232,240,.6);border-radius:var(--radius-md);padding:12px;transition:.2s;}
+  .g-item:hover{border-color:var(--primary);box-shadow:var(--shadow-sm);}
+  .g-item img{width:76px;height:76px;object-fit:cover;border-radius:14px;flex-shrink:0;background:#e2e8f0;}
+  .g-item .info{flex:1;min-width:0;}
+  .g-item .p-name{font-weight:700;font-size:.95rem;}
+  .g-item .p-desc{font-size:.78rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
+  .g-item .p-meta{font-size:.7rem;color:var(--text-muted);margin-top:2px;}
+  .status-pill{display:inline-block;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:3px 10px;border-radius:20px;margin-top:4px;}
+  .status-pill.active{background:#DCFCE7;color:#166534;}
+  .status-pill.inactive{background:#F1F5F9;color:var(--text-muted);}
+  .g-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+  .empty-state,.loading-state{text-align:center;padding:30px 10px;color:var(--text-muted);font-size:.9rem;}
+
+  /* ============================================================
+     ADMIN LOGIN MODAL (same as index.html)
+     ============================================================ */
+  .admin-login-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(6, 8, 12, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10002;
+    padding: 20px;
+  }
+  .admin-login-overlay.active { display: flex; }
+  .admin-login-card {
+    background: var(--bg-white);
+    border-radius: var(--radius-lg);
+    padding: 40px 32px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.35);
+    transform: scale(0.92) translateY(20px);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    text-align: center;
+    position: relative;
+  }
+  .admin-login-overlay.active .admin-login-card { transform: scale(1) translateY(0); }
+  .admin-login-card .popup-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: 0.2s;
+  }
+  .admin-login-card .popup-close:hover { color: var(--text-primary); background: #f1f5f9; }
+  .admin-login-card .hero-badge { display: inline-block; margin-bottom: 12px; }
+  .admin-login-card .admin-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .admin-login-card .admin-sub {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+  .admin-login-card form { display: flex; flex-direction: column; gap: 16px; text-align: left; }
+  .admin-login-card .field label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  .admin-login-card .field input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid rgba(226, 232, 240, 0.9);
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .admin-login-card .field input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(217, 26, 92, 0.12);
+  }
+  .admin-login-card .pass-wrap { position: relative; }
+  .admin-login-card .pass-wrap input { padding-right: 44px; }
+  .admin-login-card .toggle-pass {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 6px 8px;
+    color: var(--text-muted);
+  }
+  .admin-login-card .form-error {
+    color: var(--primary);
+    font-size: 0.85rem;
+    min-height: 1.1em;
+    font-weight: 500;
+    text-align: center;
+  }
+  .admin-login-card .submit-btn {
+    margin-top: 4px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 12px 20px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s ease, transform 0.15s ease;
+  }
+  .admin-login-card .submit-btn:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); }
+  .admin-login-card .submit-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+  .admin-login-card .submit-btn .spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: adminSpin 0.7s linear infinite;
+  }
+  .admin-login-card .submit-btn.loading .btn-text { visibility: hidden; position: absolute; }
+  .admin-login-card .submit-btn.loading .spinner { display: inline-block; }
+  @keyframes adminSpin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body data-protect="true">
+
+<!-- ============================================================
+     ADMIN LOGIN MODAL (same as index.html)
+     ============================================================ -->
+<div class="admin-login-overlay" id="adminLoginModal" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle" aria-hidden="true">
+  <div class="admin-login-card">
+    <button class="popup-close" id="adminLoginClose" aria-label="Close admin login">&times;</button>
+    <div class="hero-badge" style="display:inline-block;margin-bottom:12px;">🛡️ Admin Access</div>
+    <div class="admin-title" id="adminLoginTitle">Admin Login</div>
+    <div class="admin-sub">Sign in with your admin account to continue</div>
+
+    <form id="adminLoginForm" autocomplete="off" novalidate>
+      <div class="field">
+        <label for="adminEmail">Email</label>
+        <input type="email" id="adminEmail" placeholder="you@example.com" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="adminPassword">Password</label>
+        <div class="pass-wrap">
+          <input type="password" id="adminPassword" placeholder="••••••••" required autocomplete="current-password">
+          <button type="button" class="toggle-pass" id="toggleAdminPass" aria-label="Show password">👁</button>
+        </div>
+      </div>
+      <div class="form-error" id="adminLoginError" role="alert"></div>
+      <button type="submit" class="submit-btn" id="adminSubmitBtn">
+        <span class="btn-text">Sign In</span>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="dashboard">
+  <div class="topbar">
+    <div class="brand"><i class="fas fa-images"></i> Gallery Admin</div>
+    <div class="who" id="whoLabel"></div>
+    <div class="actions">
+      <a href="gallary.html" target="_blank" class="btn btn-outline-light"><i class="fas fa-eye"></i> View Gallery</a>
+      <button class="btn btn-outline-light" id="logoutBtn"><i class="fas fa-right-from-bracket"></i> Logout</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="grid-2">
+      <!-- UPLOAD FORM -->
+      <div class="card">
+        <h2><i class="fas fa-cloud-arrow-up"></i> Upload Photo</h2>
+        <div class="card-sub">Add a program/project photo to the gallery</div>
+
+        <form id="uploadForm">
+          <div class="field">
+            <label for="projectName">Program / Project Name *</label>
+            <input type="text" id="projectName" placeholder="e.g. Blood Donation Camp 2026" required>
+          </div>
+          <div class="field">
+            <label for="projectDesc">Description (optional)</label>
+            <textarea id="projectDesc" placeholder="Short note about this photo..."></textarea>
+          </div>
+          <div class="field">
+            <label for="displayOrder">Display Order (lower shows first)</label>
+            <input type="number" id="displayOrder" value="0" min="0">
+          </div>
+          <div class="field">
+            <label>Photo *</label>
+            <div class="file-drop" id="fileDrop">
+              <input type="file" id="photoInput" accept="image/*" required>
+              <i class="fas fa-image"></i>
+              <div class="hint">Click or drag a photo here (JPG/PNG, max 8MB)</div>
+            </div>
+            <div id="previewWrap"><img id="previewImg" alt="Preview"></div>
+            <div class="upload-progress" id="uploadProgress"><div class="bar" id="uploadProgressBar"></div></div>
+          </div>
+          <div class="msg" id="uploadMsg"></div>
+          <button type="submit" class="btn btn-primary" id="uploadBtn" style="justify-content:center;">
+            <i class="fas fa-plus"></i> <span class="btn-text">Add to Gallery</span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+        </form>
+      </div>
+
+      <!-- MANAGE LIST -->
+      <div class="card">
+        <h2><i class="fas fa-layer-group"></i> Manage Gallery</h2>
+        <div class="card-sub">All photos currently in the database</div>
+        <div class="gallery-manage-list" id="galleryList">
+          <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ============================================================
+  // CENTRALIZED AUTH — use the modal and auth.js
+  // ============================================================
+  (function() {
+    const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const BUCKET = 'gallery-photos';
+    const $ = (id) => document.getElementById(id);
+
+    let currentUser = null;
+
+    // ---- Auth helpers (same as in auth.js) ----
+    async function getCurrentUser() {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error || !session) return null;
+        // check admin role
+        const { data: roleData } = await supabase.from('user_roles').select('role, status').eq('user_id', session.user.id).maybeSingle();
+        if (roleData && roleData.role === 'admin' && roleData.status === 'active') {
+          return session.user;
+        }
+        return null;
+      } catch (_) { return null; }
+    }
+
+    async function logout() {
+      await supabase.auth.signOut();
+      sessionStorage.removeItem('auth_user_id');
+      sessionStorage.removeItem('auth_email');
+      sessionStorage.removeItem('auth_role');
+      sessionStorage.removeItem('auth_status');
+      sessionStorage.removeItem('auth_verified');
+      sessionStorage.removeItem('auth_timestamp');
+      window.location.href = 'adminlogin.html';
+    }
+
+    // ---- Show/hide dashboard ----
+    function showDashboard(user) {
+      currentUser = user;
+      document.getElementById('dashboard').style.display = 'block';
+      document.getElementById('whoLabel').textContent = `Signed in as ${user.email}`;
+      loadGalleryList();
+    }
+
+    // ---- Modal controls ----
+    const modal = document.getElementById('adminLoginModal');
+    const closeBtn = document.getElementById('adminLoginClose');
+    const form = document.getElementById('adminLoginForm');
+    const emailInput = document.getElementById('adminEmail');
+    const passwordInput = document.getElementById('adminPassword');
+    const errorEl = document.getElementById('adminLoginError');
+    const submitBtn = document.getElementById('adminSubmitBtn');
+    const togglePass = document.getElementById('toggleAdminPass');
+
+    function openModal() {
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      emailInput.focus();
+      errorEl.textContent = '';
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      submitBtn.classList.remove('loading');
+      submitBtn.disabled = false;
+    }
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
+
+    togglePass.addEventListener('click', () => {
+      const isPass = passwordInput.type === 'password';
+      passwordInput.type = isPass ? 'text' : 'password';
+      togglePass.textContent = isPass ? '🙈' : '👁';
+    });
+
+    [emailInput, passwordInput].forEach(el => el.addEventListener('input', () => errorEl.textContent = ''));
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      errorEl.textContent = '';
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errorEl.textContent = 'Please enter a valid email address.';
+        emailInput.focus();
+        return;
+      }
+      if (!password) {
+        errorEl.textContent = 'Please enter your password.';
+        passwordInput.focus();
+        return;
+      }
+
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw new Error(error.message);
+        const user = data.user;
+        if (!user) throw new Error('No user data returned.');
+
+        // Check admin role
+        let { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role, status')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (!roleData && user.email) {
+          const { data: emailData } = await supabase
+            .from('user_roles')
+            .select('role, status')
+            .eq('email', user.email)
+            .maybeSingle();
+          roleData = emailData;
+        }
+
+        if (!roleData) throw new Error('No role assigned. Contact admin.');
+        if (roleData.status !== 'active') throw new Error(`Account is ${roleData.status}.`);
+
+        // Store session (same as auth.js)
+        sessionStorage.setItem('auth_user_id', user.id);
+        sessionStorage.setItem('auth_email', user.email);
+        sessionStorage.setItem('auth_role', roleData.role);
+        sessionStorage.setItem('auth_status', roleData.status);
+        sessionStorage.setItem('auth_verified', 'true');
+        sessionStorage.setItem('auth_timestamp', Date.now().toString());
+
+        closeModal();
+        showDashboard(user);
+      } catch (err) {
+        console.error('Login error:', err);
+        errorEl.textContent = err.message || 'Login failed.';
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        passwordInput.value = '';
+        passwordInput.focus();
+      }
+    });
+
+    // ---- Logout ----
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    // ---- INIT: check session ----
+    (async function init() {
+      const user = await getCurrentUser();
+      if (user) {
+        showDashboard(user);
+        return;
+      }
+      // Not logged in – show modal
+      openModal();
+    })();
+
+    // ---- Gallery functionality (unchanged) ----
+    const photoInput = document.getElementById('photoInput');
+    const previewWrap = document.getElementById('previewWrap');
+    const previewImg = document.getElementById('previewImg');
+    photoInput?.addEventListener('change', () => {
+      const file = photoInput.files?.[0];
+      if (!file) { previewWrap.style.display = 'none'; return; }
+      const reader = new FileReader();
+      reader.onload = e => { previewImg.src = e.target.result; previewWrap.style.display = 'block'; };
+      reader.readAsDataURL(file);
+    });
+
+    const uploadForm = document.getElementById('uploadForm');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const uploadMsg = document.getElementById('uploadMsg');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const uploadProgressBar = document.getElementById('uploadProgressBar');
+
+    function slugify(str) {
+      return str.toString().toLowerCase().trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 60) || 'photo';
+    }
+
+    uploadForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      uploadMsg.className = 'msg';
+      uploadMsg.textContent = '';
+
+      const projectName = document.getElementById('projectName').value.trim();
+      const description = document.getElementById('projectDesc').value.trim();
+      const displayOrder = parseInt(document.getElementById('displayOrder').value, 10) || 0;
+      const file = photoInput.files?.[0];
+
+      if (!projectName) { uploadMsg.className = 'msg error'; uploadMsg.textContent = 'Please enter a program/project name.'; return; }
+      if (!file) { uploadMsg.className = 'msg error'; uploadMsg.textContent = 'Please choose a photo.'; return; }
+      if (file.size > 8 * 1024 * 1024) { uploadMsg.className = 'msg error'; uploadMsg.textContent = 'Photo must be under 8MB.'; return; }
+      if (!currentUser) { uploadMsg.className = 'msg error'; uploadMsg.textContent = 'Session expired — please sign in again.'; return; }
+
+      uploadBtn.classList.add('loading');
+      uploadBtn.disabled = true;
+      uploadProgress.style.display = 'block';
+      uploadProgressBar.style.width = '15%';
+
+      try {
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = `${slugify(projectName)}-${Date.now()}.${ext}`;
+
+        uploadProgressBar.style.width = '40%';
+        const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+        if (uploadError) throw uploadError;
+
+        uploadProgressBar.style.width = '75%';
+        const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
+        const photoUrl = urlData.publicUrl;
+
+        const { error: insertError } = await supabase.from('gallery_photos').insert([{
+          project_name: projectName,
+          description: description || null,
+          photo_url: photoUrl,
+          storage_path: path,
+          display_order: displayOrder,
+          status: 'active',
+          created_by: currentUser.id
+        }]);
+        if (insertError) throw insertError;
+
+        uploadProgressBar.style.width = '100%';
+        uploadMsg.className = 'msg success';
+        uploadMsg.textContent = '✓ Photo added to gallery successfully.';
+        uploadForm.reset();
+        previewWrap.style.display = 'none';
+        document.getElementById('displayOrder').value = 0;
+        loadGalleryList();
+      } catch (err) {
+        console.error('Upload error:', err);
+        uploadMsg.className = 'msg error';
+        uploadMsg.textContent = err?.message || 'Upload failed — please try again.';
+      } finally {
+        uploadBtn.classList.remove('loading');
+        uploadBtn.disabled = false;
+        setTimeout(() => { uploadProgress.style.display = 'none'; uploadProgressBar.style.width = '0%'; }, 800);
+      }
+    });
+
+    // ---------- MANAGE LIST ----------
+    const galleryList = document.getElementById('galleryList');
+
+    function escapeHtml(str) {
+      return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    async function loadGalleryList() {
+      galleryList.innerHTML = `<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading...</div>`;
+      try {
+        const { data, error } = await supabase
+          .from('gallery_photos')
+          .select('id, project_name, description, photo_url, storage_path, display_order, status, created_at')
+          .order('display_order', { ascending: true })
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          galleryList.innerHTML = `<div class="empty-state"><i class="fas fa-image"></i><br>No photos yet. Add one from the left.</div>`;
+          return;
+        }
+
+        galleryList.innerHTML = data.map(item => `
+          <div class="g-item" data-id="${item.id}">
+            <img src="${item.photo_url}" alt="${escapeHtml(item.project_name)}" loading="lazy">
+            <div class="info">
+              <div class="p-name">${escapeHtml(item.project_name)}</div>
+              ${item.description ? `<div class="p-desc">${escapeHtml(item.description)}</div>` : ''}
+              <div class="p-meta">Order: ${item.display_order ?? 0} · ${new Date(item.created_at).toLocaleDateString()}</div>
+              <span class="status-pill ${item.status}">${item.status}</span>
+            </div>
+            <div class="g-actions">
+              <button class="btn btn-toggle" data-action="toggle">${item.status === 'active' ? 'Hide' : 'Show'}</button>
+              <button class="btn btn-danger" data-action="delete">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Load gallery list error:', err);
+        galleryList.innerHTML = `<div class="empty-state" style="color:#EF4444;"><i class="fas fa-triangle-exclamation"></i> Failed to load gallery.</div>`;
+      }
+    }
+
+    galleryList?.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const itemEl = btn.closest('.g-item');
+      const id = itemEl?.dataset.id;
+      if (!id) return;
+      const action = btn.dataset.action;
+
+      if (action === 'toggle') {
+        btn.disabled = true;
+        try {
+          const currentlyActive = itemEl.querySelector('.status-pill').classList.contains('active');
+          const { error } = await supabase.from('gallery_photos')
+            .update({ status: currentlyActive ? 'inactive' : 'active', updated_at: new Date().toISOString() })
+            .eq('id', id);
+          if (error) throw error;
+          loadGalleryList();
+        } catch (err) {
+          console.error('Toggle error:', err);
+          alert('Could not update status: ' + (err.message || err));
+          btn.disabled = false;
+        }
+      }
+
+      if (action === 'delete') {
+        if (!confirm('Delete this photo permanently? This cannot be undone.')) return;
+        btn.disabled = true;
+        try {
+          const { data: row, error: fetchErr } = await supabase
+            .from('gallery_photos').select('storage_path').eq('id', id).maybeSingle();
+          if (fetchErr) throw fetchErr;
+
+          if (row?.storage_path) {
+            const { error: removeErr } = await supabase.storage.from(BUCKET).remove([row.storage_path]);
+            if (removeErr) console.warn('Storage delete warning:', removeErr);
+          }
+
+          const { error: delErr } = await supabase.from('gallery_photos').delete().eq('id', id);
+          if (delErr) throw delErr;
+          loadGalleryList();
+        } catch (err) {
+          console.error('Delete error:', err);
+          alert('Could not delete: ' + (err.message || err));
+          btn.disabled = false;
+        }
+      }
+    });
+  })();
+</script>
+</body>
+</html>

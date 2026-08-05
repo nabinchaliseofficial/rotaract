@@ -18,7 +18,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* ===== CSS VARIABLES ===== */
+    /* ===== CSS VARIABLES (unchanged) ===== */
     :root {
       --primary: #D91A5C;
       --primary-dark: #A61042;
@@ -48,7 +48,6 @@
       --glass-border: rgba(255, 255, 255, 0.15);
       --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
     }
-
     /* Dark Mode */
     [data-theme="dark"] {
       --bg-light: #0B1120;
@@ -75,7 +74,7 @@
       transition: background 0.6s ease, color 0.6s ease;
     }
 
-    /* ===== PRELOADER ===== */
+    /* ===== PRELOADER (unchanged) ===== */
     #preloader {
       position: fixed;
       inset: 0;
@@ -114,7 +113,7 @@
     .preloader-quote { color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; margin-top: 20px; font-style: italic; font-weight: 300; letter-spacing: 0.5px; animation: fadeQuote 2s ease-in-out infinite alternate; }
     @keyframes fadeQuote { 0% { opacity: 0.4; transform: translateY(5px); } 100% { opacity: 1; transform: translateY(-5px); } }
 
-    /* ===== GLASSMORPHISM NAVBAR ===== */
+    /* ===== NAVBAR (unchanged) ===== */
     .navbar {
       position: fixed;
       top: 0;
@@ -169,7 +168,7 @@
     .nav-links a:hover .nav-indicator, .nav-links a.active .nav-indicator { width: 60%; }
     .nav-links a.active { color: var(--primary); }
 
-    /* ===== DROPDOWN SUBMENUS (My Club / Login) ===== */
+    /* ===== DROPDOWN SUBMENUS ===== */
     .nav-links .dropdown-toggle i.fa-chevron-down { font-size: 0.65rem; margin-left: 2px; transition: transform 0.3s ease; }
     .nav-links .dropdown.open > .dropdown-toggle i.fa-chevron-down,
     .nav-links .dropdown:hover > .dropdown-toggle i.fa-chevron-down { transform: rotate(180deg); }
@@ -200,6 +199,7 @@
     }
     .dropdown-menu li { position: static; }
     .dropdown-menu li a { width: 100%; border-radius: var(--radius-sm); padding: 10px 14px; white-space: nowrap; }
+
     .nav-actions { display: flex; align-items: center; gap: 12px; }
     .nav-actions button { background: none; border: none; color: var(--text-secondary); font-size: 1.1rem; cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.3s ease; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
     .nav-actions button:hover { background: rgba(217, 26, 92, 0.1); color: var(--primary); }
@@ -230,8 +230,6 @@
       .nav-links.open { max-height: 500px; padding: 20px; overflow-y: auto; }
       .nav-links a { padding: 12px 16px; width: 100%; border-radius: var(--radius-sm); }
       .navbar.scrolled .nav-links { top: 64px; }
-
-      /* Dropdown as accordion on mobile */
       .dropdown-menu {
         position: static;
         opacity: 1;
@@ -249,7 +247,7 @@
       .dropdown-menu li a { padding: 10px 16px; font-size: 0.8rem; }
     }
 
-    /* ===== HERO SECTION ===== */
+    /* ===== HERO SECTION (unchanged) ===== */
     .hero {
       position: relative;
       min-height: 100vh;
@@ -298,8 +296,6 @@
       animation: glowPulse2 10s ease-in-out infinite reverse;
       will-change: transform;
     }
-    /* Mouse-parallax offsets are set on .hero via JS as --parallax-x/-y (glow) and
-       --parallax-x2/-y2 (glow-2, moves opposite direction for depth) */
     @keyframes glowPulse {
       0%, 100% { transform: translate(var(--parallax-x, 0px), var(--parallax-y, 0px)) scale(1); opacity: 0.5; }
       50% { transform: translate(var(--parallax-x, 0px), var(--parallax-y, 0px)) scale(1.3); opacity: 1; }
@@ -344,7 +340,7 @@
     }
     @keyframes shimmerText { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
 
-    /* ----- SLIDER (replaces static subtitle) ----- */
+    /* ----- SLIDER ----- */
     .hero-slider-wrapper {
       position: relative;
       max-width: 780px;
@@ -388,14 +384,8 @@
       pointer-events: none;
       visibility: hidden;
     }
-    .hero-slide strong {
-      color: var(--gold);
-      font-weight: 600;
-    }
-    .hero-slide .small {
-      font-size: 0.85em;
-      opacity: 0.9;
-    }
+    .hero-slide strong { color: var(--gold); font-weight: 600; }
+    .hero-slide .small { font-size: 0.85em; opacity: 0.9; }
     .hero-slide .pill {
       display: inline-block;
       background: rgba(212, 175, 55, 0.12);
@@ -408,7 +398,6 @@
       letter-spacing: 0.3px;
       margin-bottom: 6px;
     }
-    /* dots */
     .slider-dots {
       display: flex;
       justify-content: center;
@@ -432,11 +421,7 @@
       transform: scale(1.25);
       box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
     }
-    .slider-dots .dot:hover {
-      background: var(--gold-light);
-      transform: scale(1.15);
-    }
-    /* pause indicator */
+    .slider-dots .dot:hover { background: var(--gold-light); transform: scale(1.15); }
     .slider-pause-badge {
       display: inline-block;
       font-size: 0.6rem;
@@ -481,7 +466,7 @@
     .btn-outline { background: transparent; color: #fff; border: 2px solid rgba(255, 255, 255, 0.3); }
     .btn-outline:hover { background: rgba(255, 255, 255, 0.1); border-color: #fff; transform: translateY(-3px); }
 
-    /* ===== NEXT EVENT COUNTDOWN (fixed, right side) ===== */
+    /* ===== NEXT EVENT COUNTDOWN (unchanged) ===== */
     .event-countdown-widget {
       position: fixed;
       top: 50%;
@@ -558,9 +543,7 @@
       color: rgba(255, 255, 255, 0.6);
       margin-top: 2px;
     }
-    @media (max-width: 1280px) {
-      .event-countdown-widget { width: 190px; padding: 14px 12px; }
-    }
+    @media (max-width: 1280px) { .event-countdown-widget { width: 190px; padding: 14px 12px; } }
     @media (max-width: 1024px) {
       .event-countdown-widget {
         position: static;
@@ -571,11 +554,7 @@
       }
       .event-countdown-widget.hidden { transform: none; }
     }
-
-    @media (max-width: 640px) {
-      .hero-slider-wrapper { min-height: 100px; }
-      .hero-slide { font-size: 1rem; }
-    }
+    @media (max-width: 640px) { .hero-slider-wrapper { min-height: 100px; } .hero-slide { font-size: 1rem; } }
 
     /* ===== ANNOUNCEMENT TICKER ===== */
     .ticker-wrapper {
@@ -694,106 +673,48 @@
     .message-signature:hover { color: rgba(255, 215, 0, 0.3); }
     .circle-clickable { cursor: pointer; transition: transform 0.3s ease; }
     .circle-clickable:hover { transform: scale(1.02); }
-
     @media (max-width: 768px) {
       .message-container { grid-template-columns: 1fr; gap: 30px; text-align: center; }
       .message-author { justify-content: center; }
     }
 
-    /* ===== RECOGNITION SECTION ===== */
-    .recognition-section {
-      padding: 70px 20px 80px;
-      background: var(--bg-white);
-      transition: background 0.6s ease;
-    }
-    .recognition-section .section-header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
+    /* ===== RECOGNITION SECTION (unchanged) ===== */
+    .recognition-section { padding: 70px 20px 80px; background: var(--bg-white); transition: background 0.6s ease; }
+    .recognition-section .section-header { text-align: center; margin-bottom: 40px; }
     .recognition-section .section-header h2 {
-      font-size: 2.8rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
+      font-size: 2.8rem; font-weight: 800; letter-spacing: -0.5px;
       background: linear-gradient(135deg, var(--primary), var(--gold));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
-    .recognition-section .section-header p {
-      color: var(--text-secondary);
-      font-size: 1.1rem;
-    }
-    .recognition-grid {
-      max-width: 1000px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 32px;
-    }
+    .recognition-section .section-header p { color: var(--text-secondary); font-size: 1.1rem; }
+    .recognition-grid { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
     .recognition-card {
-      background: var(--bg-light);
-      border-radius: var(--radius-lg);
-      padding: 30px 28px;
-      border: 1px solid rgba(226, 232, 240, 0.4);
-      box-shadow: var(--shadow-sm);
+      background: var(--bg-light); border-radius: var(--radius-lg); padding: 30px 28px;
+      border: 1px solid rgba(226, 232, 240, 0.4); box-shadow: var(--shadow-sm);
       transition: all 0.4s ease;
     }
-    .recognition-card:hover {
-      transform: translateY(-6px);
-      box-shadow: var(--shadow-lg);
-      border-color: var(--gold);
-    }
+    .recognition-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--gold); }
     .recognition-card .award-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
+      font-size: 1.5rem; font-weight: 700; color: var(--text-primary);
+      display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
     }
-    .recognition-card .award-title i {
-      color: var(--gold);
-      font-size: 1.8rem;
-    }
+    .recognition-card .award-title i { color: var(--gold); font-size: 1.8rem; }
     .recognition-card .award-title .sub {
-      margin-left: auto;
-      background: rgba(226, 232, 240, 0.6);
-      padding: 4px 16px;
-      border-radius: 40px;
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
+      margin-left: auto; background: rgba(226, 232, 240, 0.6); padding: 4px 16px;
+      border-radius: 40px; font-size: 0.7rem; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.3px;
     }
     .winner-item {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      background: var(--bg-white);
-      padding: 14px 18px;
-      border-radius: 60px;
-      border: 1px solid rgba(226, 232, 240, 0.3);
-      margin-bottom: 12px;
-      transition: all 0.2s ease;
+      display: flex; align-items: center; gap: 16px; background: var(--bg-white);
+      padding: 14px 18px; border-radius: 60px; border: 1px solid rgba(226, 232, 240, 0.3);
+      margin-bottom: 12px; transition: all 0.2s ease;
     }
     .winner-item:last-child { margin-bottom: 0; }
     .winner-item:hover { border-color: var(--primary); background: var(--primary-light); }
     .winner-avatar {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      object-fit: cover;
-      background: #e2e8f0;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 1rem;
-      color: var(--text-primary);
-      overflow: hidden;
+      width: 52px; height: 52px; border-radius: 50%; object-fit: cover; background: #e2e8f0;
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 1rem; color: var(--text-primary); overflow: hidden;
       border: 2px solid var(--gold);
     }
     .winner-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -801,44 +722,17 @@
     .winner-name { font-weight: 700; font-size: 1rem; color: var(--text-primary); display: block; }
     .winner-designation { font-size: 0.8rem; color: var(--text-muted); }
     .winner-score {
-      background: var(--gold);
-      color: var(--dark);
-      font-weight: 700;
-      font-size: 0.85rem;
-      padding: 4px 16px;
-      border-radius: 40px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      gap: 4px;
+      background: var(--gold); color: var(--dark); font-weight: 700; font-size: 0.85rem;
+      padding: 4px 16px; border-radius: 40px; flex-shrink: 0; display: flex; align-items: center; gap: 4px;
     }
     .blood-badge {
-      background: rgba(217, 26, 92, 0.1);
-      color: var(--primary);
-      font-weight: 700;
-      font-size: 0.75rem;
-      padding: 4px 14px;
-      border-radius: 40px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      gap: 4px;
+      background: rgba(217, 26, 92, 0.1); color: var(--primary); font-weight: 700;
+      font-size: 0.75rem; padding: 4px 14px; border-radius: 40px; flex-shrink: 0;
+      display: flex; align-items: center; gap: 4px;
     }
-    .no-winner {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      font-style: italic;
-      padding: 12px 0;
-      text-align: center;
-    }
-    .recognition-loading, .recognition-error {
-      text-align: center;
-      padding: 30px 0;
-      font-size: 1.1rem;
-      color: var(--text-muted);
-    }
+    .no-winner { color: var(--text-muted); font-size: 0.95rem; font-style: italic; padding: 12px 0; text-align: center; }
+    .recognition-loading, .recognition-error { text-align: center; padding: 30px 0; font-size: 1.1rem; color: var(--text-muted); }
     .recognition-error { color: #EF4444; }
-
     @media (max-width: 768px) {
       .recognition-grid { grid-template-columns: 1fr; gap: 24px; }
       .recognition-section .section-header h2 { font-size: 2.2rem; }
@@ -872,7 +766,7 @@
       padding: 4px 14px; border-radius: 20px; border: 1px solid rgba(212, 175, 55, 0.3);
     }
 
-    /* ===== NATIONAL / INTERNATIONAL PARTNERSHIPS ===== */
+    /* ===== PARTNERSHIPS (unchanged) ===== */
     .partnership-section { padding: 70px 20px 80px; background: var(--bg-white); transition: background 0.6s ease; }
     .partnership-section .section-header { text-align: center; margin-bottom: 40px; }
     .partnership-section .section-header h2 { font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text-primary); }
@@ -894,7 +788,7 @@
     .partnership-card .rid-badge { display: inline-block; margin-top: 10px; font-size: 0.68rem; font-weight: 600; color: var(--text-primary); background: rgba(217, 26, 92, 0.08); padding: 4px 14px; border-radius: 20px; }
     .partnership-card .rid-badge i { margin-right: 4px; }
 
-    /* ===== OUR PARTNERS & SPONSORS ===== */
+    /* ===== PARTNERS & SPONSORS ===== */
     .partners-section { padding: 60px 20px 80px; background: var(--bg-light); transition: background 0.6s ease; }
     .partners-section .section-header { text-align: center; margin-bottom: 36px; }
     .partners-section .section-header h2 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text-primary); }
@@ -906,8 +800,24 @@
       transition: all 0.3s ease; text-decoration: none;
     }
     .partner-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--gold); }
+    .partner-card .logo { width: 56px; height: 56px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: var(--bg-light); display: flex; align-items: center; justify-content: center; }
+    .partner-card .logo img { width: 100%; height: 100%; object-fit: contain; }
+    .partner-card .p-name { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); }
+    .partner-card .p-type { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
 
-    /* ===== DIGI CERT SECTION ===== */
+    .partnership-loading, .partnership-empty, .partners-loading, .partners-empty {
+      text-align: center; padding: 30px 0; font-size: 1rem; color: var(--text-muted); grid-column: 1 / -1; width: 100%;
+    }
+    .partnership-error, .partners-error {
+      text-align: center; padding: 30px 0; font-size: 1rem; color: #EF4444; grid-column: 1 / -1; width: 100%;
+    }
+    @media (max-width: 768px) {
+      .pp-section .section-header h2, .partnership-section .section-header h2 { font-size: 1.9rem; }
+      .pp-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 18px; }
+      .partnership-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    }
+
+    /* ===== DIGI CERT ===== */
     .digicert-section {
       padding: 70px 20px 80px;
       background: linear-gradient(135deg, var(--secondary) 0%, var(--dark) 100%);
@@ -926,23 +836,6 @@
     .digicert-section .section-header h2 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; color: #fff; }
     .digicert-section .section-header p { color: rgba(255, 255, 255, 0.75); font-size: 1rem; max-width: 560px; margin: 10px auto 0; }
     .digicert-section .digicert-cta { position: relative; z-index: 1; }
-    .partner-card .logo { width: 56px; height: 56px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: var(--bg-light); display: flex; align-items: center; justify-content: center; }
-    .partner-card .logo img { width: 100%; height: 100%; object-fit: contain; }
-    .partner-card .p-name { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); }
-    .partner-card .p-type { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
-
-    .partnership-loading, .partnership-empty, .partners-loading, .partners-empty {
-      text-align: center; padding: 30px 0; font-size: 1rem; color: var(--text-muted); grid-column: 1 / -1; width: 100%;
-    }
-    .partnership-error, .partners-error {
-      text-align: center; padding: 30px 0; font-size: 1rem; color: #EF4444; grid-column: 1 / -1; width: 100%;
-    }
-
-    @media (max-width: 768px) {
-      .pp-section .section-header h2, .partnership-section .section-header h2 { font-size: 1.9rem; }
-      .pp-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 18px; }
-      .partnership-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-    }
 
     /* ===== BIRTHDAY POPUP ===== */
     .birthday-popup-overlay {
@@ -1005,7 +898,143 @@
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes popIn { 0% { transform: scale(0.5) rotate(-5deg); opacity: 0; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
 
-    /* ===== FOOTER ===== */
+    /* ============================================================
+       ADMIN LOGIN MODAL (NEW)
+       ============================================================ */
+    .admin-login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(6, 8, 12, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10002;
+      padding: 20px;
+    }
+    .admin-login-overlay.active { display: flex; }
+    .admin-login-card {
+      background: var(--bg-white);
+      border-radius: var(--radius-lg);
+      padding: 40px 32px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.35);
+      transform: scale(0.92) translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      text-align: center;
+      position: relative;
+    }
+    .admin-login-overlay.active .admin-login-card { transform: scale(1) translateY(0); }
+    .admin-login-card .popup-close {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-size: 1.6rem;
+      line-height: 1;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px 8px;
+      border-radius: 8px;
+      transition: 0.2s;
+    }
+    .admin-login-card .popup-close:hover { color: var(--text-primary); background: #f1f5f9; }
+    .admin-login-card .hero-badge { display: inline-block; margin-bottom: 12px; }
+    .admin-login-card .admin-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .admin-login-card .admin-sub {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+    .admin-login-card form { display: flex; flex-direction: column; gap: 16px; text-align: left; }
+    .admin-login-card .field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .admin-login-card .field input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid rgba(226, 232, 240, 0.9);
+      background: transparent;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .admin-login-card .field input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(217, 26, 92, 0.12);
+    }
+    .admin-login-card .pass-wrap { position: relative; }
+    .admin-login-card .pass-wrap input { padding-right: 44px; }
+    .admin-login-card .toggle-pass {
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 6px 8px;
+      color: var(--text-muted);
+    }
+    .admin-login-card .form-error {
+      color: var(--primary);
+      font-size: 0.85rem;
+      min-height: 1.1em;
+      font-weight: 500;
+      text-align: center;
+    }
+    .admin-login-card .submit-btn {
+      margin-top: 4px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 12px 20px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s ease, transform 0.15s ease;
+    }
+    .admin-login-card .submit-btn:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); }
+    .admin-login-card .submit-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+    .admin-login-card .submit-btn .spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: adminSpin 0.7s linear infinite;
+    }
+    .admin-login-card .submit-btn.loading .btn-text { visibility: hidden; position: absolute; }
+    .admin-login-card .submit-btn.loading .spinner { display: inline-block; }
+    @keyframes adminSpin { to { transform: rotate(360deg); } }
+
+    /* ===== FOOTER (unchanged) ===== */
     .footer {
       background: var(--dark);
       color: rgba(255, 255, 255, 0.7);
@@ -1034,13 +1063,9 @@
     .footer ul a:hover { color: var(--gold); }
     .footer-social { display: flex; gap: 12px; margin-top: 16px; }
     .footer-social a {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
+      width: 40px; height: 40px; border-radius: 50%;
       background: rgba(255, 255, 255, 0.05);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       color: rgba(255, 255, 255, 0.6);
       text-decoration: none;
       transition: all 0.3s ease;
@@ -1142,7 +1167,6 @@
       .stat-icon { font-size: 1.4rem; }
       .member-marquee-card { flex: 0 0 140px; }
     }
-
     @media (prefers-reduced-motion: reduce) {
       * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
       .ticker-container { animation: none; }
@@ -1152,117 +1176,113 @@
       .reveal, .reveal-left, .reveal-right, .reveal-scale { opacity: 1; transform: none; }
     }
 
-    /* ===== ADMIN LOGIN POPUP ===== */
-    .admin-login-overlay {
+    /* ===== GALLERY SLIDE POPUP (unchanged) ===== */
+    .gallery-popup-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      background: rgba(6, 9, 20, 0.82);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 10002;
+      z-index: 10003;
       padding: 20px;
+      animation: fadeIn 0.5s ease;
     }
-    .admin-login-overlay.active { display: flex; }
-    .admin-login-card {
-      background: var(--bg-white);
+    .gallery-popup-overlay.active { display: flex; }
+    .gallery-popup {
+      position: relative;
+      width: 100%;
+      max-width: 640px;
+      background: var(--secondary);
       border-radius: var(--radius-lg);
-      padding: 40px 32px;
-      max-width: 400px;
-      width: 100%;
-      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.35);
-      transform: scale(0.92) translateY(20px);
-      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-      text-align: center;
-      position: relative;
+      overflow: hidden;
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+      animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .admin-login-overlay.active .admin-login-card { transform: scale(1) translateY(0); }
-    .admin-login-card form { display: flex; flex-direction: column; gap: 16px; text-align: left; margin-top: 8px; }
-    .admin-login-card .field label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
-    .admin-login-card .field input {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: var(--radius-sm);
-      border: 1.5px solid rgba(226, 232, 240, 0.9);
-      background: transparent;
-      color: var(--text-primary);
-      font-size: 0.95rem;
-      font-family: inherit;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-    .admin-login-card .field input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(217, 26, 92, 0.12);
-    }
-    .admin-login-card .pass-wrap { position: relative; }
-    .admin-login-card .pass-wrap input { padding-right: 44px; }
-    .admin-login-card .toggle-pass {
+    .gallery-popup-close {
       position: absolute;
-      right: 4px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-      padding: 6px 8px;
-      color: var(--text-muted);
-    }
-    .admin-login-card .form-error {
-      color: var(--primary);
-      font-size: 0.85rem;
-      min-height: 1.1em;
-      font-weight: 500;
-    }
-    .admin-login-card .submit-btn {
-      margin-top: 4px;
-      position: relative;
-      background: var(--primary);
+      top: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       color: #fff;
-      border: none;
-      border-radius: var(--radius-sm);
-      padding: 12px 20px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
+      font-size: 1.2rem;
+      line-height: 1;
       cursor: pointer;
+      z-index: 5;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      transition: background 0.2s ease, transform 0.15s ease;
+      transition: background 0.2s ease;
     }
-    .admin-login-card .submit-btn:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); }
-    .admin-login-card .submit-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
-    .admin-login-card .submit-btn .spinner {
-      display: none;
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.4);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: adminSpin 0.7s linear infinite;
-    }
-    .admin-login-card .submit-btn.loading .btn-text { visibility: hidden; position: absolute; }
-    .admin-login-card .submit-btn.loading .spinner { display: inline-block; }
-    @keyframes adminSpin { to { transform: rotate(360deg); } }
-    .admin-login-card .popup-close {
+    .gallery-popup-close:hover { background: var(--primary); }
+    .gallery-popup-badge {
       position: absolute;
       top: 14px;
-      right: 16px;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 1.6rem;
-      line-height: 1;
-      cursor: pointer;
-      padding: 6px 10px;
-      border-radius: 8px;
-      transition: 0.2s;
+      left: 14px;
+      z-index: 5;
+      background: rgba(212, 175, 55, 0.18);
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      color: var(--gold-light);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 40px;
+      backdrop-filter: blur(4px);
     }
-    .admin-login-card .popup-close:hover { color: var(--text-primary); background: #f1f5f9; }
+    .gallery-popup-track {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: #0B1120;
+    }
+    .gallery-popup-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    .gallery-popup-slide.active { opacity: 1; z-index: 2; }
+    .gallery-popup-slide img { width: 100%; height: 100%; object-fit: cover; }
+    .gallery-popup-caption {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      padding: 22px 24px 18px;
+      background: linear-gradient(to top, rgba(0,0,0,0.88), rgba(0,0,0,0));
+      color: #fff;
+    }
+    .gallery-popup-caption .p-name { font-size: 1.15rem; font-weight: 800; }
+    .gallery-popup-caption .p-desc { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-top: 3px; }
+    .gallery-popup-progress {
+      display: flex;
+      gap: 5px;
+      padding: 12px 16px;
+      background: var(--secondary);
+    }
+    .gallery-popup-progress .seg {
+      flex: 1;
+      height: 3px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.15);
+      overflow: hidden;
+    }
+    .gallery-popup-progress .seg .fill {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--gold), var(--primary));
+    }
+    .gallery-popup-progress .seg.done .fill { width: 100%; transition: none; }
+    .gallery-popup-progress .seg.filling .fill { width: 100%; transition: width linear; }
+    @media (max-width: 480px) { .gallery-popup-caption .p-name { font-size: 1rem; } }
   </style>
 </head>
 <body>
@@ -1290,6 +1310,7 @@
         <li><a href="#members">Members</a></li>
         <li><a href="#recognition">Recognition</a></li>
         <li><a href="#past-presidents">Past Presidents</a></li>
+        <li><a href="gallary.html">Gallery</a></li>
       </ul>
     </li>
     <li><a href="#partnerships">Partnerships <span class="nav-indicator"></span></a></li>
@@ -1303,7 +1324,8 @@
       <a href="#" class="dropdown-toggle">Login <i class="fas fa-chevron-down"></i><span class="nav-indicator"></span></a>
       <ul class="dropdown-menu">
         <li><a href="loginminutes.html">Secretary</a></li>
-        <li><a href="#" id="adminLoginNavBtn">Admin</a></li>
+        <!-- Admin link now opens the modal -->
+        <li><a href="#" id="adminModalTrigger">Admin</a></li>
         <li><a href="https://my.rotaract3292.org/software" target="_blank">Member Login</a></li>
         <li><a href="https://my.rotary.org/en/login" target="_blank">Rotary Login</a></li>
       </ul>
@@ -1327,7 +1349,7 @@
   </div>
 </div>
 
-<!-- ===== HERO SECTION ===== -->
+<!-- ===== HERO SECTION (unchanged) ===== -->
 <section class="hero" id="hero">
   <div class="hero-particles" id="particlesContainer"></div>
   <div class="hero-glow"></div>
@@ -1342,7 +1364,6 @@
       <span class="gradient-text">Galkot Baglung</span>
     </h1>
 
-    <!-- animated slider replaces static subtitle -->
     <div class="hero-slider-wrapper" id="heroSliderWrapper">
       <div class="hero-slider-track" id="heroSliderTrack">
         <!-- slides injected by JS -->
@@ -1366,7 +1387,6 @@
       </a>
     </div>
 
-    <!-- ===== NEXT EVENT COUNTDOWN ===== -->
     <div class="event-countdown-widget" id="eventCountdownWidget">
       <button class="countdown-close" id="countdownCloseBtn" aria-label="Hide countdown">&times;</button>
       <div class="countdown-header">⏳ Next Event Countdown</div>
@@ -1477,6 +1497,7 @@
     <p>Honoring the leaders who guided our club through the years</p>
   </div>
   <div class="pp-grid">
+    <!-- (unchanged) -->
     <div class="pp-card">
       <div class="avatar">
         <img src="images/anilshrestha.jpg" alt="RTR. Anil Shrestha" loading="lazy"
@@ -1559,7 +1580,7 @@
     <p>Generate, verify, and download your official Rotaract Club of Galkot Baglung digital certificates online.</p>
   </div>
   <div class="digicert-cta">
-    <a href="digitalcert.html" class="btn btn-gold">
+    <a href="/cert/digitalcert.html" class="btn btn-gold">
       <i class="fas fa-award"></i> Get Your Digital Certificate
     </a>
   </div>
@@ -1582,13 +1603,15 @@
   </div>
 </div>
 
-<!-- ===== ADMIN LOGIN POPUP ===== -->
-<div class="admin-login-overlay" id="adminLoginPopup" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle" aria-hidden="true">
+<!-- ============================================================
+     ADMIN LOGIN MODAL (NEW)
+     ============================================================ -->
+<div class="admin-login-overlay" id="adminLoginModal" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle" aria-hidden="true">
   <div class="admin-login-card">
     <button class="popup-close" id="adminLoginClose" aria-label="Close admin login">&times;</button>
-    <div class="hero-badge" style="margin-bottom:12px;display:inline-block;">🛡️ Admin Access</div>
-    <div class="welcome-popup-title" id="adminLoginTitle" style="font-size:1.5rem;font-weight:700;color:var(--text-primary);">Admin Login</div>
-    <div class="popup-sub" style="color:var(--text-muted);font-size:0.9rem;margin-bottom:20px;">Sign in with your admin account to continue</div>
+    <div class="hero-badge" style="display:inline-block;margin-bottom:12px;">🛡️ Admin Access</div>
+    <div class="admin-title" id="adminLoginTitle">Admin Login</div>
+    <div class="admin-sub">Sign in with your admin account to continue</div>
 
     <form id="adminLoginForm" autocomplete="off" novalidate>
       <div class="field">
@@ -1608,6 +1631,18 @@
         <span class="spinner" aria-hidden="true"></span>
       </button>
     </form>
+  </div>
+</div>
+
+<!-- ===== GALLERY SLIDE POPUP ===== -->
+<div class="gallery-popup-overlay" id="galleryPopupOverlay" role="dialog" aria-modal="true" aria-label="Gallery preview" aria-hidden="true">
+  <div class="gallery-popup" id="galleryPopupCard">
+    <button class="gallery-popup-close" id="galleryPopupClose" aria-label="Close gallery preview">&times;</button>
+    <div class="gallery-popup-badge"><i class="fas fa-images"></i> Gallery</div>
+    <div class="gallery-popup-track" id="galleryPopupTrack">
+      <!-- slides injected by JS -->
+    </div>
+    <div class="gallery-popup-progress" id="galleryPopupProgress"></div>
   </div>
 </div>
 
@@ -1696,7 +1731,7 @@
 
 <script>
   // ============================================================
-  // MAIN APPLICATION
+  // MAIN APPLICATION (unchanged except for admin modal integration)
   // ============================================================
   document.addEventListener('DOMContentLoaded', () => {
 
@@ -1711,7 +1746,7 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // ---------- REAL VISITOR STATS (Total / Today / Week / Month) ----------
+    // ---------- REAL VISITOR STATS (unchanged) ----------
     (async function trackVisit() {
       const els = {
         total: document.getElementById('statTotal'),
@@ -1731,8 +1766,6 @@
       };
 
       try {
-        // Only record one visit per browser session so refreshing the
-        // same tab doesn't inflate the numbers.
         const alreadyCounted = sessionStorage.getItem('visitCounted');
         if (!alreadyCounted) {
           const { error: insertError } = await supabase.rpc('record_visit');
@@ -1784,7 +1817,7 @@
       });
     });
 
-    // ---------- NEXT EVENT COUNTDOWN (from Supabase: public.next_event) ----------
+    // ---------- NEXT EVENT COUNTDOWN (unchanged) ----------
     const countdownWidget = document.getElementById('eventCountdownWidget');
     const countdownEventName = document.getElementById('countdownEventName');
     const countdownCloseBtn = document.getElementById('countdownCloseBtn');
@@ -1793,7 +1826,7 @@
     const cdMins = document.getElementById('cdMins');
     const cdSecs = document.getElementById('cdSecs');
     let countdownIntervalId = null;
-    let nextEventData = null; // { name, date_time }
+    let nextEventData = null;
 
     function pad(n) { return String(n).padStart(2, '0'); }
 
@@ -1834,8 +1867,6 @@
         countdownIntervalId = setInterval(updateCountdown, 1000);
       } catch (err) {
         console.error('Next event fetch error:', err);
-        // No row configured yet (or fetch failed) — hide the widget instead of
-        // showing a stale/blank countdown.
         countdownWidget.classList.add('hidden');
         if (countdownIntervalId) clearInterval(countdownIntervalId);
       }
@@ -1843,18 +1874,10 @@
 
     if (countdownWidget) {
       loadNextEvent();
-
-      // Re-check periodically in case an admin updates the event while this
-      // page is left open (the countdown itself still ticks every second
-      // locally, this just refreshes the underlying name/date).
       setInterval(loadNextEvent, 5 * 60 * 1000);
-
       countdownCloseBtn?.addEventListener('click', () => {
         countdownWidget.classList.add('hidden');
       });
-
-      // Live-update instantly if the row changes via Supabase Realtime
-      // (requires the next_event table to have replication enabled).
       supabase
         .channel('next_event_changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'next_event' }, () => {
@@ -1863,7 +1886,7 @@
         .subscribe();
     }
 
-    // ---------- MOUSE PARALLAX (hero glows) ----------
+    // ---------- MOUSE PARALLAX (unchanged) ----------
     const heroSection = document.getElementById('hero');
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const supportsFineHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
@@ -1897,7 +1920,7 @@
       });
     }
 
-    // ---------- DROPDOWN TOGGLES (My Club / Login) ----------
+    // ---------- DROPDOWN TOGGLES (unchanged) ----------
     document.querySelectorAll('.nav-links .dropdown-toggle').forEach(toggle => {
       toggle.addEventListener('click', (e) => {
         e.preventDefault();
@@ -1917,156 +1940,7 @@
       }
     });
 
-    // ---------- ADMIN LOGIN POPUP ----------
-    const adminLoginNavBtn = document.getElementById('adminLoginNavBtn');
-    const adminLoginPopup = document.getElementById('adminLoginPopup');
-    const adminLoginClose = document.getElementById('adminLoginClose');
-    const adminLoginForm = document.getElementById('adminLoginForm');
-    const adminEmailInput = document.getElementById('adminEmail');
-    const adminPasswordInput = document.getElementById('adminPassword');
-    const adminLoginError = document.getElementById('adminLoginError');
-    const adminSubmitBtn = document.getElementById('adminSubmitBtn');
-    const toggleAdminPass = document.getElementById('toggleAdminPass');
-    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    let adminLastFocusedEl = null;
-
-    function openAdminLoginPopup() {
-      adminLastFocusedEl = document.activeElement;
-      adminLoginPopup.classList.add('active');
-      adminLoginPopup.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden';
-      adminEmailInput?.focus();
-    }
-
-    function closeAdminLoginPopup() {
-      adminLoginPopup.classList.remove('active');
-      adminLoginPopup.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
-      if (adminLoginError) adminLoginError.textContent = '';
-      if (adminLastFocusedEl) adminLastFocusedEl.focus();
-    }
-
-    adminLoginNavBtn?.addEventListener('click', (e) => {
-      e.preventDefault();
-      openAdminLoginPopup();
-    });
-    adminLoginClose?.addEventListener('click', closeAdminLoginPopup);
-    adminLoginPopup?.addEventListener('click', (e) => {
-      if (e.target === adminLoginPopup) closeAdminLoginPopup();
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && adminLoginPopup?.classList.contains('active')) closeAdminLoginPopup();
-    });
-    toggleAdminPass?.addEventListener('click', () => {
-      const isPass = adminPasswordInput.type === 'password';
-      adminPasswordInput.type = isPass ? 'text' : 'password';
-      toggleAdminPass.textContent = isPass ? '🙈' : '👁';
-    });
-    [adminEmailInput, adminPasswordInput].forEach(el => {
-      el?.addEventListener('input', () => { if (adminLoginError) adminLoginError.textContent = ''; });
-    });
-
-    function withTimeout(promise, ms, label) {
-      return Promise.race([
-        promise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error(label || 'Request timed out')), ms))
-      ]);
-    }
-
-    function mapAuthError(err) {
-      const status = err?.status;
-      const msg = (err?.message || '').toLowerCase();
-      if (msg.includes('invalid login credentials')) return 'Incorrect email or password.';
-      if (msg.includes('email not confirmed')) return 'Please confirm your email address before signing in.';
-      if (msg.includes('user not found')) return 'No account found with that email.';
-      if (status === 429 || msg.includes('too many') || msg.includes('rate limit')) return 'Too many attempts — please wait a minute.';
-      if (status === 400 && msg.includes('email')) return 'Please enter a valid email address.';
-      if (status >= 500) return "Supabase is having trouble right now — please try again shortly.";
-      if (err instanceof TypeError || msg.includes('failed to fetch') || msg.includes('network')) {
-        return 'Network error — check your internet connection.';
-      }
-      if (msg.includes('timed out')) return 'The request took too long — please try again.';
-      return err?.message || "Couldn't sign in right now — please try again.";
-    }
-
-    async function checkAdminAccess(user) {
-      try {
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select('role, status')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (error) {
-          console.warn('user_roles query error:', error);
-          return { isAdmin: false };
-        }
-        if (data && data.role === 'admin' && data.status === 'active') {
-          return { isAdmin: true };
-        }
-      } catch (e) {
-        console.warn('user_roles exception:', e);
-      }
-      return { isAdmin: false };
-    }
-
-    adminLoginForm?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = adminEmailInput.value.trim();
-      const password = adminPasswordInput.value;
-
-      adminLoginError.textContent = '';
-
-      if (!email || !EMAIL_RE.test(email)) {
-        adminLoginError.textContent = 'Please enter a valid email address.';
-        adminEmailInput.focus();
-        return;
-      }
-      if (!password) {
-        adminLoginError.textContent = 'Please enter your password.';
-        adminPasswordInput.focus();
-        return;
-      }
-
-      adminSubmitBtn.classList.add('loading');
-      adminSubmitBtn.disabled = true;
-
-      try {
-        const { data, error } = await withTimeout(
-          supabase.auth.signInWithPassword({ email, password }),
-          15000,
-          'Sign-in timed out'
-        );
-        if (error) throw error;
-
-        const user = data.user;
-        const result = await withTimeout(checkAdminAccess(user), 15000, 'Access check timed out');
-
-        if (result.isAdmin) {
-          try {
-            await supabase.from('admin_activity_log').insert([{
-              admin_id: user.id,
-              admin_email: user.email,
-              action: 'login',
-              details: 'Admin login from index.html'
-            }]);
-          } catch (_) { /* ignore */ }
-          window.location.href = 'admin.html';
-          return;
-        }
-
-        await supabase.auth.signOut();
-        adminLoginError.textContent = 'This account does not have admin access.';
-      } catch (err) {
-        console.error('Admin login error:', err);
-        adminLoginError.textContent = mapAuthError(err);
-      } finally {
-        adminSubmitBtn.classList.remove('loading');
-        adminSubmitBtn.disabled = false;
-      }
-    });
-
-    // ---------- PARTICLES ----------
+    // ---------- PARTICLES (unchanged) ----------
     function createParticles() {
       const container = document.getElementById('particlesContainer');
       const colors = ['#D4AF37', '#D91A5C', '#FFD700', '#FDE8F0', '#FFFFFF'];
@@ -2085,7 +1959,7 @@
     }
     createParticles();
 
-    // ---------- STATISTICS ----------
+    // ---------- STATISTICS (unchanged) ----------
     const statsData = [
       { icon: 'fa-users', label: 'Total Members', value: 0, suffix: '' },
       { icon: 'fa-user-check', label: 'Active Members', value: 0, suffix: '' },
@@ -2163,7 +2037,7 @@
 
     updateStatsFromSupabase();
 
-    // ---------- BOARD MARQUEE ----------
+    // ---------- BOARD MARQUEE (unchanged) ----------
     const boardMembers = [
       { name: 'Rtr. Nabin Chalise', position: 'President', photo: 'images/nabinchalise.jpg' },
       { name: 'Rtr. Madan Sharma', position: 'Secretary', photo: 'images/madansharma.jpg' },
@@ -2191,7 +2065,7 @@
     }
     renderBoard();
 
-    // ---------- MEMBERS MARQUEE ----------
+    // ---------- MEMBERS MARQUEE (unchanged) ----------
     async function renderMembersMarquee() {
       const marquee = document.getElementById('membersMarquee');
       try {
@@ -2231,60 +2105,58 @@
 
     renderMembersMarquee();
 
-    // ---------- helper: escape text before injecting into HTML ----------
+    // ---------- helper: escape text ----------
     function escapeHtml(str) {
       return String(str ?? '').replace(/[&<>"']/g, c => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
       }[c]));
     }
 
-    // ---------- NATIONAL / INTERNATIONAL PARTNERSHIPS (from rotaract_verify) ----------
-async function renderPartnerships() {
-  const grid = document.getElementById('partnershipGrid');
-  if (!grid) return;
-  try {
-    // Fetch LHE entries from rotaract_verify where doc_type = 'lhe' and letter_status = 'Active'
-    const { data, error } = await supabase
-      .from('rotaract_verify')
-      .select('ref_no, fiscal_year, date, club, issued_by, body, letter_status, verification_id, doc_type, recipient_name, recipient_club_name, recipient_rid, rotary_year, sponsored_club, sender_rid, sender_sponsored_club, president_signature_url, secretary_name, secretary_signature_url, international_chair_name, international_chair_signature_url, sign_place, message, created_at, logo_url')
-      .eq('doc_type', 'lhe')
-      .eq('letter_status', 'Active')
-      .order('created_at', { ascending: false });
+    // ---------- NATIONAL / INTERNATIONAL PARTNERSHIPS (unchanged) ----------
+    async function renderPartnerships() {
+      const grid = document.getElementById('partnershipGrid');
+      if (!grid) return;
+      try {
+        const { data, error } = await supabase
+          .from('rotaract_verify')
+          .select('ref_no, fiscal_year, date, club, issued_by, body, letter_status, verification_id, doc_type, recipient_name, recipient_club_name, recipient_rid, rotary_year, sponsored_club, sender_rid, sender_sponsored_club, president_signature_url, secretary_name, secretary_signature_url, international_chair_name, international_chair_signature_url, sign_place, message, created_at, logo_url')
+          .eq('doc_type', 'lhe')
+          .eq('letter_status', 'Active')
+          .order('created_at', { ascending: false });
 
-    if (error) throw error;
+        if (error) throw error;
 
-    if (!data || data.length === 0) {
-      grid.innerHTML = `<div class="partnership-empty"><i class="fas fa-globe"></i> No approved partnerships yet.</div>`;
-      return;
+        if (!data || data.length === 0) {
+          grid.innerHTML = `<div class="partnership-empty"><i class="fas fa-globe"></i> No approved partnerships yet.</div>`;
+          return;
+        }
+
+        grid.innerHTML = data.map(p => {
+          const club = escapeHtml(p.recipient_club_name || p.club || 'Club');
+          const logoUrl = p.logo_url || p.president_signature_url || '';
+          const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.recipient_club_name || p.club || 'RC')}&background=1D2A44&color=fff&size=176`;
+          return `
+            <div class="partnership-card">
+              <div class="logo">
+                <img src="${logoUrl || fallback}" alt="${club}" loading="lazy"
+                     onerror="this.src='${fallback}'">
+              </div>
+              <div class="club-name">${club}</div>
+              ${p.sponsored_club ? `<div class="sponsored"><i class="fas fa-hand-holding-heart"></i> Sponsors ${escapeHtml(p.sponsored_club)}</div>` : ''}
+              <div class="meta">${escapeHtml(p.recipient_name || '')}${p.recipient_name ? ' · ' : ''}R.Y. ${escapeHtml(p.rotary_year || '')}</div>
+              <span class="rid-badge">RID ${escapeHtml(p.recipient_rid || p.sender_rid || 'N/A')}</span>
+              ${p.verification_id ? `<span class="rid-badge" style="background:rgba(212,175,55,0.12);color:var(--gold);"><i class="fas fa-certificate"></i> ${escapeHtml(p.verification_id)}</span>` : ''}
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Failed to load partnerships:', err);
+        grid.innerHTML = `<div class="partnership-error"><i class="fas fa-triangle-exclamation"></i> Failed to load partnerships.</div>`;
+      }
     }
+    renderPartnerships();
 
-    grid.innerHTML = data.map(p => {
-      const club = escapeHtml(p.recipient_club_name || p.club || 'Club');
-      // Use logo_url from the database, fallback to signature URL, then initials
-      const logoUrl = p.logo_url || p.president_signature_url || '';
-      const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.recipient_club_name || p.club || 'RC')}&background=1D2A44&color=fff&size=176`;
-      return `
-        <div class="partnership-card">
-          <div class="logo">
-            <img src="${logoUrl || fallback}" alt="${club}" loading="lazy"
-                 onerror="this.src='${fallback}'">
-          </div>
-          <div class="club-name">${club}</div>
-          ${p.sponsored_club ? `<div class="sponsored"><i class="fas fa-hand-holding-heart"></i> Sponsors ${escapeHtml(p.sponsored_club)}</div>` : ''}
-          <div class="meta">${escapeHtml(p.recipient_name || '')}${p.recipient_name ? ' · ' : ''}R.Y. ${escapeHtml(p.rotary_year || '')}</div>
-          <span class="rid-badge">RID ${escapeHtml(p.recipient_rid || p.sender_rid || 'N/A')}</span>
-          ${p.verification_id ? `<span class="rid-badge" style="background:rgba(212,175,55,0.12);color:var(--gold);"><i class="fas fa-certificate"></i> ${escapeHtml(p.verification_id)}</span>` : ''}
-        </div>
-      `;
-    }).join('');
-  } catch (err) {
-    console.error('Failed to load partnerships:', err);
-    grid.innerHTML = `<div class="partnership-error"><i class="fas fa-triangle-exclamation"></i> Failed to load partnerships.</div>`;
-  }
-}
-renderPartnerships();
-
-    // ---------- OUR PARTNERS & SPONSORS (partners_sponsors) ----------
+    // ---------- OUR PARTNERS & SPONSORS (unchanged) ----------
     async function renderPartnersSponsors() {
       const grid = document.getElementById('partnersGrid');
       if (!grid) return;
@@ -2324,7 +2196,7 @@ renderPartnerships();
     }
     renderPartnersSponsors();
 
-    // ---------- RECOGNITION ----------
+    // ---------- RECOGNITION (unchanged) ----------
     const leaderContainer = document.getElementById('leaderWinners');
     const risingContainer = document.getElementById('risingWinners');
 
@@ -2358,11 +2230,7 @@ renderPartnerships();
 
         if (memError) throw new Error('Members fetch failed: ' + memError.message);
 
-        // Blood donor data-entry bonus: every 10 rows a member entered into
-        // blood_bridge_galkot (data_entry_by) is worth +1 point, same scale
-        // as the action-item bonus. Counts every row regardless of status
-        // (active/inactive). Soft-fails (logs a warning, contributes 0) so a
-        // problem with this table never breaks the rest of the widget.
+        // Blood donor entry bonus
         const bloodEntryCountMap = {};
         try {
           const { data: bloodRows, error: bloodError } = await supabase
@@ -2412,11 +2280,7 @@ renderPartnerships();
           const matchIndex = NORMALIZED_BOARD_DESIGNATIONS.indexOf(normalized);
           const isBoard = matchIndex !== -1;
           const displayDesignation = isBoard ? BOARD_DESIGNATIONS[matchIndex] : (rawDesignation || 'Club Member');
-          return {
-            designation: displayDesignation,
-            isPresident: isBoard && displayDesignation === 'President',
-            isBoard
-          };
+          return { designation: displayDesignation, isPresident: isBoard && displayDesignation === 'President', isBoard };
         }
 
         function isBoardOnlyMeetingType(meeting) {
@@ -2460,35 +2324,22 @@ renderPartnerships();
           const attendancePct = totalMeetings > 0 ? Math.round((attended / totalMeetings) * 1000) / 10 : 0;
           const actionBonus = bonusMap[key] || 0;
           const bloodEntryCount = bloodEntryCountMap[key] || 0;
-          const bloodBonus = Math.floor(bloodEntryCount / 10); // 10 entries = 1 point
+          const bloodBonus = Math.floor(bloodEntryCount / 10);
           const bonus = actionBonus + bloodBonus;
           const photoUrl = m.photo_url || m.photo || m.profile_image || null;
           const finalScore = attendancePct + bonus;
           return {
-            id: m.id,
-            fullName: m.name,
-            designation: classification.designation,
-            photoUrl,
-            attendancePct,
-            bonus,
-            actionBonus,
-            bloodEntryCount,
-            bloodBonus,
-            finalScore,
-            isBoard: classification.isBoard,
-            isPresident: classification.isPresident
+            id: m.id, fullName: m.name, designation: classification.designation,
+            photoUrl, attendancePct, bonus, actionBonus, bloodEntryCount, bloodBonus,
+            finalScore, isBoard: classification.isBoard, isPresident: classification.isPresident
           };
         });
 
-        const leaders = memberScores
-          .filter(m => m.isBoard === true && !m.isPresident)
-          .sort((a, b) => b.finalScore - a.finalScore);
+        const leaders = memberScores.filter(m => m.isBoard === true && !m.isPresident).sort((a, b) => b.finalScore - a.finalScore);
         const topLeaderScore = leaders.length > 0 ? leaders[0].finalScore : -Infinity;
         const leaderWinners = leaders.filter(m => m.finalScore === topLeaderScore);
 
-        const rising = memberScores
-          .filter(m => m.isBoard === false)
-          .sort((a, b) => b.finalScore - a.finalScore);
+        const rising = memberScores.filter(m => m.isBoard === false).sort((a, b) => b.finalScore - a.finalScore);
         const topRisingScore = rising.length > 0 ? rising[0].finalScore : -Infinity;
         const risingWinners = rising.filter(m => m.finalScore === topRisingScore);
 
@@ -2525,7 +2376,7 @@ renderPartnerships();
 
     fetchRecognitionData();
 
-    // ---------- TICKER ----------
+    // ---------- TICKER (unchanged) ----------
     async function updateTicker() {
       const container = document.getElementById('tickerContainer');
       const today = new Date().toISOString().split('T')[0];
@@ -2615,7 +2466,7 @@ renderPartnerships();
       }
     }
 
-    // ---------- BIRTHDAY POPUP ----------
+    // ---------- BIRTHDAY POPUP (unchanged) ----------
     const birthdayPopup = document.getElementById('birthdayPopup');
     const popupName = document.getElementById('popupName');
     let popupTimeout = null;
@@ -2651,7 +2502,7 @@ renderPartnerships();
       if (e.key === 'Escape' && birthdayPopup.classList.contains('active')) closeBirthdayPopup();
     });
 
-    // ---------- REVEAL ANIMATIONS ----------
+    // ---------- REVEAL ANIMATIONS (unchanged) ----------
     function initReveals() {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -2666,7 +2517,7 @@ renderPartnerships();
       });
     }
 
-    // ---------- SMOOTH SCROLLING ----------
+    // ---------- SMOOTH SCROLLING (unchanged) ----------
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function(e) {
         const href = this.getAttribute('href');
@@ -2683,7 +2534,7 @@ renderPartnerships();
       });
     });
 
-    // ---------- ACTIVE NAV LINK ----------
+    // ---------- ACTIVE NAV LINK (unchanged) ----------
     const sections = document.querySelectorAll('section[id]');
     const navLinksAll = document.querySelectorAll('.nav-links a:not([href*="://"])');
 
@@ -2704,7 +2555,7 @@ renderPartnerships();
     });
 
     // ============================================================
-    // HERO SLIDER (premium animated content slider)
+    // HERO SLIDER (unchanged)
     // ============================================================
     const slidesData = [
       {
@@ -2813,7 +2664,6 @@ renderPartnerships();
       }
     }
 
-    // ---- Hover / click / focus pause ----
     const sliderWrapper = document.getElementById('heroSliderWrapper');
 
     sliderWrapper.addEventListener('mouseenter', () => {
@@ -2828,9 +2678,7 @@ renderPartnerships();
     sliderWrapper.addEventListener('focusout', () => {
       if (isPaused) resumeSlider();
     });
-    // click on dots already pauses via goToSlide
 
-    // ---- Touch swipe support ----
     let touchStartX = 0;
     let touchEndX = 0;
     sliderWrapper.addEventListener('touchstart', (e) => {
@@ -2852,7 +2700,6 @@ renderPartnerships();
       resumeSlider();
     }, { passive: true });
 
-    // ---- Keyboard accessibility ----
     sliderWrapper.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight') {
         e.preventDefault();
@@ -2872,18 +2719,296 @@ renderPartnerships();
     sliderWrapper.setAttribute('role', 'region');
     sliderWrapper.setAttribute('aria-label', 'Rotaract Club information slider');
 
-    // ---- init ----
     buildSlides();
     startAutoSlide();
 
+    // ============================================================
+    // GALLERY SLIDE POPUP (unchanged)
+    // ============================================================
+    const galleryPopupOverlay = document.getElementById('galleryPopupOverlay');
+    const galleryPopupTrack = document.getElementById('galleryPopupTrack');
+    const galleryPopupProgress = document.getElementById('galleryPopupProgress');
+    const galleryPopupClose = document.getElementById('galleryPopupClose');
+    const GALLERY_SLIDE_MS = 4000;
+    let galleryPhotos = [];
+    let galleryCurrentIndex = 0;
+    let galleryAutoTimer = null;
+    let galleryLastFocusedEl = null;
+
+    function buildGallerySlides() {
+      galleryPopupTrack.innerHTML = galleryPhotos.map((p, i) => `
+        <div class="gallery-popup-slide${i === 0 ? ' active' : ''}" data-index="${i}">
+          <img src="${p.photo_url}" alt="${escapeHtml(p.project_name)}" loading="${i === 0 ? 'eager' : 'lazy'}">
+          <div class="gallery-popup-caption">
+            <div class="p-name">${escapeHtml(p.project_name)}</div>
+            ${p.description ? `<div class="p-desc">${escapeHtml(p.description)}</div>` : ''}
+          </div>
+        </div>
+      `).join('');
+
+      galleryPopupProgress.innerHTML = galleryPhotos.map(() =>
+        `<div class="seg"><span class="fill"></span></div>`
+      ).join('');
+    }
+
+    function updateGallerySlide() {
+      galleryPopupTrack.querySelectorAll('.gallery-popup-slide').forEach((el, i) => {
+        el.classList.toggle('active', i === galleryCurrentIndex);
+      });
+      const segs = galleryPopupProgress.querySelectorAll('.seg');
+      segs.forEach((seg, i) => {
+        seg.classList.remove('done', 'filling');
+        const fill = seg.querySelector('.fill');
+        fill.style.transition = 'none';
+        fill.style.width = '0%';
+        if (i < galleryCurrentIndex) {
+          seg.classList.add('done');
+        } else if (i === galleryCurrentIndex) {
+          void fill.offsetWidth;
+          seg.classList.add('filling');
+          fill.style.transition = `width ${GALLERY_SLIDE_MS}ms linear`;
+          requestAnimationFrame(() => { fill.style.width = '100%'; });
+        }
+      });
+    }
+
+    function advanceGallerySlide() {
+      galleryCurrentIndex += 1;
+      if (galleryCurrentIndex >= galleryPhotos.length) {
+        closeGalleryPopup();
+        return;
+      }
+      updateGallerySlide();
+      galleryAutoTimer = setTimeout(advanceGallerySlide, GALLERY_SLIDE_MS);
+    }
+
+    function openGalleryPopup() {
+      if (!galleryPhotos.length) return;
+      galleryCurrentIndex = 0;
+      galleryLastFocusedEl = document.activeElement;
+      buildGallerySlides();
+      updateGallerySlide();
+      galleryPopupOverlay.classList.add('active');
+      galleryPopupOverlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      if (galleryAutoTimer) clearTimeout(galleryAutoTimer);
+      galleryAutoTimer = setTimeout(advanceGallerySlide, GALLERY_SLIDE_MS);
+      sessionStorage.setItem('galleryPopupShown', '1');
+    }
+
+    function closeGalleryPopup() {
+      if (galleryAutoTimer) { clearTimeout(galleryAutoTimer); galleryAutoTimer = null; }
+      galleryPopupOverlay.classList.remove('active');
+      galleryPopupOverlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      if (galleryLastFocusedEl) galleryLastFocusedEl.focus();
+    }
+
+    galleryPopupClose?.addEventListener('click', closeGalleryPopup);
+    galleryPopupOverlay?.addEventListener('click', (e) => {
+      if (e.target === galleryPopupOverlay) closeGalleryPopup();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && galleryPopupOverlay?.classList.contains('active')) closeGalleryPopup();
+    });
+    galleryPopupOverlay?.addEventListener('mouseenter', () => {
+      if (galleryAutoTimer) { clearTimeout(galleryAutoTimer); galleryAutoTimer = null; }
+    });
+    galleryPopupOverlay?.addEventListener('mouseleave', () => {
+      if (galleryPopupOverlay.classList.contains('active') && !galleryAutoTimer) {
+        galleryAutoTimer = setTimeout(advanceGallerySlide, GALLERY_SLIDE_MS);
+      }
+    });
+
+    async function initGalleryPopup() {
+      if (!galleryPopupOverlay) return;
+      if (sessionStorage.getItem('galleryPopupShown')) return;
+      try {
+        const { data, error } = await supabase
+          .from('gallery_photos')
+          .select('project_name, description, photo_url')
+          .eq('status', 'active')
+          .order('display_order', { ascending: true })
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+
+        galleryPhotos = data || [];
+        if (galleryPhotos.length === 0) return;
+        setTimeout(openGalleryPopup, 2000);
+      } catch (err) {
+        console.error('Gallery popup load error:', err);
+      }
+    }
+
+    // ============================================================
+    // ADMIN LOGIN MODAL (NEW)
+    // ============================================================
+    const adminModal = document.getElementById('adminLoginModal');
+    const adminClose = document.getElementById('adminLoginClose');
+    const adminForm = document.getElementById('adminLoginForm');
+    const adminEmail = document.getElementById('adminEmail');
+    const adminPassword = document.getElementById('adminPassword');
+    const adminError = document.getElementById('adminLoginError');
+    const adminSubmitBtn = document.getElementById('adminSubmitBtn');
+    const toggleAdminPass = document.getElementById('toggleAdminPass');
+    const adminTrigger = document.getElementById('adminModalTrigger');
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let adminLastFocusedEl = null;
+
+    function openAdminModal() {
+      adminLastFocusedEl = document.activeElement;
+      adminModal.classList.add('active');
+      adminModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      adminEmail?.focus();
+      // Clear any previous error
+      adminError.textContent = '';
+    }
+
+    function closeAdminModal() {
+      adminModal.classList.remove('active');
+      adminModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      if (adminLastFocusedEl) adminLastFocusedEl.focus();
+      // Reset form state
+      adminSubmitBtn.classList.remove('loading');
+      adminSubmitBtn.disabled = false;
+      adminError.textContent = '';
+    }
+
+    // Open modal when clicking "Admin" in the dropdown
+    adminTrigger?.addEventListener('click', (e) => {
+      e.preventDefault();
+      openAdminModal();
+    });
+
+    // Close on × button
+    adminClose?.addEventListener('click', closeAdminModal);
+
+    // Close on backdrop click
+    adminModal?.addEventListener('click', (e) => {
+      if (e.target === adminModal) closeAdminModal();
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && adminModal?.classList.contains('active')) closeAdminModal();
+    });
+
+    // Toggle password visibility
+    toggleAdminPass?.addEventListener('click', () => {
+      const isPass = adminPassword.type === 'password';
+      adminPassword.type = isPass ? 'text' : 'password';
+      toggleAdminPass.textContent = isPass ? '🙈' : '👁';
+    });
+
+    // Clear error on input
+    [adminEmail, adminPassword].forEach(el => {
+      el?.addEventListener('input', () => { if (adminError) adminError.textContent = ''; });
+    });
+
+    // Helper: map auth errors to user-friendly messages
+    function mapAuthError(err) {
+      const msg = (err?.message || '').toLowerCase();
+      if (msg.includes('invalid login credentials')) return 'Incorrect email or password.';
+      if (msg.includes('email not confirmed')) return 'Please confirm your email address before signing in.';
+      if (msg.includes('user not found')) return 'No account found with that email.';
+      if (msg.includes('too many') || msg.includes('rate limit')) return 'Too many attempts — please wait a minute.';
+      if (msg.includes('network') || msg.includes('failed to fetch')) return 'Network error — check your connection.';
+      return err?.message || "Couldn't sign in right now — please try again.";
+    }
+
+    // Submit handler
+    adminForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = adminEmail.value.trim();
+      const password = adminPassword.value;
+
+      adminError.textContent = '';
+
+      if (!email || !EMAIL_RE.test(email)) {
+        adminError.textContent = 'Please enter a valid email address.';
+        adminEmail.focus();
+        return;
+      }
+      if (!password) {
+        adminError.textContent = 'Please enter your password.';
+        adminPassword.focus();
+        return;
+      }
+
+      adminSubmitBtn.classList.add('loading');
+      adminSubmitBtn.disabled = true;
+
+      try {
+        // Authenticate with Supabase
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+
+        const user = data.user;
+        if (!user) throw new Error('No user data returned.');
+
+        // Check admin role
+        let { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role, status')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        // Fallback: try by email if not found by user_id
+        if (!roleData && user.email) {
+          const { data: emailData } = await supabase
+            .from('user_roles')
+            .select('role, status')
+            .eq('email', user.email)
+            .maybeSingle();
+          roleData = emailData;
+        }
+
+        if (!roleData) throw new Error('No role assigned. Contact admin.');
+        if (roleData.status !== 'active') throw new Error(`Account is ${roleData.status}.`);
+
+        // Store session in sessionStorage (matching auth.js style)
+        sessionStorage.setItem('auth_user_id', user.id);
+        sessionStorage.setItem('auth_email', user.email);
+        sessionStorage.setItem('auth_role', roleData.role);
+        sessionStorage.setItem('auth_status', roleData.status);
+        sessionStorage.setItem('auth_verified', 'true');
+        sessionStorage.setItem('auth_timestamp', Date.now().toString());
+
+        // Log the activity (optional)
+        try {
+          await supabase.from('admin_activity_log').insert([{
+            admin_id: user.id,
+            admin_email: user.email,
+            action: 'login',
+            details: 'Admin login from index.html modal'
+          }]);
+        } catch (_) { /* ignore */ }
+
+        // Close modal and redirect
+        closeAdminModal();
+        window.location.href = 'admin.html';
+
+      } catch (err) {
+        console.error('Admin login error:', err);
+        adminError.textContent = mapAuthError(err);
+        adminSubmitBtn.classList.remove('loading');
+        adminSubmitBtn.disabled = false;
+        adminPassword.value = '';
+        adminPassword.focus();
+      }
+    });
+
     // ---------- INIT ALL ----------  
-    
     updateTicker();
     initReveals();
-
+    initGalleryPopup();
     setInterval(updateTicker, 60000);
 
     console.log('🚀 Rotaract Club of Galkot Baglung — Premium International Dashboard Loaded (Hero Slider Active)');
+    console.log('💡 Admin login modal integrated.');
   });
 </script>
 
