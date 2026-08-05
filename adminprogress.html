@@ -1,0 +1,1832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Progress Tracker · Rotaract Club of Galkot Baglung</title>
+<meta name="description" content="Website development progress tracker and printable report for Rotaract Club of Galkot Baglung admin team." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+/* ============================================================
+   TOKENS — matches admin.html "Ops Desk" console theme
+   ============================================================ */
+:root{
+    --bg:#0a0d13;
+    --surface:#12161f;
+    --surface-2:#171c28;
+    --surface-hover:#1c2230;
+    --border:rgba(255,255,255,0.08);
+    --border-strong:rgba(255,255,255,0.16);
+    --text:#f2efe9;
+    --text-muted:#8b93a3;
+    --text-faint:#5b6272;
+    --accent:#e2823f;
+    --accent-dim:rgba(226,130,63,0.14);
+    --accent-2:#33d6c0;
+    --accent-2-dim:rgba(51,214,192,0.14);
+    --danger:#f0555f;
+    --danger-dim:rgba(240,85,95,0.14);
+    --success:#43c98a;
+    --success-dim:rgba(67,201,138,0.14);
+    --purple:#9b8cf0;
+    --purple-dim:rgba(155,140,240,0.14);
+    --font-display:'Space Grotesk',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+    --ease:cubic-bezier(0.16,1,0.3,1);
+    --radius:14px;
+    --sidebar-w:260px;
+}
+@media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html{ scroll-behavior:smooth; }
+body{
+    font-family:var(--font-body);
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.6;
+    min-height:100vh;
+    background-image:
+        radial-gradient(circle at 8% 12%, rgba(226,130,63,0.05) 0%, transparent 38%),
+        radial-gradient(circle at 92% 85%, rgba(51,214,192,0.05) 0%, transparent 38%);
+    background-attachment:fixed;
+}
+::selection{ background:var(--accent); color:#0a0d13; }
+a{ color:inherit; }
+button{ font-family:inherit; }
+:focus-visible{ outline:2px solid var(--accent-2); outline-offset:2px; border-radius:4px; }
+
+/* ============================================================
+   LOADING SCREEN
+   ============================================================ */
+.boot-screen{
+    position:fixed; inset:0; background:var(--bg); z-index:10000; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:1rem; transition:opacity .4s var(--ease), visibility .4s;
+}
+.boot-screen.hidden{ opacity:0; visibility:hidden; pointer-events:none; }
+.boot-spinner{ width:38px; height:38px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--accent); animation:spin 0.8s linear infinite; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+.boot-screen span{ color:var(--text-faint); font-size:0.82rem; font-family:var(--font-mono); }
+
+/* ============================================================
+   ACCESS DENIED OVERLAY
+   ============================================================ */
+.access-denied-overlay{
+    display:none; position:fixed; inset:0; background:rgba(6,8,12,0.94);
+    backdrop-filter:blur(10px); z-index:9999; justify-content:center; align-items:center;
+    flex-direction:column; padding:20px;
+}
+.access-denied-overlay.active{ display:flex; animation:fadeIn 0.4s var(--ease); }
+@keyframes fadeIn{ from{opacity:0} to{opacity:1} }
+@keyframes slideUp{ from{opacity:0; transform:translateY(24px)} to{opacity:1; transform:translateY(0)} }
+.access-denied-card{
+    background:var(--surface); border:1px solid var(--border-strong); border-radius:20px;
+    padding:48px 40px; max-width:460px; width:100%; text-align:center;
+    box-shadow:0 30px 60px rgba(0,0,0,0.5); animation:slideUp 0.5s var(--ease);
+}
+.access-denied-card .icon-big{ font-size:2.6rem; color:var(--danger); margin-bottom:18px; display:block; }
+.access-denied-card h2{ font-family:var(--font-display); font-size:1.6rem; font-weight:700; margin-bottom:10px; }
+.access-denied-card p{ color:var(--text-muted); font-size:0.95rem; margin-bottom:22px; }
+.btn-redirect{
+    display:inline-block; background:var(--accent); color:#0a0d13; padding:13px 36px;
+    border-radius:10px; text-decoration:none; font-weight:700; font-size:0.95rem; transition:transform 0.3s var(--ease);
+    border:none; cursor:pointer;
+}
+.btn-redirect:hover{ transform:translateY(-2px); }
+.countdown-timer{ color:var(--text-faint); font-size:0.85rem; margin-top:18px; font-family:var(--font-mono); }
+.countdown-timer span{ color:var(--accent); font-weight:700; }
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+.app-shell{ display:flex; min-height:100vh; }
+.sidebar{
+    width:var(--sidebar-w); flex-shrink:0; background:var(--surface);
+    border-right:1px solid var(--border); display:flex; flex-direction:column;
+    position:fixed; top:0; left:0; height:100vh; z-index:500; transition:transform 0.35s var(--ease);
+}
+.sidebar-brand{ display:flex; align-items:center; gap:0.65rem; padding:1.5rem 1.4rem 1.2rem; border-bottom:1px solid var(--border); }
+.sidebar-brand .mark{
+    width:36px; height:36px; border-radius:10px; background:var(--accent-dim); color:var(--accent);
+    display:flex; align-items:center; justify-content:center; font-size:1.05rem; flex-shrink:0;
+    border:1px solid rgba(226,130,63,0.3); overflow:hidden;
+}
+.sidebar-brand .mark img{ width:100%; height:100%; object-fit:cover; }
+.sidebar-brand .name{ font-family:var(--font-display); font-weight:700; font-size:1rem; line-height:1.15; }
+.sidebar-brand .sub{ font-size:0.68rem; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.08em; margin-top:2px; }
+
+.status-strip{
+    margin:1rem 1.4rem 0.5rem; padding:0.55rem 0.8rem; border-radius:10px;
+    background:var(--success-dim); border:1px solid rgba(67,201,138,0.25);
+    display:flex; align-items:center; gap:0.5rem; font-size:0.72rem; font-weight:600; color:var(--success);
+}
+.status-strip.degraded{ background:var(--danger-dim); border-color:rgba(240,85,95,0.3); color:var(--danger); }
+.status-dot{ width:7px; height:7px; border-radius:50%; background:currentColor; flex-shrink:0; animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse{ 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+.sidebar-nav{ flex:1; overflow-y:auto; padding:1rem 0.9rem; }
+.nav-group-label{ font-size:0.65rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-faint); font-weight:700; padding:0.9rem 0.6rem 0.5rem; }
+.nav-item{
+    display:flex; align-items:center; gap:0.7rem; width:100%; padding:0.65rem 0.7rem;
+    border-radius:9px; color:var(--text-muted); background:none; border:none; cursor:pointer;
+    font-size:0.87rem; font-weight:500; text-decoration:none; transition:background 0.2s, color 0.2s;
+    margin-bottom:2px; text-align:left;
+}
+.nav-item i{ width:18px; text-align:center; font-size:0.9rem; flex-shrink:0; }
+.nav-item:hover{ background:var(--surface-hover); color:var(--text); }
+.nav-item.active{ background:var(--accent-dim); color:var(--accent); }
+
+.sidebar-footer{ padding:1rem 1.4rem 1.3rem; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:0.6rem; }
+.admin-chip{ display:flex; align-items:center; gap:0.6rem; padding:0.5rem 0.6rem; background:var(--surface-2); border-radius:10px; border:1px solid var(--border); }
+.admin-chip .av{ width:28px; height:28px; border-radius:50%; background:var(--accent-dim); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; flex-shrink:0; }
+.admin-chip .em{ font-size:0.72rem; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.btn-logout{
+    width:100%; background:var(--danger-dim); color:var(--danger) !important; border:1px solid rgba(240,85,95,0.25);
+    padding:0.65rem 1rem; border-radius:10px; font-weight:600; font-size:0.83rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:0.5rem; transition:background 0.2s;
+}
+.btn-logout:hover{ background:rgba(240,85,95,0.22); }
+
+.menu-toggle{
+    display:none; position:fixed; top:1rem; left:1rem; z-index:600; width:42px; height:42px;
+    border-radius:10px; background:var(--surface); border:1px solid var(--border-strong); color:var(--text);
+    font-size:1.05rem; cursor:pointer; align-items:center; justify-content:center;
+}
+.sidebar-scrim{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:499; }
+.sidebar-scrim.active{ display:block; }
+
+.main{ flex:1; margin-left:var(--sidebar-w); min-width:0; }
+.topbar{ padding:1.6rem 2.2rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; border-bottom:1px solid var(--border); }
+.topbar-title h1{ font-family:var(--font-display); font-size:1.5rem; font-weight:700; letter-spacing:-0.01em; }
+.topbar-title p{ color:var(--text-muted); font-size:0.85rem; margin-top:2px; }
+.topbar-actions{ display:flex; align-items:center; gap:0.7rem; flex-wrap:wrap; }
+.topbar-clock{
+    font-family:var(--font-mono); font-size:1.05rem; font-weight:600; color:var(--text);
+    background:var(--surface); border:1px solid var(--border); padding:0.5rem 1.1rem; border-radius:10px;
+    display:flex; align-items:center; gap:0.8rem;
+}
+.topbar-clock .date{ font-size:0.68rem; font-weight:400; color:var(--text-faint); }
+
+.btn{
+    display:inline-flex; align-items:center; gap:0.5rem; padding:0.65rem 1.15rem; border-radius:10px;
+    font-size:0.85rem; font-weight:700; cursor:pointer; border:1px solid var(--border-strong);
+    background:var(--surface); color:var(--text); transition:all 0.2s var(--ease); white-space:nowrap;
+}
+.btn:hover{ background:var(--surface-hover); }
+.btn-accent{ background:var(--accent); border-color:var(--accent); color:#0a0d13; }
+.btn-accent:hover{ filter:brightness(1.08); background:var(--accent); }
+.btn-ghost{ background:transparent; border-color:var(--border); }
+.btn-danger-ghost{ background:transparent; border-color:rgba(240,85,95,0.35); color:var(--danger); }
+.btn-danger-ghost:hover{ background:var(--danger-dim); }
+.btn-sm{ padding:0.42rem 0.75rem; font-size:0.76rem; border-radius:8px; }
+.btn:disabled{ opacity:0.55; cursor:not-allowed; }
+
+.view{ display:none; padding:1.8rem 2.2rem 3rem; animation:fadeIn 0.35s var(--ease); }
+.view.active{ display:block; }
+
+.section-heading{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem; margin-bottom:1.2rem; }
+.section-heading h2{ font-family:var(--font-display); font-size:1.15rem; font-weight:700; display:flex; align-items:center; gap:0.6rem; }
+.section-heading h2 i{ color:var(--accent); font-size:1rem; }
+.section-heading .meta{ font-size:0.78rem; color:var(--text-faint); font-family:var(--font-mono); display:flex; align-items:center; gap:0.6rem; }
+
+/* ---- stat cards ---- */
+.stat-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:0.9rem; margin-bottom:1.6rem; }
+.stat-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.1rem 1rem;
+    position:relative; display:flex; flex-direction:column; gap:0.2rem; transition:border-color 0.3s;
+}
+.stat-card:hover{ border-color:var(--border-strong); }
+.stat-card i{ position:absolute; right:1rem; top:1rem; font-size:0.9rem; opacity:0.3; color:var(--accent); }
+.stat-card .num{ font-family:var(--font-mono); font-size:1.7rem; font-weight:700; }
+.stat-card .label{ font-size:0.68rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.03em; }
+.stat-card.c-success .num{ color:var(--success); }
+.stat-card.c-danger .num{ color:var(--danger); }
+.stat-card.c-purple .num{ color:var(--purple); }
+.stat-card.c-accent2 .num{ color:var(--accent-2); }
+
+/* ---- chart panels ---- */
+.panel-row{ display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.4rem; align-items:stretch; }
+.panel{ flex:1; min-width:280px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:1.2rem 1.1rem; }
+.panel h3{ font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted); font-weight:700; margin-bottom:0.8rem; display:flex; align-items:center; gap:0.4rem; }
+.panel h3 i{ color:var(--accent); }
+.chart-wrap{ position:relative; height:230px; }
+.chart-wrap.tall{ height:280px; }
+.big-ring-wrap{ position:relative; height:200px; display:flex; align-items:center; justify-content:center; }
+.big-ring-label{ position:absolute; text-align:center; }
+.big-ring-label .pct{ font-family:var(--font-display); font-size:2.1rem; font-weight:700; }
+.big-ring-label .sub{ font-size:0.68rem; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.05em; margin-top:2px; }
+
+/* ---- category bars ---- */
+.cat-bar-row{ margin-bottom:0.85rem; }
+.cat-bar-row:last-child{ margin-bottom:0; }
+.cat-bar-top{ display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:0.35rem; }
+.cat-bar-top .cname{ font-weight:600; }
+.cat-bar-top .cpct{ font-family:var(--font-mono); color:var(--text-muted); }
+.cat-bar-track{ height:8px; background:var(--surface-2); border-radius:99px; overflow:hidden; }
+.cat-bar-fill{ height:100%; border-radius:99px; background:var(--accent); transition:width 0.6s var(--ease); }
+
+/* ---- filters row ---- */
+.filters-row{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:1.1rem; align-items:center; }
+.filters-row select, .filters-row input[type="text"]{
+    background:var(--surface); border:1px solid var(--border); color:var(--text); padding:0.55rem 0.8rem;
+    border-radius:9px; font-size:0.82rem; font-family:var(--font-body);
+}
+.filters-row select:focus, .filters-row input:focus{ outline:none; border-color:var(--accent-2); }
+
+/* ---- module cards (list) ---- */
+.item-grid{ display:flex; flex-direction:column; gap:0.8rem; }
+.item-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:1.1rem 1.2rem; display:flex; flex-direction:column; gap:0.6rem; transition:border-color 0.25s;
+}
+.item-card:hover{ border-color:var(--border-strong); }
+.item-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:0.8rem; flex-wrap:wrap; }
+.item-title-wrap{ display:flex; flex-direction:column; gap:0.25rem; min-width:200px; flex:1; }
+.item-title{ font-weight:700; font-size:0.98rem; font-family:var(--font-display); }
+.item-cat{ font-size:0.7rem; color:var(--text-faint); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.04em; }
+.item-desc{ font-size:0.82rem; color:var(--text-muted); }
+.item-actions{ display:flex; gap:0.4rem; flex-shrink:0; }
+.icon-btn{
+    width:32px; height:32px; border-radius:8px; background:var(--surface-2); border:1px solid var(--border);
+    color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.8rem;
+    transition:all 0.2s;
+}
+.icon-btn:hover{ color:var(--text); border-color:var(--border-strong); }
+.icon-btn.danger:hover{ color:var(--danger); border-color:rgba(240,85,95,0.35); background:var(--danger-dim); }
+
+.item-meta-row{ display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; }
+.pill{ font-size:0.68rem; font-weight:700; padding:0.22rem 0.6rem; border-radius:99px; display:inline-flex; align-items:center; gap:0.35rem; }
+.pill i{ font-size:0.65rem; }
+.pill-status-not_started{ background:var(--surface-2); color:var(--text-faint); border:1px solid var(--border); }
+.pill-status-in_progress{ background:var(--accent-dim); color:var(--accent); }
+.pill-status-completed{ background:var(--success-dim); color:var(--success); }
+.pill-status-blocked{ background:var(--danger-dim); color:var(--danger); }
+.pill-status-on_hold{ background:var(--purple-dim); color:var(--purple); }
+.pill-priority-high{ background:var(--danger-dim); color:var(--danger); }
+.pill-priority-medium{ background:var(--accent-dim); color:var(--accent); }
+.pill-priority-low{ background:var(--surface-2); color:var(--text-faint); }
+.item-owner{ font-size:0.72rem; color:var(--text-faint); font-family:var(--font-mono); }
+
+.item-progress-row{ display:flex; align-items:center; gap:0.8rem; }
+.item-progress-row .cat-bar-track{ flex:1; }
+.item-progress-row .pval{ font-family:var(--font-mono); font-size:0.82rem; font-weight:700; min-width:38px; text-align:right; }
+.item-notes{ font-size:0.76rem; color:var(--text-faint); border-top:1px dashed var(--border); padding-top:0.5rem; }
+.empty-state{ text-align:center; padding:3rem 1rem; color:var(--text-faint); }
+.empty-state i{ font-size:2rem; margin-bottom:0.8rem; display:block; opacity:0.4; }
+
+/* ---- MODAL ---- */
+.modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px);
+    z-index:2000; justify-content:center; align-items:center; padding:2rem; animation:fadeIn 0.3s ease;
+}
+.modal-overlay.active{ display:flex; }
+.modal-content{
+    background:var(--surface); border:1px solid var(--border-strong); border-radius:20px; padding:2rem;
+    max-width:560px; width:100%; max-height:90vh; overflow-y:auto; position:relative; animation:slideUp 0.4s var(--ease);
+}
+.modal-close{
+    position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--text-muted);
+    font-size:1.3rem; cursor:pointer; min-height:38px; min-width:38px; display:flex; align-items:center; justify-content:center;
+}
+.modal-close:hover{ color:var(--text); }
+.modal-title{ font-family:var(--font-display); font-size:1.25rem; font-weight:700; margin-bottom:1.4rem; display:flex; align-items:center; gap:0.6rem; }
+.modal-title i{ color:var(--accent); }
+.form-group{ margin-bottom:1.05rem; }
+.form-group label{ display:block; font-weight:600; font-size:0.8rem; color:var(--text-muted); margin-bottom:0.4rem; }
+.form-group input, .form-group textarea, .form-group select{
+    width:100%; padding:0.65rem 0.85rem; border-radius:9px; background:var(--surface-2);
+    border:1px solid var(--border); color:var(--text); font-family:var(--font-body); font-size:0.88rem;
+}
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus{ outline:none; border-color:var(--accent-2); }
+.form-group textarea{ min-height:70px; resize:vertical; }
+.form-row{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.form-row-3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; }
+.range-row{ display:flex; align-items:center; gap:0.8rem; }
+.range-row input[type="range"]{ flex:1; accent-color:var(--accent); }
+.range-row .range-val{ font-family:var(--font-mono); font-weight:700; min-width:42px; text-align:right; }
+.form-actions{ display:flex; justify-content:flex-end; gap:0.7rem; margin-top:1.4rem; }
+
+/* ---- toast ---- */
+.toast-stack{ position:fixed; top:1.2rem; right:1.2rem; z-index:9999; display:flex; flex-direction:column; gap:0.7rem; width:min(360px, calc(100vw - 2.4rem)); pointer-events:none; }
+.toast-card{
+    pointer-events:auto; background:var(--surface); border:1px solid var(--border-strong); border-left:3px solid var(--accent);
+    border-radius:12px; padding:0.85rem 1rem; box-shadow:0 16px 40px rgba(0,0,0,0.5);
+    display:flex; gap:0.75rem; align-items:flex-start; animation:toastIn .35s var(--ease); position:relative; overflow:hidden;
+}
+.toast-card.error{ border-left-color:var(--danger); }
+.toast-card.leaving{ animation:toastOut .3s var(--ease) forwards; }
+@keyframes toastIn{ from{ opacity:0; transform:translateX(40px) scale(0.96); } to{ opacity:1; transform:translateX(0) scale(1); } }
+@keyframes toastOut{ from{ opacity:1; transform:translateX(0); } to{ opacity:0; transform:translateX(40px) scale(0.96); } }
+.toast-card .t-icon{ width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:var(--accent-2-dim); color:var(--accent-2); font-size:0.9rem; }
+.toast-card.error .t-icon{ background:var(--danger-dim); color:var(--danger); }
+.toast-card .t-body{ flex:1; min-width:0; }
+.toast-card .t-title{ font-size:0.83rem; font-weight:700; font-family:var(--font-display); }
+.toast-card .t-sub{ font-size:0.76rem; color:var(--text-muted); margin-top:2px; }
+.toast-card .t-close{ background:none; border:none; color:var(--text-faint); cursor:pointer; font-size:0.8rem; }
+
+/* ============================================================
+   PRINT REPORT (hidden on screen, shown only when printing)
+   ============================================================ */
+#printArea, #cpPrintArea{ display:none; }
+.rpt-header{ display:flex; align-items:center; gap:1rem; border-bottom:3px solid #1D2A44; padding-bottom:14px; margin-bottom:18px; }
+.rpt-header img{ width:64px; height:64px; object-fit:cover; border-radius:8px; }
+.rpt-header .rh-club{ font-size:1.3rem; font-weight:800; color:#1D2A44; }
+.rpt-header .rh-sub{ font-size:0.78rem; color:#555; margin-top:2px; }
+.rpt-title{ text-align:center; margin:14px 0 4px; font-size:1.15rem; font-weight:800; letter-spacing:0.02em; text-transform:uppercase; color:#1D2A44; }
+.rpt-genline{ text-align:center; font-size:0.78rem; color:#555; margin-bottom:18px; }
+.rpt-kpi-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:18px; }
+.rpt-kpi{ border:1px solid #ccc; border-radius:8px; padding:8px 6px; text-align:center; }
+.rpt-kpi .k-num{ font-size:1.3rem; font-weight:800; color:#1D2A44; }
+.rpt-kpi .k-lbl{ font-size:0.62rem; text-transform:uppercase; color:#666; letter-spacing:0.03em; margin-top:2px; }
+.rpt-section-title{ font-size:0.9rem; font-weight:800; text-transform:uppercase; letter-spacing:0.03em; color:#1D2A44; margin:20px 0 8px; border-bottom:1px solid #ccc; padding-bottom:4px; }
+.rpt-charts{ display:flex; gap:14px; margin-bottom:10px; }
+.rpt-charts img{ flex:1; width:0; border:1px solid #ddd; border-radius:6px; }
+table.rpt-table{ width:100%; border-collapse:collapse; font-size:0.72rem; margin-bottom:10px; }
+table.rpt-table th{ background:#1D2A44; color:#fff; text-align:left; padding:6px 7px; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.02em; }
+table.rpt-table td{ padding:5px 7px; border-bottom:1px solid #ddd; vertical-align:top; }
+table.rpt-table tr:nth-child(even) td{ background:#f6f6f6; }
+.rpt-progress-mini{ display:inline-block; width:60px; height:6px; background:#eee; border-radius:99px; overflow:hidden; vertical-align:middle; margin-right:5px; }
+.rpt-progress-mini span{ display:block; height:100%; background:#1D2A44; }
+.rpt-footer{ margin-top:26px; display:flex; justify-content:space-between; font-size:0.75rem; }
+.rpt-sign{ width:40%; border-top:1px solid #333; padding-top:4px; text-align:center; color:#333; }
+.rpt-pagefoot{ margin-top:22px; text-align:center; font-size:0.65rem; color:#888; border-top:1px solid #ddd; padding-top:8px; }
+
+@media print{
+    body *{ visibility:hidden; }
+    #printArea, #printArea *, #cpPrintArea, #cpPrintArea *{ visibility:visible; }
+    #printArea, #cpPrintArea{ display:block !important; position:absolute; top:0; left:0; width:100%; color:#111; background:#fff; padding:0; }
+    @page{ margin:14mm 12mm; }
+}
+
+/* ---- mobile ---- */
+@media (max-width:960px){
+    .sidebar{ transform:translateX(-100%); }
+    .sidebar.open{ transform:translateX(0); }
+    .main{ margin-left:0; }
+    .menu-toggle{ display:flex; }
+    .form-row, .form-row-3{ grid-template-columns:1fr; }
+    .rpt-kpi-grid{ grid-template-columns:repeat(3,1fr); }
+}
+
+/* ============================================================
+   CLUB PROGRESS DASHBOARD (projects + meetings integration)
+   ============================================================ */
+.alert-stack{ display:flex; flex-direction:column; gap:0.6rem; margin-bottom:1.6rem; }
+.alert-card{
+    display:flex; align-items:flex-start; gap:0.7rem; background:var(--surface); border:1px solid var(--border);
+    border-left:3px solid var(--accent); border-radius:11px; padding:0.75rem 1rem; font-size:0.83rem;
+}
+.alert-card i{ color:var(--accent); margin-top:2px; flex-shrink:0; }
+.alert-card.danger{ border-left-color:var(--danger); } .alert-card.danger i{ color:var(--danger); }
+.alert-card.warn{ border-left-color:var(--accent); } 
+.alert-card.info{ border-left-color:var(--accent-2); } .alert-card.info i{ color:var(--accent-2); }
+.alert-card b{ font-weight:700; }
+.alert-card .a-sub{ color:var(--text-muted); font-size:0.76rem; margin-top:2px; }
+
+.progress-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:1.1rem 1.2rem; display:flex; flex-direction:column; gap:0.7rem; cursor:pointer; transition:border-color .25s, transform .2s;
+}
+.progress-card:hover{ border-color:var(--border-strong); transform:translateY(-2px); }
+.pc-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:0.6rem; }
+.pc-title{ font-family:var(--font-display); font-weight:700; font-size:0.98rem; }
+.pc-meta{ display:flex; gap:0.8rem; flex-wrap:wrap; font-size:0.74rem; color:var(--text-faint); font-family:var(--font-mono); }
+.pc-stats{ display:flex; gap:1rem; flex-wrap:wrap; font-size:0.76rem; color:var(--text-muted); }
+.pc-stats b{ color:var(--text); }
+.days-chip{ font-size:0.68rem; font-weight:700; padding:0.2rem 0.55rem; border-radius:99px; background:var(--accent-2-dim); color:var(--accent-2); white-space:nowrap; }
+.days-chip.overdue{ background:var(--danger-dim); color:var(--danger); }
+.days-chip.soon{ background:var(--accent-dim); color:var(--accent); }
+
+.project-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:0.9rem; }
+
+/* action item / member tables */
+.data-table{ width:100%; border-collapse:collapse; font-size:0.82rem; }
+.data-table th{ text-align:left; padding:0.6rem 0.7rem; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--text-faint); border-bottom:1px solid var(--border-strong); }
+.data-table td{ padding:0.6rem 0.7rem; border-bottom:1px solid var(--border); vertical-align:middle; }
+.data-table tr:hover td{ background:var(--surface-hover); }
+.chk-complete{ width:17px; height:17px; accent-color:var(--success); cursor:pointer; }
+
+/* timeline */
+.timeline-list{ display:flex; flex-direction:column; gap:0; }
+.tl-row{ display:flex; gap:0.9rem; position:relative; padding-bottom:1.3rem; }
+.tl-row:last-child{ padding-bottom:0; }
+.tl-dot-wrap{ display:flex; flex-direction:column; align-items:center; }
+.tl-dot{ width:11px; height:11px; border-radius:50%; background:var(--accent); flex-shrink:0; margin-top:3px; box-shadow:0 0 0 3px var(--accent-dim); }
+.tl-dot.meeting{ background:var(--accent-2); box-shadow:0 0 0 3px var(--accent-2-dim); }
+.tl-line{ width:2px; flex:1; background:var(--border); margin-top:2px; }
+.tl-body{ flex:1; font-size:0.83rem; padding-bottom:0.2rem; }
+.tl-body .tl-title{ font-weight:600; }
+.tl-body .tl-date{ font-size:0.72rem; color:var(--text-faint); font-family:var(--font-mono); margin-top:1px; }
+
+/* calendar */
+.cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:0.9rem; }
+.cal-head h3{ font-family:var(--font-display); font-size:1rem; }
+.cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+.cal-dow{ text-align:center; font-size:0.65rem; font-weight:700; color:var(--text-faint); text-transform:uppercase; padding-bottom:4px; }
+.cal-cell{ min-height:64px; background:var(--surface-2); border:1px solid var(--border); border-radius:9px; padding:0.35rem; font-size:0.72rem; display:flex; flex-direction:column; gap:2px; }
+.cal-cell.empty{ background:transparent; border:none; }
+.cal-cell.today{ border-color:var(--accent-2); }
+.cal-daynum{ font-family:var(--font-mono); color:var(--text-faint); font-size:0.7rem; }
+.cal-tag{ font-size:0.6rem; padding:1px 5px; border-radius:5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cal-tag.meeting{ background:var(--accent-2-dim); color:var(--accent-2); }
+.cal-tag.project{ background:var(--accent-dim); color:var(--accent); }
+
+/* member progress */
+.member-row{ display:flex; align-items:center; gap:0.9rem; padding:0.7rem 0; border-bottom:1px solid var(--border); }
+.member-row:last-child{ border-bottom:none; }
+.member-av{ width:34px; height:34px; border-radius:50%; background:var(--accent-dim); color:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.78rem; flex-shrink:0; }
+.member-info{ flex:1; min-width:120px; }
+.member-name{ font-weight:600; font-size:0.86rem; }
+.member-sub{ font-size:0.72rem; color:var(--text-faint); }
+.member-track{ width:120px; }
+
+.detail-block{ margin-bottom:1rem; }
+.detail-block h4{ font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-faint); margin-bottom:0.5rem; }
+.detail-mini-row{ font-size:0.82rem; padding:0.4rem 0; border-bottom:1px solid var(--border); }
+.detail-mini-row:last-child{ border-bottom:none; }
+
+@media (max-width:960px){
+    .cal-grid{ gap:3px; }
+    .cal-cell{ min-height:44px; font-size:0.62rem; padding:0.2rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="boot-screen" id="bootScreen"><div class="boot-spinner"></div><span>Checking access…</span></div>
+
+<!-- ===== ACCESS DENIED OVERLAY ===== -->
+<div class="access-denied-overlay" id="accessDeniedOverlay">
+    <div class="access-denied-card">
+        <span class="icon-big"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <h2>Access denied</h2>
+        <p>Only active administrator accounts can open the Progress Tracker.</p>
+        <a href="/index.html" class="btn-redirect">Go to homepage</a>
+        <div class="countdown-timer">Returning to login in <span id="countdownNum">5</span>s</div>
+    </div>
+</div>
+
+<!-- ===== LOGIN OVERLAY (in-page, no redirect) ===== -->
+<div class="access-denied-overlay" id="loginOverlay">
+    <div class="access-denied-card" style="max-width:400px;">
+        <span class="icon-big"><i class="fa-solid fa-lock"></i></span>
+        <h2>Admin sign in</h2>
+        <p>Sign in with your admin account to open the Progress Tracker.</p>
+        <form id="loginForm" novalidate style="text-align:left;">
+            <div class="form-group">
+                <label for="loginEmail">Email</label>
+                <input type="email" id="loginEmail" required autocomplete="username" placeholder="you@club.org" />
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••" />
+            </div>
+            <div id="loginStatus" style="font-size:0.8rem; min-height:1.1em; margin-bottom:0.8rem;"></div>
+            <button type="submit" class="btn btn-accent" id="loginSubmitBtn" style="width:100%; justify-content:center;"><i class="fa-solid fa-right-to-bracket"></i> Sign in</button>
+        </form>
+    </div>
+</div>
+
+<button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
+<div class="sidebar-scrim" id="sidebarScrim"></div>
+
+<div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <span class="mark"><img src="rotaract-logo.jpg" alt="" onerror="this.parentElement.innerHTML='<i class=&quot;fa-solid fa-chart-line&quot;></i>'"></span>
+            <div>
+                <div class="name">Progress Tracker</div>
+                <div class="sub">Galkot Baglung</div>
+            </div>
+        </div>
+        <div class="status-strip" id="statusStrip"><span class="status-dot"></span><span id="statusStripText">Connecting…</span></div>
+        <nav class="sidebar-nav" aria-label="Sections">
+            <div class="nav-group-label">Tracker</div>
+            <button class="nav-item active" data-view="overview"><i class="fa-solid fa-gauge-high"></i> Overview</button>
+            <button class="nav-item" data-view="modules"><i class="fa-solid fa-list-check"></i> Modules</button>
+            <button class="nav-item" data-view="snapshot"><i class="fa-solid fa-database"></i> Site Data Snapshot</button>
+            <div class="nav-group-label">Club Activity</div>
+            <button class="nav-item" data-view="clubprogress"><i class="fa-solid fa-diagram-project"></i> Projects &amp; Meetings</button>
+            <div class="nav-group-label">Account</div>
+            <a class="nav-item" href="admin.html"><i class="fa-solid fa-arrow-left"></i> Back to Central Hub</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="admin-chip"><span class="av" id="adminAvatar">--</span><span class="em" id="adminEmailChip">—</span></div>
+            <button class="btn-logout" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+        </div>
+    </aside>
+
+    <div class="main">
+        <div class="topbar">
+            <div class="topbar-title">
+                <h1 id="pageTitle">Overview</h1>
+                <p id="pageSubtitle">Website development progress — tracked module by module, with live charts.</p>
+            </div>
+            <div class="topbar-actions">
+                <div class="topbar-clock" id="liveClock"><span id="clockTime">--:--:--</span><span class="date" id="clockDate">---- --, ----</span></div>
+                <button class="btn btn-ghost" id="refreshBtn" title="Refresh data"><i class="fa-solid fa-rotate"></i></button>
+                <button class="btn btn-accent" id="printReportBtn"><i class="fa-solid fa-print"></i> Print report</button>
+            </div>
+        </div>
+
+        <!-- ===== VIEW: OVERVIEW ===== -->
+        <section class="view active" id="view-overview">
+            <div class="stat-grid" id="kpiGrid"></div>
+
+            <div class="panel-row">
+                <div class="panel" style="flex:0.8;">
+                    <h3><i class="fa-solid fa-circle-half-stroke"></i> Overall completion</h3>
+                    <div class="big-ring-wrap"><canvas id="chartOverall"></canvas>
+                        <div class="big-ring-label"><div class="pct" id="overallPctLabel">0%</div><div class="sub">Complete</div></div>
+                    </div>
+                </div>
+                <div class="panel" style="flex:1;">
+                    <h3><i class="fa-solid fa-chart-pie"></i> Status distribution</h3>
+                    <div class="chart-wrap"><canvas id="chartStatus"></canvas></div>
+                </div>
+                <div class="panel" style="flex:1.2;">
+                    <h3><i class="fa-solid fa-chart-simple"></i> Progress by category</h3>
+                    <div class="chart-wrap"><canvas id="chartCategory"></canvas></div>
+                </div>
+            </div>
+
+            <div class="section-heading"><h2><i class="fa-solid fa-layer-group"></i> Category breakdown</h2></div>
+            <div class="panel" id="catBreakdownPanel"><div id="catBreakdownList"></div></div>
+        </section>
+
+        <!-- ===== VIEW: MODULES ===== -->
+        <section class="view" id="view-modules">
+            <div class="section-heading">
+                <h2><i class="fa-solid fa-list-check"></i> All modules</h2>
+                <span class="meta"><span id="moduleCountMeta">0</span> tracked · last updated <span id="lastUpdatedMeta">—</span></span>
+            </div>
+            <div class="filters-row">
+                <select id="filterCategory"><option value="">All categories</option></select>
+                <select id="filterStatus">
+                    <option value="">All statuses</option>
+                    <option value="not_started">Not started</option>
+                    <option value="in_progress">In progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="blocked">Blocked</option>
+                    <option value="on_hold">On hold</option>
+                </select>
+                <input type="text" id="filterSearch" placeholder="Search modules…" />
+                <button class="btn btn-accent btn-sm" id="addItemBtn" style="margin-left:auto;"><i class="fa-solid fa-plus"></i> Add module</button>
+            </div>
+            <div class="item-grid" id="itemGrid"></div>
+        </section>
+
+        <!-- ===== VIEW: SITE DATA SNAPSHOT ===== -->
+        <section class="view" id="view-snapshot">
+            <div class="section-heading">
+                <h2><i class="fa-solid fa-database"></i> Live site data snapshot</h2>
+                <span class="meta">Row counts pulled directly from Supabase</span>
+            </div>
+            <div class="stat-grid" id="snapshotGrid"></div>
+        </section>
+
+        <!-- ===== VIEW: CLUB PROGRESS (Projects + Meetings integration) ===== -->
+        <section class="view" id="view-clubprogress">
+
+            <div class="stat-grid" id="cpKpiGrid"></div>
+
+            <div class="section-heading"><h2><i class="fa-solid fa-bell"></i> Smart alerts</h2></div>
+            <div class="alert-stack" id="cpAlerts"></div>
+
+            <div class="panel-row">
+                <div class="panel" style="flex:1;">
+                    <h3><i class="fa-solid fa-chart-pie"></i> Project status distribution</h3>
+                    <div class="chart-wrap"><canvas id="cpChartStatus"></canvas></div>
+                </div>
+                <div class="panel" style="flex:1;">
+                    <h3><i class="fa-solid fa-chart-column"></i> Meeting frequency (by month)</h3>
+                    <div class="chart-wrap"><canvas id="cpChartMeetingFreq"></canvas></div>
+                </div>
+                <div class="panel" style="flex:0.8;">
+                    <h3><i class="fa-solid fa-circle-half-stroke"></i> Action item completion</h3>
+                    <div class="big-ring-wrap"><canvas id="cpChartActions"></canvas>
+                        <div class="big-ring-label"><div class="pct" id="cpActionsPctLabel">0%</div><div class="sub">Done</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-heading">
+                <h2><i class="fa-solid fa-diagram-project"></i> Project progress</h2>
+                <span class="meta"><span id="cpProjectCountMeta">0</span> projects · updated <span id="cpLastUpdateMeta">—</span></span>
+            </div>
+            <div class="filters-row">
+                <select id="cpFilterStatus">
+                    <option value="">All statuses</option>
+                    <option value="upcoming">Upcoming</option>
+                    <option value="ongoing">Ongoing</option>
+                    <option value="closing">Closing</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+                <input type="text" id="cpFilterSearch" placeholder="Search projects…" />
+            </div>
+            <div class="project-grid" id="cpProjectGrid"></div>
+
+            <div class="section-heading" style="margin-top:1.8rem;"><h2><i class="fa-solid fa-list-check"></i> Action item tracker</h2></div>
+            <div class="filters-row">
+                <select id="cpFilterActionStatus">
+                    <option value="">All statuses</option>
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                </select>
+                <select id="cpFilterActionMember"><option value="">All members</option></select>
+                <input type="text" id="cpFilterActionSearch" placeholder="Search tasks…" />
+            </div>
+            <div class="panel" style="overflow-x:auto;">
+                <table class="data-table" id="cpActionTable">
+                    <thead><tr><th></th><th>Task</th><th>Assigned to</th><th>Meeting</th><th>Deadline</th><th>Status</th></tr></thead>
+                    <tbody id="cpActionTableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="panel-row" style="margin-top:1.8rem;">
+                <div class="panel" style="flex:1;">
+                    <h3><i class="fa-solid fa-users"></i> Member progress</h3>
+                    <div id="cpMemberList"></div>
+                </div>
+                <div class="panel" style="flex:1;">
+                    <h3><i class="fa-solid fa-chart-simple"></i> Member contribution</h3>
+                    <div class="chart-wrap"><canvas id="cpChartMembers"></canvas></div>
+                </div>
+            </div>
+
+            <div class="section-heading" style="margin-top:1.8rem;"><h2><i class="fa-solid fa-timeline"></i> Recent timeline</h2></div>
+            <div class="panel">
+                <div class="timeline-list" id="cpTimeline"></div>
+            </div>
+
+            <div class="section-heading" style="margin-top:1.8rem;"><h2><i class="fa-solid fa-calendar-days"></i> Calendar</h2></div>
+            <div class="panel">
+                <div class="cal-head">
+                    <button class="btn btn-ghost btn-sm" id="cpCalPrev"><i class="fa-solid fa-chevron-left"></i></button>
+                    <h3 id="cpCalTitle">—</h3>
+                    <button class="btn btn-ghost btn-sm" id="cpCalNext"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <div class="cal-grid" id="cpCalGrid"></div>
+            </div>
+
+            <div class="form-actions" style="margin-top:1.8rem;">
+                <button class="btn btn-ghost" id="cpExportCsvBtn"><i class="fa-solid fa-file-csv"></i> Export Excel (CSV)</button>
+                <button class="btn btn-accent" id="cpPrintBtn"><i class="fa-solid fa-print"></i> Print / Export PDF</button>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- ===== PROJECT DETAIL MODAL ===== -->
+<div class="modal-overlay" id="cpDetailModal">
+    <div class="modal-content" style="max-width:640px;">
+        <button class="modal-close" id="cpDetailCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+        <div class="modal-title"><i class="fa-solid fa-diagram-project"></i> <span id="cpDetailTitle">Project detail</span></div>
+        <div id="cpDetailBody"></div>
+    </div>
+</div>
+
+<!-- ===== CLUB PROGRESS PRINT AREA ===== -->
+<div id="cpPrintArea"></div>
+
+<!-- ===== ADD/EDIT MODAL ===== -->
+<div class="modal-overlay" id="itemModal">
+    <div class="modal-content">
+        <button class="modal-close" id="modalCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+        <div class="modal-title"><i class="fa-solid fa-list-check"></i> <span id="modalTitleText">Add module</span></div>
+        <form id="itemForm">
+            <input type="hidden" id="fItemId" />
+            <div class="form-row">
+                <div class="form-group"><label>Module name</label><input type="text" id="fName" required placeholder="e.g. Blood Bridge System" /></div>
+                <div class="form-group"><label>Category</label><input type="text" id="fCategory" list="categoryOptions" required placeholder="e.g. Public Website" /><datalist id="categoryOptions"></datalist></div>
+            </div>
+            <div class="form-group"><label>Description</label><textarea id="fDescription" placeholder="What this module covers…"></textarea></div>
+            <div class="form-row-3">
+                <div class="form-group"><label>Status</label>
+                    <select id="fStatus">
+                        <option value="not_started">Not started</option>
+                        <option value="in_progress" selected>In progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="blocked">Blocked</option>
+                        <option value="on_hold">On hold</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Priority</label>
+                    <select id="fPriority"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select>
+                </div>
+                <div class="form-group"><label>Owner</label><input type="text" id="fOwner" placeholder="e.g. Nabin" /></div>
+            </div>
+            <div class="form-group">
+                <label>Progress</label>
+                <div class="range-row"><input type="range" min="0" max="100" step="5" id="fProgress" value="0" /><span class="range-val" id="fProgressVal">0%</span></div>
+            </div>
+            <div class="form-group"><label>Notes</label><textarea id="fNotes" placeholder="Optional notes for the report…"></textarea></div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-ghost" id="modalCancelBtn">Cancel</button>
+                <button type="submit" class="btn btn-accent" id="modalSaveBtn"><i class="fa-solid fa-check"></i> Save module</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- ===== PRINT-ONLY REPORT ===== -->
+<div id="printArea"></div>
+
+<script>
+(() => {
+"use strict";
+
+// ============================================================
+// SUPABASE
+// ============================================================
+const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const PROGRESS_KEY = "website_progress_tracker";
+const CLUB_NAME = "Rotaract Club of Galkot Baglung";
+const CLUB_SUB = "RI District 3292 · Web Progress Tracker";
+
+const $ = (id) => document.getElementById(id);
+const escapeHtml = (str) => {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+};
+let currentUser = null;
+let appSettingsRowId = null;
+let progressItems = [];
+let charts = { overall: null, status: null, category: null };
+
+// ============================================================
+// TOASTS
+// ============================================================
+function showToast(title, sub, isError) {
+    const stack = $('toastStack');
+    const el = document.createElement('div');
+    el.className = 'toast-card' + (isError ? ' error' : '');
+    el.innerHTML = `<span class="t-icon"><i class="fa-solid ${isError ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i></span>
+        <div class="t-body"><div class="t-title">${escapeHtml(title)}</div><div class="t-sub">${escapeHtml(sub || '')}</div></div>
+        <button class="t-close"><i class="fa-solid fa-xmark"></i></button>`;
+    el.querySelector('.t-close').addEventListener('click', () => el.remove());
+    stack.appendChild(el);
+    setTimeout(() => { el.classList.add('leaving'); setTimeout(() => el.remove(), 300); }, 5000);
+}
+
+// ============================================================
+// ACCESS CONTROL — in-page login popup (no redirect away).
+// Any signed-in user with an ACTIVE 'admin' row in user_roles
+// gets in; everyone else sees the login form or access-denied.
+// ============================================================
+async function fetchRoleStatus(userId) {
+    try {
+        const { data, error } = await supabase.from('user_roles').select('role, status').eq('user_id', userId).maybeSingle();
+        if (error) return null;
+        return data;
+    } catch (e) { return null; }
+}
+function showLoginOverlay(message) {
+    $('bootScreen').classList.add('hidden');
+    $('accessDeniedOverlay').classList.remove('active');
+    $('loginOverlay').classList.add('active');
+    $('loginStatus').textContent = message || '';
+    setTimeout(() => $('loginEmail')?.focus(), 50);
+}
+function hideLoginOverlay() {
+    $('loginOverlay').classList.remove('active');
+    $('loginForm')?.reset();
+    $('loginStatus').textContent = '';
+}
+function showAccessDenied() {
+    $('bootScreen').classList.add('hidden');
+    $('loginOverlay').classList.remove('active');
+    const overlay = $('accessDeniedOverlay');
+    overlay.classList.add('active');
+    let countdown = 5;
+    const countdownEl = $('countdownNum');
+    const timer = setInterval(() => {
+        countdown--; countdownEl.textContent = countdown;
+        if (countdown <= 0) { clearInterval(timer); overlay.classList.remove('active'); showLoginOverlay('Session ended — please sign in again.'); }
+    }, 1000);
+}
+async function checkAdminAccess() {
+    try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session) { showLoginOverlay(); return false; }
+        const roleData = await fetchRoleStatus(session.user.id);
+        if (!roleData || roleData.role !== 'admin' || roleData.status !== 'active') {
+            showAccessDenied();
+            return false;
+        }
+        currentUser = session.user;
+        return true;
+    } catch (err) {
+        console.error('Auth check error:', err);
+        showLoginOverlay('Something went wrong — please sign in again.');
+        return false;
+    }
+}
+async function bootDashboard() {
+    $('adminEmailChip').textContent = currentUser.email;
+    $('adminAvatar').textContent = (currentUser.email || '?').slice(0, 2).toUpperCase();
+    $('statusStripText').textContent = 'Connected';
+    await Promise.all([loadProgressData(), loadSnapshot(), loadClubProgressData()]);
+    refreshAll();
+    cpRefreshAll();
+    $('bootScreen').classList.add('hidden');
+}
+
+// ---- login form ------------------------------------------------------
+$('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = $('loginSubmitBtn');
+    const statusEl = $('loginStatus');
+    const email = $('loginEmail').value.trim();
+    const password = $('loginPassword').value;
+    if (!email || !password) return;
+    statusEl.style.color = 'var(--danger)';
+    statusEl.textContent = '';
+    btn.disabled = true;
+    const original = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Signing in…';
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw new Error(error.message);
+        if (!data || !data.user) throw new Error('No user returned by Supabase.');
+        const roleData = await fetchRoleStatus(data.user.id);
+        if (!roleData || roleData.role !== 'admin' || roleData.status !== 'active') {
+            await supabase.auth.signOut().catch(() => {});
+            throw new Error('This account does not have active admin access.');
+        }
+        currentUser = data.user;
+        hideLoginOverlay();
+        $('accessDeniedOverlay').classList.remove('active');
+        await bootDashboard();
+        showToast('✅ Welcome', `Signed in as ${currentUser.email}`);
+    } catch (err) {
+        console.error('Login error:', err);
+        statusEl.textContent = err.message || 'Login failed — check your credentials.';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = original;
+    }
+});
+
+supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT' || !session) {
+        currentUser = null;
+        showLoginOverlay();
+    }
+});
+(function inactivityGuard() {
+    const INACTIVITY_TIMEOUT = 1800 * 1000;
+    let logoutTimer = null;
+    const performLogout = async () => {
+        try { await supabase.auth.signOut(); } catch (e) {}
+        currentUser = null;
+        showLoginOverlay('You were signed out due to inactivity.');
+    };
+    const resetTimer = () => { if (logoutTimer) clearTimeout(logoutTimer); logoutTimer = setTimeout(performLogout, INACTIVITY_TIMEOUT); };
+    ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click', 'wheel'].forEach(ev =>
+        document.addEventListener(ev, resetTimer, { passive: true }));
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) resetTimer(); });
+    resetTimer();
+})();
+$('logoutBtn').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    currentUser = null;
+    showLoginOverlay('You have been logged out.');
+});
+
+// ============================================================
+// NAV / VIEW SWITCHING
+// ============================================================
+const VIEW_META = {
+    overview: { title: 'Overview', sub: 'Website development progress — tracked module by module, with live charts.' },
+    modules: { title: 'Modules', sub: 'Every tracked module — edit status, progress and notes here.' },
+    snapshot: { title: 'Site Data Snapshot', sub: 'Live row counts pulled directly from your Supabase tables.' },
+    clubprogress: { title: 'Projects & Meetings', sub: 'Live progress dashboard integrating upcoming_projects and meeting_minutes.' }
+};
+function switchView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item[data-view]').forEach(n => n.classList.remove('active'));
+    const target = $('view-' + name);
+    if (!target) return;
+    target.classList.add('active');
+    const btn = document.querySelector(`.nav-item[data-view="${name}"]`);
+    if (btn) btn.classList.add('active');
+    const meta = VIEW_META[name];
+    if (meta) { $('pageTitle').textContent = meta.title; $('pageSubtitle').textContent = meta.sub; }
+    closeSidebarMobile();
+}
+document.querySelectorAll('.nav-item[data-view]').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
+
+function closeSidebarMobile() { $('sidebar').classList.remove('open'); $('sidebarScrim').classList.remove('active'); }
+$('menuToggle').addEventListener('click', () => { $('sidebar').classList.toggle('open'); $('sidebarScrim').classList.toggle('active'); });
+$('sidebarScrim').addEventListener('click', closeSidebarMobile);
+
+// ============================================================
+// CLOCK
+// ============================================================
+function tickClock() {
+    const now = new Date();
+    $('clockTime').textContent = now.toLocaleTimeString('en-US', { hour12: false });
+    $('clockDate').textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+}
+tickClock(); setInterval(tickClock, 1000);
+
+// ============================================================
+// DEFAULT SEED DATA (used only the very first time, if nothing saved yet)
+// ============================================================
+function defaultSeed() {
+    const now = new Date().toISOString();
+    const mk = (category, name, description, status, progress, priority) => ({
+        id: crypto.randomUUID(), category, name, description, status, progress, priority,
+        owner: '', notes: '', updated_at: now
+    });
+    return [
+        mk('Public Website', 'Homepage & Public Pages', 'Main site, hero, about, projects, contact.', 'completed', 100, 'high'),
+        mk('Admin Console', 'Central Hub (Admin Panel)', 'Unified admin console for members, projects, minutes, inquiries.', 'in_progress', 90, 'high'),
+        mk('Membership System', 'Member Registration & Directory', 'Member records, registration form and directory.', 'in_progress', 90, 'medium'),
+        mk('Blood Bridge', 'Emergency Blood Donation System', 'Donor registration, admin review, Galkot register.', 'in_progress', 85, 'high'),
+        mk('Certificate System', 'Digital Certificate & Verification', 'Issue, verify and manage digital certificates.', 'in_progress', 80, 'medium'),
+        mk('Meeting Minutes', 'Minutes Recording System', 'Meeting minutes v2, history and attendance tracking.', 'in_progress', 85, 'medium'),
+        mk('Letterhead Exchange', 'LHE & Verification Letters', 'Letterhead exchange, RLI verification, suchana.', 'in_progress', 75, 'medium'),
+        mk('Blog System', 'Blog & Dashboard', 'Public blog with an editorial dashboard.', 'in_progress', 70, 'low'),
+        mk('Banner & Presentation', 'Live Meeting Banner', 'Live meeting banner, agenda and presentation display.', 'completed', 95, 'low'),
+        mk('Course Records', 'Education / Course Records', 'Student course records, verification and inquiries.', 'in_progress', 60, 'low'),
+        mk('Progress Tracker', 'This tracker page', 'Auth-gated progress dashboard with printable reports.', 'completed', 100, 'medium')
+    ];
+}
+
+// ============================================================
+// LOAD / SAVE PROGRESS DATA (stored in app_settings)
+// ============================================================
+async function loadProgressData() {
+    const { data, error } = await supabase.from('app_settings').select('id, setting_value').eq('setting_key', PROGRESS_KEY).maybeSingle();
+    if (error) { console.error(error); showToast('Load failed', error.message, true); progressItems = []; return; }
+    if (!data) {
+        progressItems = defaultSeed();
+        await persistProgressData('seed default checklist');
+        return;
+    }
+    appSettingsRowId = data.id;
+    try {
+        const parsed = JSON.parse(data.setting_value);
+        progressItems = Array.isArray(parsed.items) ? parsed.items : [];
+    } catch (e) { progressItems = []; }
+}
+async function persistProgressData(actionLabel) {
+    const payload = JSON.stringify({ items: progressItems, last_updated: new Date().toISOString(), updated_by: currentUser ? currentUser.email : null });
+    let err;
+    if (appSettingsRowId) {
+        const { error } = await supabase.from('app_settings').update({ setting_value: payload, updated_at: new Date().toISOString(), updated_by: currentUser ? currentUser.email : null }).eq('id', appSettingsRowId);
+        err = error;
+    } else {
+        const { data, error } = await supabase.from('app_settings').insert({ setting_key: PROGRESS_KEY, setting_value: payload, updated_by: currentUser ? currentUser.email : null }).select('id').maybeSingle();
+        err = error;
+        if (!error && data) appSettingsRowId = data.id;
+    }
+    if (err) { console.error(err); showToast('Save failed', err.message, true); return false; }
+    logActivity(actionLabel || 'Updated progress tracker');
+    return true;
+}
+async function logActivity(action) {
+    try {
+        await supabase.from('admin_activity_log').insert({
+            admin_id: currentUser ? currentUser.id : null,
+            admin_email: currentUser ? currentUser.email : null,
+            action: 'Progress Tracker: ' + action,
+            details: null
+        });
+    } catch (e) { /* non-blocking */ }
+}
+
+// ============================================================
+// COMPUTED HELPERS
+// ============================================================
+const STATUS_LABEL = { not_started: 'Not started', in_progress: 'In progress', completed: 'Completed', blocked: 'Blocked', on_hold: 'On hold' };
+const STATUS_COLOR = { not_started: '#5b6272', in_progress: '#e2823f', completed: '#43c98a', blocked: '#f0555f', on_hold: '#9b8cf0' };
+
+function computeStats() {
+    const total = progressItems.length;
+    const overallPct = total ? Math.round(progressItems.reduce((s, i) => s + Number(i.progress || 0), 0) / total) : 0;
+    const byStatus = { not_started: 0, in_progress: 0, completed: 0, blocked: 0, on_hold: 0 };
+    progressItems.forEach(i => { if (byStatus[i.status] !== undefined) byStatus[i.status]++; });
+    const catMap = {};
+    progressItems.forEach(i => {
+        const c = i.category || 'Uncategorized';
+        if (!catMap[c]) catMap[c] = { sum: 0, count: 0 };
+        catMap[c].sum += Number(i.progress || 0); catMap[c].count++;
+    });
+    const categories = Object.keys(catMap).sort().map(c => ({ name: c, pct: Math.round(catMap[c].sum / catMap[c].count) }));
+    return { total, overallPct, byStatus, categories };
+}
+
+// ============================================================
+// RENDER: KPI CARDS
+// ============================================================
+function renderKpis() {
+    const s = computeStats();
+    $('kpiGrid').innerHTML = `
+        <div class="stat-card"><i class="fa-solid fa-layer-group"></i><div class="num">${s.total}</div><div class="label">Modules tracked</div></div>
+        <div class="stat-card c-accent2"><i class="fa-solid fa-percent"></i><div class="num">${s.overallPct}%</div><div class="label">Overall complete</div></div>
+        <div class="stat-card c-success"><i class="fa-solid fa-circle-check"></i><div class="num">${s.byStatus.completed}</div><div class="label">Completed</div></div>
+        <div class="stat-card"><i class="fa-solid fa-spinner"></i><div class="num">${s.byStatus.in_progress}</div><div class="label">In progress</div></div>
+        <div class="stat-card c-danger"><i class="fa-solid fa-triangle-exclamation"></i><div class="num">${s.byStatus.blocked}</div><div class="label">Blocked</div></div>
+        <div class="stat-card c-purple"><i class="fa-solid fa-pause"></i><div class="num">${s.byStatus.on_hold}</div><div class="label">On hold</div></div>`;
+    $('overallPctLabel').textContent = s.overallPct + '%';
+}
+
+// ============================================================
+// RENDER: CHARTS
+// ============================================================
+function destroyCharts() { Object.keys(charts).forEach(k => { if (charts[k]) { charts[k].destroy(); charts[k] = null; } }); }
+function renderCharts() {
+    destroyCharts();
+    const s = computeStats();
+
+    charts.overall = new Chart($('chartOverall'), {
+        type: 'doughnut',
+        data: { datasets: [{ data: [s.overallPct, 100 - s.overallPct], backgroundColor: ['#e2823f', '#1c2230'], borderWidth: 0 }] },
+        options: { cutout: '78%', plugins: { legend: { display: false }, tooltip: { enabled: false } }, animation: { duration: 500 } }
+    });
+
+    const statusLabels = Object.keys(s.byStatus).map(k => STATUS_LABEL[k]);
+    const statusData = Object.values(s.byStatus);
+    const statusColors = Object.keys(s.byStatus).map(k => STATUS_COLOR[k]);
+    charts.status = new Chart($('chartStatus'), {
+        type: 'pie',
+        data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: statusColors, borderColor: '#12161f', borderWidth: 2 }] },
+        options: { plugins: { legend: { position: 'bottom', labels: { color: '#8b93a3', font: { size: 10 }, boxWidth: 10, padding: 10 } } }, animation: { duration: 500 } }
+    });
+
+    charts.category = new Chart($('chartCategory'), {
+        type: 'bar',
+        data: { labels: s.categories.map(c => c.name), datasets: [{ label: 'Progress %', data: s.categories.map(c => c.pct), backgroundColor: '#33d6c0', borderRadius: 6, maxBarThickness: 26 }] },
+        options: {
+            indexAxis: 'y',
+            scales: {
+                x: { min: 0, max: 100, ticks: { color: '#8b93a3', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.06)' } },
+                y: { ticks: { color: '#8b93a3', font: { size: 10 } }, grid: { display: false } }
+            },
+            plugins: { legend: { display: false } },
+            animation: { duration: 500 }
+        }
+    });
+}
+
+function renderCategoryBreakdown() {
+    const s = computeStats();
+    if (!s.categories.length) { $('catBreakdownList').innerHTML = '<div class="empty-state"><i class="fa-solid fa-inbox"></i>No modules yet — add one from the Modules tab.</div>'; return; }
+    $('catBreakdownList').innerHTML = s.categories.map(c => `
+        <div class="cat-bar-row">
+            <div class="cat-bar-top"><span class="cname">${escapeHtml(c.name)}</span><span class="cpct">${c.pct}%</span></div>
+            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${c.pct}%;"></div></div>
+        </div>`).join('');
+}
+
+// ============================================================
+// RENDER: MODULES LIST
+// ============================================================
+function populateCategoryFilter() {
+    const cats = Array.from(new Set(progressItems.map(i => i.category).filter(Boolean))).sort();
+    const sel = $('filterCategory');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">All categories</option>' + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    sel.value = current;
+    $('categoryOptions').innerHTML = cats.map(c => `<option value="${escapeHtml(c)}"></option>`).join('');
+}
+function renderItemGrid() {
+    const catF = $('filterCategory').value;
+    const statusF = $('filterStatus').value;
+    const searchF = $('filterSearch').value.trim().toLowerCase();
+    let items = progressItems.slice().sort((a, b) => (a.category || '').localeCompare(b.category || '') || (a.name || '').localeCompare(b.name || ''));
+    if (catF) items = items.filter(i => i.category === catF);
+    if (statusF) items = items.filter(i => i.status === statusF);
+    if (searchF) items = items.filter(i => (i.name || '').toLowerCase().includes(searchF) || (i.description || '').toLowerCase().includes(searchF));
+
+    $('moduleCountMeta').textContent = progressItems.length;
+    const lastUpd = progressItems.reduce((max, i) => { const t = i.updated_at ? new Date(i.updated_at).getTime() : 0; return t > max ? t : max; }, 0);
+    $('lastUpdatedMeta').textContent = lastUpd ? new Date(lastUpd).toLocaleString() : '—';
+
+    if (!items.length) { $('itemGrid').innerHTML = '<div class="empty-state"><i class="fa-solid fa-inbox"></i>No modules match these filters.</div>'; return; }
+    $('itemGrid').innerHTML = items.map(i => `
+        <div class="item-card">
+            <div class="item-top">
+                <div class="item-title-wrap">
+                    <span class="item-cat">${escapeHtml(i.category || 'Uncategorized')}</span>
+                    <span class="item-title">${escapeHtml(i.name)}</span>
+                    ${i.description ? `<span class="item-desc">${escapeHtml(i.description)}</span>` : ''}
+                </div>
+                <div class="item-actions">
+                    <button class="icon-btn" data-edit="${i.id}" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                    <button class="icon-btn danger" data-del="${i.id}" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            </div>
+            <div class="item-meta-row">
+                <span class="pill pill-status-${i.status}"><i class="fa-solid fa-circle"></i> ${STATUS_LABEL[i.status] || i.status}</span>
+                <span class="pill pill-priority-${i.priority}">${(i.priority || 'medium').toUpperCase()} PRIORITY</span>
+                ${i.owner ? `<span class="item-owner"><i class="fa-solid fa-user"></i> ${escapeHtml(i.owner)}</span>` : ''}
+            </div>
+            <div class="item-progress-row">
+                <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${i.progress || 0}%; background:${STATUS_COLOR[i.status] || '#e2823f'};"></div></div>
+                <span class="pval">${i.progress || 0}%</span>
+            </div>
+            ${i.notes ? `<div class="item-notes"><i class="fa-solid fa-note-sticky"></i> ${escapeHtml(i.notes)}</div>` : ''}
+        </div>`).join('');
+
+    $('itemGrid').querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => openItemModal(b.dataset.edit)));
+    $('itemGrid').querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => deleteItem(b.dataset.del)));
+}
+['filterCategory', 'filterStatus'].forEach(id => $(id).addEventListener('change', renderItemGrid));
+$('filterSearch').addEventListener('input', renderItemGrid);
+
+function refreshAll() {
+    renderKpis();
+    renderCharts();
+    renderCategoryBreakdown();
+    populateCategoryFilter();
+    renderItemGrid();
+}
+
+// ============================================================
+// MODAL: ADD / EDIT
+// ============================================================
+$('fProgress').addEventListener('input', () => { $('fProgressVal').textContent = $('fProgress').value + '%'; });
+function openItemModal(id) {
+    const item = id ? progressItems.find(i => i.id === id) : null;
+    $('modalTitleText').textContent = item ? 'Edit module' : 'Add module';
+    $('fItemId').value = item ? item.id : '';
+    $('fName').value = item ? item.name : '';
+    $('fCategory').value = item ? item.category : '';
+    $('fDescription').value = item ? (item.description || '') : '';
+    $('fStatus').value = item ? item.status : 'in_progress';
+    $('fPriority').value = item ? (item.priority || 'medium') : 'medium';
+    $('fOwner').value = item ? (item.owner || '') : '';
+    $('fProgress').value = item ? (item.progress || 0) : 0;
+    $('fProgressVal').textContent = (item ? (item.progress || 0) : 0) + '%';
+    $('fNotes').value = item ? (item.notes || '') : '';
+    $('itemModal').classList.add('active');
+    setTimeout(() => $('fName').focus(), 50);
+}
+function closeItemModal() { $('itemModal').classList.remove('active'); }
+$('addItemBtn').addEventListener('click', () => openItemModal(null));
+$('modalCloseBtn').addEventListener('click', closeItemModal);
+$('modalCancelBtn').addEventListener('click', closeItemModal);
+$('itemModal').addEventListener('click', (e) => { if (e.target === $('itemModal')) closeItemModal(); });
+
+$('itemForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = $('fItemId').value;
+    const now = new Date().toISOString();
+    const record = {
+        id: id || crypto.randomUUID(),
+        category: $('fCategory').value.trim() || 'Uncategorized',
+        name: $('fName').value.trim(),
+        description: $('fDescription').value.trim(),
+        status: $('fStatus').value,
+        priority: $('fPriority').value,
+        owner: $('fOwner').value.trim(),
+        progress: Number($('fProgress').value),
+        notes: $('fNotes').value.trim(),
+        updated_at: now
+    };
+    if (!record.name) return;
+    const saveBtn = $('modalSaveBtn'); saveBtn.disabled = true;
+    const idx = progressItems.findIndex(i => i.id === record.id);
+    if (idx >= 0) progressItems[idx] = record; else progressItems.push(record);
+    const ok = await persistProgressData((idx >= 0 ? 'Updated' : 'Added') + ' module: ' + record.name);
+    saveBtn.disabled = false;
+    if (ok) { showToast(idx >= 0 ? 'Module updated' : 'Module added', record.name); closeItemModal(); refreshAll(); }
+});
+async function deleteItem(id) {
+    const item = progressItems.find(i => i.id === id);
+    if (!item) return;
+    if (!confirm(`Delete "${item.name}"? This can't be undone.`)) return;
+    progressItems = progressItems.filter(i => i.id !== id);
+    const ok = await persistProgressData('Deleted module: ' + item.name);
+    if (ok) { showToast('Module deleted', item.name); refreshAll(); }
+}
+
+// ============================================================
+// SITE DATA SNAPSHOT (real Supabase counts)
+// ============================================================
+const SNAPSHOT_TABLES = [
+    { table: 'members', label: 'Active members', icon: 'fa-users' },
+    { table: 'attendance_registrations', label: 'Attendance records', icon: 'fa-clipboard-check' },
+    { table: 'upcoming_projects', label: 'Upcoming projects', icon: 'fa-diagram-project' },
+    { table: 'project_applications', label: 'Project applications', icon: 'fa-file-circle-check' },
+    { table: 'blogs', label: 'Blog posts', icon: 'fa-newspaper' },
+    { table: 'meeting_minutes_v2', label: 'Meeting minutes', icon: 'fa-file-lines' },
+    { table: 'certifications', label: 'Certifications', icon: 'fa-certificate' },
+    { table: 'course_records', label: 'Course records', icon: 'fa-graduation-cap' },
+    { table: 'blood_bridge_registration', label: 'Blood bridge donors', icon: 'fa-droplet' },
+    { table: 'rotaract_lhe', label: 'Letterhead exchanges', icon: 'fa-file-signature' },
+    { table: 'rotaract_verify', label: 'Verification letters', icon: 'fa-shield-halved' },
+    { table: 'partners_sponsors', label: 'Partners & sponsors', icon: 'fa-handshake' },
+    { table: 'inquiries', label: 'Inquiries', icon: 'fa-envelope-open-text' },
+    { table: 'course_inquiries', label: 'Course inquiries', icon: 'fa-circle-question' }
+];
+let snapshotCounts = [];
+async function loadSnapshot() {
+    const results = await Promise.all(SNAPSHOT_TABLES.map(async (t) => {
+        try {
+            const { count, error } = await supabase.from(t.table).select('*', { count: 'exact', head: true });
+            return { ...t, count: error ? null : (count || 0) };
+        } catch (e) { return { ...t, count: null }; }
+    }));
+    snapshotCounts = results;
+    $('snapshotGrid').innerHTML = results.map(r => `
+        <div class="stat-card"><i class="fa-solid ${r.icon}"></i><div class="num">${r.count === null ? '—' : r.count}</div><div class="label">${escapeHtml(r.label)}</div></div>`).join('');
+}
+
+// ============================================================
+// PRINT REPORT — one click, builds the printable DOM then prints
+// ============================================================
+$('printReportBtn').addEventListener('click', async () => {
+    $('printReportBtn').disabled = true;
+    $('printReportBtn').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Preparing…';
+    try { await buildPrintReport(); window.print(); }
+    finally {
+        $('printReportBtn').disabled = false;
+        $('printReportBtn').innerHTML = '<i class="fa-solid fa-print"></i> Print report';
+    }
+});
+async function buildPrintReport() {
+    const s = computeStats();
+    const now = new Date();
+    const genBy = currentUser ? currentUser.email : 'Unknown admin';
+
+    // Offscreen charts rendered fresh at print-friendly size for crisp raster images
+    const overallImg = await renderOffscreenChart('doughnut',
+        { datasets: [{ data: [s.overallPct, 100 - s.overallPct], backgroundColor: ['#1D2A44', '#e5e5e5'], borderWidth: 0 }] },
+        { cutout: '72%', plugins: { legend: { display: false } } });
+    const statusImg = await renderOffscreenChart('pie',
+        { labels: Object.keys(s.byStatus).map(k => STATUS_LABEL[k]), datasets: [{ data: Object.values(s.byStatus), backgroundColor: ['#9aa0ad', '#e2823f', '#2f9e6f', '#d94550', '#7a6bd6'] }] },
+        { plugins: { legend: { position: 'bottom', labels: { color: '#222', boxWidth: 10, font: { size: 9 } } } } });
+    const catImg = await renderOffscreenChart('bar',
+        { labels: s.categories.map(c => c.name), datasets: [{ data: s.categories.map(c => c.pct), backgroundColor: '#1D2A44' }] },
+        { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { min: 0, max: 100, ticks: { color: '#333', font: { size: 9 } } }, y: { ticks: { color: '#333', font: { size: 9 } } } } });
+
+    const moduleRows = progressItems.slice().sort((a, b) => (a.category || '').localeCompare(b.category || '')).map(i => `
+        <tr>
+            <td>${escapeHtml(i.category || '—')}</td>
+            <td><strong>${escapeHtml(i.name)}</strong>${i.notes ? `<br><span style="color:#777;">${escapeHtml(i.notes)}</span>` : ''}</td>
+            <td>${STATUS_LABEL[i.status] || i.status}</td>
+            <td>${(i.priority || 'medium').toUpperCase()}</td>
+            <td><span class="rpt-progress-mini"><span style="width:${i.progress || 0}%;"></span></span>${i.progress || 0}%</td>
+            <td>${escapeHtml(i.owner || '—')}</td>
+            <td>${i.updated_at ? new Date(i.updated_at).toLocaleDateString() : '—'}</td>
+        </tr>`).join('');
+
+    const snapshotRows = (snapshotCounts.length ? snapshotCounts : []).map(r => `
+        <tr><td>${escapeHtml(r.label)}</td><td>${r.count === null ? 'N/A' : r.count}</td></tr>`).join('');
+
+    $('printArea').innerHTML = `
+        <div class="rpt-header">
+            <img src="rotaract-logo.jpg" onerror="this.style.display='none'" alt="" />
+            <div><div class="rh-club">${escapeHtml(CLUB_NAME)}</div><div class="rh-sub">${escapeHtml(CLUB_SUB)}</div></div>
+        </div>
+        <div class="rpt-title">Website Development Progress Report</div>
+        <div class="rpt-genline">Generated ${now.toLocaleString()} · by ${escapeHtml(genBy)}</div>
+
+        <div class="rpt-kpi-grid">
+            <div class="rpt-kpi"><div class="k-num">${s.total}</div><div class="k-lbl">Modules</div></div>
+            <div class="rpt-kpi"><div class="k-num">${s.overallPct}%</div><div class="k-lbl">Overall</div></div>
+            <div class="rpt-kpi"><div class="k-num">${s.byStatus.completed}</div><div class="k-lbl">Completed</div></div>
+            <div class="rpt-kpi"><div class="k-num">${s.byStatus.in_progress}</div><div class="k-lbl">In progress</div></div>
+            <div class="rpt-kpi"><div class="k-num">${s.byStatus.blocked}</div><div class="k-lbl">Blocked</div></div>
+        </div>
+
+        <div class="rpt-section-title">Progress Overview</div>
+        <div class="rpt-charts">
+            <img src="${overallImg}" alt="Overall completion" />
+            <img src="${statusImg}" alt="Status distribution" />
+            <img src="${catImg}" alt="Progress by category" />
+        </div>
+
+        <div class="rpt-section-title">Module Details</div>
+        <table class="rpt-table">
+            <thead><tr><th>Category</th><th>Module</th><th>Status</th><th>Priority</th><th>Progress</th><th>Owner</th><th>Updated</th></tr></thead>
+            <tbody>${moduleRows || '<tr><td colspan="7">No modules tracked yet.</td></tr>'}</tbody>
+        </table>
+
+        <div class="rpt-section-title">Live Site Data Snapshot</div>
+        <table class="rpt-table">
+            <thead><tr><th>Data set</th><th>Row count</th></tr></thead>
+            <tbody>${snapshotRows || '<tr><td colspan="2">Snapshot not loaded — open Site Data Snapshot tab first.</td></tr>'}</tbody>
+        </table>
+
+        <div class="rpt-footer">
+            <div class="rpt-sign">Prepared by</div>
+            <div class="rpt-sign">Approved by (President)</div>
+        </div>
+        <div class="rpt-pagefoot">${escapeHtml(CLUB_NAME)} — Confidential internal report — generated automatically by the Progress Tracker</div>
+    `;
+}
+function renderOffscreenChart(type, data, extraOptions) {
+    return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 480; canvas.height = 300;
+        canvas.style.position = 'fixed'; canvas.style.left = '-9999px';
+        document.body.appendChild(canvas);
+        const chart = new Chart(canvas, {
+            type, data,
+            options: Object.assign({ responsive: false, animation: false, devicePixelRatio: 2 }, extraOptions)
+        });
+        setTimeout(() => {
+            const img = canvas.toDataURL('image/png');
+            chart.destroy();
+            canvas.remove();
+            resolve(img);
+        }, 60);
+    });
+}
+
+// ============================================================
+// CLUB PROGRESS DASHBOARD — integrates upcoming_projects,
+// meeting_minutes, members and project_applications (same
+// Supabase project, no new/duplicate tables).
+// ============================================================
+let cpProjects = [];       // rows from upcoming_projects
+let cpMeetings = [];       // rows from meeting_minutes {id, data, created_at}
+let cpMembers = [];        // rows from members {name, status, position, designation}
+let cpApplicationCount = 0;
+let cpCharts = { status: null, meetingFreq: null, actions: null, members: null };
+let cpCalDate = new Date();
+const CP_STATUS_COLOR = { upcoming: '#33d6c0', ongoing: '#e2823f', closing: '#9b8cf0', completed: '#43c98a', cancelled: '#f0555f' };
+
+async function loadClubProgressData() {
+    try {
+        const [projRes, meetRes, memRes, appRes] = await Promise.all([
+            supabase.from('upcoming_projects').select('*').order('id', { ascending: false }),
+            supabase.from('meeting_minutes').select('id, data, meeting_type, closing_remarks, created_at, updated_at').order('created_at', { ascending: false }),
+            supabase.from('members').select('name, status, position, designation'),
+            supabase.from('project_applications').select('*', { count: 'exact', head: true })
+        ]);
+        cpProjects = projRes.data || [];
+        cpMeetings = meetRes.data || [];
+        cpMembers = (memRes.data || []).filter(m => (m.status || '').toLowerCase() !== 'inactive' && m.name);
+        cpApplicationCount = appRes.count || 0;
+    } catch (e) {
+        console.error('Club progress load error:', e);
+        showToast('Load failed', 'Could not load projects/meetings data.', true);
+    }
+}
+
+// ---- helpers -------------------------------------------------
+function cpParseDate(d) { if (!d) return null; const dt = new Date(d); return isNaN(dt.getTime()) ? null : dt; }
+function cpDaysBetween(a, b) { return Math.round((a.setHours(0,0,0,0) - b.setHours(0,0,0,0)) / 86400000); }
+function cpAgendaText(m) {
+    const p = m.data || {};
+    const parts = [p.meeting_number || ''];
+    (p.agendas || []).forEach(a => parts.push(a.title || '', a.description || ''));
+    Object.values(p.discussions || {}).forEach(v => parts.push(v || ''));
+    return parts.join(' ').toLowerCase();
+}
+// Match rule (per integration spec): link a meeting to a project when the
+// project name appears in the meeting's agenda/discussion text, or vice versa.
+function cpMeetingsForProject(project) {
+    const name = (project.name || '').trim().toLowerCase();
+    if (!name) return [];
+    return cpMeetings.filter(m => cpAgendaText(m).includes(name));
+}
+function cpAllActionItems() {
+    const rows = [];
+    cpMeetings.forEach(m => {
+        const p = m.data || {};
+        (p.actionItems || []).forEach((ai, idx) => rows.push({
+            meetingId: m.id, meetingLabel: p.meeting_number || 'Untitled meeting', itemIndex: idx,
+            task: ai.task || '', person: ai.person || '', deadline: ai.deadline || '', status: ai.status || 'Pending'
+        }));
+    });
+    return rows;
+}
+function cpActionItemsForProject(project, allItems) {
+    const name = (project.name || '').trim().toLowerCase();
+    const linkedIds = new Set(cpMeetingsForProject(project).map(m => m.id));
+    return allItems.filter(ai => linkedIds.has(ai.meetingId) || (ai.task || '').toLowerCase().includes(name));
+}
+function cpProjectProgress(project, allItems) {
+    const status = (project.status || 'upcoming').toLowerCase();
+    if (status === 'completed') return 100;
+    if (status === 'cancelled') return 0;
+    const linkedMeetings = cpMeetingsForProject(project).length;
+    const items = cpActionItemsForProject(project, allItems);
+    const doneRate = items.length ? items.filter(i => i.status === 'Completed').length / items.length : 0;
+    const base = { upcoming: 10, ongoing: 45, closing: 70 }[status] ?? 10;
+    const pct = base + Math.min(20, linkedMeetings * 8) + Math.round(doneRate * 20);
+    return Math.max(0, Math.min(97, pct));
+}
+function cpIsProjectOverdue(project) {
+    const status = (project.status || '').toLowerCase();
+    if (status === 'completed' || status === 'cancelled') return false;
+    const d = cpParseDate(project.date);
+    if (!d) return false;
+    return cpDaysBetween(new Date(d), new Date()) < 0;
+}
+
+// ---- KPIs ------------------------------------------------------
+function cpComputeStats() {
+    const now = new Date();
+    const allItems = cpAllActionItems();
+    const byStatus = { upcoming: 0, ongoing: 0, completed: 0, cancelled: 0 };
+    let overdue = 0;
+    cpProjects.forEach(p => {
+        const s = (p.status || 'upcoming').toLowerCase();
+        if (byStatus[s] === undefined) byStatus[s] = 0;
+        byStatus[s]++;
+        if (cpIsProjectOverdue(p)) overdue++;
+    });
+    const pendingActions = allItems.filter(a => a.status !== 'Completed').length;
+    const completedActions = allItems.filter(a => a.status === 'Completed').length;
+    const overallPct = cpProjects.length
+        ? Math.round(cpProjects.reduce((s, p) => s + cpProjectProgress(p, allItems), 0) / cpProjects.length)
+        : 0;
+
+    // upcoming project / meeting dates
+    const futureProjects = cpProjects.filter(p => cpParseDate(p.date) && cpParseDate(p.date) >= new Date(now.toDateString()) && !['completed','cancelled'].includes((p.status||'').toLowerCase()));
+    futureProjects.sort((a, b) => cpParseDate(a.date) - cpParseDate(b.date));
+    const nextProject = futureProjects[0] || null;
+
+    const sortedMeetings = cpMeetings.slice().sort((a, b) => (cpParseDate(b.data?.meeting_date) || 0) - (cpParseDate(a.data?.meeting_date) || 0));
+    const lastMeeting = sortedMeetings.find(m => cpParseDate(m.data?.meeting_date) && cpParseDate(m.data?.meeting_date) <= now) || null;
+    const futureMeetings = cpMeetings.filter(m => cpParseDate(m.data?.meeting_date) && cpParseDate(m.data?.meeting_date) >= now)
+        .sort((a, b) => cpParseDate(a.data?.meeting_date) - cpParseDate(b.data?.meeting_date));
+    const nextMeeting = futureMeetings[0] || null;
+
+    const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7);
+    const monthAgo = new Date(now); monthAgo.setDate(now.getDate() - 30);
+    const thisWeekMeetings = cpMeetings.filter(m => { const d = cpParseDate(m.data?.meeting_date); return d && d >= weekAgo && d <= now; }).length;
+    const thisMonthMeetings = cpMeetings.filter(m => { const d = cpParseDate(m.data?.meeting_date); return d && d >= monthAgo && d <= now; }).length;
+
+    return {
+        total: cpProjects.length, byStatus, overdue,
+        totalMeetings: cpMeetings.length, pendingActions, completedActions, overallPct,
+        nextProject, nextMeeting, lastMeeting, thisWeekMeetings, thisMonthMeetings, allItems
+    };
+}
+
+function cpRenderKpis(s) {
+    $('cpKpiGrid').innerHTML = `
+        <div class="stat-card"><i class="fa-solid fa-diagram-project"></i><div class="num">${s.total}</div><div class="label">Total projects</div></div>
+        <div class="stat-card c-accent2"><i class="fa-solid fa-hourglass-half"></i><div class="num">${s.byStatus.upcoming || 0}</div><div class="label">Upcoming</div></div>
+        <div class="stat-card"><i class="fa-solid fa-spinner"></i><div class="num">${s.byStatus.ongoing || 0}</div><div class="label">Ongoing</div></div>
+        <div class="stat-card c-success"><i class="fa-solid fa-circle-check"></i><div class="num">${s.byStatus.completed || 0}</div><div class="label">Completed</div></div>
+        <div class="stat-card c-danger"><i class="fa-solid fa-ban"></i><div class="num">${s.byStatus.cancelled || 0}</div><div class="label">Cancelled</div></div>
+        <div class="stat-card c-danger"><i class="fa-solid fa-triangle-exclamation"></i><div class="num">${s.overdue}</div><div class="label">Overdue</div></div>
+        <div class="stat-card"><i class="fa-solid fa-people-group"></i><div class="num">${s.totalMeetings}</div><div class="label">Meetings held</div></div>
+        <div class="stat-card"><i class="fa-solid fa-list"></i><div class="num">${s.pendingActions}</div><div class="label">Pending actions</div></div>
+        <div class="stat-card c-success"><i class="fa-solid fa-square-check"></i><div class="num">${s.completedActions}</div><div class="label">Completed actions</div></div>
+        <div class="stat-card c-purple"><i class="fa-solid fa-percent"></i><div class="num">${s.overallPct}%</div><div class="label">Overall progress</div></div>`;
+}
+
+// ---- alerts ------------------------------------------------------
+function cpRenderAlerts(s) {
+    const now = new Date();
+    const alerts = [];
+    s.allItems.forEach(ai => {
+        if (ai.status === 'Completed' || !ai.deadline) return;
+        const d = cpParseDate(ai.deadline);
+        if (!d) return;
+        const diff = cpDaysBetween(new Date(d), new Date(now));
+        if (diff < 0) alerts.push({ type: 'danger', icon: 'fa-triangle-exclamation', title: `Overdue: ${ai.task || 'Untitled task'}`, sub: `${ai.person || 'Unassigned'} · was due ${d.toLocaleDateString()}` });
+        else if (diff === 0) alerts.push({ type: 'warn', icon: 'fa-bell', title: `Deadline today: ${ai.task || 'Untitled task'}`, sub: ai.person || 'Unassigned' });
+        else if (diff === 1) alerts.push({ type: 'warn', icon: 'fa-clock', title: `Deadline tomorrow: ${ai.task || 'Untitled task'}`, sub: ai.person || 'Unassigned' });
+    });
+    cpProjects.forEach(p => {
+        if (['completed', 'cancelled'].includes((p.status || '').toLowerCase())) return;
+        const d = cpParseDate(p.date);
+        if (!d) return;
+        const diff = cpDaysBetween(new Date(d), new Date(now));
+        if (diff >= 0 && diff <= 7) alerts.push({ type: 'info', icon: 'fa-calendar-days', title: `Upcoming project: ${p.name}`, sub: `In ${diff} day${diff === 1 ? '' : 's'} · ${d.toLocaleDateString()}` });
+    });
+    if (s.lastMeeting) {
+        const d = cpParseDate(s.lastMeeting.data?.meeting_date);
+        if (d && cpDaysBetween(new Date(now), new Date(d)) >= 30) {
+            alerts.push({ type: 'danger', icon: 'fa-people-arrows', title: 'No meeting conducted in 30+ days', sub: `Last meeting: ${d.toLocaleDateString()}` });
+        }
+    } else if (!cpMeetings.length) {
+        alerts.push({ type: 'warn', icon: 'fa-people-arrows', title: 'No meetings recorded yet', sub: '' });
+    }
+    const el = $('cpAlerts');
+    if (!alerts.length) { el.innerHTML = '<div class="empty-state"><i class="fa-solid fa-circle-check"></i>No active alerts — everything looks on track.</div>'; return; }
+    el.innerHTML = alerts.map(a => `<div class="alert-card ${a.type}"><i class="fa-solid ${a.icon}"></i><div><div><b>${escapeHtml(a.title)}</b></div>${a.sub ? `<div class="a-sub">${escapeHtml(a.sub)}</div>` : ''}</div></div>`).join('');
+}
+
+// ---- charts ------------------------------------------------------
+function cpDestroyCharts() { Object.keys(cpCharts).forEach(k => { if (cpCharts[k]) { cpCharts[k].destroy(); cpCharts[k] = null; } }); }
+function cpRenderCharts(s) {
+    cpDestroyCharts();
+    const statusKeys = Object.keys(s.byStatus).filter(k => s.byStatus[k] > 0);
+    cpCharts.status = new Chart($('cpChartStatus'), {
+        type: 'pie',
+        data: { labels: statusKeys.map(k => k[0].toUpperCase() + k.slice(1)), datasets: [{ data: statusKeys.map(k => s.byStatus[k]), backgroundColor: statusKeys.map(k => CP_STATUS_COLOR[k]), borderColor: '#12161f', borderWidth: 2 }] },
+        options: { plugins: { legend: { position: 'bottom', labels: { color: '#8b93a3', font: { size: 10 }, boxWidth: 10 } } } }
+    });
+
+    const monthMap = {};
+    cpMeetings.forEach(m => { const d = cpParseDate(m.data?.meeting_date) || cpParseDate(m.created_at); if (!d) return; const key = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); monthMap[key] = (monthMap[key] || 0) + 1; });
+    const monthKeys = Object.keys(monthMap).slice(-8);
+    cpCharts.meetingFreq = new Chart($('cpChartMeetingFreq'), {
+        type: 'bar',
+        data: { labels: monthKeys, datasets: [{ label: 'Meetings', data: monthKeys.map(k => monthMap[k]), backgroundColor: '#33d6c0', borderRadius: 6, maxBarThickness: 30 }] },
+        options: { scales: { x: { ticks: { color: '#8b93a3', font: { size: 10 } }, grid: { display: false } }, y: { beginAtZero: true, ticks: { color: '#8b93a3', font: { size: 10 }, precision: 0 }, grid: { color: 'rgba(255,255,255,0.06)' } } }, plugins: { legend: { display: false } } }
+    });
+
+    const actionPct = s.allItems.length ? Math.round(s.completedActions / s.allItems.length * 100) : 0;
+    $('cpActionsPctLabel').textContent = actionPct + '%';
+    cpCharts.actions = new Chart($('cpChartActions'), {
+        type: 'doughnut',
+        data: { datasets: [{ data: [actionPct, 100 - actionPct], backgroundColor: ['#43c98a', '#1c2230'], borderWidth: 0 }] },
+        options: { cutout: '78%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+    });
+
+    const memberCounts = {};
+    s.allItems.forEach(ai => { if (!ai.person) return; memberCounts[ai.person] = (memberCounts[ai.person] || 0) + 1; });
+    const topMembers = Object.entries(memberCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    cpCharts.members = new Chart($('cpChartMembers'), {
+        type: 'bar',
+        data: { labels: topMembers.map(m => m[0]), datasets: [{ label: 'Assigned tasks', data: topMembers.map(m => m[1]), backgroundColor: '#e2823f', borderRadius: 6, maxBarThickness: 22 }] },
+        options: { indexAxis: 'y', scales: { x: { beginAtZero: true, ticks: { color: '#8b93a3', font: { size: 10 }, precision: 0 }, grid: { color: 'rgba(255,255,255,0.06)' } }, y: { ticks: { color: '#8b93a3', font: { size: 10 } }, grid: { display: false } } }, plugins: { legend: { display: false } } }
+    });
+}
+
+// ---- project cards ------------------------------------------------------
+function cpRenderProjectGrid(s) {
+    const statusF = $('cpFilterStatus').value;
+    const searchF = $('cpFilterSearch').value.trim().toLowerCase();
+    let list = cpProjects.slice();
+    if (statusF) list = list.filter(p => (p.status || '').toLowerCase() === statusF);
+    if (searchF) list = list.filter(p => (p.name || '').toLowerCase().includes(searchF));
+
+    $('cpProjectCountMeta').textContent = cpProjects.length;
+    $('cpLastUpdateMeta').textContent = new Date().toLocaleTimeString();
+
+    if (!list.length) { $('cpProjectGrid').innerHTML = '<div class="empty-state"><i class="fa-solid fa-inbox"></i>No projects match these filters.</div>'; return; }
+    $('cpProjectGrid').innerHTML = list.map(p => {
+        const items = cpActionItemsForProject(p, s.allItems);
+        const done = items.filter(i => i.status === 'Completed').length;
+        const pct = cpProjectProgress(p, s.allItems);
+        const d = cpParseDate(p.date);
+        const overdue = cpIsProjectOverdue(p);
+        let daysChip = '';
+        if (d && !['completed', 'cancelled'].includes((p.status || '').toLowerCase())) {
+            const diff = cpDaysBetween(new Date(d), new Date());
+            daysChip = `<span class="days-chip ${overdue ? 'overdue' : diff <= 7 ? 'soon' : ''}">${overdue ? Math.abs(diff) + 'd overdue' : diff + 'd left'}</span>`;
+        }
+        return `<div class="progress-card" data-pid="${escapeHtml(String(p.id))}">
+            <div class="pc-top">
+                <div><div class="pc-title">${escapeHtml(p.name || 'Untitled')}</div>
+                <div class="pc-meta"><span>${escapeHtml(p.date || 'TBD')}</span><span>${escapeHtml(p.location || '—')}</span></div></div>
+                <span class="pill pill-status-${(p.status||'upcoming')==='ongoing'?'in_progress':(p.status||'upcoming')==='completed'?'completed':(p.status||'upcoming')==='cancelled'?'blocked':'not_started'}">${escapeHtml((p.status||'upcoming'))}</span>
+            </div>
+            <div class="item-progress-row"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%;"></div></div><span class="pval">${pct}%</span></div>
+            <div class="pc-stats">
+                <span><b>${cpMeetingsForProject(p).length}</b> meetings</span>
+                <span><b>${done}/${items.length}</b> actions done</span>
+                ${daysChip}
+            </div>
+        </div>`;
+    }).join('');
+    document.querySelectorAll('#cpProjectGrid .progress-card').forEach(card => card.addEventListener('click', () => cpOpenDetail(card.dataset.pid)));
+}
+
+// ---- action item tracker ------------------------------------------------------
+function cpRenderActionTable(s) {
+    const statusF = $('cpFilterActionStatus').value;
+    const memberF = $('cpFilterActionMember').value;
+    const searchF = $('cpFilterActionSearch').value.trim().toLowerCase();
+    const memberSel = $('cpFilterActionMember');
+    if (!memberSel.dataset.populated) {
+        const names = Array.from(new Set(s.allItems.map(a => a.person).filter(Boolean))).sort();
+        memberSel.innerHTML = '<option value="">All members</option>' + names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+        memberSel.dataset.populated = '1';
+    }
+    let items = s.allItems.slice();
+    if (statusF) items = items.filter(a => a.status === statusF);
+    if (memberF) items = items.filter(a => a.person === memberF);
+    if (searchF) items = items.filter(a => (a.task || '').toLowerCase().includes(searchF));
+    items.sort((a, b) => { const da = cpParseDate(a.deadline), db = cpParseDate(b.deadline); if (!da) return 1; if (!db) return -1; return da - db; });
+
+    const now = new Date();
+    if (!items.length) { $('cpActionTableBody').innerHTML = `<tr><td colspan="6" class="empty-state">No action items match these filters.</td></tr>`; return; }
+    $('cpActionTableBody').innerHTML = items.map(ai => {
+        const d = cpParseDate(ai.deadline);
+        const overdue = d && ai.status !== 'Completed' && cpDaysBetween(new Date(d), new Date(now)) < 0;
+        return `<tr>
+            <td><input type="checkbox" class="chk-complete" ${ai.status === 'Completed' ? 'checked' : ''} data-mid="${escapeHtml(String(ai.meetingId))}" data-idx="${ai.itemIndex}" /></td>
+            <td>${escapeHtml(ai.task || '—')}</td>
+            <td>${escapeHtml(ai.person || 'Unassigned')}</td>
+            <td>${escapeHtml(ai.meetingLabel)}</td>
+            <td>${d ? d.toLocaleDateString() : '—'} ${overdue ? '<span class="pill pill-priority-high">Overdue</span>' : ''}</td>
+            <td><span class="pill pill-status-${ai.status === 'Completed' ? 'completed' : ai.status === 'In Progress' ? 'in_progress' : 'not_started'}">${escapeHtml(ai.status)}</span></td>
+        </tr>`;
+    }).join('');
+    document.querySelectorAll('#cpActionTableBody .chk-complete').forEach(cb => cb.addEventListener('change', cpToggleActionItem));
+}
+async function cpToggleActionItem(e) {
+    const cb = e.target;
+    const meetingId = cb.dataset.mid, idx = Number(cb.dataset.idx);
+    const meeting = cpMeetings.find(m => String(m.id) === String(meetingId));
+    if (!meeting || !meeting.data?.actionItems?.[idx]) return;
+    const newStatus = cb.checked ? 'Completed' : 'Pending';
+    const updatedData = JSON.parse(JSON.stringify(meeting.data));
+    updatedData.actionItems[idx].status = newStatus;
+    const { error } = await supabase.from('meeting_minutes').update({ data: updatedData }).eq('id', meeting.id);
+    if (error) { showToast('Update failed', error.message, true); cb.checked = !cb.checked; return; }
+    meeting.data = updatedData;
+    cpRefreshAll();
+    showToast('Updated', `Action item marked ${newStatus.toLowerCase()}.`);
+}
+
+// ---- member progress ------------------------------------------------------
+function cpRenderMembers(s) {
+    if (!cpMembers.length) { $('cpMemberList').innerHTML = '<div class="empty-state"><i class="fa-solid fa-users"></i>No members on file.</div>'; return; }
+    const rows = cpMembers.map(m => {
+        const mine = s.allItems.filter(a => (a.person || '').toLowerCase() === (m.name || '').toLowerCase());
+        const done = mine.filter(a => a.status === 'Completed').length;
+        const pending = mine.length - done;
+        const rate = mine.length ? Math.round(done / mine.length * 100) : 0;
+        return { name: m.name, role: m.position || m.designation || 'Member', total: mine.length, done, pending, rate };
+    }).filter(r => r.total > 0).sort((a, b) => b.total - a.total);
+    if (!rows.length) { $('cpMemberList').innerHTML = '<div class="empty-state"><i class="fa-solid fa-users"></i>No members have assigned action items yet.</div>'; return; }
+    $('cpMemberList').innerHTML = rows.map(r => `
+        <div class="member-row">
+            <span class="member-av">${escapeHtml((r.name || '?').slice(0, 2).toUpperCase())}</span>
+            <div class="member-info"><div class="member-name">${escapeHtml(r.name)}</div><div class="member-sub">${escapeHtml(r.role)} · ${r.done}/${r.total} done · ${r.pending} pending</div></div>
+            <div class="member-track"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${r.rate}%;"></div></div></div>
+        </div>`).join('');
+}
+
+// ---- timeline ------------------------------------------------------
+function cpRenderTimeline() {
+    const events = [];
+    cpProjects.forEach(p => events.push({ date: cpParseDate(p.date), label: `Project: ${p.name || 'Untitled'}`, sub: (p.status || 'upcoming'), type: 'project' }));
+    cpMeetings.forEach(m => events.push({ date: cpParseDate(m.data?.meeting_date) || cpParseDate(m.created_at), label: `Meeting: ${m.data?.meeting_number || 'Untitled'}`, sub: m.data?.meeting_type || '', type: 'meeting' }));
+    const valid = events.filter(e => e.date).sort((a, b) => b.date - a.date).slice(0, 12);
+    if (!valid.length) { $('cpTimeline').innerHTML = '<div class="empty-state"><i class="fa-solid fa-timeline"></i>No dated events yet.</div>'; return; }
+    $('cpTimeline').innerHTML = valid.map((e, i) => `
+        <div class="tl-row">
+            <div class="tl-dot-wrap"><span class="tl-dot ${e.type}"></span>${i < valid.length - 1 ? '<span class="tl-line"></span>' : ''}</div>
+            <div class="tl-body"><div class="tl-title">${escapeHtml(e.label)}</div><div class="tl-date">${e.date.toLocaleDateString()} ${e.sub ? '· ' + escapeHtml(e.sub) : ''}</div></div>
+        </div>`).join('');
+}
+
+// ---- calendar ------------------------------------------------------
+function cpRenderCalendar() {
+    const y = cpCalDate.getFullYear(), mo = cpCalDate.getMonth();
+    $('cpCalTitle').textContent = cpCalDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const firstDay = new Date(y, mo, 1).getDay();
+    const daysInMonth = new Date(y, mo + 1, 0).getDate();
+    const today = new Date();
+    const dowHtml = ['S','M','T','W','T','F','S'].map(d => `<div class="cal-dow">${d}</div>`).join('');
+    let cells = '';
+    for (let i = 0; i < firstDay; i++) cells += '<div class="cal-cell empty"></div>';
+    for (let day = 1; day <= daysInMonth; day++) {
+        const cellDate = new Date(y, mo, day);
+        const isToday = cellDate.toDateString() === today.toDateString();
+        const meetingsToday = cpMeetings.filter(m => { const d = cpParseDate(m.data?.meeting_date); return d && d.toDateString() === cellDate.toDateString(); });
+        const projectsToday = cpProjects.filter(p => { const d = cpParseDate(p.date); return d && d.toDateString() === cellDate.toDateString(); });
+        cells += `<div class="cal-cell ${isToday ? 'today' : ''}"><span class="cal-daynum">${day}</span>
+            ${meetingsToday.map(m => `<span class="cal-tag meeting" title="${escapeHtml(m.data?.meeting_number || '')}">${escapeHtml(m.data?.meeting_number || 'Meeting')}</span>`).join('')}
+            ${projectsToday.map(p => `<span class="cal-tag project" title="${escapeHtml(p.name || '')}">${escapeHtml(p.name || 'Project')}</span>`).join('')}
+        </div>`;
+    }
+    $('cpCalGrid').innerHTML = dowHtml + cells;
+}
+$('cpCalPrev').addEventListener('click', () => { cpCalDate.setMonth(cpCalDate.getMonth() - 1); cpRenderCalendar(); });
+$('cpCalNext').addEventListener('click', () => { cpCalDate.setMonth(cpCalDate.getMonth() + 1); cpRenderCalendar(); });
+
+// ---- detail modal ------------------------------------------------------
+function cpOpenDetail(pid) {
+    const p = cpProjects.find(x => String(x.id) === String(pid));
+    if (!p) return;
+    const s = cpComputeStats();
+    const meetings = cpMeetingsForProject(p);
+    const items = cpActionItemsForProject(p, s.allItems);
+    $('cpDetailTitle').textContent = p.name || 'Project detail';
+    $('cpDetailBody').innerHTML = `
+        <div class="detail-block">
+            <h4>Overview</h4>
+            <div class="detail-mini-row"><b>Status:</b> ${escapeHtml(p.status || 'upcoming')} · <b>Date:</b> ${escapeHtml(p.date || 'TBD')} · <b>Location:</b> ${escapeHtml(p.location || '—')}</div>
+            <div class="detail-mini-row">${escapeHtml(p.description || 'No description provided.')}</div>
+            <div class="detail-mini-row"><b>Progress:</b> ${cpProjectProgress(p, s.allItems)}%</div>
+        </div>
+        <div class="detail-block">
+            <h4>Related meeting minutes (${meetings.length})</h4>
+            ${meetings.length ? meetings.map(m => `<div class="detail-mini-row">${escapeHtml(m.data?.meeting_number || 'Untitled')} — ${cpParseDate(m.data?.meeting_date) ? cpParseDate(m.data?.meeting_date).toLocaleDateString() : '—'} (${escapeHtml(m.data?.meeting_type || '')})</div>`).join('') : '<div class="detail-mini-row">No linked meetings found — link by mentioning the project name in an agenda item.</div>'}
+        </div>
+        <div class="detail-block">
+            <h4>Action items (${items.length})</h4>
+            ${items.length ? items.map(a => `<div class="detail-mini-row">${escapeHtml(a.task)} — ${escapeHtml(a.person || 'Unassigned')} — <span class="pill pill-status-${a.status==='Completed'?'completed':a.status==='In Progress'?'in_progress':'not_started'}">${escapeHtml(a.status)}</span></div>`).join('') : '<div class="detail-mini-row">No related action items.</div>'}
+        </div>`;
+    $('cpDetailModal').classList.add('active');
+}
+$('cpDetailCloseBtn').addEventListener('click', () => $('cpDetailModal').classList.remove('active'));
+$('cpDetailModal').addEventListener('click', (e) => { if (e.target.id === 'cpDetailModal') $('cpDetailModal').classList.remove('active'); });
+
+// ---- filters wiring ------------------------------------------------------
+['cpFilterStatus', 'cpFilterSearch'].forEach(id => $(id).addEventListener('input', () => cpRenderProjectGrid(cpComputeStats())));
+['cpFilterActionStatus', 'cpFilterActionMember', 'cpFilterActionSearch'].forEach(id => $(id).addEventListener('input', () => cpRenderActionTable(cpComputeStats())));
+
+// ---- export CSV ------------------------------------------------------
+$('cpExportCsvBtn').addEventListener('click', () => {
+    const s = cpComputeStats();
+    const rows = [['Project', 'Status', 'Date', 'Location', 'Progress %', 'Linked meetings', 'Actions done/total']];
+    cpProjects.forEach(p => {
+        const items = cpActionItemsForProject(p, s.allItems);
+        const done = items.filter(i => i.status === 'Completed').length;
+        rows.push([p.name || '', p.status || '', p.date || '', p.location || '', cpProjectProgress(p, s.allItems), cpMeetingsForProject(p).length, `${done}/${items.length}`]);
+    });
+    rows.push([]); rows.push(['Task', 'Assigned to', 'Meeting', 'Deadline', 'Status']);
+    s.allItems.forEach(a => rows.push([a.task || '', a.person || '', a.meetingLabel || '', a.deadline || '', a.status || '']));
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `club-progress-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+    URL.revokeObjectURL(url);
+});
+
+// ---- print / export PDF ------------------------------------------------------
+$('cpPrintBtn').addEventListener('click', () => { cpBuildPrintReport(); window.print(); });
+function cpBuildPrintReport() {
+    const s = cpComputeStats();
+    const now = new Date();
+    const genBy = currentUser ? currentUser.email : 'Unknown admin';
+    const projectRows = cpProjects.map(p => {
+        const items = cpActionItemsForProject(p, s.allItems);
+        const done = items.filter(i => i.status === 'Completed').length;
+        return `<tr><td><strong>${escapeHtml(p.name || '—')}</strong></td><td>${escapeHtml(p.status || 'upcoming')}</td><td>${escapeHtml(p.date || 'TBD')}</td>
+            <td><span class="rpt-progress-mini"><span style="width:${cpProjectProgress(p, s.allItems)}%;"></span></span>${cpProjectProgress(p, s.allItems)}%</td>
+            <td>${cpMeetingsForProject(p).length}</td><td>${done}/${items.length}</td></tr>`;
+    }).join('');
+    const actionRows = s.allItems.map(a => `<tr><td>${escapeHtml(a.task)}</td><td>${escapeHtml(a.person || '—')}</td><td>${a.deadline ? new Date(a.deadline).toLocaleDateString() : '—'}</td><td>${escapeHtml(a.status)}</td></tr>`).join('');
+    $('cpPrintArea').innerHTML = `
+        <div class="rpt-header"><img src="rotaract-logo.jpg" onerror="this.style.display='none'" alt="" />
+            <div><div class="rh-club">${escapeHtml(CLUB_NAME)}</div><div class="rh-sub">${escapeHtml(CLUB_SUB)}</div></div></div>
+        <div class="rpt-title">Project &amp; Meeting Progress Report</div>
+        <div class="rpt-genline">Generated ${now.toLocaleString()} · by ${escapeHtml(genBy)}</div>
+        <div class="rpt-kpi-grid">
+            <div class="rpt-kpi"><div class="k-num">${s.total}</div><div class="k-lbl">Projects</div></div>
+            <div class="rpt-kpi"><div class="k-num">${s.overallPct}%</div><div class="k-lbl">Overall</div></div>
+            <div class="rpt-kpi"><div class="k-num">${s.totalMeetings}</div><div class="k-lbl">Meetings</div></div>
+            <div class="rpt-kpi"><div class="k-num">${s.completedActions}</div><div class="k-lbl">Actions done</div></div>
+            <div class="rpt-kpi"><div class="k-num">${s.pendingActions}</div><div class="k-lbl">Actions pending</div></div>
+        </div>
+        <div class="rpt-section-title">Project Progress</div>
+        <table class="rpt-table"><thead><tr><th>Project</th><th>Status</th><th>Date</th><th>Progress</th><th>Meetings</th><th>Actions</th></tr></thead><tbody>${projectRows || '<tr><td colspan="6">No projects tracked yet.</td></tr>'}</tbody></table>
+        <div class="rpt-section-title">Action Items</div>
+        <table class="rpt-table"><thead><tr><th>Task</th><th>Assigned to</th><th>Deadline</th><th>Status</th></tr></thead><tbody>${actionRows || '<tr><td colspan="4">No action items recorded.</td></tr>'}</tbody></table>
+        <div class="rpt-footer"><div class="rpt-sign">Prepared by</div><div class="rpt-sign">Approved by (President)</div></div>
+        <div class="rpt-pagefoot">${escapeHtml(CLUB_NAME)} — Confidential internal report — generated automatically</div>`;
+}
+
+// ---- master refresh ------------------------------------------------------
+function cpRefreshAll() {
+    const s = cpComputeStats();
+    cpRenderKpis(s);
+    cpRenderAlerts(s);
+    cpRenderCharts(s);
+    cpRenderProjectGrid(s);
+    cpRenderActionTable(s);
+    cpRenderMembers(s);
+    cpRenderTimeline();
+    cpRenderCalendar();
+}
+
+// ============================================================
+// BOOT
+// ============================================================
+$('refreshBtn').addEventListener('click', async () => {
+    $('refreshBtn').querySelector('i').classList.add('fa-spin');
+    await Promise.all([loadProgressData(), loadSnapshot(), loadClubProgressData()]);
+    refreshAll();
+    cpRefreshAll();
+    $('refreshBtn').querySelector('i').classList.remove('fa-spin');
+    showToast('Refreshed', 'Latest data loaded.');
+});
+
+async function init() {
+    const ok = await checkAdminAccess();
+    if (!ok) { $('bootScreen').classList.add('hidden'); return; }
+    await bootDashboard();
+}
+init();
+
+})();
+</script>
+</body>
+</html>
