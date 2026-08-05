@@ -6,23 +6,21 @@
     <title>Admin · Rotaract QR Manager</title>
 
     <!-- QRCode.js for preview -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
-
     <!-- Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Sortable for drag & drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- FileSaver for downloads -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
     <style>
-        /* ---------- RESET & ROOT (same as before) ---------- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* ---------- RESET & ROOT ---------- */
+        * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #0d47a1;
             --primary-light: #1565c0;
@@ -31,7 +29,7 @@
             --accent-light: #e53935;
             --bg: #f1f4fa;
             --card-bg: #ffffff;
-            --shadow: 0 8px 30px rgba(0, 0, 0, 0.10);
+            --shadow: 0 8px 30px rgba(0,0,0,0.10);
             --radius: 16px;
             --radius-sm: 10px;
             --transition: 0.25s ease;
@@ -40,781 +38,263 @@
             --danger: #b71c1c;
             --gray: #6c7a8a;
             --light-gray: #eef2f7;
+            --text: #1e1e2f;
+            --text-secondary: #4a5a72;
+            --border-color: #e2e8f0;
         }
-
-        body {
-            font-family: var(--font);
-            background: var(--bg);
-            min-height: 100vh;
-            color: #1e1e2f;
-        }
+        body { font-family: var(--font); background: var(--bg); color: var(--text); min-height:100vh; }
+        ::-webkit-scrollbar { width:6px; height:6px; }
+        ::-webkit-scrollbar-track { background: var(--light-gray); }
+        ::-webkit-scrollbar-thumb { background: var(--primary-light); border-radius:10px; }
 
         /* ---------- LOGIN OVERLAY ---------- */
         #loginOverlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(10, 20, 40, 0.75);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
+            position: fixed; inset:0; background: rgba(10,20,40,0.75); backdrop-filter: blur(10px);
+            display: flex; align-items:center; justify-content:center; z-index:9999;
             transition: opacity 0.4s ease, visibility 0.4s ease;
         }
-
-        #loginOverlay.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-
+        #loginOverlay.hidden { opacity:0; visibility:hidden; pointer-events:none; }
         .login-modal {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 40px 36px;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-            text-align: center;
-            animation: loginFadeIn 0.4s ease;
+            background: var(--card-bg); border-radius: var(--radius); padding:40px 36px;
+            max-width:400px; width:90%; box-shadow:0 24px 60px rgba(0,0,0,0.35);
+            text-align:center; animation: fadeIn 0.4s ease;
         }
+        @keyframes fadeIn { 0%{opacity:0; transform:scale(0.94) translateY(16px);} 100%{opacity:1; transform:scale(1) translateY(0);} }
+        .login-modal .lock-icon { font-size:48px; color:var(--primary); background:#e3edfb; width:80px; height:80px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
+        .login-modal h2 { font-size:24px; font-weight:700; color:var(--primary-dark); margin-bottom:4px; }
+        .login-modal p { color:var(--gray); font-size:14px; margin-bottom:24px; }
+        .login-modal .field { text-align:left; margin-bottom:16px; }
+        .login-modal .field label { font-weight:600; font-size:13px; color:#2d3a4a; display:block; margin-bottom:4px; }
+        .login-modal .field input { width:100%; padding:12px 16px; border:2px solid var(--border-color); border-radius:var(--radius-sm); font-size:14px; transition:var(--transition); background:#fafcff; }
+        .login-modal .field input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 4px rgba(13,71,161,0.12); }
+        .login-modal .login-btn { width:100%; padding:12px; border:none; border-radius:var(--radius-sm); background:var(--primary); color:#fff; font-weight:700; font-size:16px; cursor:pointer; transition:var(--transition); display:flex; align-items:center; justify-content:center; gap:10px; }
+        .login-modal .login-btn:hover { background:var(--primary-light); transform:translateY(-2px); box-shadow:0 6px 24px rgba(13,71,161,0.30); }
+        .login-modal .login-btn:disabled { opacity:0.7; pointer-events:none; }
+        .login-modal .login-error { color:var(--danger); font-size:13px; margin-top:12px; min-height:20px; font-weight:500; }
+        .login-modal .login-loading { margin-top:8px; color:var(--gray); font-size:13px; }
 
-        @keyframes loginFadeIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.94) translateY(16px);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
+        /* ---------- DASHBOARD ---------- */
+        #dashboard { display:none; flex-direction:column; min-height:100vh; }
+        #dashboard.active { display:flex; }
 
-        .login-modal .lock-icon {
-            font-size: 48px;
-            color: var(--primary);
-            background: #e3edfb;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-        }
-
-        .login-modal h2 {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--primary-dark);
-            margin-bottom: 4px;
-        }
-
-        .login-modal p {
-            color: var(--gray);
-            font-size: 14px;
-            margin-bottom: 24px;
-        }
-
-        .login-modal .field {
-            text-align: left;
-            margin-bottom: 16px;
-        }
-
-        .login-modal .field label {
-            font-weight: 600;
-            font-size: 13px;
-            color: #2d3a4a;
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .login-modal .field input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            transition: var(--transition);
-            background: #fafcff;
-        }
-
-        .login-modal .field input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.12);
-        }
-
-        .login-modal .login-btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: var(--radius-sm);
-            background: var(--primary);
-            color: #fff;
-            font-weight: 700;
-            font-size: 16px;
-            cursor: pointer;
-            transition: var(--transition);
-            margin-top: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .login-modal .login-btn:hover {
-            background: var(--primary-light);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(13, 71, 161, 0.30);
-        }
-
-        .login-modal .login-btn:disabled {
-            opacity: 0.7;
-            pointer-events: none;
-        }
-
-        .login-modal .login-error {
-            color: var(--danger);
-            font-size: 13px;
-            margin-top: 12px;
-            min-height: 20px;
-            font-weight: 500;
-        }
-
-        .login-modal .login-loading {
-            margin-top: 8px;
-            color: var(--gray);
-            font-size: 13px;
-        }
-
-        /* ---------- ADMIN DASHBOARD ---------- */
-        #dashboard {
-            display: none;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        #dashboard.active {
-            display: flex;
-        }
-
-        /* ---------- HEADER ---------- */
+        /* Header */
         .admin-header {
             background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-            padding: 16px 32px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 14px;
-            box-shadow: 0 4px 20px rgba(13, 71, 161, 0.30);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            padding: 16px 32px; display:flex; align-items:center; justify-content:space-between;
+            flex-wrap:wrap; gap:14px; box-shadow:0 4px 20px rgba(13,71,161,0.30);
+            position:sticky; top:0; z-index:100;
         }
+        .admin-header .brand { display:flex; align-items:center; gap:12px; color:#fff; }
+        .admin-header .brand i { font-size:28px; color:#ffd54f; }
+        .admin-header .brand h1 { font-size:20px; font-weight:700; }
+        .admin-header .brand span { font-weight:300; opacity:0.8; }
+        .admin-header .header-actions { display:flex; align-items:center; gap:12px; }
+        .admin-header .header-actions a, .admin-header .header-actions button {
+            color:#fff; text-decoration:none; padding:8px 18px; border-radius:40px;
+            font-weight:600; font-size:13px; background:rgba(255,255,255,0.12);
+            border:1px solid rgba(255,255,255,0.10); transition:var(--transition);
+            display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+            font-family:var(--font);
+        }
+        .admin-header .header-actions a:hover, .admin-header .header-actions button:hover {
+            background:rgba(255,255,255,0.22); transform:translateY(-2px);
+        }
+        .admin-header .header-actions .logout-btn:hover { background:var(--accent); border-color:var(--accent); }
 
-        .admin-header .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: #fff;
-        }
+        /* Container */
+        .admin-container { max-width:1440px; margin:0 auto; padding:24px 24px; flex:1; width:100%; }
 
-        .admin-header .brand i {
-            font-size: 28px;
-            color: #ffd54f;
-        }
-
-        .admin-header .brand h1 {
-            font-size: 20px;
-            font-weight: 700;
-        }
-        .admin-header .brand span {
-            font-weight: 300;
-            opacity: 0.8;
-        }
-
-        .admin-header .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .admin-header .header-actions .view-qr-btn {
-            color: #fff;
-            text-decoration: none;
-            padding: 8px 18px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 13px;
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.10);
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .admin-header .header-actions .view-qr-btn:hover {
-            background: rgba(255, 255, 255, 0.22);
-            transform: translateY(-2px);
-        }
-
-        .admin-header .header-actions .logout-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #fff;
-            padding: 8px 20px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .admin-header .header-actions .logout-btn:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-            transform: translateY(-2px);
-        }
-
-        /* ---------- CONTAINER (same as before) ---------- */
-        .admin-container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 28px 24px;
-            flex: 1;
-            width: 100%;
-        }
-
+        /* Stats Row */
         .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 18px;
-            margin-bottom: 32px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:16px; margin-bottom:28px;
         }
-
         .stat-card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 20px 22px;
-            box-shadow: var(--shadow);
-            border-left: 5px solid var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 14px;
+            background:var(--card-bg); border-radius:var(--radius); padding:18px 20px;
+            box-shadow:var(--shadow); border-left:5px solid var(--primary);
+            display:flex; align-items:center; gap:12px; transition:var(--transition);
         }
+        .stat-card:hover { transform:translateY(-3px); box-shadow:0 12px 36px rgba(0,0,0,0.12); }
+        .stat-card .stat-icon { font-size:28px; color:var(--primary); opacity:0.7; }
+        .stat-card .stat-info h4 { font-size:12px; color:var(--gray); font-weight:500; text-transform:uppercase; letter-spacing:0.3px; }
+        .stat-card .stat-info .number { font-size:26px; font-weight:800; color:var(--primary-dark); line-height:1.2; }
 
-        .stat-card .stat-icon {
-            font-size: 32px;
-            color: var(--primary);
-            opacity: 0.7;
+        /* Tabs */
+        .admin-tabs {
+            display:flex; gap:4px; background:var(--light-gray); border-radius:10px; padding:4px;
+            margin-bottom:24px; flex-wrap:wrap;
         }
+        .admin-tabs .tab-btn {
+            background:transparent; border:none; padding:8px 20px; border-radius:8px;
+            font-weight:600; font-size:14px; color:var(--text-secondary); cursor:pointer;
+            transition:var(--transition); display:flex; align-items:center; gap:6px;
+            font-family:var(--font);
+        }
+        .admin-tabs .tab-btn.active { background:var(--card-bg); color:var(--primary); box-shadow:var(--shadow); }
+        .admin-tabs .tab-btn:hover:not(.active) { background:rgba(255,255,255,0.5); }
+        .tab-content { display:none; }
+        .tab-content.active { display:block; }
 
-        .stat-card .stat-info h4 {
-            font-size: 13px;
-            color: var(--gray);
-            font-weight: 500;
+        /* Cards & Forms */
+        .admin-form, .card-panel {
+            background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow);
+            padding:24px 28px; margin-bottom:28px; border:1px solid rgba(0,0,0,0.03);
         }
+        .admin-form .form-title, .card-panel .panel-title {
+            font-size:18px; font-weight:700; color:var(--primary-dark); margin-bottom:16px;
+            display:flex; align-items:center; gap:10px;
+        }
+        .form-grid {
+            display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:16px;
+        }
+        .form-grid .field { display:flex; flex-direction:column; gap:4px; }
+        .form-grid .field label { font-weight:600; font-size:13px; color:#3d4a5c; }
+        .form-grid .field input, .form-grid .field select, .form-grid .field textarea {
+            padding:10px 14px; border:2px solid var(--border-color); border-radius:var(--radius-sm);
+            font-size:14px; transition:var(--transition); background:#fafcff; width:100%;
+            font-family:var(--font);
+        }
+        .form-grid .field input:focus, .form-grid .field select:focus, .form-grid .field textarea:focus {
+            outline:none; border-color:var(--primary); box-shadow:0 0 0 4px rgba(13,71,161,0.10);
+        }
+        .form-grid .field textarea { resize:vertical; min-height:60px; }
+        .btn-submit, .btn-primary {
+            padding:10px 28px; border:none; border-radius:var(--radius-sm);
+            background:var(--primary); color:#fff; font-weight:700; font-size:14px;
+            cursor:pointer; transition:var(--transition); display:inline-flex;
+            align-items:center; gap:8px; height:44px; white-space:nowrap;
+        }
+        .btn-submit:hover, .btn-primary:hover {
+            background:var(--primary-light); transform:translateY(-2px);
+            box-shadow:0 6px 20px rgba(13,71,161,0.25);
+        }
+        .btn-submit.cancel { background:#9aa6b5; }
+        .btn-submit.cancel:hover { background:#7a8a9e; }
+        .btn-danger { background:var(--danger); color:#fff; }
+        .btn-danger:hover { background:var(--accent-light); }
+        .btn-success { background:var(--success); color:#fff; }
+        .btn-success:hover { background:#2e7d32; }
 
-        .stat-card .stat-info .number {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--primary-dark);
-            line-height: 1.2;
-        }
-
-        .admin-form {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 24px 28px;
-            margin-bottom: 32px;
-            border: 1px solid rgba(0, 0, 0, 0.03);
-        }
-
-        .admin-form .form-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--primary-dark);
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .admin-form .form-title i {
-            color: var(--primary);
-        }
-
-        .admin-form .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr auto;
-            gap: 14px;
-            align-items: end;
-        }
-
-        .admin-form .form-row .field {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .admin-form .form-row .field label {
-            font-weight: 600;
-            font-size: 13px;
-            color: #3d4a5c;
-        }
-
-        .admin-form .form-row .field input {
-            padding: 10px 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            transition: var(--transition);
-            background: #fafcff;
-            width: 100%;
-        }
-
-        .admin-form .form-row .field input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.10);
-        }
-
-        .admin-form .form-row .btn-submit {
-            padding: 10px 28px;
-            border: none;
-            border-radius: var(--radius-sm);
-            background: var(--primary);
-            color: #fff;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            height: 44px;
-            white-space: nowrap;
-        }
-
-        .admin-form .form-row .btn-submit:hover {
-            background: var(--primary-light);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(13, 71, 161, 0.25);
-        }
-
-        .admin-form .form-row .btn-submit.cancel {
-            background: #9aa6b5;
-        }
-        .admin-form .form-row .btn-submit.cancel:hover {
-            background: #7a8a9e;
-        }
-
+        /* Table */
         .table-wrapper {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            border: 1px solid rgba(0, 0, 0, 0.03);
+            background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow);
+            overflow:hidden; border:1px solid rgba(0,0,0,0.03);
         }
-
         .table-header {
-            padding: 18px 24px;
-            background: #f8faff;
-            border-bottom: 2px solid #eef2f7;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
+            padding:16px 24px; background:#f8faff; border-bottom:2px solid var(--light-gray);
+            display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
         }
-
-        .table-header h3 {
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--primary-dark);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
+        .table-header h3 { font-size:17px; font-weight:700; color:var(--primary-dark); display:flex; align-items:center; gap:8px; }
         .table-header .search-box {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: #fff;
-            border: 2px solid #e2e8f0;
-            border-radius: 40px;
-            padding: 4px 16px 4px 14px;
-            transition: var(--transition);
+            display:flex; align-items:center; gap:6px; background:#fff;
+            border:2px solid var(--border-color); border-radius:40px; padding:4px 16px 4px 14px;
+            transition:var(--transition);
+        }
+        .table-header .search-box:focus-within { border-color:var(--primary); box-shadow:0 0 0 4px rgba(13,71,161,0.08); }
+        .table-header .search-box input { border:none; padding:6px 0; font-size:14px; background:transparent; width:160px; outline:none; }
+        .table-header .search-box i { color:var(--gray); }
+
+        .table-scroll { overflow-x:auto; padding:0 4px 4px 4px; }
+        table { width:100%; border-collapse:collapse; font-size:14px; }
+        table thead { background:#f5f8fe; }
+        table th { text-align:left; padding:12px 16px; font-weight:700; color:#2d3a4a; font-size:12px; text-transform:uppercase; letter-spacing:0.4px; border-bottom:2px solid var(--border-color); }
+        table td { padding:12px 16px; border-bottom:1px solid var(--light-gray); vertical-align:middle; word-break:break-word; }
+        table tr:last-child td { border-bottom:none; }
+        table tr:hover td { background:#fafcff; }
+        table .qr-preview { width:52px; height:52px; background:#fafcff; border-radius:8px; display:flex; align-items:center; justify-content:center; border:1px solid var(--light-gray); }
+        table .qr-preview img { max-width:48px; max-height:48px; }
+        table .title-cell { font-weight:600; color:#1e2a3a; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        table .url-cell { color:var(--gray); font-size:12px; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        table .actions-cell { display:flex; gap:6px; flex-wrap:wrap; }
+        table .actions-cell button { border:none; padding:4px 12px; border-radius:30px; font-size:12px; font-weight:600; cursor:pointer; transition:var(--transition); display:inline-flex; align-items:center; gap:4px; }
+        table .actions-cell .btn-edit { background:#e3edfb; color:var(--primary); }
+        table .actions-cell .btn-edit:hover { background:#c5d9f7; transform:scale(1.03); }
+        table .actions-cell .btn-delete { background:#fde8e8; color:var(--danger); }
+        table .actions-cell .btn-delete:hover { background:#fcd5d5; transform:scale(1.03); }
+        table .actions-cell .btn-toggle { background:#fff3e0; color:#e65100; }
+        table .actions-cell .btn-toggle:hover { background:#ffe0b2; }
+        table .actions-cell .btn-feature { background:#fff8e1; color:#f57f17; }
+        table .actions-cell .btn-feature:hover { background:#ffecb3; }
+        table .drag-handle { cursor:grab; color:var(--gray); font-size:18px; padding:0 4px; }
+
+        .empty-table { text-align:center; padding:48px 20px; color:var(--gray); }
+        .empty-table i { font-size:40px; color:#d0d9e6; margin-bottom:12px; display:block; }
+
+        /* Bulk actions */
+        .bulk-actions {
+            display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:8px 16px;
+            background:var(--light-gray); border-radius:var(--radius-sm); margin:8px 0;
+        }
+        .bulk-actions .bulk-select-all { display:flex; align-items:center; gap:4px; font-size:13px; }
+
+        /* Modals */
+        .modal-overlay {
+            position:fixed; inset:0; background:rgba(10,20,40,0.65); backdrop-filter:blur(6px);
+            display:flex; align-items:center; justify-content:center; z-index:9998;
+            opacity:0; visibility:hidden; transition:opacity 0.3s ease, visibility 0.3s ease;
+            padding:20px;
+        }
+        .modal-overlay.active { opacity:1; visibility:visible; }
+        .modal-content {
+            background:var(--card-bg); border-radius:var(--radius); padding:28px 32px;
+            max-width:600px; width:100%; box-shadow:0 24px 60px rgba(0,0,0,0.35);
+            animation:fadeIn 0.35s ease; max-height:90vh; overflow-y:auto;
+        }
+        .modal-content h3 { font-size:20px; font-weight:700; color:var(--text); margin-bottom:16px; display:flex; align-items:center; gap:10px; }
+        .modal-content .field { margin-bottom:14px; }
+        .modal-content .field label { font-weight:600; font-size:13px; color:var(--text-secondary); display:block; margin-bottom:4px; }
+        .modal-content .field input, .modal-content .field select, .modal-content .field textarea {
+            width:100%; padding:10px 14px; border:2px solid var(--border-color); border-radius:var(--radius-sm);
+            font-size:14px; transition:var(--transition); background:var(--bg); color:var(--text);
+            font-family:var(--font);
+        }
+        .modal-content .field input:focus, .modal-content .field select:focus, .modal-content .field textarea:focus {
+            outline:none; border-color:var(--primary); box-shadow:0 0 0 4px rgba(13,71,161,0.10);
+        }
+        .modal-content .modal-actions { display:flex; gap:10px; margin-top:16px; justify-content:flex-end; flex-wrap:wrap; }
+        .modal-content .modal-actions button { padding:10px 28px; border:none; border-radius:var(--radius-sm); font-weight:700; font-size:14px; cursor:pointer; transition:var(--transition); font-family:var(--font); }
+        .modal-content .modal-actions .btn-primary { background:var(--primary); color:#fff; }
+        .modal-content .modal-actions .btn-primary:hover { background:var(--primary-light); transform:translateY(-2px); }
+        .modal-content .modal-actions .btn-secondary { background:var(--light-gray); color:var(--text-secondary); }
+        .modal-content .modal-actions .btn-secondary:hover { background:#dce3ed; }
+
+        /* Category pills */
+        .category-pill {
+            display:inline-block; padding:2px 12px; border-radius:20px; font-size:11px; font-weight:600;
+            color:#fff; margin:2px;
         }
 
-        .table-header .search-box:focus-within {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.08);
-        }
-
-        .table-header .search-box input {
-            border: none;
-            padding: 6px 0;
-            font-size: 14px;
-            background: transparent;
-            width: 160px;
-            outline: none;
-        }
-
-        .table-header .search-box i {
-            color: var(--gray);
-            font-size: 14px;
-        }
-
-        .table-scroll {
-            overflow-x: auto;
-            padding: 0 4px 4px 4px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        table thead {
-            background: #f5f8fe;
-        }
-
-        table th {
-            text-align: left;
-            padding: 14px 18px;
-            font-weight: 700;
-            color: #2d3a4a;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        table td {
-            padding: 14px 18px;
-            border-bottom: 1px solid #eef2f7;
-            vertical-align: middle;
-            word-break: break-word;
-        }
-
-        table tr:last-child td {
-            border-bottom: none;
-        }
-
-        table tr:hover td {
-            background: #fafcff;
-        }
-
-        table .qr-preview {
-            width: 52px;
-            height: 52px;
-            background: #fafcff;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #eef2f7;
-        }
-
-        table .qr-preview img {
-            max-width: 48px;
-            max-height: 48px;
-        }
-
-        table .title-cell {
-            font-weight: 600;
-            color: #1e2a3a;
-            max-width: 200px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        table .url-cell {
-            color: var(--gray);
-            font-size: 12px;
-            max-width: 180px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        table .actions-cell {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        table .actions-cell button {
-            border: none;
-            padding: 6px 14px;
-            border-radius: 30px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        table .actions-cell .btn-edit {
-            background: #e3edfb;
-            color: var(--primary);
-        }
-        table .actions-cell .btn-edit:hover {
-            background: #c5d9f7;
-            transform: scale(1.03);
-        }
-
-        table .actions-cell .btn-delete {
-            background: #fde8e8;
-            color: var(--danger);
-        }
-        table .actions-cell .btn-delete:hover {
-            background: #fcd5d5;
-            transform: scale(1.03);
-        }
-
-        .empty-table {
-            text-align: center;
-            padding: 48px 20px;
-            color: var(--gray);
-        }
-        .empty-table i {
-            font-size: 40px;
-            color: #d0d9e6;
-            margin-bottom: 12px;
-            display: block;
-        }
-
-        /* ---------- EDIT MODAL ---------- */
-        .edit-modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(10, 20, 40, 0.65);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9998;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        .edit-modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .edit-modal {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 32px 36px;
-            max-width: 520px;
-            width: 92%;
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-            animation: loginFadeIn 0.3s ease;
-        }
-
-        .edit-modal h3 {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--primary-dark);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .edit-modal .field {
-            margin-bottom: 16px;
-        }
-
-        .edit-modal .field label {
-            font-weight: 600;
-            font-size: 13px;
-            color: #2d3a4a;
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .edit-modal .field input {
-            width: 100%;
-            padding: 10px 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            transition: var(--transition);
-            background: #fafcff;
-        }
-
-        .edit-modal .field input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.10);
-        }
-
-        .edit-modal .modal-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 8px;
-            justify-content: flex-end;
-        }
-
-        .edit-modal .modal-actions button {
-            padding: 10px 28px;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .edit-modal .modal-actions .btn-save {
-            background: var(--primary);
-            color: #fff;
-        }
-        .edit-modal .modal-actions .btn-save:hover {
-            background: var(--primary-light);
-            transform: translateY(-2px);
-        }
-
-        .edit-modal .modal-actions .btn-cancel-modal {
-            background: #eef2f7;
-            color: #3d4a5c;
-        }
-        .edit-modal .modal-actions .btn-cancel-modal:hover {
-            background: #dce3ed;
-        }
-
-        /* ---------- TOAST ---------- */
+        /* Toast */
         .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #1e2a3a;
-            color: #fff;
-            padding: 14px 26px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 14px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
-            transform: translateY(80px);
-            opacity: 0;
-            transition: all 0.4s ease;
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            position:fixed; bottom:30px; right:30px; background:#1e2a3a; color:#fff;
+            padding:14px 26px; border-radius:12px; font-weight:600; font-size:14px;
+            box-shadow:0 12px 40px rgba(0,0,0,0.25); transform:translateY(80px); opacity:0;
+            transition:all 0.4s ease; z-index:9999; display:flex; align-items:center; gap:12px;
+            max-width:90vw;
         }
+        .toast.show { transform:translateY(0); opacity:1; }
+        .toast.success { background:#1b5e20; }
+        .toast.error { background:#b71c1c; }
+        .toast.info { background:#0d47a1; }
+        .toast.warning { background:#b76e0a; }
 
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
+        /* Responsive */
+        @media (max-width:820px) {
+            .admin-header { padding:12px 16px; }
+            .admin-container { padding:16px 12px; }
+            .stats-row { grid-template-columns:1fr 1fr; }
+            .admin-tabs .tab-btn { font-size:12px; padding:6px 14px; }
+            .form-grid { grid-template-columns:1fr; }
+            .table-header { flex-direction:column; align-items:stretch; }
+            .table-header .search-box input { width:100%; }
         }
-        .toast.success {
-            background: #1b5e20;
-        }
-        .toast.error {
-            background: #b71c1c;
-        }
-        .toast.info {
-            background: #0d47a1;
-        }
-
-        /* ---------- RESPONSIVE ---------- */
-        @media (max-width: 820px) {
-            .admin-form .form-row {
-                grid-template-columns: 1fr;
-            }
-            .admin-form .form-row .btn-submit {
-                width: 100%;
-                justify-content: center;
-            }
-            .admin-header {
-                padding: 14px 18px;
-            }
-            .admin-container {
-                padding: 18px 12px;
-            }
-            .stats-row {
-                grid-template-columns: 1fr 1fr;
-            }
-            .login-modal {
-                padding: 28px 20px;
-            }
-            .edit-modal {
-                padding: 24px 18px;
-            }
-            table .title-cell,
-            table .url-cell {
-                max-width: 120px;
-            }
-            .table-header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .table-header .search-box input {
-                width: 100%;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .stats-row {
-                grid-template-columns: 1fr;
-            }
-            .admin-header .brand h1 {
-                font-size: 16px;
-            }
-            .admin-header .brand span {
-                display: none;
-            }
-            .admin-header .header-actions .view-qr-btn span {
-                display: none;
-            }
-            table td,
-            table th {
-                padding: 10px 12px;
-                font-size: 12px;
-            }
-            table .actions-cell button {
-                font-size: 11px;
-                padding: 4px 10px;
-            }
-            .edit-modal .modal-actions {
-                flex-direction: column;
-            }
-            .edit-modal .modal-actions button {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #eef2f7;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary-light);
-            border-radius: 10px;
+        @media (max-width:480px) {
+            .stats-row { grid-template-columns:1fr; }
+            .admin-header .brand h1 { font-size:16px; }
+            .admin-header .brand span { display:none; }
+            .admin-header .header-actions .view-qr-btn span { display:none; }
+            table td, table th { padding:8px 10px; font-size:12px; }
+            table .actions-cell button { font-size:11px; padding:4px 8px; }
+            .modal-content { padding:20px 16px; }
         }
     </style>
 </head>
@@ -852,135 +332,245 @@
                 <h1>QR <span>Manager</span></h1>
             </div>
             <div class="header-actions">
-                <a href="qr.html" class="view-qr-btn" target="_blank">
-                    <i class="fas fa-eye"></i> <span>View QR Page</span>
-                </a>
-                <button class="logout-btn" id="logoutBtn">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
+                <a href="qr.html" class="view-qr-btn" target="_blank"><i class="fas fa-eye"></i> <span>View QR Page</span></a>
+                <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
         </header>
 
         <!-- Main Content -->
         <div class="admin-container">
-            <!-- Stats -->
-            <div class="stats-row">
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-qrcode"></i></div>
-                    <div class="stat-info">
-                        <h4>Total QR Codes</h4>
-                        <div class="number" id="statTotal">0</div>
+
+            <!-- Stats Row -->
+            <div class="stats-row" id="statsRow">
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-qrcode"></i></div><div class="stat-info"><h4>Total</h4><div class="number" id="statTotal">0</div></div></div>
+                <div class="stat-card" style="border-left-color:var(--success);"><div class="stat-icon" style="color:var(--success);"><i class="fas fa-check-circle"></i></div><div class="stat-info"><h4>Active</h4><div class="number" id="statActive">0</div></div></div>
+                <div class="stat-card" style="border-left-color:var(--danger);"><div class="stat-icon" style="color:var(--danger);"><i class="fas fa-eye-slash"></i></div><div class="stat-info"><h4>Hidden</h4><div class="number" id="statHidden">0</div></div></div>
+                <div class="stat-card" style="border-left-color:#f57f17;"><div class="stat-icon" style="color:#f57f17;"><i class="fas fa-star"></i></div><div class="stat-info"><h4>Featured</h4><div class="number" id="statFeatured">0</div></div></div>
+                <div class="stat-card" style="border-left-color:#6c7a8a;"><div class="stat-icon" style="color:#6c7a8a;"><i class="fas fa-trash-alt"></i></div><div class="stat-info"><h4>Deleted</h4><div class="number" id="statDeleted">0</div></div></div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="admin-tabs" id="adminTabs">
+                <button class="tab-btn active" data-tab="qrcodes"><i class="fas fa-list"></i> QR Codes</button>
+                <button class="tab-btn" data-tab="categories"><i class="fas fa-tags"></i> Categories</button>
+                <button class="tab-btn" data-tab="analytics"><i class="fas fa-chart-bar"></i> Analytics</button>
+                <button class="tab-btn" data-tab="settings"><i class="fas fa-cog"></i> Settings</button>
+                <button class="tab-btn" data-tab="recycle"><i class="fas fa-trash-restore"></i> Recycle Bin</button>
+            </div>
+
+            <!-- ===== TAB: QR Codes ===== -->
+            <div class="tab-content active" id="tabQRCodes">
+                <!-- Add / Edit Form -->
+                <div class="admin-form" id="adminForm">
+                    <div class="form-title"><i class="fas fa-plus-circle"></i> <span id="formTitle">Add New QR Code</span></div>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label><i class="fas fa-tag"></i> Title *</label>
+                            <input type="text" id="inputTitle" placeholder="e.g. Join Rotaract Club" />
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-link"></i> URL *</label>
+                            <input type="url" id="inputUrl" placeholder="https://example.com/page" />
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-align-left"></i> Description</label>
+                            <textarea id="inputDescription" placeholder="Short description..." rows="2"></textarea>
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-tags"></i> Category</label>
+                            <select id="inputCategory"><option value="">None</option></select>
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-eye"></i> Status</label>
+                            <select id="inputStatus">
+                                <option value="active">Active</option>
+                                <option value="hidden">Hidden</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-star"></i> Featured</label>
+                            <select id="inputFeatured">
+                                <option value="false">No</option>
+                                <option value="true">Yes</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-calendar-plus"></i> Start Date</label>
+                            <input type="date" id="inputStartDate" />
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-calendar-times"></i> Expiry Date</label>
+                            <input type="date" id="inputExpiryDate" />
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-fill-drip"></i> QR Foreground Color</label>
+                            <input type="color" id="inputFgColor" value="#0d47a1" />
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-fill"></i> QR Background Color</label>
+                            <input type="color" id="inputBgColor" value="#ffffff" />
+                        </div>
+                        <div class="field" style="grid-column:1/-1; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                            <button class="btn-submit" id="formSubmitBtn"><i class="fas fa-save"></i> <span id="submitBtnText">Add QR</span></button>
+                            <button class="btn-submit cancel" id="formCancelBtn" style="display:none;"><i class="fas fa-times"></i> Cancel</button>
+                            <input type="hidden" id="editId" value="" />
+                        </div>
                     </div>
                 </div>
-                <div class="stat-card" style="border-left-color:var(--accent);">
-                    <div class="stat-icon" style="color:var(--accent);"><i class="fas fa-link"></i></div>
-                    <div class="stat-info">
-                        <h4>Active Links</h4>
-                        <div class="number" id="statActive">0</div>
+
+                <!-- Table -->
+                <div class="table-wrapper">
+                    <div class="table-header">
+                        <h3><i class="fas fa-list"></i> All QR Codes</h3>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="searchInput" placeholder="Search..." />
+                            </div>
+                            <button class="btn-primary" id="exportBtn" style="padding:6px 16px; height:auto;"><i class="fas fa-file-export"></i> Export</button>
+                            <button class="btn-primary" id="importBtn" style="padding:6px 16px; height:auto; background:var(--success);"><i class="fas fa-file-import"></i> Import</button>
+                            <input type="file" id="importFileInput" accept=".json,.csv" style="display:none;" />
+                        </div>
+                    </div>
+                    <div class="bulk-actions" id="bulkActions">
+                        <label class="bulk-select-all"><input type="checkbox" id="selectAll" /> Select All</label>
+                        <button class="btn-danger" id="bulkDelete" style="padding:4px 12px; font-size:12px;"><i class="fas fa-trash"></i> Delete</button>
+                        <button class="btn-success" id="bulkActivate" style="padding:4px 12px; font-size:12px;"><i class="fas fa-check"></i> Activate</button>
+                        <button class="btn-warning" id="bulkHide" style="padding:4px 12px; font-size:12px; background:#e65100; color:#fff; border:none; border-radius:4px;"><i class="fas fa-eye-slash"></i> Hide</button>
+                        <button class="btn-primary" id="bulkExport" style="padding:4px 12px; font-size:12px;"><i class="fas fa-download"></i> Download ZIP</button>
+                    </div>
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width:30px;"><input type="checkbox" id="selectAllHead" /></th>
+                                    <th style="width:40px;"></th> <!-- drag handle -->
+                                    <th style="width:70px;">QR</th>
+                                    <th>Title / Category</th>
+                                    <th>URL</th>
+                                    <th>Status</th>
+                                    <th style="width:200px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <!-- rows rendered by JS -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Add / Edit Form -->
-            <div class="admin-form" id="adminForm">
-                <div class="form-title">
-                    <i class="fas fa-plus-circle"></i>
-                    <span id="formTitle">Add New QR Code</span>
-                </div>
-                <div class="form-row">
-                    <div class="field">
-                        <label><i class="fas fa-tag"></i> Title</label>
-                        <input type="text" id="inputTitle" placeholder="e.g. Join Rotaract Club" />
+            <!-- ===== TAB: Categories ===== -->
+            <div class="tab-content" id="tabCategories">
+                <div class="card-panel">
+                    <div class="panel-title"><i class="fas fa-plus"></i> Add Category</div>
+                    <div class="form-grid">
+                        <div class="field"><label>Name</label><input type="text" id="catName" placeholder="e.g. Events" /></div>
+                        <div class="field"><label>Color</label><input type="color" id="catColor" value="#0d47a1" /></div>
+                        <div class="field"><label>Icon (Font Awesome class)</label><input type="text" id="catIcon" placeholder="fa-calendar-alt" /></div>
+                        <div class="field" style="justify-content:flex-end;"><button class="btn-submit" id="catAddBtn"><i class="fas fa-plus"></i> Add</button></div>
                     </div>
-                    <div class="field">
-                        <label><i class="fas fa-link"></i> URL</label>
-                        <input type="url" id="inputUrl" placeholder="https://example.com/page" />
-                    </div>
-                    <button class="btn-submit" id="formSubmitBtn">
-                        <i class="fas fa-save"></i> <span id="submitBtnText">Add QR</span>
-                    </button>
-                    <button class="btn-submit cancel" id="formCancelBtn" style="display:none;">
-                        <i class="fas fa-times"></i> Cancel
-                    </button>
                 </div>
-                <input type="hidden" id="editId" value="" />
+                <div class="table-wrapper">
+                    <div class="table-header"><h3><i class="fas fa-tags"></i> Categories</h3></div>
+                    <div class="table-scroll">
+                        <table>
+                            <thead><tr><th>Name</th><th>Color</th><th>Icon</th><th>Actions</th></tr></thead>
+                            <tbody id="categoryTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
-            <!-- Table -->
-            <div class="table-wrapper">
-                <div class="table-header">
-                    <h3><i class="fas fa-list"></i> All QR Codes</h3>
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="searchInput" placeholder="Search title or URL..." />
+            <!-- ===== TAB: Analytics ===== -->
+            <div class="tab-content" id="tabAnalytics">
+                <div class="card-panel">
+                    <div class="panel-title"><i class="fas fa-chart-pie"></i> QR Statistics</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                        <canvas id="statusChart" height="200"></canvas>
+                        <canvas id="categoryChart" height="200"></canvas>
                     </div>
                 </div>
-                <div class="table-scroll">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="width:70px;">QR</th>
-                                <th>Title</th>
-                                <th>URL</th>
-                                <th style="width:160px;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            <!-- rows rendered by JS -->
-                        </tbody>
-                    </table>
+                <div class="card-panel">
+                    <div class="panel-title"><i class="fas fa-clock"></i> Recent Activity</div>
+                    <div id="activityLog" style="max-height:300px; overflow-y:auto;"></div>
                 </div>
             </div>
+
+            <!-- ===== TAB: Settings ===== -->
+            <div class="tab-content" id="tabSettings">
+                <div class="card-panel">
+                    <div class="panel-title"><i class="fas fa-palette"></i> QR Default Customization</div>
+                    <div class="form-grid">
+                        <div class="field"><label>Default Foreground</label><input type="color" id="defaultFg" value="#0d47a1" /></div>
+                        <div class="field"><label>Default Background</label><input type="color" id="defaultBg" value="#ffffff" /></div>
+                        <div class="field"><label>QR Size (px)</label><input type="number" id="defaultSize" value="220" min="100" max="500" /></div>
+                        <div class="field"><label>Margin</label><input type="number" id="defaultMargin" value="14" min="0" max="30" /></div>
+                        <div class="field" style="grid-column:1/-1;"><button class="btn-submit" id="saveSettingsBtn"><i class="fas fa-save"></i> Save Defaults</button></div>
+                    </div>
+                </div>
+                <div class="card-panel">
+                    <div class="panel-title"><i class="fas fa-database"></i> Data Management</div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button class="btn-primary" id="exportAllBtn"><i class="fas fa-file-export"></i> Export All (JSON)</button>
+                        <button class="btn-primary" id="importAllBtn" style="background:var(--success);"><i class="fas fa-file-import"></i> Import JSON</button>
+                        <input type="file" id="importAllFileInput" accept=".json" style="display:none;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TAB: Recycle Bin ===== -->
+            <div class="tab-content" id="tabRecycle">
+                <div class="table-wrapper">
+                    <div class="table-header"><h3><i class="fas fa-trash-restore"></i> Deleted QR Codes</h3></div>
+                    <div class="table-scroll">
+                        <table>
+                            <thead><tr><th>Title</th><th>URL</th><th>Deleted At</th><th>Actions</th></tr></thead>
+                            <tbody id="recycleTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
-    <!-- ===== EDIT MODAL ===== -->
-    <div class="edit-modal-overlay" id="editModalOverlay">
-        <div class="edit-modal">
+    <!-- ===== EDIT MODAL (for advanced fields) ===== -->
+    <div class="modal-overlay" id="editModalOverlay">
+        <div class="modal-content">
             <h3><i class="fas fa-pen"></i> Edit QR Code</h3>
-            <div class="field">
-                <label>Title</label>
-                <input type="text" id="editModalTitle" />
-            </div>
-            <div class="field">
-                <label>URL</label>
-                <input type="url" id="editModalUrl" />
-            </div>
+            <div class="field"><label>Title</label><input type="text" id="editModalTitle" /></div>
+            <div class="field"><label>URL</label><input type="url" id="editModalUrl" /></div>
+            <div class="field"><label>Description</label><textarea id="editModalDesc" rows="2"></textarea></div>
+            <div class="field"><label>Category</label><select id="editModalCategory"></select></div>
+            <div class="field"><label>Status</label><select id="editModalStatus"><option value="active">Active</option><option value="hidden">Hidden</option></select></div>
+            <div class="field"><label>Featured</label><select id="editModalFeatured"><option value="false">No</option><option value="true">Yes</option></select></div>
+            <div class="field"><label>Start Date</label><input type="date" id="editModalStart" /></div>
+            <div class="field"><label>Expiry Date</label><input type="date" id="editModalExpiry" /></div>
+            <div class="field"><label>Foreground Color</label><input type="color" id="editModalFg" /></div>
+            <div class="field"><label>Background Color</label><input type="color" id="editModalBg" /></div>
             <input type="hidden" id="editModalId" />
             <div class="modal-actions">
-                <button class="btn-cancel-modal" id="editModalCancel">Cancel</button>
-                <button class="btn-save" id="editModalSave"><i class="fas fa-check"></i> Save Changes</button>
+                <button class="btn-secondary" id="editModalCancel">Cancel</button>
+                <button class="btn-primary" id="editModalSave"><i class="fas fa-check"></i> Save Changes</button>
             </div>
         </div>
     </div>
 
     <!-- ===== TOAST ===== -->
-    <div class="toast" id="toast">
-        <i class="fas fa-check-circle"></i>
-        <span id="toastMsg">Done!</span>
-    </div>
+    <div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">Done!</span></div>
 
     <script>
         // ============================================================
-        //  SUPABASE CONFIGURATION – REPLACE WITH YOUR OWN
+        //  SUPABASE CONFIGURATION
         // ============================================================
         const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
-
-        // ============================================================
-        //  INITIALIZE SUPABASE CLIENT
-        //  (guarded: if the CDN script failed to load — slow network,
-        //   ad-blocker, offline — this used to throw here and silently
-        //   kill the rest of the script, so the login button never got
-        //   its click listener attached below. Now we catch it and
-        //   surface a real error message instead.)
-        // ============================================================
         let supabaseClient = null;
         let supabaseInitError = '';
         try {
-            if (!window.supabase || typeof window.supabase.createClient !== 'function') {
-                throw new Error('Supabase library did not load (check internet connection / ad-blocker).');
-            }
+            if (!window.supabase || typeof window.supabase.createClient !== 'function')
+                throw new Error('Supabase library not loaded.');
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         } catch (err) {
             console.error('Supabase init failed:', err);
@@ -988,27 +578,17 @@
         }
 
         // ============================================================
-        //  DATA LAYER – Supabase table: 'qr_codes'
-        //  (previously localStorage-only, which meant entries an admin
-        //   added never showed up for real visitors on other devices)
+        //  STATE
         // ============================================================
+        let qrData = [];
+        let categories = [];
+        let selectedIds = new Set();
+        let currentTab = 'qrcodes';
+        let editId = null;
 
-        // ---------- helpers ----------
-        async function loadData() {
-            const { data, error } = await supabaseClient
-                .from('qr_codes')
-                .select('*')
-                .order('sort_order', { ascending: true })
-                .order('created_at', { ascending: true });
-
-            if (error) {
-                console.error('Error loading QR codes:', error);
-                showToast('Failed to load QR codes: ' + error.message, 'error');
-                return [];
-            }
-            return data || [];
-        }
-
+        // ============================================================
+        //  HELPERS
+        // ============================================================
         function escapeHtml(text) {
             if (!text) return '';
             const d = document.createElement('div');
@@ -1016,76 +596,123 @@
             return d.innerHTML;
         }
 
-        // ---------- toast ----------
-        function showToast(message, type = 'success') {
+        function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
-            const msg = document.getElementById('toastMsg');
+            const el = document.getElementById('toastMsg');
             toast.className = 'toast ' + type;
-            msg.textContent = message;
+            el.textContent = msg;
             toast.classList.add('show');
             clearTimeout(toast._timer);
-            toast._timer = setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function formatDate(ts) {
+            if (!ts) return '—';
+            const d = new Date(ts);
+            return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+        }
+
+        function getCategoryColor(name) {
+            const found = categories.find(c => c.name === name);
+            return found ? found.color : '#78909c';
+        }
+
+        function getCategoryIcon(name) {
+            const found = categories.find(c => c.name === name);
+            return found ? found.icon : 'fa-tag';
+        }
+
+        // ============================================================
+        //  LOAD DATA
+        // ============================================================
+        async function loadData(includeDeleted = false) {
+            if (!supabaseClient) return [];
+            let query = supabaseClient.from('qr_codes').select('*');
+            if (!includeDeleted) {
+                query = query.is('deleted_at', null);
+            } else {
+                query = query.not('deleted_at', 'is', null);
+            }
+            const { data, error } = await query.order('sort_order', { ascending: true }).order('created_at', { ascending: true });
+            if (error) {
+                console.error('Error loading QR codes:', error);
+                showToast('Failed to load QR codes.', 'error');
+                return [];
+            }
+            return data || [];
+        }
+
+        async function loadCategories() {
+            const { data, error } = await supabaseClient.from('categories').select('*').order('name');
+            if (error) {
+                console.error('Error loading categories:', error);
+                return [];
+            }
+            return data || [];
         }
 
         // ============================================================
         //  RENDER TABLE
         // ============================================================
         async function renderTable(filter = '') {
-            const data = await loadData();
+            const data = await loadData(false);
+            qrData = data;
             const tbody = document.getElementById('tableBody');
-            const statTotal = document.getElementById('statTotal');
-            const statActive = document.getElementById('statActive');
-
-            statTotal.textContent = data.length;
-            statActive.textContent = data.length;
+            const search = filter.trim().toLowerCase();
 
             let filtered = data;
-            if (filter.trim()) {
-                const f = filter.trim().toLowerCase();
+            if (search) {
                 filtered = data.filter(item =>
-                    item.title.toLowerCase().includes(f) ||
-                    item.url.toLowerCase().includes(f)
+                    item.title.toLowerCase().includes(search) ||
+                    (item.url || '').toLowerCase().includes(search) ||
+                    (item.description || '').toLowerCase().includes(search)
                 );
             }
 
+            // Update stats
+            const total = data.length;
+            const active = data.filter(d => d.status === 'active' && !d.deleted_at).length;
+            const hidden = data.filter(d => d.status === 'hidden' && !d.deleted_at).length;
+            const featured = data.filter(d => d.featured === true && !d.deleted_at).length;
+            const deleted = await loadData(true);
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statActive').textContent = active;
+            document.getElementById('statHidden').textContent = hidden;
+            document.getElementById('statFeatured').textContent = featured;
+            document.getElementById('statDeleted').textContent = deleted.length;
+
             if (filtered.length === 0) {
-                tbody.innerHTML = `
-                            <tr>
-                                <td colspan="4">
-                                    <div class="empty-table">
-                                        <i class="fas fa-qrcode"></i>
-                                        <p>${data.length === 0 ? 'No QR codes yet. Add one above!' : 'No matches found.'}</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
+                tbody.innerHTML = `<tr><td colspan="7"><div class="empty-table"><i class="fas fa-qrcode"></i><p>${data.length===0?'No QR codes yet. Add one above!':'No matches found.'}</p></div></td></tr>`;
                 return;
             }
 
             let html = '';
             filtered.forEach(item => {
+                const catColor = getCategoryColor(item.category);
+                const catIcon = getCategoryIcon(item.category);
                 const qrSrc =
-                    `https://api.qrserver.com/v1/create-qr-code/?size=80x80&margin=8&data=${encodeURIComponent(item.url)}`;
+                    `https://api.qrserver.com/v1/create-qr-code/?size=80x80&margin=6&data=${encodeURIComponent(item.url)}&bgcolor=${(item.bg_color||'FFFFFF').replace('#','')}&color=${(item.fg_color||'0D47A1').replace('#','')}`;
+                const isChecked = selectedIds.has(item.id) ? 'checked' : '';
+                const statusLabel = item.status === 'active' ? 'Active' : 'Hidden';
+                const statusColor = item.status === 'active' ? 'var(--success)' : 'var(--danger)';
+                const featureLabel = item.featured ? '★' : '';
                 html += `
-                            <tr>
+                            <tr data-id="${item.id}">
+                                <td><input type="checkbox" class="row-select" data-id="${item.id}" ${isChecked} /></td>
+                                <td><i class="fas fa-grip-vertical drag-handle" style="cursor:grab;"></i></td>
+                                <td><div class="qr-preview"><img src="${qrSrc}" alt="QR" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22%3E%3Crect fill=%22%23f0f2f5%22 width=%2248%22 height=%2248%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%239aa6b5%22 font-size=%2210%22 font-family=%22sans-serif%22%3EQR%3C/text%3E%3C/svg%3E'" /></div></td>
                                 <td>
-                                    <div class="qr-preview">
-                                        <img src="${qrSrc}" alt="QR" loading="lazy" 
-                                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22%3E%3Crect fill=%22%23f0f2f5%22 width=%2248%22 height=%2248%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%239aa6b5%22 font-size=%2210%22 font-family=%22sans-serif%22%3EQR%3C/text%3E%3C/svg%3E'">
-                                    </div>
+                                    <div class="title-cell" title="${escapeHtml(item.title)}">${escapeHtml(item.title)} ${featureLabel}</div>
+                                    <span class="category-pill" style="background:${catColor};"><i class="fas ${catIcon}"></i> ${escapeHtml(item.category||'None')}</span>
                                 </td>
-                                <td class="title-cell" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</td>
                                 <td class="url-cell" title="${escapeHtml(item.url)}">${escapeHtml(item.url)}</td>
+                                <td><span style="color:${statusColor}; font-weight:600;">${statusLabel}</span> ${item.expiry_date && new Date(item.expiry_date) < new Date() ? ' <span style="color:var(--danger);font-size:11px;">(Expired)</span>' : ''}</td>
                                 <td>
                                     <div class="actions-cell">
-                                        <button class="btn-edit" data-id="${item.id}">
-                                            <i class="fas fa-pen"></i> Edit
-                                        </button>
-                                        <button class="btn-delete" data-id="${item.id}">
-                                            <i class="fas fa-trash"></i> Delete
-                                        </button>
+                                        <button class="btn-edit" data-id="${item.id}"><i class="fas fa-pen"></i> Edit</button>
+                                        <button class="btn-toggle" data-id="${item.id}"><i class="fas ${item.status==='active'?'fa-eye-slash':'fa-eye'}"></i> ${item.status==='active'?'Hide':'Activate'}</button>
+                                        <button class="btn-feature" data-id="${item.id}"><i class="fas ${item.featured?'fa-star':'fa-star-o'}"></i></button>
+                                        <button class="btn-delete" data-id="${item.id}"><i class="fas fa-trash"></i> Delete</button>
                                     </div>
                                 </td>
                             </tr>
@@ -1093,116 +720,508 @@
             });
             tbody.innerHTML = html;
 
-            // Attach event listeners
-            tbody.querySelectorAll('.btn-edit').forEach(btn => {
+            // Re-attach events
+            attachTableEvents();
+            // Init Sortable
+            initSortable();
+        }
+
+        // ============================================================
+        //  SORTABLE DRAG & DROP
+        // ============================================================
+        function initSortable() {
+            const tbody = document.getElementById('tableBody');
+            if (tbody._sortable) tbody._sortable.destroy();
+            const sortable = Sortable.create(tbody, {
+                handle: '.drag-handle',
+                animation: 150,
+                onEnd: async function(evt) {
+                    // Update sort_order for all rows
+                    const rows = tbody.querySelectorAll('tr[data-id]');
+                    const updates = [];
+                    rows.forEach((row, index) => {
+                        const id = row.dataset.id;
+                        updates.push({ id, sort_order: index });
+                    });
+                    // Batch update
+                    for (let upd of updates) {
+                        await supabaseClient
+                            .from('qr_codes')
+                            .update({ sort_order: upd.sort_order })
+                            .eq('id', upd.id);
+                    }
+                    showToast('Order saved!', 'success');
+                }
+            });
+            tbody._sortable = sortable;
+        }
+
+        // ============================================================
+        //  TABLE EVENTS
+        // ============================================================
+        function attachTableEvents() {
+            // Edit
+            document.querySelectorAll('.btn-edit').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const id = this.dataset.id;
-                    populateFormForEdit(id);
+                    openEditModal(id);
                 });
             });
+            // Toggle status
+            document.querySelectorAll('.btn-toggle').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const id = this.dataset.id;
+                    const item = qrData.find(d => d.id === id);
+                    if (!item) return;
+                    const newStatus = item.status === 'active' ? 'hidden' : 'active';
+                    await supabaseClient.from('qr_codes').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', id);
+                    showToast(`Status changed to ${newStatus}`, 'info');
+                    renderTable(document.getElementById('searchInput').value);
+                });
+            });
+            // Toggle featured
+            document.querySelectorAll('.btn-feature').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const id = this.dataset.id;
+                    const item = qrData.find(d => d.id === id);
+                    if (!item) return;
+                    const newVal = !item.featured;
+                    await supabaseClient.from('qr_codes').update({ featured: newVal, updated_at: new Date().toISOString() }).eq('id', id);
+                    showToast(newVal ? 'Featured!' : 'Unfeatured', 'info');
+                    renderTable(document.getElementById('searchInput').value);
+                });
+            });
+            // Delete (soft delete)
+            document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const id = this.dataset.id;
+                    if (!confirm('Move to recycle bin?')) return;
+                    await supabaseClient.from('qr_codes').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+                    showToast('Moved to recycle bin.', 'info');
+                    renderTable(document.getElementById('searchInput').value);
+                });
+            });
+            // Row select
+            document.querySelectorAll('.row-select').forEach(cb => {
+                cb.addEventListener('change', function() {
+                    const id = this.dataset.id;
+                    if (this.checked) selectedIds.add(id);
+                    else selectedIds.delete(id);
+                    updateBulkUI();
+                });
+            });
+            // Select all head
+            document.getElementById('selectAllHead').addEventListener('change', function() {
+                const checked = this.checked;
+                document.querySelectorAll('.row-select').forEach(cb => {
+                    cb.checked = checked;
+                    const id = cb.dataset.id;
+                    if (checked) selectedIds.add(id);
+                    else selectedIds.delete(id);
+                });
+                updateBulkUI();
+            });
+            document.getElementById('selectAll').addEventListener('change', function() {
+                document.getElementById('selectAllHead').checked = this.checked;
+                document.getElementById('selectAllHead').dispatchEvent(new Event('change'));
+            });
+        }
 
-            tbody.querySelectorAll('.btn-delete').forEach(btn => {
+        function updateBulkUI() {
+            const count = selectedIds.size;
+            document.getElementById('selectAll').checked = document.querySelectorAll('.row-select').length > 0 &&
+                document.querySelectorAll('.row-select:checked').length === document.querySelectorAll('.row-select').length;
+        }
+
+        // ============================================================
+        //  BULK ACTIONS
+        // ============================================================
+        document.getElementById('bulkDelete').addEventListener('click', async function() {
+            if (selectedIds.size === 0) return showToast('Select at least one QR code.', 'warning');
+            if (!confirm(`Delete ${selectedIds.size} QR code(s)?`)) return;
+            for (let id of selectedIds) {
+                await supabaseClient.from('qr_codes').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+            }
+            selectedIds.clear();
+            showToast('Moved to recycle bin.', 'info');
+            renderTable(document.getElementById('searchInput').value);
+        });
+
+        document.getElementById('bulkActivate').addEventListener('click', async function() {
+            if (selectedIds.size === 0) return showToast('Select at least one QR code.', 'warning');
+            for (let id of selectedIds) {
+                await supabaseClient.from('qr_codes').update({ status: 'active', updated_at: new Date().toISOString() }).eq('id', id);
+            }
+            selectedIds.clear();
+            showToast('Activated.', 'success');
+            renderTable(document.getElementById('searchInput').value);
+        });
+
+        document.getElementById('bulkHide').addEventListener('click', async function() {
+            if (selectedIds.size === 0) return showToast('Select at least one QR code.', 'warning');
+            for (let id of selectedIds) {
+                await supabaseClient.from('qr_codes').update({ status: 'hidden', updated_at: new Date().toISOString() }).eq('id', id);
+            }
+            selectedIds.clear();
+            showToast('Hidden.', 'info');
+            renderTable(document.getElementById('searchInput').value);
+        });
+
+        document.getElementById('bulkExport').addEventListener('click', function() {
+            if (selectedIds.size === 0) return showToast('Select at least one QR code.', 'warning');
+            // Generate ZIP of QR images (simplified: open each in new tab)
+            selectedIds.forEach(id => {
+                const item = qrData.find(d => d.id === id);
+                if (item) {
+                    const url = encodeURIComponent(item.url);
+                    window.open(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=20&data=${url}`, '_blank');
+                }
+            });
+            showToast('Downloading QR images...', 'info');
+        });
+
+        // ============================================================
+        //  EXPORT / IMPORT
+        // ============================================================
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            const data = qrData.map(({ id, title, url, description, category, status, featured, start_date, expiry_date, fg_color, bg_color, sort_order }) =>
+                ({ title, url, description, category, status, featured, start_date, expiry_date, fg_color, bg_color, sort_order }));
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            saveAs(blob, 'qr_codes_export.json');
+        });
+
+        document.getElementById('importBtn').addEventListener('click', function() {
+            document.getElementById('importFileInput').click();
+        });
+        document.getElementById('importFileInput').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const text = await file.text();
+            try {
+                const data = JSON.parse(text);
+                for (let item of data) {
+                    await supabaseClient.from('qr_codes').insert([{
+                        title: item.title,
+                        url: item.url,
+                        description: item.description || '',
+                        category: item.category || null,
+                        status: item.status || 'active',
+                        featured: item.featured || false,
+                        start_date: item.start_date || null,
+                        expiry_date: item.expiry_date || null,
+                        fg_color: item.fg_color || '#0d47a1',
+                        bg_color: item.bg_color || '#ffffff',
+                        sort_order: item.sort_order || 0
+                    }]);
+                }
+                showToast('Imported successfully!', 'success');
+                renderTable(document.getElementById('searchInput').value);
+            } catch (err) {
+                showToast('Invalid JSON format.', 'error');
+            }
+            this.value = '';
+        });
+
+        // ============================================================
+        //  EDIT MODAL (advanced)
+        // ============================================================
+        async function openEditModal(id) {
+            const item = qrData.find(d => d.id === id);
+            if (!item) return;
+            document.getElementById('editModalId').value = id;
+            document.getElementById('editModalTitle').value = item.title;
+            document.getElementById('editModalUrl').value = item.url;
+            document.getElementById('editModalDesc').value = item.description || '';
+            // Populate category dropdown
+            const sel = document.getElementById('editModalCategory');
+            sel.innerHTML = '<option value="">None</option>';
+            categories.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.name;
+                opt.textContent = c.name;
+                if (c.name === item.category) opt.selected = true;
+                sel.appendChild(opt);
+            });
+            document.getElementById('editModalStatus').value = item.status || 'active';
+            document.getElementById('editModalFeatured').value = item.featured ? 'true' : 'false';
+            document.getElementById('editModalStart').value = item.start_date || '';
+            document.getElementById('editModalExpiry').value = item.expiry_date || '';
+            document.getElementById('editModalFg').value = item.fg_color || '#0d47a1';
+            document.getElementById('editModalBg').value = item.bg_color || '#ffffff';
+            document.getElementById('editModalOverlay').classList.add('active');
+        }
+
+        document.getElementById('editModalCancel').addEventListener('click', function() {
+            document.getElementById('editModalOverlay').classList.remove('active');
+        });
+        document.getElementById('editModalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
+        });
+        document.getElementById('editModalSave').addEventListener('click', async function() {
+            const id = document.getElementById('editModalId').value;
+            const title = document.getElementById('editModalTitle').value.trim();
+            const url = document.getElementById('editModalUrl').value.trim();
+            if (!title || !url) return showToast('Title and URL are required.', 'error');
+            const description = document.getElementById('editModalDesc').value.trim();
+            const category = document.getElementById('editModalCategory').value || null;
+            const status = document.getElementById('editModalStatus').value;
+            const featured = document.getElementById('editModalFeatured').value === 'true';
+            const start_date = document.getElementById('editModalStart').value || null;
+            const expiry_date = document.getElementById('editModalExpiry').value || null;
+            const fg_color = document.getElementById('editModalFg').value;
+            const bg_color = document.getElementById('editModalBg').value;
+
+            await supabaseClient.from('qr_codes').update({
+                title, url, description, category, status, featured,
+                start_date, expiry_date, fg_color, bg_color,
+                updated_at: new Date().toISOString()
+            }).eq('id', id);
+
+            document.getElementById('editModalOverlay').classList.remove('active');
+            showToast('Updated successfully!', 'success');
+            renderTable(document.getElementById('searchInput').value);
+        });
+
+        // ============================================================
+        //  CATEGORY MANAGEMENT
+        // ============================================================
+        async function renderCategories() {
+            categories = await loadCategories();
+            const tbody = document.getElementById('categoryTableBody');
+            if (categories.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-table"><i class="fas fa-tags"></i><p>No categories yet.</p></div></td></tr>`;
+                return;
+            }
+            let html = '';
+            categories.forEach(c => {
+                html += `<tr>
+                            <td><span class="category-pill" style="background:${c.color};"><i class="fas ${c.icon||'fa-tag'}"></i> ${escapeHtml(c.name)}</span></td>
+                            <td><input type="color" value="${c.color}" disabled /></td>
+                            <td><i class="fas ${c.icon||'fa-tag'}"></i> ${c.icon||'fa-tag'}</td>
+                            <td>
+                                <button class="btn-edit cat-edit" data-id="${c.id}" style="padding:4px 12px;font-size:12px;"><i class="fas fa-pen"></i></button>
+                                <button class="btn-delete cat-delete" data-id="${c.id}" style="padding:4px 12px;font-size:12px;"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+            });
+            tbody.innerHTML = html;
+            // Attach events
+            tbody.querySelectorAll('.cat-edit').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const id = this.dataset.id;
-                    deleteEntry(id);
+                    const cat = categories.find(c => c.id === id);
+                    if (cat) {
+                        document.getElementById('catName').value = cat.name;
+                        document.getElementById('catColor').value = cat.color;
+                        document.getElementById('catIcon').value = cat.icon || 'fa-tag';
+                        document.getElementById('catAddBtn').dataset.editId = id;
+                        document.getElementById('catAddBtn').innerHTML = '<i class="fas fa-save"></i> Update';
+                    }
+                });
+            });
+            tbody.querySelectorAll('.cat-delete').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const id = this.dataset.id;
+                    if (!confirm('Delete this category?')) return;
+                    await supabaseClient.from('categories').delete().eq('id', id);
+                    showToast('Category deleted.', 'info');
+                    renderCategories();
+                });
+            });
+            // Update category dropdowns
+            populateCategoryDropdowns();
+        }
+
+        function populateCategoryDropdowns() {
+            const selects = ['inputCategory', 'editModalCategory'];
+            selects.forEach(id => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                const currentVal = sel.value;
+                sel.innerHTML = '<option value="">None</option>';
+                categories.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.name;
+                    opt.textContent = c.name;
+                    if (c.name === currentVal) opt.selected = true;
+                    sel.appendChild(opt);
+                });
+            });
+        }
+
+        document.getElementById('catAddBtn').addEventListener('click', async function() {
+            const name = document.getElementById('catName').value.trim();
+            const color = document.getElementById('catColor').value;
+            const icon = document.getElementById('catIcon').value.trim() || 'fa-tag';
+            if (!name) return showToast('Category name is required.', 'error');
+            const editId = this.dataset.editId;
+            if (editId) {
+                // Update
+                await supabaseClient.from('categories').update({ name, color, icon }).eq('id', editId);
+                delete this.dataset.editId;
+                this.innerHTML = '<i class="fas fa-plus"></i> Add';
+                showToast('Category updated.', 'success');
+            } else {
+                // Add
+                await supabaseClient.from('categories').insert([{ name, color, icon }]);
+                showToast('Category added.', 'success');
+            }
+            document.getElementById('catName').value = '';
+            document.getElementById('catIcon').value = '';
+            renderCategories();
+        });
+
+        // ============================================================
+        //  ANALYTICS
+        // ============================================================
+        let statusChartInstance = null;
+        let categoryChartInstance = null;
+
+        function renderCharts() {
+            const data = qrData;
+            const statusCounts = { active: 0, hidden: 0, expired: 0 };
+            data.forEach(d => {
+                if (d.deleted_at) return;
+                if (d.status === 'active' && d.expiry_date && new Date(d.expiry_date) < new Date()) {
+                    statusCounts.expired++;
+                } else if (d.status === 'active') {
+                    statusCounts.active++;
+                } else {
+                    statusCounts.hidden++;
+                }
+            });
+
+            if (statusChartInstance) statusChartInstance.destroy();
+            const ctx1 = document.getElementById('statusChart').getContext('2d');
+            statusChartInstance = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Active', 'Hidden', 'Expired'],
+                    datasets: [{
+                        data: [statusCounts.active, statusCounts.hidden, statusCounts.expired],
+                        backgroundColor: ['#1e7e34', '#b71c1c', '#f57f17'],
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // Category chart
+            const catMap = {};
+            data.forEach(d => {
+                if (d.deleted_at) return;
+                const cat = d.category || 'Uncategorized';
+                catMap[cat] = (catMap[cat] || 0) + 1;
+            });
+            const catLabels = Object.keys(catMap);
+            const catValues = Object.values(catMap);
+            if (categoryChartInstance) categoryChartInstance.destroy();
+            const ctx2 = document.getElementById('categoryChart').getContext('2d');
+            categoryChartInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: catLabels,
+                    datasets: [{
+                        label: 'QR Codes',
+                        data: catValues,
+                        backgroundColor: '#0d47a1',
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        // ============================================================
+        //  RECYCLE BIN
+        // ============================================================
+        async function renderRecycleBin() {
+            const data = await loadData(true);
+            const tbody = document.getElementById('recycleTableBody');
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-table"><i class="fas fa-trash-restore"></i><p>Recycle bin is empty.</p></div></td></tr>`;
+                return;
+            }
+            let html = '';
+            data.forEach(item => {
+                html += `<tr>
+                            <td>${escapeHtml(item.title)}</td>
+                            <td class="url-cell">${escapeHtml(item.url)}</td>
+                            <td>${formatDate(item.deleted_at)}</td>
+                            <td>
+                                <button class="btn-success restore-btn" data-id="${item.id}" style="padding:4px 12px;font-size:12px;"><i class="fas fa-undo"></i> Restore</button>
+                                <button class="btn-danger perm-delete-btn" data-id="${item.id}" style="padding:4px 12px;font-size:12px;"><i class="fas fa-trash"></i> Permanent</button>
+                            </td>
+                        </tr>`;
+            });
+            tbody.innerHTML = html;
+            tbody.querySelectorAll('.restore-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const id = this.dataset.id;
+                    await supabaseClient.from('qr_codes').update({ deleted_at: null }).eq('id', id);
+                    showToast('Restored.', 'success');
+                    renderRecycleBin();
+                    renderTable(document.getElementById('searchInput').value);
+                });
+            });
+            tbody.querySelectorAll('.perm-delete-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const id = this.dataset.id;
+                    if (!confirm('Permanently delete this QR code? This cannot be undone.')) return;
+                    await supabaseClient.from('qr_codes').delete().eq('id', id);
+                    showToast('Permanently deleted.', 'info');
+                    renderRecycleBin();
                 });
             });
         }
 
         // ============================================================
-        //  CRUD OPERATIONS — all persisted to Supabase (visible to
-        //  everyone, on every device, immediately)
+        //  ACTIVITY LOG (dummy)
         // ============================================================
-        async function addEntry(title, url) {
-            const { error } = await supabaseClient
-                .from('qr_codes')
-                .insert([{ title: title.trim(), url: url.trim() }]);
-
-            if (error) {
-                console.error('Error adding QR code:', error);
-                showToast('Failed to add QR code: ' + error.message, 'error');
-                return;
-            }
-            await renderTable(document.getElementById('searchInput').value);
-            showToast('QR code added successfully!', 'success');
-        }
-
-        async function updateEntry(id, title, url) {
-            const { error } = await supabaseClient
-                .from('qr_codes')
-                .update({
-                    title: title.trim(),
-                    url: url.trim(),
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', id);
-
-            if (error) {
-                console.error('Error updating QR code:', error);
-                showToast('Failed to update QR code: ' + error.message, 'error');
-                return;
-            }
-            await renderTable(document.getElementById('searchInput').value);
-            showToast('QR code updated!', 'success');
-        }
-
-        async function deleteEntry(id) {
-            if (!confirm('Are you sure you want to delete this QR code?')) return;
-
-            const { error } = await supabaseClient
-                .from('qr_codes')
-                .delete()
-                .eq('id', id);
-
-            if (error) {
-                console.error('Error deleting QR code:', error);
-                showToast('Failed to delete QR code: ' + error.message, 'error');
-                return;
-            }
-            await renderTable(document.getElementById('searchInput').value);
-            showToast('QR code deleted.', 'info');
+        function renderActivityLog() {
+            const log = document.getElementById('activityLog');
+            log.innerHTML = '<p style="color:var(--gray);text-align:center;">Activity tracking coming soon.</p>';
         }
 
         // ============================================================
-        //  EDIT MODAL (inline form)
+        //  SETTINGS (defaults)
         // ============================================================
-        async function populateFormForEdit(id) {
-            const { data: item, error } = await supabaseClient
-                .from('qr_codes')
-                .select('*')
-                .eq('id', id)
-                .single();
-
-            if (error || !item) {
-                console.error('Error fetching QR code for edit:', error);
-                showToast('Entry not found!', 'error');
-                return;
-            }
-            document.getElementById('inputTitle').value = item.title;
-            document.getElementById('inputUrl').value = item.url;
-            document.getElementById('editId').value = item.id;
-            document.getElementById('formTitle').innerHTML = '<i class="fas fa-pen"></i> Edit QR Code';
-            document.getElementById('submitBtnText').textContent = 'Update';
-            document.getElementById('formCancelBtn').style.display = 'inline-flex';
-            document.getElementById('formSubmitBtn').style.background = 'var(--accent)';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function resetForm() {
-            document.getElementById('inputTitle').value = '';
-            document.getElementById('inputUrl').value = '';
-            document.getElementById('editId').value = '';
-            document.getElementById('formTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Add New QR Code';
-            document.getElementById('submitBtnText').textContent = 'Add QR';
-            document.getElementById('formCancelBtn').style.display = 'none';
-            document.getElementById('formSubmitBtn').style.background = '';
-        }
+        document.getElementById('saveSettingsBtn').addEventListener('click', function() {
+            const fg = document.getElementById('defaultFg').value;
+            const bg = document.getElementById('defaultBg').value;
+            const size = document.getElementById('defaultSize').value;
+            const margin = document.getElementById('defaultMargin').value;
+            localStorage.setItem('qr_default_fg', fg);
+            localStorage.setItem('qr_default_bg', bg);
+            localStorage.setItem('qr_default_size', size);
+            localStorage.setItem('qr_default_margin', margin);
+            showToast('Defaults saved!', 'success');
+        });
 
         // ============================================================
-        //  SUPABASE AUTH + ROLE CHECK
+        //  TABS
         // ============================================================
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const tabName = this.dataset.tab;
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
+                if (tabName === 'categories') renderCategories();
+                if (tabName === 'analytics') renderCharts();
+                if (tabName === 'recycle') renderRecycleBin();
+                if (tabName === 'settings') {
+                    // load defaults into fields
+                    document.getElementById('defaultFg').value = localStorage.getItem('qr_default_fg') || '#0d47a1';
+                    document.getElementById('defaultBg').value = localStorage.getItem('qr_default_bg') || '#ffffff';
+                    document.getElementById('defaultSize').value = localStorage.getItem('qr_default_size') || '220';
+                    document.getElementById('defaultMargin').value = localStorage.getItem('qr_default_margin') || '14';
+                }
+            });
+        });
 
-        // DOM references
+        // ============================================================
+        //  AUTH / LOGIN
+        // ============================================================
         const loginOverlay = document.getElementById('loginOverlay');
         const dashboard = document.getElementById('dashboard');
         const loginBtn = document.getElementById('loginBtn');
@@ -1212,186 +1231,188 @@
         const loginLoading = document.getElementById('loginLoading');
         const logoutBtn = document.getElementById('logoutBtn');
 
-        // Check if user is already logged in and has admin role
         async function checkSession() {
-            if (!supabaseClient) {
-                showLogin(supabaseInitError || 'Could not connect to Supabase.');
-                return;
-            }
+            if (!supabaseClient) { showLogin(supabaseInitError || 'Supabase connection failed.'); return; }
             try {
                 const { data: { session }, error } = await supabaseClient.auth.getSession();
-                if (error || !session) {
-                    showLogin();
-                    return;
-                }
-
-                // Verify admin role
+                if (error || !session) { showLogin(); return; }
                 const isAdmin = await checkAdminRole(session.user.id);
-                if (isAdmin) {
-                    showDashboard();
-                } else {
-                    // Not admin, sign out and show login with error
-                    await supabaseClient.auth.signOut();
-                    showLogin('Your account does not have admin privileges.');
-                }
-            } catch (err) {
-                console.error('Session check error:', err);
-                showLogin('Session error. Please login again.');
-            }
+                if (isAdmin) { showDashboard(); } else { await supabaseClient.auth.signOut(); showLogin('Not authorized.'); }
+            } catch (err) { showLogin('Session error.'); }
         }
 
-        // Check user_roles table for admin
         async function checkAdminRole(userId) {
             try {
-                const { data, error } = await supabaseClient
-                    .from('user_roles')
-                    .select('role')
-                    .eq('user_id', userId)
-                    .maybeSingle();
-
-                if (error) {
-                    console.error('Error fetching user_roles:', error);
-                    return false;
-                }
+                const { data, error } = await supabaseClient.from('user_roles').select('role').eq('user_id', userId).maybeSingle();
                 return data && data.role === 'admin';
-            } catch (err) {
-                console.error('Role check error:', err);
-                return false;
-            }
+            } catch { return false; }
         }
 
-        // Login handler
         async function handleLogin() {
-            if (!supabaseClient) {
-                loginError.textContent = '❌ ' + (supabaseInitError || 'Could not connect to Supabase.');
-                return;
-            }
-            const email = loginEmail.value.trim();
-            const password = loginPassword.value.trim();
-
-            if (!email || !password) {
-                loginError.textContent = 'Please enter email and password.';
-                return;
-            }
-
-            loginBtn.disabled = true;
-            loginLoading.style.display = 'block';
-            loginError.textContent = '';
-
+            if (!supabaseClient) { loginError.textContent = '❌ ' + (supabaseInitError || 'Connection error.'); return; }
+            const email = loginEmail.value.trim(), password = loginPassword.value.trim();
+            if (!email || !password) { loginError.textContent = 'Please enter email and password.'; return; }
+            loginBtn.disabled = true; loginLoading.style.display = 'block'; loginError.textContent = '';
             try {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email,
-                    password
-                });
-
-                if (error) {
-                    loginError.textContent = '❌ ' + error.message;
-                    loginBtn.disabled = false;
-                    loginLoading.style.display = 'none';
-                    return;
-                }
-
-                // Check admin role
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) { loginError.textContent = '❌ ' + error.message; loginBtn.disabled = false; loginLoading.style.display = 'none'; return; }
                 const isAdmin = await checkAdminRole(data.user.id);
-                if (isAdmin) {
-                    showDashboard();
-                    showToast('Welcome, Admin!', 'success');
-                } else {
-                    // Not admin – sign out and show error
+                if (isAdmin) { showDashboard(); showToast('Welcome, Admin!', 'success'); } else {
                     await supabaseClient.auth.signOut();
-                    loginError.textContent = '❌ You are not authorized as admin.';
-                    loginBtn.disabled = false;
-                    loginLoading.style.display = 'none';
+                    loginError.textContent = '❌ Not authorized as admin.';
+                    loginBtn.disabled = false; loginLoading.style.display = 'none';
                 }
-            } catch (err) {
-                loginError.textContent = '❌ An unexpected error occurred.';
-                console.error(err);
-                loginBtn.disabled = false;
-                loginLoading.style.display = 'none';
-            }
+            } catch (err) { loginError.textContent = '❌ An error occurred.'; console.error(err); loginBtn.disabled = false; loginLoading.style.display = 'none'; }
         }
 
-        // Logout handler
         async function handleLogout() {
-            if (!supabaseClient) return;
-            if (confirm('Log out of admin session?')) {
-                await supabaseClient.auth.signOut();
-                showLogin();
-                showToast('Logged out.', 'info');
-            }
+            if (!confirm('Logout?')) return;
+            await supabaseClient.auth.signOut();
+            showLogin();
+            showToast('Logged out.', 'info');
         }
 
-        // UI helpers
         function showLogin(errorMsg = '') {
-            loginOverlay.classList.remove('hidden');
-            dashboard.classList.remove('active');
-            loginBtn.disabled = false;
-            loginLoading.style.display = 'none';
-            if (errorMsg) {
-                loginError.textContent = '❌ ' + errorMsg;
-            } else {
-                loginError.textContent = '';
-            }
+            loginOverlay.classList.remove('hidden'); dashboard.classList.remove('active');
+            loginBtn.disabled = false; loginLoading.style.display = 'none';
+            loginError.textContent = errorMsg ? '❌ ' + errorMsg : '';
         }
 
         function showDashboard() {
-            loginOverlay.classList.add('hidden');
-            dashboard.classList.add('active');
+            loginOverlay.classList.add('hidden'); dashboard.classList.add('active');
             renderTable('');
+            renderCategories();
+            renderCharts();
+            renderRecycleBin();
+            renderActivityLog();
+            // populate category dropdowns
+            populateCategoryDropdowns();
         }
 
         // ============================================================
-        //  EVENT BINDING
+        //  EVENT BINDING & INIT
         // ============================================================
-
         document.addEventListener('DOMContentLoaded', function() {
-
-            // --- Login ---
             loginBtn.addEventListener('click', handleLogin);
-            loginPassword.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') handleLogin();
-            });
-            loginEmail.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') handleLogin();
-            });
-
-            // --- Logout ---
+            loginPassword.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+            loginEmail.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
             logoutBtn.addEventListener('click', handleLogout);
 
-            // --- Add / Update form ---
+            // Search
+            document.getElementById('searchInput').addEventListener('input', function() {
+                renderTable(this.value);
+            });
+
+            // Add/Update form
             document.getElementById('formSubmitBtn').addEventListener('click', async function() {
                 const title = document.getElementById('inputTitle').value.trim();
                 const url = document.getElementById('inputUrl').value.trim();
+                if (!title || !url) return showToast('Title and URL are required.', 'error');
                 const editId = document.getElementById('editId').value;
-
-                if (!title || !url) {
-                    showToast('Please fill in both fields.', 'error');
-                    return;
-                }
+                const description = document.getElementById('inputDescription').value.trim();
+                const category = document.getElementById('inputCategory').value || null;
+                const status = document.getElementById('inputStatus').value;
+                const featured = document.getElementById('inputFeatured').value === 'true';
+                const start_date = document.getElementById('inputStartDate').value || null;
+                const expiry_date = document.getElementById('inputExpiryDate').value || null;
+                const fg_color = document.getElementById('inputFgColor').value;
+                const bg_color = document.getElementById('inputBgColor').value;
 
                 if (editId) {
-                    await updateEntry(editId, title, url);
+                    await supabaseClient.from('qr_codes').update({
+                        title, url, description, category, status, featured,
+                        start_date, expiry_date, fg_color, bg_color,
+                        updated_at: new Date().toISOString()
+                    }).eq('id', editId);
+                    showToast('Updated!', 'success');
                     resetForm();
                 } else {
-                    await addEntry(title, url);
+                    await supabaseClient.from('qr_codes').insert([{
+                        title, url, description, category, status, featured,
+                        start_date, expiry_date, fg_color, bg_color,
+                        sort_order: 0
+                    }]);
+                    showToast('Added!', 'success');
                     document.getElementById('inputTitle').value = '';
                     document.getElementById('inputUrl').value = '';
+                    document.getElementById('inputDescription').value = '';
                 }
+                renderTable(document.getElementById('searchInput').value);
             });
 
             document.getElementById('formCancelBtn').addEventListener('click', resetForm);
 
-            // --- Search ---
-            document.getElementById('searchInput').addEventListener('input', function() {
-                renderTable(this.value); // async, fire-and-forget
+            function resetForm() {
+                document.getElementById('inputTitle').value = '';
+                document.getElementById('inputUrl').value = '';
+                document.getElementById('inputDescription').value = '';
+                document.getElementById('editId').value = '';
+                document.getElementById('formTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Add New QR Code';
+                document.getElementById('submitBtnText').textContent = 'Add QR';
+                document.getElementById('formCancelBtn').style.display = 'none';
+                document.getElementById('formSubmitBtn').style.background = '';
+                // reset selects to default
+                document.getElementById('inputStatus').value = 'active';
+                document.getElementById('inputFeatured').value = 'false';
+                document.getElementById('inputStartDate').value = '';
+                document.getElementById('inputExpiryDate').value = '';
+                document.getElementById('inputFgColor').value = localStorage.getItem('qr_default_fg') || '#0d47a1';
+                document.getElementById('inputBgColor').value = localStorage.getItem('qr_default_bg') || '#ffffff';
+            }
+
+            // populate initial category dropdown
+            populateCategoryDropdowns();
+
+            // Export all (Settings tab)
+            document.getElementById('exportAllBtn').addEventListener('click', function() {
+                const data = qrData.map(({ id, title, url, description, category, status, featured, start_date, expiry_date, fg_color, bg_color, sort_order, created_at, updated_at }) =>
+                    ({ title, url, description, category, status, featured, start_date, expiry_date, fg_color, bg_color, sort_order, created_at, updated_at }));
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                saveAs(blob, 'qr_codes_full.json');
+            });
+            document.getElementById('importAllBtn').addEventListener('click', function() {
+                document.getElementById('importAllFileInput').click();
+            });
+            document.getElementById('importAllFileInput').addEventListener('change', async function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const text = await file.text();
+                try {
+                    const data = JSON.parse(text);
+                    for (let item of data) {
+                        await supabaseClient.from('qr_codes').insert([{
+                            title: item.title,
+                            url: item.url,
+                            description: item.description || '',
+                            category: item.category || null,
+                            status: item.status || 'active',
+                            featured: item.featured || false,
+                            start_date: item.start_date || null,
+                            expiry_date: item.expiry_date || null,
+                            fg_color: item.fg_color || '#0d47a1',
+                            bg_color: item.bg_color || '#ffffff',
+                            sort_order: item.sort_order || 0,
+                            created_at: item.created_at || new Date().toISOString(),
+                            updated_at: item.updated_at || new Date().toISOString()
+                        }]);
+                    }
+                    showToast('Imported successfully!', 'success');
+                    renderTable(document.getElementById('searchInput').value);
+                } catch (err) {
+                    showToast('Invalid JSON format.', 'error');
+                }
+                this.value = '';
             });
 
-            // --- Check session on load ---
+            // Load defaults into form
+            document.getElementById('inputFgColor').value = localStorage.getItem('qr_default_fg') || '#0d47a1';
+            document.getElementById('inputBgColor').value = localStorage.getItem('qr_default_bg') || '#ffffff';
+
             checkSession();
         });
 
-        // Expose resetForm for global use
-        window.resetForm = resetForm;
+        // Expose for debugging
+        window.renderTable = renderTable;
     </script>
 
 </body>

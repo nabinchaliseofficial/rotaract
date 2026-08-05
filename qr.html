@@ -2,21 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>QR Codes · Rotaract Club of Galkot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rotaract Galkot · QR Codes</title>
 
-    <!-- ===== QRCode.js Library (for client-side generation) ===== -->
+    <!-- QRCode.js for client-side generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
     </script>
-
-    <!-- ===== Font Awesome Icons ===== -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
-
-    <!-- ===== Supabase JS ===== -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
 
     <style>
-        /* ---------- RESET & ROOT ---------- */
+        /* ===== RESET & ROOT ===== */
         * {
             margin: 0;
             padding: 0;
@@ -27,58 +26,99 @@
             --primary: #0d47a1;
             --primary-light: #1565c0;
             --primary-dark: #0a2a6e;
+            --primary-gradient: linear-gradient(135deg, #0a2a6e, #0d47a1);
             --accent: #c62828;
             --accent-light: #e53935;
-            --bg: #f4f7fc;
+            --bg: #f0f4fb;
             --card-bg: #ffffff;
-            --shadow: 0 8px 30px rgba(0, 0, 0, 0.10);
+            --card-border: rgba(255, 255, 255, 0.18);
+            --shadow: 0 8px 32px rgba(13, 71, 161, 0.10);
+            --shadow-hover: 0 16px 48px rgba(13, 71, 161, 0.18);
             --radius: 16px;
-            --transition: 0.25s ease;
+            --radius-sm: 10px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --text: #1a2332;
+            --text-secondary: #4a5a72;
+            --text-muted: #8899b0;
+            --glass-bg: rgba(255, 255, 255, 0.72);
+            --glass-border: rgba(255, 255, 255, 0.30);
+            --success: #1e7e34;
+            --warning: #b76e0a;
+            --danger: #b71c1c;
+            --info: #0d47a1;
+            --gray: #6c7a8a;
+            --light-gray: #eef2f7;
+        }
+
+        /* Dark Mode */
+        [data-theme="dark"] {
+            --bg: #0d1117;
+            --card-bg: #161b22;
+            --card-border: rgba(255, 255, 255, 0.06);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.40);
+            --shadow-hover: 0 16px 48px rgba(0, 0, 0, 0.50);
+            --text: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #484f58;
+            --glass-bg: rgba(22, 27, 34, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --light-gray: #21262d;
+            --primary-gradient: linear-gradient(135deg, #0a2a6e, #1a5bb5);
         }
 
         body {
             font-family: var(--font);
             background: var(--bg);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            color: #1e1e2f;
+            color: var(--text);
+            transition: background var(--transition), color var(--transition);
         }
 
-        /* ---------- HEADER ---------- */
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--light-gray);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-light);
+            border-radius: 10px;
+        }
+
+        /* ===== HEADER ===== */
         .header {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-            padding: 18px 32px;
+            background: var(--primary-gradient);
+            padding: 14px 28px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 14px;
-            box-shadow: 0 4px 20px rgba(13, 71, 161, 0.35);
+            gap: 12px;
+            box-shadow: 0 4px 24px rgba(13, 71, 161, 0.30);
             position: sticky;
             top: 0;
             z-index: 100;
+            backdrop-filter: blur(8px);
         }
 
         .header .brand {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             color: #fff;
         }
-
         .header .brand i {
-            font-size: 32px;
+            font-size: 30px;
             color: #ffd54f;
         }
-
         .header .brand h1 {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.2px;
         }
-
         .header .brand span {
             font-weight: 300;
             opacity: 0.85;
@@ -87,139 +127,358 @@
         .header .actions {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 10px;
             flex-wrap: wrap;
         }
-
-        .header .actions a {
+        .header .actions a,
+        .header .actions button {
             color: #fff;
             text-decoration: none;
-            padding: 8px 20px;
+            padding: 7px 18px;
             border-radius: 40px;
             font-weight: 600;
-            font-size: 14px;
-            background: rgba(255, 255, 255, 0.12);
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.10);
             backdrop-filter: blur(4px);
             transition: var(--transition);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            cursor: pointer;
+            font-family: var(--font);
         }
-
-        .header .actions a:hover {
-            background: rgba(255, 255, 255, 0.25);
+        .header .actions a:hover,
+        .header .actions button:hover {
+            background: rgba(255, 255, 255, 0.22);
             transform: translateY(-2px);
         }
-
         .header .actions a.active {
             background: var(--accent);
             border-color: var(--accent);
         }
-
         .header .actions a.active:hover {
             background: var(--accent-light);
         }
+        .header .actions .theme-toggle {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
 
-        /* ---------- MAIN CONTAINER ---------- */
+        /* ===== CONTAINER ===== */
         .container {
-            max-width: 1360px;
+            max-width: 1440px;
             margin: 0 auto;
-            padding: 32px 24px;
+            padding: 28px 24px;
             flex: 1;
             width: 100%;
         }
 
-        /* ---------- SECTION TITLE ---------- */
+        /* ===== VIEW TOGGLE ===== */
+        .view-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .view-controls .view-btns {
+            display: flex;
+            gap: 4px;
+            background: var(--light-gray);
+            border-radius: 10px;
+            padding: 3px;
+        }
+        .view-controls .view-btns button {
+            background: transparent;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .view-controls .view-btns button.active {
+            background: var(--card-bg);
+            color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+        .view-controls .view-btns button:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .view-controls .search-box {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--card-bg);
+            border: 2px solid var(--light-gray);
+            border-radius: 40px;
+            padding: 4px 16px 4px 14px;
+            transition: var(--transition);
+            flex: 1;
+            max-width: 320px;
+            min-width: 160px;
+        }
+        .view-controls .search-box:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.10);
+        }
+        .view-controls .search-box input {
+            border: none;
+            padding: 8px 0;
+            font-size: 14px;
+            background: transparent;
+            width: 100%;
+            outline: none;
+            color: var(--text);
+        }
+        .view-controls .search-box i {
+            color: var(--text-muted);
+        }
+
+        .view-controls .filter-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .view-controls .filter-group .filter-btn {
+            padding: 6px 14px;
+            border-radius: 30px;
+            border: 2px solid var(--light-gray);
+            background: transparent;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+        }
+        .view-controls .filter-group .filter-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .view-controls .filter-group .filter-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .view-controls .category-filter {
+            padding: 6px 14px;
+            border-radius: 30px;
+            border: 2px solid var(--light-gray);
+            background: var(--card-bg);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: var(--font);
+            outline: none;
+        }
+        .view-controls .category-filter:focus {
+            border-color: var(--primary);
+        }
+
+        /* ===== SECTION TITLE ===== */
         .section-title {
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 16px;
-            margin-bottom: 28px;
+            gap: 12px;
+            margin-bottom: 24px;
         }
-
         .section-title h2 {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 700;
-            color: var(--primary-dark);
+            color: var(--text);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
-
         .section-title h2 i {
             color: var(--accent);
-            font-size: 28px;
         }
-
         .section-title .badge {
             background: var(--primary);
             color: #fff;
             padding: 4px 16px;
             border-radius: 40px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
         }
 
-        /* ---------- QR GRID ---------- */
+        /* ===== QR GRID ===== */
         .qr-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 28px;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 24px;
+        }
+        .qr-grid.list-view {
+            grid-template-columns: 1fr;
+        }
+        .qr-grid.list-view .qr-card {
+            flex-direction: row;
+            align-items: center;
+            padding: 16px 20px;
+            gap: 20px;
+            text-align: left;
+        }
+        .qr-grid.list-view .qr-card .qr-wrapper {
+            width: 100px;
+            min-height: 100px;
+            flex-shrink: 0;
+            margin-bottom: 0;
+        }
+        .qr-grid.list-view .qr-card .qr-info {
+            flex: 1;
+            text-align: left;
+        }
+        .qr-grid.list-view .qr-card .qr-actions {
+            flex-shrink: 0;
         }
 
+        /* ===== QR CARD ===== */
         .qr-card {
             background: var(--card-bg);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
-            padding: 20px 16px 18px;
-            text-align: center;
+            padding: 20px 18px 18px;
             transition: var(--transition);
-            border: 1px solid rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--card-border);
             display: flex;
             flex-direction: column;
             align-items: center;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(2px);
         }
-
         .qr-card:hover {
             transform: translateY(-6px);
-            box-shadow: 0 16px 44px rgba(13, 71, 161, 0.13);
+            box-shadow: var(--shadow-hover);
+        }
+        .qr-card .featured-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #ffd54f;
+            color: #5d4037;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .qr-card .expired-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: var(--danger);
+            color: #fff;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .qr-card .status-badge {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+        .qr-card .status-badge.active {
+            background: #e8f5e9;
+            color: var(--success);
+        }
+        .qr-card .status-badge.hidden {
+            background: #fce4ec;
+            color: var(--danger);
         }
 
         .qr-card .qr-wrapper {
-            background: #fafcff;
-            padding: 12px;
+            background: var(--bg);
+            padding: 10px;
             border-radius: 12px;
-            border: 1px solid #eaeef5;
-            margin-bottom: 14px;
+            border: 1px solid var(--light-gray);
+            margin-bottom: 12px;
             width: 100%;
             display: flex;
             justify-content: center;
-            min-height: 140px;
+            min-height: 150px;
             align-items: center;
+            transition: var(--transition);
+            position: relative;
         }
-
         .qr-card .qr-wrapper canvas,
         .qr-card .qr-wrapper img {
             max-width: 100%;
             height: auto;
             display: block;
+            border-radius: 4px;
+        }
+        .qr-card .qr-wrapper .qr-logo {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #fff;
+            padding: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            object-fit: contain;
         }
 
+        .qr-card .qr-info {
+            width: 100%;
+            text-align: center;
+        }
         .qr-card .qr-title {
             font-weight: 700;
             font-size: 15px;
-            color: var(--primary-dark);
-            line-height: 1.4;
-            margin-bottom: 4px;
+            color: var(--text);
+            line-height: 1.3;
+            margin-bottom: 2px;
             word-break: break-word;
         }
-
+        .qr-card .qr-description {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .qr-card .qr-category {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 12px;
+            border-radius: 20px;
+            margin-bottom: 4px;
+            background: var(--light-gray);
+            color: var(--text-secondary);
+        }
         .qr-card .qr-url {
             font-size: 11px;
-            color: #7a8a9e;
+            color: var(--text-muted);
             word-break: break-all;
             max-width: 100%;
             overflow: hidden;
@@ -227,47 +486,36 @@
             white-space: nowrap;
             padding: 0 4px;
         }
+        .qr-card .qr-meta {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
 
         .qr-card .qr-actions {
             margin-top: 12px;
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
             justify-content: center;
+            width: 100%;
         }
-
         .qr-card .qr-actions button,
         .qr-card .qr-actions a {
             background: transparent;
             border: none;
-            padding: 6px 14px;
+            padding: 5px 12px;
             border-radius: 30px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             text-decoration: none;
+            font-family: var(--font);
         }
-
-        .qr-card .qr-actions .btn-edit {
-            background: #e3edfb;
-            color: var(--primary);
-        }
-        .qr-card .qr-actions .btn-edit:hover {
-            background: #c5d9f7;
-        }
-
-        .qr-card .qr-actions .btn-delete {
-            background: #fde8e8;
-            color: var(--accent);
-        }
-        .qr-card .qr-actions .btn-delete:hover {
-            background: #fcd5d5;
-        }
-
         .qr-card .qr-actions .btn-visit {
             background: #e8f5e9;
             color: #2e7d32;
@@ -275,103 +523,82 @@
         .qr-card .qr-actions .btn-visit:hover {
             background: #c8e6c9;
         }
-
-        /* ---------- ADMIN FORM ---------- */
-        .admin-form {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 28px 32px;
-            margin-bottom: 36px;
-            border: 1px solid rgba(0, 0, 0, 0.03);
+        .qr-card .qr-actions .btn-copy {
+            background: #e3edfb;
+            color: var(--primary);
+        }
+        .qr-card .qr-actions .btn-copy:hover {
+            background: #c5d9f7;
+        }
+        .qr-card .qr-actions .btn-share {
+            background: #fce4ec;
+            color: var(--accent);
+        }
+        .qr-card .qr-actions .btn-share:hover {
+            background: #f8bbd0;
+        }
+        .qr-card .qr-actions .btn-download {
+            background: #e8eaf6;
+            color: #3949ab;
+        }
+        .qr-card .qr-actions .btn-download:hover {
+            background: #c5cae9;
         }
 
-        .admin-form .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr auto;
-            gap: 16px;
-            align-items: end;
-        }
-
-        .admin-form .form-row .field {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .admin-form .form-row .field label {
-            font-weight: 600;
-            font-size: 13px;
-            color: #3d4a5c;
-        }
-
-        .admin-form .form-row .field input {
-            padding: 10px 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 14px;
-            transition: var(--transition);
-            background: #fafcff;
-            width: 100%;
-        }
-
-        .admin-form .form-row .field input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.12);
-            background: #fff;
-        }
-
-        .admin-form .form-row .btn-submit {
-            padding: 10px 28px;
-            border: none;
-            border-radius: 10px;
-            background: var(--primary);
-            color: #fff;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            white-space: nowrap;
-            height: 44px;
-        }
-
-        .admin-form .form-row .btn-submit:hover {
-            background: var(--primary-light);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(13, 71, 161, 0.30);
-        }
-
-        .admin-form .form-row .btn-submit.cancel {
-            background: #9aa6b5;
-        }
-        .admin-form .form-row .btn-submit.cancel:hover {
-            background: #7a8a9e;
-        }
-
-        /* ---------- EMPTY STATE ---------- */
+        /* ===== EMPTY STATE ===== */
         .empty-state {
             text-align: center;
-            padding: 48px 20px;
-            color: #7a8a9e;
+            padding: 60px 20px;
+            color: var(--text-muted);
         }
-
         .empty-state i {
-            font-size: 52px;
-            color: #d0d9e6;
+            font-size: 56px;
+            color: var(--light-gray);
             margin-bottom: 16px;
         }
-
         .empty-state h3 {
             font-size: 20px;
-            color: #3d4a5c;
+            color: var(--text-secondary);
             margin-bottom: 6px;
         }
 
-        /* ---------- TOAST ---------- */
+        /* ===== SKELETON ===== */
+        .skeleton-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px 18px 18px;
+            border: 1px solid var(--card-border);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .skeleton-card .skeleton-img {
+            width: 100%;
+            height: 150px;
+            background: var(--light-gray);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        .skeleton-card .skeleton-line {
+            height: 14px;
+            background: var(--light-gray);
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+        .skeleton-card .skeleton-line.short {
+            width: 60%;
+            margin: 0 auto 6px;
+        }
+
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* ===== TOAST ===== */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -382,21 +609,20 @@
             border-radius: 12px;
             font-weight: 600;
             font-size: 14px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.30);
             transform: translateY(80px);
             opacity: 0;
             transition: all 0.4s ease;
-            z-index: 999;
+            z-index: 9999;
             display: flex;
             align-items: center;
             gap: 12px;
+            max-width: 90vw;
         }
-
         .toast.show {
             transform: translateY(0);
             opacity: 1;
         }
-
         .toast.success {
             background: #1b5e20;
         }
@@ -406,38 +632,165 @@
         .toast.info {
             background: #0d47a1;
         }
+        .toast.warning {
+            background: #b76e0a;
+        }
 
-        /* ---------- RESPONSIVE ---------- */
-        @media (max-width: 820px) {
-            .admin-form .form-row {
-                grid-template-columns: 1fr;
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 28px 32px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+            animation: modalIn 0.35s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        @keyframes modalIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.94) translateY(20px);
             }
-            .admin-form .form-row .btn-submit {
-                width: 100%;
-                justify-content: center;
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .modal-content h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-content .field {
+            margin-bottom: 14px;
+        }
+        .modal-content .field label {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 4px;
+        }
+        .modal-content .field input,
+        .modal-content .field textarea,
+        .modal-content .field select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid var(--light-gray);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            transition: var(--transition);
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+        }
+        .modal-content .field input:focus,
+        .modal-content .field textarea:focus,
+        .modal-content .field select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.10);
+        }
+        .modal-content .field textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        .modal-content .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .modal-content .modal-actions button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+        }
+        .modal-content .modal-actions .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+        .modal-content .modal-actions .btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        .modal-content .modal-actions .btn-secondary {
+            background: var(--light-gray);
+            color: var(--text-secondary);
+        }
+        .modal-content .modal-actions .btn-secondary:hover {
+            background: #dce3ed;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 820px) {
+            .header {
+                padding: 12px 16px;
             }
             .header .brand h1 {
-                font-size: 18px;
-            }
-            .header {
-                padding: 14px 18px;
+                font-size: 17px;
             }
             .container {
-                padding: 20px 14px;
+                padding: 16px 12px;
             }
             .qr-grid {
-                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-                gap: 18px;
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 16px;
+            }
+            .view-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .view-controls .search-box {
+                max-width: 100%;
+            }
+            .view-controls .filter-group {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 4px;
             }
             .section-title h2 {
                 font-size: 20px;
             }
+            .modal-content {
+                padding: 20px 16px;
+            }
         }
-
         @media (max-width: 480px) {
             .qr-grid {
                 grid-template-columns: 1fr 1fr;
-                gap: 14px;
+                gap: 12px;
             }
             .qr-card {
                 padding: 14px 10px;
@@ -446,30 +799,72 @@
                 font-size: 13px;
             }
             .header .brand i {
-                font-size: 24px;
+                font-size: 22px;
             }
             .header .brand h1 {
-                font-size: 15px;
+                font-size: 14px;
             }
-            .header .actions a {
-                font-size: 12px;
-                padding: 6px 14px;
+            .header .actions a,
+            .header .actions button {
+                font-size: 11px;
+                padding: 5px 12px;
             }
-            .admin-form {
-                padding: 18px 14px;
+            .qr-grid.list-view .qr-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            .qr-grid.list-view .qr-card .qr-wrapper {
+                width: 100%;
+                max-width: 140px;
+            }
+            .qr-card .qr-actions button,
+            .qr-card .qr-actions a {
+                font-size: 10px;
+                padding: 4px 10px;
             }
         }
 
-        /* ---------- SCROLLBAR ---------- */
-        ::-webkit-scrollbar {
-            width: 6px;
+        /* ===== DARK MODE OVERRIDES ===== */
+        [data-theme="dark"] .header {
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.50);
         }
-        ::-webkit-scrollbar-track {
-            background: #eef2f7;
+        [data-theme="dark"] .qr-card .qr-wrapper {
+            background: #0d1117;
         }
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary-light);
-            border-radius: 10px;
+        [data-theme="dark"] .view-controls .search-box {
+            border-color: #30363d;
+        }
+        [data-theme="dark"] .view-controls .filter-btn {
+            border-color: #30363d;
+            color: var(--text-secondary);
+        }
+        [data-theme="dark"] .view-controls .filter-btn.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: #fff;
+        }
+        [data-theme="dark"] .view-controls .category-filter {
+            border-color: #30363d;
+            background: var(--card-bg);
+            color: var(--text-secondary);
+        }
+        [data-theme="dark"] .modal-content .field input,
+        [data-theme="dark"] .modal-content .field textarea,
+        [data-theme="dark"] .modal-content .field select {
+            background: #0d1117;
+            border-color: #30363d;
+            color: var(--text);
+        }
+        [data-theme="dark"] .modal-content .field input:focus,
+        [data-theme="dark"] .modal-content .field textarea:focus {
+            border-color: var(--primary);
+        }
+        [data-theme="dark"] .view-controls .view-btns {
+            background: #21262d;
+        }
+        [data-theme="dark"] .view-controls .view-btns button.active {
+            background: var(--card-bg);
+            color: var(--primary);
         }
     </style>
 </head>
@@ -482,32 +877,79 @@
             <h1>Rotaract <span>Galkot</span></h1>
         </div>
         <div class="actions">
-            <a href="qr.html" class="active" id="navQr">
-                <i class="fas fa-qrcode"></i> QR Codes
-            </a>
-            <a href="adminqr.html" id="navAdmin">
-                <i class="fas fa-sliders-h"></i> Manage
-            </a>
+            <a href="qr.html" class="active" id="navQr"><i class="fas fa-qrcode"></i> QR Codes</a>
+            <a href="adminqr.html" id="navAdmin"><i class="fas fa-sliders-h"></i> Manage</a>
+            <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">
+                <i class="fas fa-moon"></i>
+            </button>
         </div>
     </header>
 
     <!-- ===== MAIN ===== -->
     <div class="container" id="app">
 
-        <!-- section title -->
+        <!-- Section Title -->
         <div class="section-title">
             <h2><i class="fas fa-qrcode"></i> QR Code Directory</h2>
             <span class="badge" id="countBadge">0 links</span>
         </div>
 
-        <!-- QR grid -->
+        <!-- View Controls -->
+        <div class="view-controls">
+            <div class="view-btns">
+                <button class="active" data-view="grid" title="Grid View"><i class="fas fa-th"></i></button>
+                <button data-view="list" title="List View"><i class="fas fa-list"></i></button>
+            </div>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search QR codes..." />
+            </div>
+            <div class="filter-group">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="active">Active</button>
+                <button class="filter-btn" data-filter="featured">Featured</button>
+                <button class="filter-btn" data-filter="recent">Recent</button>
+            </div>
+            <select class="category-filter" id="categoryFilter">
+                <option value="all">All Categories</option>
+            </select>
+        </div>
+
+        <!-- QR Grid -->
         <div class="qr-grid" id="qrGrid"></div>
 
-        <!-- empty state (hidden by default) -->
+        <!-- Skeleton Loader -->
+        <div class="qr-grid" id="skeletonGrid" style="display:none;">
+            <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+            <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+            <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+            <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+        </div>
+
+        <!-- Empty State -->
         <div class="empty-state" id="emptyState" style="display:none;">
             <i class="fas fa-qrcode"></i>
-            <h3>No QR Codes Yet</h3>
-            <p>Add your first link from the <a href="adminqr.html" style="color:var(--primary);font-weight:600;">Manage</a> page.</p>
+            <h3>No QR Codes Found</h3>
+            <p>Check back later or visit the <a href="adminqr.html" style="color:var(--primary);font-weight:600;">Manage</a> page to add some.</p>
+        </div>
+    </div>
+
+    <!-- ===== SHARE MODAL ===== -->
+    <div class="modal-overlay" id="shareModal">
+        <div class="modal-content">
+            <h3><i class="fas fa-share-alt"></i> Share QR Code</h3>
+            <p style="color:var(--text-secondary);font-size:14px;margin-bottom:12px;" id="shareTitle">Loading...</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0;">
+                <button class="share-btn" data-platform="whatsapp" style="background:#25D366;color:#fff;border:none;padding:10px 18px;border-radius:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                <button class="share-btn" data-platform="facebook" style="background:#1877F2;color:#fff;border:none;padding:10px 18px;border-radius:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;"><i class="fab fa-facebook"></i> Facebook</button>
+                <button class="share-btn" data-platform="messenger" style="background:#00B2FF;color:#fff;border:none;padding:10px 18px;border-radius:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;"><i class="fab fa-facebook-messenger"></i> Messenger</button>
+                <button class="share-btn" data-platform="telegram" style="background:#0088CC;color:#fff;border:none;padding:10px 18px;border-radius:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;"><i class="fab fa-telegram"></i> Telegram</button>
+                <button class="share-btn" data-platform="email" style="background:#D44638;color:#fff;border:none;padding:10px 18px;border-radius:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;"><i class="fas fa-envelope"></i> Email</button>
+                <button class="share-btn" data-platform="copy" style="background:var(--primary);color:#fff;border:none;padding:10px 18px;border-radius:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;"><i class="fas fa-copy"></i> Copy Link</button>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="shareModalClose">Close</button>
+            </div>
         </div>
     </div>
 
@@ -519,10 +961,7 @@
 
     <script>
         // ============================================================
-        //  SUPABASE CONFIGURATION – must match the project used in
-        //  adminqr.html (public anon/publishable key only — this key
-        //  is safe to expose in client-side code as long as Row Level
-        //  Security policies on the tables are set correctly)
+        //  SUPABASE CONFIGURATION
         // ============================================================
         const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
@@ -530,7 +969,7 @@
         let supabaseInitError = '';
         try {
             if (!window.supabase || typeof window.supabase.createClient !== 'function') {
-                throw new Error('Supabase library did not load (check internet connection / ad-blocker).');
+                throw new Error('Supabase library did not load.');
             }
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         } catch (err) {
@@ -539,15 +978,100 @@
         }
 
         // ============================================================
-        //  DATA LAYER – Supabase table: 'qr_codes'
-        //  (previously localStorage, so entries added by an admin on
-        //   one device/browser never showed up for real visitors)
+        //  STATE
         // ============================================================
+        let qrData = [];
+        let categories = [];
+        let currentView = 'grid';
+        let currentFilter = 'all';
+        let currentCategory = 'all';
+        let searchQuery = '';
 
-        // ---------- helpers ----------
+        // ============================================================
+        //  DOM REFS
+        // ============================================================
+        const grid = document.getElementById('qrGrid');
+        const empty = document.getElementById('emptyState');
+        const skeleton = document.getElementById('skeletonGrid');
+        const badge = document.getElementById('countBadge');
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const shareModal = document.getElementById('shareModal');
+        const shareTitle = document.getElementById('shareTitle');
+
+        // ============================================================
+        //  HELPERS
+        // ============================================================
+        function escapeHtml(text) {
+            if (!text) return '';
+            const d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML;
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const el = document.getElementById('toastMsg');
+            toast.className = 'toast ' + type;
+            el.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function formatDate(ts) {
+            if (!ts) return 'Never';
+            const d = new Date(ts);
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function isExpired(expiry) {
+            if (!expiry) return false;
+            return new Date(expiry) < new Date();
+        }
+
+        function getCategoryColor(cat) {
+            const colors = {
+                'Membership': '#1e88e5',
+                'Attendance': '#43a047',
+                'Events': '#fb8c00',
+                'Registration': '#8e24aa',
+                'Donation': '#e53935',
+                'Payments': '#00897b',
+                'Certificates': '#fdd835',
+                'Google Forms': '#0d47a1',
+                'Documents': '#546e7a',
+                'Social Media': '#1da1f2',
+                'Websites': '#2e7d32',
+                'Others': '#78909c'
+            };
+            return colors[cat] || '#78909c';
+        }
+
+        function getCategoryIcon(cat) {
+            const icons = {
+                'Membership': 'fa-id-card',
+                'Attendance': 'fa-check-circle',
+                'Events': 'fa-calendar-alt',
+                'Registration': 'fa-clipboard-list',
+                'Donation': 'fa-heart',
+                'Payments': 'fa-credit-card',
+                'Certificates': 'fa-award',
+                'Google Forms': 'fa-google',
+                'Documents': 'fa-file-alt',
+                'Social Media': 'fa-share-alt',
+                'Websites': 'fa-globe',
+                'Others': 'fa-tag'
+            };
+            return icons[cat] || 'fa-tag';
+        }
+
+        // ============================================================
+        //  LOAD DATA FROM SUPABASE
+        // ============================================================
         async function loadData() {
             if (!supabaseClient) {
-                showToast(supabaseInitError || 'Failed to connect to Supabase.', 'error');
+                showToast(supabaseInitError || 'Supabase connection failed.', 'error');
                 return [];
             }
             const { data, error } = await supabaseClient
@@ -564,91 +1088,411 @@
             return data || [];
         }
 
-        // ---------- render QR codes ----------
-        async function renderQrGrid() {
-            const data = await loadData();
-            const grid = document.getElementById('qrGrid');
-            const empty = document.getElementById('emptyState');
-            const badge = document.getElementById('countBadge');
+        async function loadCategories() {
+            // Hardcoded categories for now — can be extended with a DB table later
+            return [
+                'Membership', 'Attendance', 'Events', 'Registration',
+                'Donation', 'Payments', 'Certificates', 'Google Forms',
+                'Documents', 'Social Media', 'Websites', 'Others'
+            ];
+        }
 
-            if (!data || data.length === 0) {
+        // ============================================================
+        //  RENDER
+        // ============================================================
+        function renderQrGrid() {
+            const filtered = getFilteredData();
+
+            if (filtered.length === 0) {
                 grid.innerHTML = '';
                 empty.style.display = 'block';
                 badge.textContent = '0 links';
                 return;
             }
             empty.style.display = 'none';
-            badge.textContent = data.length + ' link' + (data.length > 1 ? 's' : '');
+            badge.textContent = filtered.length + ' link' + (filtered.length > 1 ? 's' : '');
 
-            // Build cards
+            const isListView = currentView === 'list';
             let html = '';
-            data.forEach((item, index) => {
-                const encodedUrl = encodeURIComponent(item.url);
-                // Use QR Server API for image – clean & reliable
+
+            filtered.forEach((item, idx) => {
+                const catColor = getCategoryColor(item.category);
+                const catIcon = getCategoryIcon(item.category);
+                const expired = isExpired(item.expiry_date);
+                const status = item.status || 'active';
+                const isFeatured = item.featured || false;
+                const qrUrl = item.url || '#';
+                const encoded = encodeURIComponent(qrUrl);
                 const qrSrc =
-                    `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=14&data=${encodedUrl}`;
+                    `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=14&data=${encoded}&bgcolor=${(item.bg_color || 'FFFFFF').replace('#','')}&color=${(item.fg_color || '0D47A1').replace('#','')}`;
+
+                let statusBadge = '';
+                if (status === 'hidden') {
+                    statusBadge = `<span class="status-badge hidden"><i class="fas fa-eye-slash"></i> Hidden</span>`;
+                } else if (expired) {
+                    statusBadge = `<span class="status-badge" style="background:#fce4ec;color:#b71c1c;"><i class="fas fa-clock"></i> Expired</span>`;
+                } else {
+                    statusBadge = `<span class="status-badge active"><i class="fas fa-check-circle"></i> Active</span>`;
+                }
+
+                let featuredBadge = '';
+                if (isFeatured) {
+                    featuredBadge =
+                        `<span class="featured-badge"><i class="fas fa-star"></i> Featured</span>`;
+                }
+
+                let expiredBadge = '';
+                if (expired) {
+                    expiredBadge = `<span class="expired-badge"><i class="fas fa-hourglass-end"></i> Expired</span>`;
+                }
+
+                const categoryHtml =
+                    `<span class="qr-category" style="background:${catColor}22;color:${catColor};"><i class="fas ${catIcon}"></i> ${escapeHtml(item.category || 'Others')}</span>`;
 
                 html += `
                         <div class="qr-card" data-id="${item.id}">
+                            ${featuredBadge}
+                            ${expiredBadge}
+                            ${statusBadge}
                             <div class="qr-wrapper">
-                                <img src="${qrSrc}" alt="QR Code for ${item.title}" 
-                                     loading="lazy" width="200" height="200"
+                                <img src="${qrSrc}" alt="QR for ${item.title}" loading="lazy"
+                                     width="200" height="200"
                                      onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23f0f2f5%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%239aa6b5%22 font-size=%2214%22 font-family=%22sans-serif%22%3EQR Error%3C/text%3E%3C/svg%3E'">
                             </div>
-                            <div class="qr-title">${escapeHtml(item.title)}</div>
-                            <div class="qr-url">${escapeHtml(item.url)}</div>
+                            <div class="qr-info">
+                                <div class="qr-title">${escapeHtml(item.title)}</div>
+                                ${item.description ? `<div class="qr-description">${escapeHtml(item.description)}</div>` : ''}
+                                ${categoryHtml}
+                                <div class="qr-url">${escapeHtml(item.url)}</div>
+                                <div class="qr-meta">
+                                    <i class="far fa-calendar-alt"></i> ${formatDate(item.updated_at || item.created_at)}
+                                    ${item.expiry_date ? ` · <i class="far fa-hourglass"></i> ${formatDate(item.expiry_date)}` : ''}
+                                </div>
+                            </div>
                             <div class="qr-actions">
                                 <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener" class="btn-visit">
                                     <i class="fas fa-external-link-alt"></i> Visit
                                 </a>
+                                <button class="btn-copy" data-url="${escapeHtml(item.url)}" data-title="${escapeHtml(item.title)}">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="btn-share" data-id="${item.id}" data-title="${escapeHtml(item.title)}" data-url="${escapeHtml(item.url)}">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                                <button class="btn-download" data-url="${encodeURIComponent(item.url)}" data-title="${escapeHtml(item.title)}">
+                                    <i class="fas fa-download"></i>
+                                </button>
                             </div>
                         </div>
                     `;
             });
 
+            grid.className = 'qr-grid' + (isListView ? ' list-view' : '');
             grid.innerHTML = html;
+            attachCardEvents();
         }
 
-        // simple escape
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        function getFilteredData() {
+            let data = qrData.filter(item => {
+                // Status: only show active (non-hidden, non-expired) on public page
+                if (item.status === 'hidden') return false;
+                if (isExpired(item.expiry_date)) return false;
+                return true;
+            });
+
+            // Search
+            if (searchQuery.trim()) {
+                const q = searchQuery.trim().toLowerCase();
+                data = data.filter(item =>
+                    item.title.toLowerCase().includes(q) ||
+                    (item.url || '').toLowerCase().includes(q) ||
+                    (item.description || '').toLowerCase().includes(q) ||
+                    (item.category || '').toLowerCase().includes(q)
+                );
+            }
+
+            // Category filter
+            if (currentCategory !== 'all') {
+                data = data.filter(item => (item.category || 'Others') === currentCategory);
+            }
+
+            // Additional filters
+            if (currentFilter === 'featured') {
+                data = data.filter(item => item.featured === true);
+            } else if (currentFilter === 'active') {
+                data = data.filter(item => item.status !== 'hidden' && !isExpired(item.expiry_date));
+            } else if (currentFilter === 'recent') {
+                data = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                return data.slice(0, 12);
+            }
+
+            // Sort: featured first, then sort_order
+            data = data.sort((a, b) => {
+                if (a.featured && !b.featured) return -1;
+                if (!a.featured && b.featured) return 1;
+                return (a.sort_order || 0) - (b.sort_order || 0);
+            });
+
+            return data;
         }
 
-        // ---------- toast ----------
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const msg = document.getElementById('toastMsg');
-            toast.className = 'toast ' + type;
-            msg.textContent = message;
-            toast.classList.add('show');
-            clearTimeout(toast._timer);
-            toast._timer = setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+        // ============================================================
+        //  CARD EVENT BINDING
+        // ============================================================
+        function attachCardEvents() {
+            // Copy
+            document.querySelectorAll('.btn-copy').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const url = this.dataset.url;
+                    navigator.clipboard.writeText(url).then(() => {
+                        showToast('Link copied!', 'success');
+                    }).catch(() => {
+                        // fallback
+                        const ta = document.createElement('textarea');
+                        ta.value = url;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        ta.remove();
+                        showToast('Link copied!', 'success');
+                    });
+                });
+            });
+
+            // Share
+            document.querySelectorAll('.btn-share').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const id = this.dataset.id;
+                    const title = this.dataset.title;
+                    const url = this.dataset.url;
+                    openShareModal(id, title, url);
+                });
+            });
+
+            // Download PNG
+            document.querySelectorAll('.btn-download').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const url = this.dataset.url;
+                    const title = this.dataset.title || 'qr';
+                    const encoded = encodeURIComponent(url);
+                    const link = document.createElement('a');
+                    link.download = `${title.replace(/[^a-zA-Z0-9]/g,'_')}.png`;
+                    link.href =
+                        `https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=20&data=${encoded}`;
+                    link.target = '_blank';
+                    link.click();
+                    showToast('Downloading QR...', 'info');
+                });
+            });
         }
 
-        // ---------- init ----------
-        document.addEventListener('DOMContentLoaded', function() {
+        // ============================================================
+        //  SHARE MODAL
+        // ============================================================
+        let shareData = {};
+
+        function openShareModal(id, title, url) {
+            shareData = { id, title, url };
+            shareTitle.textContent = title;
+            shareModal.classList.add('active');
+
+            // Attach share buttons
+            document.querySelectorAll('.share-btn').forEach(b => {
+                b.onclick = function() {
+                    const platform = this.dataset.platform;
+                    handleShare(platform, url, title);
+                };
+            });
+        }
+
+        function handleShare(platform, url, title) {
+            const encodedUrl = encodeURIComponent(url);
+            const encodedTitle = encodeURIComponent(title);
+            let shareUrl = '';
+
+            switch (platform) {
+                case 'whatsapp':
+                    shareUrl = `https://api.whatsapp.com/send?text=${encodedTitle}%20-%20${encodedUrl}`;
+                    break;
+                case 'facebook':
+                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+                    break;
+                case 'messenger':
+                    shareUrl = `https://www.facebook.com/dialog/send?link=${encodedUrl}&app_id=123456789`;
+                    break;
+                case 'telegram':
+                    shareUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`;
+                    break;
+                case 'email':
+                    shareUrl = `mailto:?subject=${encodedTitle}&body=${encodedUrl}`;
+                    break;
+                case 'copy':
+                    navigator.clipboard.writeText(url).then(() => {
+                        showToast('Link copied!', 'success');
+                        shareModal.classList.remove('active');
+                    }).catch(() => {
+                        const ta = document.createElement('textarea');
+                        ta.value = url;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        ta.remove();
+                        showToast('Link copied!', 'success');
+                        shareModal.classList.remove('active');
+                    });
+                    return;
+                default:
+                    if (navigator.share) {
+                        navigator.share({ title, text: title, url }).catch(() => {});
+                    } else {
+                        showToast('Share not supported on this device.', 'error');
+                    }
+                    return;
+            }
+
+            if (shareUrl) {
+                window.open(shareUrl, '_blank', 'width=600,height=500');
+                shareModal.classList.remove('active');
+            }
+        }
+
+        // Close share modal
+        document.getElementById('shareModalClose').addEventListener('click', () => {
+            shareModal.classList.remove('active');
+        });
+        shareModal.addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
+        });
+
+        // ============================================================
+        //  CATEGORY FILTER POPULATION
+        // ============================================================
+        function populateCategoryFilter() {
+            const cats = [...new Set(qrData.map(d => d.category || 'Others').filter(Boolean))];
+            categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+            cats.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                categoryFilter.appendChild(opt);
+            });
+        }
+
+        // ============================================================
+        //  THEME TOGGLE
+        // ============================================================
+        function initTheme() {
+            const saved = localStorage.getItem('qr-theme');
+            if (saved === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.querySelector('#themeToggle i').className = 'fas fa-sun';
+            }
+        }
+
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('qr-theme', 'light');
+                this.querySelector('i').className = 'fas fa-moon';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('qr-theme', 'dark');
+                this.querySelector('i').className = 'fas fa-sun';
+            }
+        });
+
+        // ============================================================
+        //  VIEW CONTROLS
+        // ============================================================
+        document.querySelectorAll('.view-btns button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.view-btns button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentView = this.dataset.view;
+                renderQrGrid();
+            });
+        });
+
+        // Search
+        searchInput.addEventListener('input', function() {
+            searchQuery = this.value;
             renderQrGrid();
+        });
 
-            // highlight active nav
+        // Filters
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                renderQrGrid();
+            });
+        });
+
+        // Category filter
+        categoryFilter.addEventListener('change', function() {
+            currentCategory = this.value;
+            renderQrGrid();
+        });
+
+        // ============================================================
+        //  LIVE UPDATES (Realtime)
+        // ============================================================
+        function subscribeToChanges() {
+            if (!supabaseClient) return;
+            supabaseClient
+                .channel('qr_codes_public_changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'qr_codes' }, function() {
+                    refreshData();
+                })
+                .subscribe();
+        }
+
+        // ============================================================
+        //  REFRESH DATA
+        // ============================================================
+        async function refreshData() {
+            skeleton.style.display = 'grid';
+            grid.innerHTML = '';
+            empty.style.display = 'none';
+
+            qrData = await loadData();
+            categories = await loadCategories();
+            populateCategoryFilter();
+
+            skeleton.style.display = 'none';
+            renderQrGrid();
+        }
+
+        // ============================================================
+        //  INIT
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', async function() {
+            initTheme();
+
+            // Highlight nav
             const path = window.location.pathname.split('/').pop() || 'qr.html';
             document.getElementById('navQr').classList.toggle('active', path === 'qr.html');
             document.getElementById('navAdmin').classList.toggle('active', path === 'adminqr.html');
 
-            // Live-update this page whenever an admin adds/edits/deletes
-            // a QR code, without needing a manual refresh.
-            if (supabaseClient) {
-                supabaseClient
-                    .channel('qr_codes_public_changes')
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'qr_codes' }, function() {
-                        renderQrGrid();
-                    })
-                    .subscribe();
-            }
+            // Load data
+            skeleton.style.display = 'grid';
+            qrData = await loadData();
+            categories = await loadCategories();
+            populateCategoryFilter();
+            skeleton.style.display = 'none';
+            renderQrGrid();
+
+            // Subscribe to realtime changes
+            subscribeToChanges();
         });
+
+        // Expose for debugging
+        window.refreshData = refreshData;
     </script>
 
 </body>
