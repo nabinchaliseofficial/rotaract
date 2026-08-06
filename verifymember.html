@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#2563eb" />
     <title>Member Directory · Rotary</title>
-    <link rel="stylesheet" href="https://cdnXOs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -14,8 +19,61 @@
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
         }
 
+        /* ===== THEME TOKENS ===== */
+        :root {
+            --bg-grad-1: #eef2f6;
+            --bg-grad-2: #f8fafc;
+            --container-bg: #ffffff;
+            --container-border: #e9edf2;
+            --container-shadow: rgba(0, 0, 0, 0.06);
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border-color: #dce2eb;
+            --surface: #f8fafc;
+            --surface-hover: #eef2f6;
+            --accent: #2563eb;
+            --accent-dark: #1d4ed8;
+            --accent-soft: #dbeafe;
+            --btn-dark: #1e293b;
+            --btn-dark-hover: #0f172a;
+            --success: #166534;
+            --error: #991b1b;
+            --skeleton-base: #e9edf2;
+            --skeleton-shine: #f6f8fa;
+            --focus-ring: rgba(37, 99, 235, 0.25);
+            --overlay: rgba(0, 0, 0, 0.5);
+        }
+
+        [data-theme="dark"] {
+            --bg-grad-1: #0b1220;
+            --bg-grad-2: #0f172a;
+            --container-bg: #151f2e;
+            --container-border: #243044;
+            --container-shadow: rgba(0, 0, 0, 0.55);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2c394f;
+            --surface: #1b2636;
+            --surface-hover: #223047;
+            --accent: #3b82f6;
+            --accent-dark: #60a5fa;
+            --accent-soft: rgba(59, 130, 246, 0.18);
+            --btn-dark: #334155;
+            --btn-dark-hover: #475569;
+            --success: #22c55e;
+            --error: #f87171;
+            --skeleton-base: #1f2937;
+            --skeleton-shine: #283548;
+            --focus-ring: rgba(59, 130, 246, 0.35);
+            --overlay: rgba(0, 0, 0, 0.7);
+        }
+
+        html, body { transition: background-color .25s ease; }
+
         body {
-            background: linear-gradient(135deg, #eef2f6 0%, #f8fafc 100%);
+            background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -23,14 +81,44 @@
             padding: 20px;
         }
 
+        /* ===== ACCESSIBILITY UTILITIES ===== */
+        .sr-only {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+        }
+
+        .skip-link {
+            position: fixed; left: -9999px; top: 12px; background: var(--accent); color: #fff;
+            padding: 10px 18px; border-radius: 10px; z-index: 100000; font-weight: 600; font-size: .85rem;
+            text-decoration: none;
+        }
+
+        .skip-link:focus { left: 12px; }
+
+        *:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
         .container {
             max-width: 720px;
             width: 100%;
-            background: white;
+            background: var(--container-bg);
             border-radius: 32px;
             padding: 32px 28px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.06);
-            border: 1px solid #e9edf2;
+            box-shadow: 0 30px 60px var(--container-shadow);
+            border: 1px solid var(--container-border);
+            transition: background-color .25s ease, border-color .25s ease;
         }
 
         .header {
@@ -50,24 +138,58 @@
             justify-content: center;
             color: white;
             font-size: 1.4rem;
+            flex-shrink: 0;
         }
 
         .header h1 {
             font-size: 1.6rem;
             font-weight: 700;
-            color: #0f172a;
+            color: var(--text-primary);
+            flex: 1;
         }
 
+        .theme-toggle {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background: var(--surface);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: .15s;
+            flex-shrink: 0;
+        }
+
+        .theme-toggle:hover { background: var(--surface-hover); color: var(--accent); border-color: var(--accent); }
+
         .subhead {
-            color: #64748b;
-            margin: 2px 0 24px 60px;
+            color: var(--text-secondary);
+            margin: 2px 0 18px 60px;
             font-size: 0.85rem;
         }
+
+        .offline-banner {
+            display: none;
+            background: #f59e0b;
+            color: #111;
+            font-size: .8rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 8px 12px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .offline-banner.show { display: block; }
 
         .search-box {
             display: flex;
             gap: 10px;
-            margin-bottom: 28px;
+            margin-bottom: 16px;
         }
 
         .search-wrapper {
@@ -75,34 +197,72 @@
             position: relative;
         }
 
-        .search-wrapper i {
+        .search-wrapper > i.fa-search {
             position: absolute;
             left: 16px;
             top: 50%;
             transform: translateY(-50%);
-            color: #94a3b8;
+            color: var(--text-muted);
             font-size: 0.9rem;
+            pointer-events: none;
         }
 
         .search-wrapper input {
             width: 100%;
-            padding: 13px 16px 13px 44px;
+            padding: 13px 76px 13px 44px;
             border-radius: 60px;
-            border: 1px solid #dce2eb;
+            border: 1px solid var(--border-color);
             font-size: 0.95rem;
             outline: none;
             transition: 0.2s;
-            background: #f8fafc;
+            background: var(--surface);
+            color: var(--text-primary);
         }
 
+        .search-wrapper input::placeholder { color: var(--text-muted); }
+
         .search-wrapper input:focus {
-            border-color: #2563eb;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+            border-color: var(--accent);
+            background: var(--container-bg);
+            box-shadow: 0 0 0 3px var(--focus-ring);
+        }
+
+        .search-wrapper .clear-btn {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: .9rem;
+            display: none;
+            padding: 6px;
+        }
+
+        .search-wrapper .clear-btn:hover { color: var(--error); }
+
+        .search-wrapper.has-value .clear-btn { display: block; }
+        .search-wrapper.has-value .kbd-hint { display: none; }
+
+        .kbd-hint {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.62rem;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 3px 6px;
+            border-radius: 6px;
+            background: var(--container-bg);
+            pointer-events: none;
+            letter-spacing: .5px;
         }
 
         .search-btn {
-            background: #1e293b;
+            background: var(--btn-dark);
             border: none;
             color: white;
             padding: 0 24px;
@@ -118,7 +278,7 @@
         }
 
         .search-btn:hover {
-            background: #0f172a;
+            background: var(--btn-dark-hover);
             transform: scale(1.02);
         }
 
@@ -128,48 +288,164 @@
             transform: none;
         }
 
+        /* ===== SUGGESTIONS / HISTORY DROPDOWN ===== */
+        .suggestions {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            box-shadow: 0 16px 34px var(--container-shadow);
+            z-index: 60;
+            max-height: 320px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .suggestions.show { display: block; }
+
+        .sug-section-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+            font-weight: 700;
+            padding: 12px 16px 6px;
+        }
+
+        .suggestion-item, .history-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            cursor: pointer;
+        }
+
+        .suggestion-item:hover, .suggestion-item.active,
+        .history-item:hover, .history-item.active {
+            background: var(--surface-hover);
+        }
+
+        .suggestion-item .s-avatar {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: var(--accent-soft); color: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.68rem; font-weight: 700; flex-shrink: 0; overflow: hidden;
+        }
+
+        .suggestion-item .s-info { min-width: 0; }
+        .suggestion-item .s-name {
+            font-size: 0.85rem; font-weight: 600; color: var(--text-primary);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .suggestion-item .s-name mark { background: var(--accent-soft); color: var(--accent); border-radius: 3px; padding: 0 1px; }
+        .suggestion-item .s-role { font-size: 0.7rem; color: var(--text-muted); }
+
+        .history-item { font-size: 0.83rem; color: var(--text-secondary); }
+        .history-item i { color: var(--text-muted); width: 14px; }
+
+        .history-clear {
+            padding: 10px 16px; font-size: 0.72rem; color: var(--accent);
+            cursor: pointer; text-align: right; font-weight: 600;
+        }
+        .history-clear:hover { text-decoration: underline; }
+
+        /* ===== FILTER BAR ===== */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 9px 14px;
+            border-radius: 60px;
+            border: 1px solid var(--border-color);
+            background: var(--surface);
+            color: var(--text-primary);
+            font-size: 0.82rem;
+            cursor: pointer;
+            max-width: 100%;
+        }
+
+        .filter-select:focus { border-color: var(--accent); }
+
         /* ===== RESULT COUNT ===== */
         .result-count {
             font-size: 0.85rem;
-            color: #64748b;
+            color: var(--text-secondary);
             margin-bottom: 14px;
             padding: 0 4px;
+            min-height: 1.2em;
         }
 
-        .result-count strong {
-            color: #0f172a;
-        }
+        .result-count strong { color: var(--text-primary); }
 
-        /* ===== EMPTY STATE ===== */
-        .empty-state {
+        /* ===== SKELETON LOADING ===== */
+        .skeleton-card {
+            display: flex; align-items: center; gap: 16px;
+            padding: 18px 20px; border-radius: 20px;
+            background: var(--surface); border: 1px solid var(--border-color);
+            margin-bottom: 10px;
+        }
+        .skeleton-avatar { width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0; }
+        .skeleton-lines { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        .skeleton-line { height: 10px; border-radius: 6px; width: 60%; }
+        .skeleton-line.short { width: 35%; }
+        .skeleton-avatar, .skeleton-line {
+            background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 37%, var(--skeleton-base) 63%);
+            background-size: 400% 100%;
+            animation: shimmer 1.4s ease infinite;
+        }
+        @keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+        /* ===== EMPTY / ERROR STATE ===== */
+        .empty-state, .no-result {
             text-align: center;
-            padding: 50px 20px 40px;
-            color: #94a3b8;
+            padding: 44px 20px 36px;
+            color: var(--text-muted);
         }
 
-        .empty-state .icon {
-            font-size: 4rem;
-            color: #dce2eb;
+        .empty-state .icon, .no-result i {
+            font-size: 3.6rem;
+            color: var(--border-color);
             margin-bottom: 14px;
         }
 
-        .empty-state h3 {
-            font-size: 1.1rem;
-            color: #1e293b;
+        .empty-state h3, .no-result p {
+            font-size: 1.05rem;
+            color: var(--text-primary);
             margin-bottom: 4px;
+            font-weight: 600;
         }
 
-        .empty-state p {
+        .empty-state p, .no-result span {
             font-size: 0.9rem;
-            color: #94a3b8;
+            color: var(--text-muted);
         }
+
+        .retry-btn {
+            margin-top: 16px;
+            background: var(--btn-dark);
+            color: #fff;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+        }
+        .retry-btn:hover { background: var(--btn-dark-hover); }
 
         /* ===== MEMBER CARD (clickable) ===== */
         .member-card {
-            background: #f8fafc;
+            background: var(--surface);
             border-radius: 20px;
             padding: 18px 20px;
-            border: 1px solid #e9edf2;
+            border: 1px solid var(--border-color);
             cursor: pointer;
             transition: 0.2s;
             display: flex;
@@ -178,31 +454,30 @@
             margin-bottom: 10px;
         }
 
-        .member-card:last-child {
-            margin-bottom: 0;
-        }
+        .member-card:last-child { margin-bottom: 0; }
 
-        .member-card:hover {
-            border-color: #2563eb;
-            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.06);
+        .member-card:hover, .member-card:focus-visible {
+            border-color: var(--accent);
+            box-shadow: 0 4px 16px var(--focus-ring);
             transform: translateY(-2px);
         }
+
+        .avatar-wrap { position: relative; flex-shrink: 0; }
 
         .member-card .avatar {
             width: 52px;
             height: 52px;
             border-radius: 50%;
-            background: #dbeafe;
-            flex-shrink: 0;
+            background: var(--accent-soft);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
             font-size: 1.1rem;
-            color: #2563eb;
+            color: var(--accent);
             overflow: hidden;
-            border: 2px solid white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 2px solid var(--container-bg);
+            box-shadow: 0 2px 8px var(--container-shadow);
         }
 
         .member-card .avatar img {
@@ -211,70 +486,79 @@
             object-fit: cover;
         }
 
-        .member-card .info {
-            flex: 1;
-            min-width: 0;
+        .verified-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            border: 2px solid var(--container-bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 0.5rem;
         }
+
+        .member-card .info { flex: 1; min-width: 0; }
 
         .member-card .info .name {
             font-weight: 700;
             font-size: 1rem;
-            color: #0f172a;
+            color: var(--text-primary);
         }
 
         .member-card .info .position {
             font-size: 0.8rem;
-            color: #64748b;
+            color: var(--text-secondary);
         }
 
         .member-card .info .email-small {
             font-size: 0.7rem;
-            color: #94a3b8;
+            color: var(--text-muted);
             margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .member-card .arrow {
-            color: #94a3b8;
+            color: var(--text-muted);
             font-size: 0.8rem;
             transition: 0.2s;
             flex-shrink: 0;
         }
 
-        .member-card:hover .arrow {
-            color: #2563eb;
-            transform: translateX(4px);
-        }
+        .member-card:hover .arrow { color: var(--accent); transform: translateX(4px); }
 
-        /* ===== NO RESULT ===== */
-        .no-result {
-            text-align: center;
-            padding: 40px 20px;
-            color: #94a3b8;
-        }
+        /* ===== LOAD MORE / PAGINATION ===== */
+        .load-more-wrap { text-align: center; padding: 14px 0 2px; }
 
-        .no-result i {
-            font-size: 2.5rem;
-            color: #dce2eb;
-            margin-bottom: 10px;
-        }
-
-        .no-result p {
-            font-weight: 500;
-            color: #475569;
-        }
-
-        .no-result span {
+        .load-more-btn {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 22px;
+            border-radius: 60px;
+            font-weight: 600;
             font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
+        .load-more-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        .end-of-list { text-align: center; color: var(--text-muted); font-size: 0.78rem; padding: 10px 0 2px; }
+        .sentinel { height: 1px; }
 
         /* ===== POPUP OVERLAY ===== */
         .popup-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--overlay);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             display: none;
@@ -285,17 +569,12 @@
             animation: fadeIn 0.3s ease;
         }
 
-        .popup-overlay.active {
-            display: flex;
-        }
+        .popup-overlay.active { display: flex; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .popup {
-            background: white;
+            background: var(--container-bg);
             border-radius: 32px;
             max-width: 460px;
             width: 100%;
@@ -303,7 +582,7 @@
             overflow-y: auto;
             padding: 0;
             animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.35);
         }
 
         @keyframes popIn {
@@ -315,13 +594,13 @@
             position: absolute;
             top: 16px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.05);
+            background: rgba(127, 127, 127, 0.12);
             border: none;
             width: 40px;
             height: 40px;
             border-radius: 50%;
             font-size: 1.2rem;
-            color: #64748b;
+            color: var(--text-secondary);
             cursor: pointer;
             transition: 0.15s;
             display: flex;
@@ -329,98 +608,108 @@
             justify-content: center;
         }
 
-        .popup-close:hover {
-            background: rgba(0, 0, 0, 0.1);
-            color: #0f172a;
-        }
+        .popup-close:hover { background: rgba(127, 127, 127, 0.22); color: var(--text-primary); }
 
         .popup-header {
             position: relative;
             padding: 32px 28px 20px;
             text-align: center;
-            background: linear-gradient(135deg, #f8fafc, #eef2f6);
+            background: linear-gradient(135deg, var(--surface), var(--surface-hover));
             border-radius: 32px 32px 0 0;
         }
+
+        .popup-avatar-wrap { position: relative; width: 120px; margin: 0 auto 14px; }
 
         .popup-avatar {
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            margin: 0 auto 14px;
-            background: #dbeafe;
+            background: var(--accent-soft);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
             font-size: 2.8rem;
-            color: #2563eb;
+            color: var(--accent);
             overflow: hidden;
-            border: 4px solid white;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+            border: 4px solid var(--container-bg);
+            box-shadow: 0 8px 24px var(--container-shadow);
         }
 
-        .popup-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .popup-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-        .popup-header .name {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #0f172a;
-        }
+        .popup-avatar-wrap .verified-badge { width: 30px; height: 30px; font-size: 0.9rem; bottom: 4px; right: 4px; border-width: 3px; }
 
-        .popup-header .designation {
-            font-size: 0.9rem;
-            color: #64748b;
-            margin-top: 2px;
-        }
+        .popup-header .name { font-size: 1.6rem; font-weight: 700; color: var(--text-primary); }
+        .popup-header .designation { font-size: 0.9rem; color: var(--text-secondary); margin-top: 2px; }
 
-        .popup-body {
-            padding: 20px 28px 28px;
-        }
+        .popup-body { padding: 20px 28px 28px; }
 
         .popup-details {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 6px 16px;
-            margin-bottom: 20px;
+            margin-bottom: 8px;
         }
 
-        .popup-details .detail {
-            padding: 6px 0;
-        }
+        .popup-details .detail { padding: 6px 0; }
 
         .popup-details .detail .label {
             font-size: 0.6rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: #94a3b8;
+            color: var(--text-muted);
             font-weight: 600;
         }
 
         .popup-details .detail .value {
             font-size: 0.9rem;
             font-weight: 500;
-            color: #0f172a;
+            color: var(--text-primary);
             margin-top: 1px;
             word-break: break-word;
         }
 
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 0 6px;
+            border-top: 1px dashed var(--border-color);
+            margin-top: 8px;
+        }
+
+        .qr-section .qr-box {
+            background: #ffffff;
+            padding: 10px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            line-height: 0;
+        }
+
+        .qr-section .qr-label {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         .popup-actions {
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
-            border-top: 1px solid #e9edf2;
+            border-top: 1px solid var(--border-color);
             padding-top: 18px;
+            margin-top: 16px;
         }
 
         .popup-actions .btn {
-            flex: 1;
+            flex: 1 1 45%;
             padding: 12px;
             border-radius: 60px;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             cursor: pointer;
             transition: 0.15s;
             border: none;
@@ -431,40 +720,29 @@
             gap: 8px;
         }
 
-        .popup-actions .btn-primary {
-            background: #1e293b;
-            color: white;
-        }
+        .popup-actions .btn-primary { background: var(--btn-dark); color: white; }
+        .popup-actions .btn-primary:hover { background: var(--btn-dark-hover); transform: scale(1.02); }
 
-        .popup-actions .btn-primary:hover {
-            background: #0f172a;
-            transform: scale(1.02);
-        }
+        .popup-actions .btn-copy { background: var(--surface); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .popup-actions .btn-copy:hover { border-color: var(--accent); color: var(--accent); }
 
-        .popup-actions .btn-print {
-            background: #2563eb;
-            color: white;
-            flex: 1;
-        }
+        .popup-actions .btn-print { background: var(--accent); color: white; }
+        .popup-actions .btn-print:hover { background: var(--accent-dark); transform: scale(1.02); }
 
-        .popup-actions .btn-print:hover {
-            background: #1d4ed8;
-            transform: scale(1.02);
-        }
+        .popup-actions .btn-pdf { background: #7c3aed; color: white; }
+        .popup-actions .btn-pdf:hover { background: #6d28d9; transform: scale(1.02); }
 
-        .popup-actions .btn-print:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
+        .popup-actions .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .popup-actions .btn .spinner { animation: spin 0.8s linear infinite; }
 
-        .popup-actions .btn-print .spinner {
-            animation: spin 0.8s linear infinite;
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .print-verified {
+            display: none;
+            color: var(--accent);
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin: -6px 0 10px;
         }
 
         /* ===== TOAST ===== */
@@ -485,12 +763,10 @@
             gap: 12px;
             z-index: 99999;
             animation: slideUp 0.3s ease;
+            max-width: 90vw;
         }
 
-        .toast.show {
-            display: flex;
-        }
-
+        .toast.show { display: flex; }
         .toast.success { background: #166534; }
         .toast.error { background: #991b1b; }
 
@@ -503,111 +779,50 @@
 
         /* ===== PRINT STYLES ===== */
         @media print {
-            body {
-                background: white !important;
-                padding: 0 !important;
-                margin: 0 !important;
-            }
-
-            .container,
-            .search-box,
-            .subhead,
-            .header,
-            .empty-state,
-            .no-result,
-            .member-card,
-            .toast,
-            .popup-overlay,
-            .result-count {
+            body { background: white !important; padding: 0 !important; margin: 0 !important; }
+            .container, .search-box, .filter-bar, .subhead, .header, .empty-state, .no-result,
+            .member-card, .toast, .popup-overlay, .result-count, .offline-banner, .load-more-wrap,
+            .skip-link {
                 display: none !important;
             }
-
-            .print-content {
-                display: block !important;
-            }
+            .print-content { display: block !important; }
         }
 
-        .print-content {
-            display: none;
-            padding: 20px;
-            max-width: 400px;
-            margin: 0 auto;
-        }
+        .print-content { display: none; padding: 20px; max-width: 400px; margin: 0 auto; }
 
         .print-content .print-card {
-            background: white;
-            border: 2px solid #1e293b;
-            border-radius: 16px;
-            padding: 24px;
-            text-align: center;
+            background: white; border: 2px solid #1e293b; border-radius: 16px; padding: 24px; text-align: center;
         }
 
         .print-content .print-card .print-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            margin: 0 auto 12px;
-            background: #dbeafe;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 2.2rem;
-            color: #2563eb;
-            overflow: hidden;
-            border: 3px solid #1e293b;
+            width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 12px;
+            background: #dbeafe; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 2.2rem; color: #2563eb; overflow: hidden; border: 3px solid #1e293b;
         }
 
-        .print-content .print-card .print-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .print-content .print-card .print-name {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        .print-content .print-card .print-position {
-            font-size: 0.9rem;
-            color: #64748b;
-            margin-bottom: 14px;
-        }
+        .print-content .print-card .print-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .print-content .print-card .print-name { font-size: 1.4rem; font-weight: 700; color: #0f172a; }
+        .print-content .print-card .print-position { font-size: 0.9rem; color: #64748b; margin-bottom: 14px; }
 
         .print-content .print-card .print-details {
-            text-align: left;
-            border-top: 1px solid #e9edf2;
-            padding-top: 14px;
-            margin-top: 4px;
+            text-align: left; border-top: 1px solid #e9edf2; padding-top: 14px; margin-top: 4px;
         }
 
         .print-content .print-card .print-details .row {
-            display: flex;
-            justify-content: space-between;
-            padding: 3px 0;
-            font-size: 0.85rem;
-            border-bottom: 1px dashed #f1f5f9;
+            display: flex; justify-content: space-between; padding: 3px 0; font-size: 0.85rem; border-bottom: 1px dashed #f1f5f9;
         }
 
-        .print-content .print-card .print-details .row .label {
-            color: #94a3b8;
-            font-weight: 500;
-        }
+        .print-content .print-card .print-details .row .label { color: #94a3b8; font-weight: 500; }
+        .print-content .print-card .print-details .row .value { color: #0f172a; font-weight: 500; text-align: right; }
 
-        .print-content .print-card .print-details .row .value {
-            color: #0f172a;
-            font-weight: 500;
-            text-align: right;
+        .print-content .print-card .print-qr-section {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            padding-top: 14px; margin-top: 10px; border-top: 1px dashed #e9edf2;
         }
+        .print-content .print-card .print-qr-box { background: #ffffff; line-height: 0; }
+        .print-content .print-card .print-qr-label { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .print-content .print-footer {
-            text-align: center;
-            font-size: 0.7rem;
-            color: #94a3b8;
-            margin-top: 10px;
-        }
+        .print-content .print-footer { text-align: center; font-size: 0.7rem; color: #94a3b8; margin-top: 10px; }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
@@ -617,63 +832,80 @@
             .search-box { flex-direction: column; }
             .search-btn { justify-content: center; padding: 14px; }
             .popup-header { padding: 24px 20px 16px; }
-            .popup-avatar { width: 90px; height: 90px; font-size: 2rem; }
+            .popup-avatar-wrap, .popup-avatar { width: 90px; height: 90px; }
+            .popup-avatar { font-size: 2rem; }
             .popup-header .name { font-size: 1.3rem; }
             .popup-body { padding: 16px 20px 20px; }
             .popup-details { grid-template-columns: 1fr; gap: 2px; }
-            .popup-actions { flex-direction: column; }
+            .popup-actions .btn { flex: 1 1 100%; }
             .toast { width: 90%; padding: 12px 20px; font-size: 0.85rem; }
             .member-card { padding: 14px 16px; gap: 12px; }
             .member-card .avatar { width: 44px; height: 44px; font-size: 0.9rem; }
-        }
-
-        .loading-state {
-            text-align: center;
-            padding: 40px 0;
-            color: #94a3b8;
-        }
-
-        .loading-state i {
-            font-size: 1.8rem;
-            color: #2563eb;
-        }
-
-        .loading-state p {
-            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
+    <a href="#searchInput" class="skip-link">Skip to search</a>
+
     <div class="container">
         <div class="header">
-            <div class="logo"><i class="fas fa-id-card"></i></div>
+            <div class="logo"><i class="fas fa-id-card" aria-hidden="true"></i></div>
             <h1>Member Directory</h1>
+            <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+                <i class="fas fa-moon" aria-hidden="true"></i>
+            </button>
         </div>
         <div class="subhead">
-            <i class="fas fa-search" style="margin-right: 6px;color:#2563eb;"></i> Search by name, email, or Rotary ID
+            <i class="fas fa-search" aria-hidden="true" style="margin-right: 6px;color:var(--accent);"></i> Search by name, email, or Rotary ID
+        </div>
+
+        <div class="offline-banner" id="offlineBanner" role="status">
+            <i class="fas fa-wifi" aria-hidden="true"></i> You're offline — results may be out of date.
         </div>
 
         <!-- Search -->
         <div class="search-box">
-            <div class="search-wrapper">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Type name, email, or Rotary ID..." />
+            <div class="search-wrapper" id="searchWrapper">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <label class="sr-only" for="searchInput">Search members by name, email, or Rotary ID</label>
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Type name, email, or Rotary ID..."
+                    autocomplete="off"
+                    role="combobox"
+                    aria-expanded="false"
+                    aria-controls="suggestionsBox"
+                    aria-autocomplete="list"
+                />
+                <button class="clear-btn" id="clearSearchBtn" type="button" aria-label="Clear search">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+                <span class="kbd-hint" id="kbdHint" aria-hidden="true">Ctrl K</span>
+                <div class="suggestions" id="suggestionsBox" role="listbox" aria-label="Search suggestions"></div>
             </div>
-            <button class="search-btn" id="searchBtn"><i class="fas fa-arrow-right"></i> Search</button>
+            <button class="search-btn" id="searchBtn" type="button"><i class="fas fa-arrow-right" aria-hidden="true"></i> Search</button>
         </div>
+
+        <!-- Filters -->
+        <div class="filter-bar" role="group" aria-label="Filter members">
+            <label class="sr-only" for="roleFilter">Filter by role</label>
+            <select class="filter-select" id="roleFilter">
+                <option value="all">All roles</option>
+            </select>
+        </div>
+
+        <!-- Result meta (live region) -->
+        <div class="result-count" id="resultMeta" aria-live="polite"></div>
 
         <!-- Result Area -->
-        <div id="resultArea">
-            <div class="empty-state">
-                <div class="icon"><i class="fas fa-user-circle"></i></div>
-                <h3>Search for a member</h3>
-                <p>Enter a name, email, or Rotary ID</p>
-            </div>
-        </div>
+        <div id="resultArea"></div>
+        <div class="load-more-wrap" id="loadMoreWrap"></div>
+        <div class="sentinel" id="scrollSentinel" aria-hidden="true"></div>
     </div>
 
-    <!-- ===== PRINT CONTENT (hidden, used for printing) ===== -->
+    <!-- ===== PRINT / PDF CONTENT (hidden, used for printing & PDF export) ===== -->
     <div class="print-content" id="printContent">
         <div class="print-card" id="printCard">
             <div class="print-avatar" id="printAvatar">
@@ -681,6 +913,7 @@
             </div>
             <div class="print-name" id="printName">John Doe</div>
             <div class="print-position" id="printPosition">President</div>
+            <div class="print-verified" id="printVerified"><i class="fas fa-check-circle" aria-hidden="true"></i> Verified Member</div>
             <div class="print-details" id="printDetails">
                 <div class="row"><span class="label">Email</span><span class="value" id="printEmail">—</span></div>
                 <div class="row"><span class="label">Rotary ID</span><span class="value" id="printRotary">—</span></div>
@@ -691,17 +924,28 @@
                 <div class="row"><span class="label">Profession</span><span class="value" id="printProfession">—</span></div>
                 <div class="row"><span class="label">Address</span><span class="value" id="printAddress">—</span></div>
             </div>
+            <div class="print-qr-section">
+                <div class="print-qr-box" id="printQrBox"></div>
+                <div class="print-qr-label">Scan to save contact</div>
+            </div>
         </div>
         <div class="print-footer">Rotaract Club of Galkot Baglung · Member Card</div>
     </div>
 
     <!-- ===== POPUP ===== -->
     <div class="popup-overlay" id="popup">
-        <div class="popup">
+        <div class="popup" role="dialog" aria-modal="true" aria-labelledby="popupName">
             <div class="popup-header">
-                <button class="popup-close" id="popupClose"><i class="fas fa-times"></i></button>
-                <div class="popup-avatar" id="popupAvatar">
-                    <span id="popupInitials">JD</span>
+                <button class="popup-close" id="popupClose" type="button" aria-label="Close">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+                <div class="popup-avatar-wrap">
+                    <div class="popup-avatar" id="popupAvatar">
+                        <span id="popupInitials">JD</span>
+                    </div>
+                    <span class="verified-badge" id="popupVerifiedBadge" style="display:none;" title="Verified member">
+                        <i class="fas fa-check" aria-hidden="true"></i>
+                    </span>
                 </div>
                 <div class="name" id="popupName">John Doe</div>
                 <div class="designation" id="popupDesignation">President</div>
@@ -717,46 +961,76 @@
                     <div class="detail"><span class="label">Profession</span><span class="value" id="pProfession">—</span></div>
                     <div class="detail"><span class="label">Address</span><span class="value" id="pAddress">—</span></div>
                 </div>
+
+                <div class="qr-section">
+                    <div class="qr-box" id="qrBox"></div>
+                    <div class="qr-label">Scan to save contact</div>
+                </div>
+
                 <div class="popup-actions">
-                    <button class="btn btn-primary" id="popupCloseBtn"><i class="fas fa-check"></i> Done</button>
-                    <button class="btn btn-print" id="printBtn"><i class="fas fa-print"></i> Print</button>
+                    <button class="btn btn-primary" id="popupCloseBtn" type="button"><i class="fas fa-check" aria-hidden="true"></i> Done</button>
+                    <button class="btn btn-copy" id="copyBtn" type="button"><i class="fas fa-copy" aria-hidden="true"></i> Copy</button>
+                    <button class="btn btn-print" id="printBtn" type="button"><i class="fas fa-print" aria-hidden="true"></i> Print</button>
+                    <button class="btn btn-pdf" id="pdfBtn" type="button"><i class="fas fa-file-pdf" aria-hidden="true"></i> PDF</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- ===== TOAST ===== -->
-    <div class="toast" id="toast">
-        <i class="fas fa-check-circle" id="toastIcon"></i>
+    <div class="toast" id="toast" role="status" aria-live="polite">
+        <i class="fas fa-check-circle" id="toastIcon" aria-hidden="true"></i>
         <span id="toastMessage">Success!</span>
     </div>
 
     <script>
-        (function() {
+        (function () {
             "use strict";
 
             // ===== SUPABASE =====
             const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
             const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
-            
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             const TABLE_NAME = "members";
 
-            // DOM refs
+            // NOTE ON SCHEMA ASSUMPTIONS:
+            // Role/status filters assume columns named `role` and `status` exist on the
+            // `members` table. If your table uses different column names, edit
+            // ROLE_COLUMN / STATUS_COLUMN below. The app also auto-recovers (drops the
+            // filter + warns) if those columns don't exist, so it won't hard-fail.
+            const ROLE_COLUMN = "role";
+            const STATUS_COLUMN = "status";
+            const PAGE_SIZE = 12;
+            const HISTORY_KEY = "memberDirectory:searchHistory";
+            const THEME_KEY = "memberDirectory:theme";
+
+            // ===== DOM REFS =====
             const searchInput = document.getElementById('searchInput');
             const searchBtn = document.getElementById('searchBtn');
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+            const kbdHint = document.getElementById('kbdHint');
+            const searchWrapper = document.getElementById('searchWrapper');
+            const suggestionsBox = document.getElementById('suggestionsBox');
+            const roleSelect = document.getElementById('roleFilter');
             const resultArea = document.getElementById('resultArea');
+            const resultMeta = document.getElementById('resultMeta');
+            const loadMoreWrap = document.getElementById('loadMoreWrap');
+            const scrollSentinel = document.getElementById('scrollSentinel');
+            const offlineBanner = document.getElementById('offlineBanner');
+            const themeToggle = document.getElementById('themeToggle');
 
             // Popup
             const popup = document.getElementById('popup');
             const popupClose = document.getElementById('popupClose');
             const popupCloseBtn = document.getElementById('popupCloseBtn');
             const popupAvatar = document.getElementById('popupAvatar');
-            const popupInitials = document.getElementById('popupInitials');
             const popupName = document.getElementById('popupName');
             const popupDesignation = document.getElementById('popupDesignation');
+            const popupVerifiedBadge = document.getElementById('popupVerifiedBadge');
+            const qrBox = document.getElementById('qrBox');
+            const copyBtn = document.getElementById('copyBtn');
+            const pdfBtn = document.getElementById('pdfBtn');
 
-            // Popup details
             const pEmail = document.getElementById('pEmail');
             const pRotary = document.getElementById('pRotary');
             const pPhone = document.getElementById('pPhone');
@@ -766,12 +1040,13 @@
             const pProfession = document.getElementById('pProfession');
             const pAddress = document.getElementById('pAddress');
 
-            // Print elements
+            // Print / PDF elements
             const printContent = document.getElementById('printContent');
+            const printCard = document.getElementById('printCard');
             const printAvatar = document.getElementById('printAvatar');
-            const printInitials = document.getElementById('printInitials');
             const printName = document.getElementById('printName');
             const printPosition = document.getElementById('printPosition');
+            const printVerified = document.getElementById('printVerified');
             const printEmail = document.getElementById('printEmail');
             const printRotary = document.getElementById('printRotary');
             const printPhone = document.getElementById('printPhone');
@@ -780,6 +1055,7 @@
             const printDob = document.getElementById('printDob');
             const printProfession = document.getElementById('printProfession');
             const printAddress = document.getElementById('printAddress');
+            const printQrBox = document.getElementById('printQrBox');
             const printBtn = document.getElementById('printBtn');
 
             // Toast
@@ -789,6 +1065,51 @@
 
             let currentMember = null;
             let toastTimeout = null;
+            let lastFocusedBeforePopup = null;
+
+            const state = {
+                query: '',
+                page: 0,
+                hasMore: true,
+                loading: false,
+                loadingMore: false,
+                members: [],
+                roleOptions: new Set(),
+                statusOptions: new Set(),
+                requestId: 0,
+                activeSuggestionIndex: -1
+            };
+
+            const queryCache = new Map(); // simple result cache to avoid refetching identical queries
+
+            // ===== UTIL: debounce =====
+            function debounce(fn, delay) {
+                let t;
+                return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+            }
+
+            // ===== UTIL: escape text before injecting into innerHTML =====
+            function escapeHtml(str) {
+                if (str === null || str === undefined) return '';
+                return String(str).replace(/[&<>"']/g, c => ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                }[c]));
+            }
+
+            function highlightMatch(text, query) {
+                const safe = escapeHtml(text);
+                const q = (query || '').trim();
+                if (!q) return safe;
+                try {
+                    const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig');
+                    return safe.replace(re, '<mark>$1</mark>');
+                } catch (e) { return safe; }
+            }
+
+            // PostgREST-safe value for use inside .or() ilike filters
+            function filterValue(v) {
+                return String(v).replace(/"/g, '\\"');
+            }
 
             // ===== TOAST =====
             function showToast(message, type = 'success') {
@@ -796,14 +1117,65 @@
                 toastIcon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
                 toastMessage.textContent = message;
                 toast.classList.add('show');
-
                 if (toastTimeout) clearTimeout(toastTimeout);
-                toastTimeout = setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3000);
+                toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
             }
 
-            // ===== HELPERS =====
+            // ===== THEME =====
+            function loadTheme() {
+                try {
+                    const saved = localStorage.getItem(THEME_KEY);
+                    if (saved) return saved;
+                } catch (e) { /* storage unavailable, fall through */ }
+                return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+            }
+
+            function applyTheme(t) {
+                document.documentElement.setAttribute('data-theme', t);
+                document.documentElement.style.colorScheme = t;
+                themeToggle.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
+                themeToggle.setAttribute('aria-label', t === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+                themeToggle.innerHTML = t === 'dark'
+                    ? '<i class="fas fa-sun" aria-hidden="true"></i>'
+                    : '<i class="fas fa-moon" aria-hidden="true"></i>';
+                try { localStorage.setItem(THEME_KEY, t); } catch (e) { /* ignore */ }
+            }
+
+            let currentTheme = loadTheme();
+            applyTheme(currentTheme);
+            themeToggle.addEventListener('click', () => {
+                currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                applyTheme(currentTheme);
+            });
+
+            // ===== SEARCH HISTORY (best-effort persistence; falls back to in-memory) =====
+            let memoryHistory = [];
+            function loadHistory() {
+                try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+                catch (e) { return memoryHistory; }
+            }
+            function saveHistory(list) {
+                memoryHistory = list;
+                try { localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); } catch (e) { /* ignore */ }
+            }
+            function addToHistory(q) {
+                q = (q || '').trim();
+                if (!q) return;
+                let list = loadHistory().filter(x => x.toLowerCase() !== q.toLowerCase());
+                list.unshift(q);
+                saveHistory(list.slice(0, 8));
+            }
+
+            // ===== ONLINE / OFFLINE =====
+            function updateOnlineStatus() {
+                if (!navigator.onLine) offlineBanner.classList.add('show');
+                else offlineBanner.classList.remove('show');
+            }
+            window.addEventListener('offline', () => { updateOnlineStatus(); showToast("You're offline", 'error'); });
+            window.addEventListener('online', () => { updateOnlineStatus(); showToast('Back online'); });
+            updateOnlineStatus();
+
+            // ===== HELPERS (member field lookups — tolerant of schema variations) =====
             function getFullName(member) {
                 const raw = (member.name || member.full_name || '').toString().trim();
                 if (!raw) return '—';
@@ -829,7 +1201,25 @@
                 return null;
             }
 
-            // ===== UPDATE PRINT CARD =====
+            function getRole(member) {
+                return member.designation || member.role || member.position || 'Club Member';
+            }
+
+            function getRawRole(member) {
+                return member.designation || member.role || member.position || null;
+            }
+
+            function getRawStatus(member) {
+                return member.status || member.member_status || null;
+            }
+
+            function isVerified(member) {
+                if (member.verified === true || member.is_verified === true) return true;
+                const s = String(member.status || '').toLowerCase();
+                return s === 'verified' || s === 'active';
+            }
+
+            // ===== UPDATE PRINT / PDF CARD =====
             function updatePrintCard(member) {
                 const displayName = getFullName(member);
                 const photoSrc = getPhotoSrc(member);
@@ -840,17 +1230,19 @@
                     const img = document.createElement('img');
                     img.src = photoSrc;
                     img.alt = displayName;
-                    img.onerror = function() {
+                    img.crossOrigin = 'anonymous';
+                    img.onerror = function () {
                         this.style.display = 'none';
-                        printAvatar.innerHTML = `<span style="font-size:2.2rem;font-weight:700;color:#2563eb;">${initials}</span>`;
+                        printAvatar.innerHTML = `<span style="font-size:2.2rem;font-weight:700;color:#2563eb;">${escapeHtml(initials)}</span>`;
                     };
                     printAvatar.appendChild(img);
                 } else {
-                    printAvatar.innerHTML = `<span style="font-size:2.2rem;font-weight:700;color:#2563eb;">${initials}</span>`;
+                    printAvatar.innerHTML = `<span style="font-size:2.2rem;font-weight:700;color:#2563eb;">${escapeHtml(initials)}</span>`;
                 }
 
                 printName.textContent = displayName;
-                printPosition.textContent = member.position || member.designation || 'Club Member';
+                printPosition.textContent = getRole(member);
+                printVerified.style.display = isVerified(member) ? 'block' : 'none';
 
                 printEmail.textContent = member.email || '—';
                 printRotary.textContent = member.rotary_id || '—';
@@ -860,11 +1252,83 @@
                 printDob.textContent = member.dob || member.date_of_birth || member.birthday || '—';
                 printProfession.textContent = member.profession || '—';
                 printAddress.textContent = member.address || '—';
+
+                if (printQrBox) renderQRInto(printQrBox, member, 110);
             }
 
-            // ===== OPEN POPUP =====
+            // ===== QR CODE (vCard so a phone camera can save the contact) =====
+            function buildVCard(member) {
+                const name = getFullName(member).replace(/^RTR\.\s*/, '');
+                const lines = ['BEGIN:VCARD', 'VERSION:3.0', `FN:${name}`];
+                const role = getRole(member);
+                if (role) lines.push(`TITLE:${role}`);
+                if (member.email) lines.push(`EMAIL:${member.email}`);
+                const phone = member.phone || member.phone_number;
+                if (phone) lines.push(`TEL:${phone}`);
+                lines.push('ORG:Rotaract Club of Galkot Baglung');
+                if (member.rotary_id) lines.push(`NOTE:Rotary ID ${member.rotary_id}`);
+                lines.push('END:VCARD');
+                return lines.join('\n');
+            }
+
+            function renderQRInto(el, member, size) {
+                el.innerHTML = '';
+                if (typeof QRCode === 'undefined') return;
+                new QRCode(el, {
+                    text: buildVCard(member),
+                    width: size,
+                    height: size,
+                    colorDark: '#0f172a',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            }
+
+            function generateQRCode(member) {
+                renderQRInto(qrBox, member, 128);
+            }
+
+            // ===== COPY MEMBER DETAILS =====
+            function buildCopyText(member) {
+                const phone = member.phone || member.phone_number;
+                return [
+                    getFullName(member),
+                    getRole(member),
+                    member.email ? `Email: ${member.email}` : null,
+                    member.rotary_id ? `Rotary ID: ${member.rotary_id}` : null,
+                    phone ? `Phone: ${phone}` : null,
+                    member.profession ? `Profession: ${member.profession}` : null,
+                    member.address ? `Address: ${member.address}` : null
+                ].filter(Boolean).join('\n');
+            }
+
+            copyBtn.addEventListener('click', async () => {
+                if (!currentMember) return;
+                const text = buildCopyText(currentMember);
+                try {
+                    if (navigator.clipboard && window.isSecureContext) {
+                        await navigator.clipboard.writeText(text);
+                    } else {
+                        const ta = document.createElement('textarea');
+                        ta.value = text;
+                        ta.style.position = 'fixed';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                    }
+                    showToast('Member details copied');
+                } catch (e) {
+                    showToast('Could not copy details', 'error');
+                }
+            });
+
+            // ===== OPEN / CLOSE POPUP (with focus trap + return focus) =====
             function openPopup(member) {
                 currentMember = member;
+                lastFocusedBeforePopup = document.activeElement;
+
                 const displayName = getFullName(member);
                 const photoSrc = getPhotoSrc(member);
                 const initials = getInitials(displayName);
@@ -874,17 +1338,18 @@
                     const img = document.createElement('img');
                     img.src = photoSrc;
                     img.alt = displayName;
-                    img.onerror = function() {
+                    img.onerror = function () {
                         this.style.display = 'none';
-                        popupAvatar.innerHTML = `<span style="font-size:2.8rem;font-weight:700;color:#2563eb;">${initials}</span>`;
+                        popupAvatar.innerHTML = `<span style="font-size:2.8rem;font-weight:700;color:var(--accent);">${escapeHtml(initials)}</span>`;
                     };
                     popupAvatar.appendChild(img);
                 } else {
-                    popupAvatar.innerHTML = `<span style="font-size:2.8rem;font-weight:700;color:#2563eb;">${initials}</span>`;
+                    popupAvatar.innerHTML = `<span style="font-size:2.8rem;font-weight:700;color:var(--accent);">${escapeHtml(initials)}</span>`;
                 }
 
                 popupName.textContent = displayName;
-                popupDesignation.textContent = member.position || member.designation || 'Club Member';
+                popupDesignation.textContent = getRole(member);
+                popupVerifiedBadge.style.display = isVerified(member) ? 'flex' : 'none';
 
                 pEmail.textContent = member.email || '—';
                 pRotary.textContent = member.rotary_id || '—';
@@ -896,180 +1361,468 @@
                 pAddress.textContent = member.address || '—';
 
                 updatePrintCard(member);
+                generateQRCode(member);
 
                 popup.classList.add('active');
                 document.body.style.overflow = 'hidden';
+                popupClose.focus();
             }
 
-            // ===== CLOSE POPUP =====
             function closePopup() {
                 popup.classList.remove('active');
                 document.body.style.overflow = '';
+                if (lastFocusedBeforePopup && document.body.contains(lastFocusedBeforePopup)) {
+                    lastFocusedBeforePopup.focus();
+                }
+            }
+
+            function openMemberById(id) {
+                const member = state.members.find(m => String(m.id) === String(id));
+                if (member) openPopup(member);
             }
 
             popupClose.addEventListener('click', closePopup);
             popupCloseBtn.addEventListener('click', closePopup);
-            popup.addEventListener('click', function(e) {
-                if (e.target === this) closePopup();
-            });
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && popup.classList.contains('active')) closePopup();
-            });
+            popup.addEventListener('click', function (e) { if (e.target === this) closePopup(); });
 
-            // ===== PRINT FUNCTION =====
-            function printMemberCard() {
-                if (!currentMember) {
-                    showToast('No member to print', 'error');
-                    return;
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && popup.classList.contains('active')) { closePopup(); return; }
+                // focus trap while popup is open
+                if (popup.classList.contains('active') && e.key === 'Tab') {
+                    const focusables = popup.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                    if (!focusables.length) return;
+                    const first = focusables[0], last = focusables[focusables.length - 1];
+                    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
                 }
+            });
 
+            // ===== PRINT =====
+            function printMemberCard() {
+                if (!currentMember) { showToast('No member to print', 'error'); return; }
                 printBtn.disabled = true;
-                printBtn.innerHTML = '<i class="fas fa-spinner spinner"></i> Preparing...';
-
+                printBtn.innerHTML = '<i class="fas fa-spinner spinner" aria-hidden="true"></i> Preparing...';
                 updatePrintCard(currentMember);
-
                 printContent.style.display = 'block';
-
                 setTimeout(() => {
                     window.print();
-                    
                     setTimeout(() => {
                         printContent.style.display = 'none';
                         printBtn.disabled = false;
-                        printBtn.innerHTML = '<i class="fas fa-print"></i> Print';
+                        printBtn.innerHTML = '<i class="fas fa-print" aria-hidden="true"></i> Print';
                     }, 500);
                 }, 300);
             }
-
             printBtn.addEventListener('click', printMemberCard);
 
-            // ===== RENDER SEARCH RESULTS =====
-            function renderResults(members, searchTerm) {
-                if (!members || members.length === 0) {
+            // ===== DOWNLOAD PDF =====
+            pdfBtn.addEventListener('click', async () => {
+                if (!currentMember) { showToast('No member selected', 'error'); return; }
+                if (typeof html2canvas === 'undefined' || !window.jspdf) {
+                    showToast('PDF export is unavailable right now', 'error');
+                    return;
+                }
+                pdfBtn.disabled = true;
+                pdfBtn.innerHTML = '<i class="fas fa-spinner spinner" aria-hidden="true"></i> Preparing...';
+                try {
+                    updatePrintCard(currentMember);
+                    printContent.style.display = 'block';
+                    printContent.style.position = 'fixed';
+                    printContent.style.left = '-9999px';
+                    printContent.style.top = '0';
+                    await new Promise(r => setTimeout(r, 60));
+
+                    const canvas = await html2canvas(printCard, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+                    const imgData = canvas.toDataURL('image/png');
+                    const { jsPDF } = window.jspdf;
+                    const pdfWidth = 320;
+                    const pdfHeight = canvas.height * (pdfWidth / canvas.width);
+                    const doc = new jsPDF({ unit: 'pt', format: [pdfWidth + 40, pdfHeight + 60] });
+                    doc.setFillColor(255, 255, 255);
+                    doc.rect(0, 0, pdfWidth + 40, pdfHeight + 60, 'F');
+                    doc.addImage(imgData, 'PNG', 20, 20, pdfWidth, pdfHeight);
+                    doc.setFontSize(8);
+                    doc.setTextColor(150);
+                    doc.text('Rotaract Club of Galkot Baglung · Member Card', (pdfWidth + 40) / 2, pdfHeight + 45, { align: 'center' });
+
+                    const fileSafeName = getFullName(currentMember).replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '');
+                    doc.save(`${fileSafeName || 'member'}-card.pdf`);
+                    showToast('Member card downloaded');
+                } catch (err) {
+                    console.error('PDF export error:', err);
+                    showToast('Could not generate PDF', 'error');
+                } finally {
+                    printContent.style.display = 'none';
+                    printContent.style.position = '';
+                    printContent.style.left = '';
+                    printContent.style.top = '';
+                    pdfBtn.disabled = false;
+                    pdfBtn.innerHTML = '<i class="fas fa-file-pdf" aria-hidden="true"></i> PDF';
+                }
+            });
+
+            // ===== FILTER OPTIONS (built progressively from loaded data) =====
+            function updateFilterOptions() {
+                const currentRole = roleSelect.value;
+                const roles = [...state.roleOptions].sort();
+
+                roleSelect.innerHTML = '<option value="all">All roles</option>' +
+                    roles.map(r => `<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join('');
+
+                if (roles.includes(currentRole)) roleSelect.value = currentRole;
+            }
+
+            // ===== RENDER: skeleton =====
+            function renderSkeleton() {
+                let html = '';
+                for (let i = 0; i < 6; i++) {
+                    html += `<div class="skeleton-card"><div class="skeleton-avatar"></div><div class="skeleton-lines"><div class="skeleton-line"></div><div class="skeleton-line short"></div></div></div>`;
+                }
+                resultArea.innerHTML = html;
+                resultMeta.textContent = 'Loading members…';
+                loadMoreWrap.innerHTML = '';
+            }
+
+            // ===== RENDER: results list =====
+            function renderResults() {
+                if (!state.members.length) {
                     resultArea.innerHTML = `
-                        <div class="no-result">
-                            <i class="fas fa-user-slash"></i>
-                            <p>No member found</p>
-                            <span>"${searchTerm}" did not match any member</span>
-                        </div>
-                    `;
+                        <div class="empty-state">
+                            <div class="icon"><i class="fas fa-user-slash" aria-hidden="true"></i></div>
+                            <h3>No members found</h3>
+                            <p>${state.query ? `"${escapeHtml(state.query)}" did not match any member` : 'Try adjusting your search or filters'}</p>
+                        </div>`;
+                    resultMeta.textContent = 'No members found';
+                    loadMoreWrap.innerHTML = '';
                     return;
                 }
 
-                let html = `<div class="result-count">Found <strong>${members.length}</strong> member${members.length > 1 ? 's' : ''}</div>`;
+                resultMeta.innerHTML = `Showing <strong>${state.members.length}</strong> member${state.members.length > 1 ? 's' : ''}${state.hasMore ? '+' : ''}`;
 
-                members.forEach(member => {
+                let html = '';
+                state.members.forEach(member => {
                     const displayName = getFullName(member);
                     const photoSrc = getPhotoSrc(member);
                     const initials = getInitials(displayName);
-                    const position = member.position || member.designation || 'Club Member';
+                    const role = getRole(member);
                     const email = member.email || '';
+                    const verified = isVerified(member);
 
                     html += `
-                        <div class="member-card" data-id="${member.id}">
-                            <div class="avatar">
-                                ${photoSrc 
-                                    ? `<img src="${photoSrc}" alt="${displayName}" 
-                                          onerror="this.style.display='none';this.parentElement.textContent='${initials}';">` 
-                                    : initials
-                                }
+                        <div class="member-card" data-id="${escapeHtml(String(member.id))}" tabindex="0" role="button" aria-label="View ${escapeHtml(displayName)}">
+                            <div class="avatar-wrap">
+                                <div class="avatar">
+                                    ${photoSrc
+                                        ? `<img src="${escapeHtml(photoSrc)}" alt="" loading="lazy" decoding="async" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span>${escapeHtml(initials)}</span>');">`
+                                        : `<span>${escapeHtml(initials)}</span>`}
+                                </div>
+                                ${verified ? `<span class="verified-badge" title="Verified member"><i class="fas fa-check" aria-hidden="true"></i></span>` : ''}
                             </div>
                             <div class="info">
-                                <div class="name">${displayName}</div>
-                                <div class="position">${position}</div>
-                                ${email ? `<div class="email-small"><i class="fas fa-envelope"></i> ${email}</div>` : ''}
+                                <div class="name">${escapeHtml(displayName)}</div>
+                                <div class="position">${escapeHtml(role)}</div>
+                                ${email ? `<div class="email-small"><i class="fas fa-envelope" aria-hidden="true"></i> ${escapeHtml(email)}</div>` : ''}
                             </div>
-                            <div class="arrow"><i class="fas fa-chevron-right"></i></div>
-                        </div>
-                    `;
+                            <div class="arrow"><i class="fas fa-chevron-right" aria-hidden="true"></i></div>
+                        </div>`;
                 });
-
                 resultArea.innerHTML = html;
 
-                // Add click listeners to all cards
                 document.querySelectorAll('.member-card').forEach(card => {
-                    card.addEventListener('click', function() {
-                        const id = parseInt(this.dataset.id);
-                        const member = members.find(m => m.id === id);
-                        if (member) openPopup(member);
+                    card.addEventListener('click', () => openMemberById(card.dataset.id));
+                    card.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openMemberById(card.dataset.id); }
                     });
+                });
+
+                renderLoadMoreControls();
+            }
+
+            function renderLoadMoreControls() {
+                if (state.hasMore) {
+                    loadMoreWrap.innerHTML = `<button class="load-more-btn" id="loadMoreBtn" type="button"><i class="fas fa-chevron-down" aria-hidden="true"></i> Load more</button>`;
+                    document.getElementById('loadMoreBtn').addEventListener('click', () => fetchPage({ reset: false }));
+                } else if (state.members.length > 0) {
+                    loadMoreWrap.innerHTML = `<div class="end-of-list">You've reached the end · ${state.members.length} member${state.members.length > 1 ? 's' : ''}</div>`;
+                } else {
+                    loadMoreWrap.innerHTML = '';
+                }
+            }
+
+            function renderLoadMoreSpinner() {
+                loadMoreWrap.innerHTML = `<div class="end-of-list"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Loading more…</div>`;
+            }
+
+            // ===== RENDER: error =====
+            function renderError(err, reset) {
+                console.error('Fetch error:', err);
+                const offline = !navigator.onLine;
+                const message = offline
+                    ? "You're offline. Check your internet connection."
+                    : (err && err.message ? err.message : 'Something went wrong while loading members.');
+
+                if (reset) {
+                    resultArea.innerHTML = `
+                        <div class="no-result">
+                            <i class="fas fa-exclamation-triangle" style="color:var(--error);" aria-hidden="true"></i>
+                            <p style="color:var(--error);">Couldn't load members</p>
+                            <span>${escapeHtml(message)}</span>
+                            <div><button class="retry-btn" id="retryBtn" type="button">Retry</button></div>
+                        </div>`;
+                    document.getElementById('retryBtn').addEventListener('click', () => fetchPage({ reset: true }));
+                    resultMeta.textContent = '';
+                    loadMoreWrap.innerHTML = '';
+                } else {
+                    loadMoreWrap.innerHTML = `<div class="end-of-list" style="color:var(--error);">Couldn't load more · <button class="retry-btn" id="retryMoreBtn" type="button" style="margin-top:0;margin-left:6px;padding:4px 14px;">Retry</button></div>`;
+                    document.getElementById('retryMoreBtn').addEventListener('click', () => fetchPage({ reset: false }));
+                }
+                showToast(message, 'error');
+            }
+
+            // ===== RENDER: suggestions / history dropdown =====
+            function closeSuggestions() {
+                suggestionsBox.classList.remove('show');
+                suggestionsBox.innerHTML = '';
+                searchInput.setAttribute('aria-expanded', 'false');
+                searchInput.removeAttribute('aria-activedescendant');
+                state.activeSuggestionIndex = -1;
+            }
+
+            function renderSuggestions(items) {
+                if (document.activeElement !== searchInput || !state.query || !items.length) { closeSuggestions(); return; }
+                let html = '<div class="sug-section-label">Matches</div>';
+                items.forEach((m, i) => {
+                    const name = getFullName(m);
+                    const role = getRole(m);
+                    const initials = getInitials(name);
+                    const photoSrc = getPhotoSrc(m);
+                    html += `
+                        <div class="suggestion-item" role="option" id="sug-${i}" data-id="${escapeHtml(String(m.id))}">
+                            <div class="s-avatar">${photoSrc ? `<img src="${escapeHtml(photoSrc)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : escapeHtml(initials)}</div>
+                            <div class="s-info">
+                                <div class="s-name">${highlightMatch(name, state.query)}</div>
+                                <div class="s-role">${escapeHtml(role)}</div>
+                            </div>
+                        </div>`;
+                });
+                suggestionsBox.innerHTML = html;
+                suggestionsBox.classList.add('show');
+                searchInput.setAttribute('aria-expanded', 'true');
+                state.activeSuggestionIndex = -1;
+                suggestionsBox.querySelectorAll('.suggestion-item').forEach(el => {
+                    el.addEventListener('mousedown', (e) => e.preventDefault()); // keep input focus
+                    el.addEventListener('click', () => { openMemberById(el.dataset.id); closeSuggestions(); });
                 });
             }
 
-            // ===== SEARCH =====
-            async function performSearch(query) {
-                const trimmed = query.trim();
+            function renderHistory() {
+                const hist = loadHistory();
+                if (!hist.length) { closeSuggestions(); return; }
+                let html = '<div class="sug-section-label">Recent searches</div>';
+                hist.forEach((q, i) => {
+                    html += `<div class="history-item" role="option" id="sug-${i}" data-q="${escapeHtml(q)}"><i class="fas fa-clock" aria-hidden="true"></i> ${escapeHtml(q)}</div>`;
+                });
+                html += `<div class="history-clear" id="clearHistoryBtn">Clear history</div>`;
+                suggestionsBox.innerHTML = html;
+                suggestionsBox.classList.add('show');
+                searchInput.setAttribute('aria-expanded', 'true');
+                state.activeSuggestionIndex = -1;
+                suggestionsBox.querySelectorAll('.history-item').forEach(el => {
+                    el.addEventListener('mousedown', (e) => e.preventDefault());
+                    el.addEventListener('click', () => {
+                        searchInput.value = el.dataset.q;
+                        toggleClearButton();
+                        fetchPage({ reset: true });
+                        closeSuggestions();
+                    });
+                });
+                const clearBtn = document.getElementById('clearHistoryBtn');
+                if (clearBtn) clearBtn.addEventListener('mousedown', (e) => e.preventDefault());
+                if (clearBtn) clearBtn.addEventListener('click', () => { saveHistory([]); closeSuggestions(); });
+            }
 
-                if (!trimmed) {
-                    resultArea.innerHTML = `
-                        <div class="empty-state">
-                            <div class="icon"><i class="fas fa-user-circle"></i></div>
-                            <h3>Search for a member</h3>
-                            <p>Enter a name, email, or Rotary ID</p>
-                        </div>
-                    `;
+            function updateActiveSuggestion(items) {
+                items.forEach(el => el.classList.remove('active'));
+                const el = items[state.activeSuggestionIndex];
+                if (el) {
+                    el.classList.add('active');
+                    searchInput.setAttribute('aria-activedescendant', el.id || '');
+                    el.scrollIntoView({ block: 'nearest' });
+                }
+            }
+
+            // ===== FETCH =====
+            async function fetchPage({ reset }) {
+                const requestQuery = searchInput.value.trim();
+                const requestRole = roleSelect.value;
+                const requestStatus = 'active'; // hide inactive members — always show active only
+
+                if (reset) {
+                    if (state.loading) state.requestId++; // invalidate any in-flight request
+                    state.query = requestQuery;
+                    state.page = 0;
+                    state.members = [];
+                    state.hasMore = true;
+                    renderSkeleton();
+                } else {
+                    if (!state.hasMore || state.loading || state.loadingMore) return;
+                    state.loadingMore = true;
+                    renderLoadMoreSpinner();
+                }
+
+                state.loading = true;
+                const pageToLoad = reset ? 0 : state.page;
+                const myRequestId = ++state.requestId;
+                const cacheKey = `${requestQuery}|${requestRole}|${requestStatus}|${pageToLoad}`;
+
+                if (queryCache.has(cacheKey)) {
+                    const cached = queryCache.get(cacheKey);
+                    applyResults(cached.data, cached.hasMore, reset, pageToLoad);
+                    state.loading = false;
+                    state.loadingMore = false;
                     return;
                 }
 
-                resultArea.innerHTML = `
-                    <div class="loading-state">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Searching...</p>
-                    </div>
-                `;
-
                 try {
-                    const { data, error } = await supabase
-                        .from(TABLE_NAME)
-                        .select('*')
-                        .or(`name.ilike.%${trimmed}%,email.ilike.%${trimmed}%,rotary_id.ilike.%${trimmed}%`);
+                    const runQuery = (includeFilters) => {
+                        let q = supabase.from(TABLE_NAME).select('*');
+                        if (requestQuery) {
+                            const v = filterValue(requestQuery);
+                            q = q.or(`name.ilike."%${v}%",email.ilike."%${v}%",rotary_id.ilike."%${v}%",full_name.ilike."%${v}%"`);
+                        }
+                        if (includeFilters) {
+                            if (requestRole !== 'all') q = q.eq(ROLE_COLUMN, requestRole);
+                            q = q.ilike(STATUS_COLUMN, requestStatus); // case-insensitive exact match, never matches "inactive"
+                        }
+                        return q.order('name', { ascending: true })
+                            .range(pageToLoad * PAGE_SIZE, pageToLoad * PAGE_SIZE + PAGE_SIZE - 1);
+                    };
+
+                    let { data, error } = await runQuery(true);
+
+                    if (error && /column .* does not exist/i.test(error.message || '')) {
+                        showToast('Role/status filter columns not found on your table — showing unfiltered results', 'error');
+                        const retry = await runQuery(false);
+                        data = retry.data; error = retry.error;
+                    }
 
                     if (error) throw error;
+                    if (myRequestId !== state.requestId) return; // a newer request has since started
 
-                    if (data && data.length > 0) {
-                        renderResults(data, trimmed);
-                    } else {
-                        resultArea.innerHTML = `
-                            <div class="no-result">
-                                <i class="fas fa-user-slash"></i>
-                                <p>No member found</p>
-                                <span>"${trimmed}" did not match any member</span>
-                            </div>
-                        `;
-                    }
+                    const hasMore = !!(data && data.length === PAGE_SIZE);
+                    queryCache.set(cacheKey, { data: data || [], hasMore });
+                    if (queryCache.size > 40) queryCache.delete(queryCache.keys().next().value);
+
+                    applyResults(data || [], hasMore, reset, pageToLoad);
                 } catch (err) {
-                    console.error('Search error:', err);
-                    resultArea.innerHTML = `
-                        <div class="no-result">
-                            <i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i>
-                            <p style="color:#991b1b;">Search failed</p>
-                            <span>${err.message}</span>
-                        </div>
-                    `;
+                    if (myRequestId !== state.requestId) return;
+                    renderError(err, reset);
+                } finally {
+                    if (myRequestId === state.requestId) { state.loading = false; state.loadingMore = false; }
                 }
             }
 
-            // ===== EVENT LISTENERS =====
-            searchBtn.addEventListener('click', () => {
-                performSearch(searchInput.value);
+            function applyResults(data, hasMore, reset, pageToLoad) {
+                data.forEach(m => {
+                    const r = getRawRole(m); if (r) state.roleOptions.add(r);
+                    const s = getRawStatus(m); if (s) state.statusOptions.add(s);
+                });
+                updateFilterOptions();
+
+                state.members = reset ? data : state.members.concat(data);
+                state.hasMore = hasMore;
+                state.page = pageToLoad + 1;
+
+                renderResults();
+                if (reset) renderSuggestions(data.slice(0, 5));
+            }
+
+            // ===== INFINITE SCROLL =====
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && state.hasMore && !state.loading && !state.loadingMore && state.members.length > 0) {
+                        fetchPage({ reset: false });
+                    }
+                });
+            }, { rootMargin: '250px' });
+            io.observe(scrollSentinel);
+
+            // ===== SEARCH INPUT EVENTS =====
+            function toggleClearButton() {
+                searchWrapper.classList.toggle('has-value', !!searchInput.value.trim());
+            }
+
+            const debouncedSearch = debounce(() => fetchPage({ reset: true }), 320);
+
+            searchInput.addEventListener('input', () => {
+                toggleClearButton();
+                if (searchInput.value.trim()) debouncedSearch();
+                else fetchPage({ reset: true }); // clearing is immediate, not debounced
             });
 
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    performSearch(searchInput.value);
+            searchInput.addEventListener('focus', () => {
+                if (!searchInput.value.trim()) renderHistory();
+                else if (state.members.length) renderSuggestions(state.members.slice(0, 5));
+            });
+
+            searchInput.addEventListener('blur', () => {
+                setTimeout(() => closeSuggestions(), 150); // allow click/mousedown on a suggestion to register first
+            });
+
+            searchInput.addEventListener('keydown', (e) => {
+                const items = suggestionsBox.querySelectorAll('.suggestion-item, .history-item');
+                if (e.key === 'ArrowDown') {
+                    if (!items.length) return;
+                    e.preventDefault();
+                    state.activeSuggestionIndex = Math.min(state.activeSuggestionIndex + 1, items.length - 1);
+                    updateActiveSuggestion(items);
+                } else if (e.key === 'ArrowUp') {
+                    if (!items.length) return;
+                    e.preventDefault();
+                    state.activeSuggestionIndex = Math.max(state.activeSuggestionIndex - 1, 0);
+                    updateActiveSuggestion(items);
+                } else if (e.key === 'Enter') {
+                    if (state.activeSuggestionIndex >= 0 && items[state.activeSuggestionIndex]) {
+                        e.preventDefault();
+                        items[state.activeSuggestionIndex].click();
+                    } else {
+                        addToHistory(searchInput.value);
+                        fetchPage({ reset: true });
+                        closeSuggestions();
+                    }
+                } else if (e.key === 'Escape') {
+                    closeSuggestions();
+                    searchInput.blur();
                 }
             });
 
-            // ===== INITIAL EMPTY STATE =====
-            resultArea.innerHTML = `
-                <div class="empty-state">
-                    <div class="icon"><i class="fas fa-user-circle"></i></div>
-                    <h3>Search for a member</h3>
-                    <p>Enter a name, email, or Rotary ID</p>
-                </div>
-            `;
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                toggleClearButton();
+                fetchPage({ reset: true });
+                searchInput.focus();
+                renderHistory();
+            });
 
-            console.log('✅ Member Directory ready — No verified/unverified text');
+            searchBtn.addEventListener('click', () => {
+                addToHistory(searchInput.value);
+                fetchPage({ reset: true });
+                closeSuggestions();
+            });
+
+            roleSelect.addEventListener('change', () => fetchPage({ reset: true }));
+
+            // ===== KEYBOARD SHORTCUTS =====
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                    e.preventDefault();
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            });
+
+            // ===== INITIAL LOAD =====
+            fetchPage({ reset: true });
         })();
     </script>
 </body>

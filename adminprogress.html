@@ -41,6 +41,13 @@
     --ease:cubic-bezier(0.16,1,0.3,1);
     --radius:14px;
     --sidebar-w:260px;
+    /* aliases so shared components (login card, etc.) stay on-theme */
+    --bg-white:var(--surface);
+    --text-primary:var(--text);
+    --primary:var(--accent);
+    --primary-dark:#c96a2e;
+    --radius-lg:18px;
+    --radius-sm:9px;
 }
 @media (prefers-reduced-motion: reduce){
     *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
@@ -589,9 +596,122 @@ table.rpt-table tr:nth-child(even) td{ background:#f6f6f6; }
     .cal-grid{ gap:3px; }
     .cal-cell{ min-height:44px; font-size:0.62rem; padding:0.2rem; }
 }
+
+/* ============================================================
+   USABILITY UPGRADE PACK — a11y, skeletons, trends, quick actions,
+   tooltips, shortcuts, auto-refresh, confirm dialog, animations
+   ============================================================ */
+
+/* skip link */
+.skip-link{
+    position:absolute; left:1rem; top:-60px; background:var(--accent); color:#0a0d13;
+    padding:0.6rem 1rem; border-radius:8px; font-weight:700; font-size:0.85rem; z-index:10010; transition:top 0.2s;
+}
+.skip-link:focus{ top:1rem; }
+
+/* stagger-in for cards */
+@keyframes cardIn{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:translateY(0); } }
+.stat-card, .exec-card, .progress-card, .item-card{ animation:cardIn 0.4s var(--ease) both; }
+
+/* quick action bar */
+.quick-actions{ display:flex; flex-wrap:wrap; gap:0.6rem; margin-bottom:1.4rem; }
+.quick-actions .btn i{ font-size:0.8rem; }
+.qa-badge{
+    display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 5px;
+    border-radius:99px; background:var(--danger); color:#fff; font-size:0.65rem; font-weight:800; margin-left:0.3rem;
+}
+
+/* KPI trend + drill-down affordance */
+.stat-card{ cursor:pointer; }
+.stat-card:focus-visible{ outline:2px solid var(--accent-2); outline-offset:2px; }
+.stat-card .trend{
+    display:inline-flex; align-items:center; gap:0.25rem; font-size:0.68rem; font-weight:700; margin-top:0.3rem;
+    font-family:var(--font-mono);
+}
+.stat-card .trend.up{ color:var(--success); }
+.stat-card .trend.down{ color:var(--danger); }
+.stat-card .trend.flat{ color:var(--text-faint); }
+.stat-card .drill-hint{ position:absolute; right:0.9rem; bottom:0.8rem; font-size:0.68rem; color:var(--text-faint); opacity:0; transition:opacity 0.2s; }
+.stat-card:hover .drill-hint, .stat-card:focus-visible .drill-hint{ opacity:1; }
+
+/* tooltips */
+[data-tip]{ position:relative; }
+[data-tip]::after{
+    content:attr(data-tip); position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%) translateY(4px);
+    background:#05070a; color:var(--text); border:1px solid var(--border-strong); padding:0.4rem 0.65rem; border-radius:8px;
+    font-size:0.72rem; font-weight:500; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.15s, transform 0.15s;
+    z-index:1500; box-shadow:0 10px 24px rgba(0,0,0,0.4);
+}
+[data-tip]:hover::after, [data-tip]:focus-visible::after{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* deadlines-next-7 panel */
+.deadline-list{ display:flex; flex-direction:column; gap:0; }
+.deadline-row{ display:flex; align-items:center; gap:0.8rem; padding:0.65rem 0; border-bottom:1px solid var(--border); font-size:0.83rem; }
+.deadline-row:last-child{ border-bottom:none; }
+.deadline-date{
+    font-family:var(--font-mono); font-size:0.72rem; font-weight:700; color:var(--accent); background:var(--accent-dim);
+    border-radius:8px; padding:0.3rem 0.55rem; text-align:center; min-width:52px; flex-shrink:0;
+}
+.deadline-body{ flex:1; min-width:0; }
+.deadline-title{ font-weight:600; }
+.deadline-sub{ font-size:0.72rem; color:var(--text-faint); }
+
+/* loading skeletons */
+.skel{ position:relative; overflow:hidden; background:var(--surface-2); border-radius:8px; }
+.skel::after{
+    content:''; position:absolute; inset:0; transform:translateX(-100%);
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+    animation:skelShine 1.4s infinite;
+}
+@keyframes skelShine{ 100%{ transform:translateX(100%); } }
+.skel-stat{ height:92px; border-radius:12px; }
+.skel-card{ height:150px; border-radius:var(--radius); }
+.skel-row{ height:16px; margin:0.5rem 0; border-radius:5px; }
+.skel-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:0.9rem; margin-bottom:1.6rem; }
+.skel-projects{ display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:0.9rem; }
+
+/* empty state polish */
+.empty-state{ border:1px dashed var(--border); border-radius:var(--radius); }
+.empty-state .es-sub{ font-size:0.76rem; color:var(--text-faint); margin-top:0.3rem; }
+
+/* confirm dialog */
+.confirm-modal .modal-content{ max-width:420px; text-align:center; }
+.confirm-modal .confirm-icon{ width:52px; height:52px; border-radius:50%; background:var(--danger-dim); color:var(--danger); display:flex; align-items:center; justify-content:center; font-size:1.3rem; margin:0 auto 1rem; }
+.confirm-modal .confirm-msg{ color:var(--text-muted); font-size:0.88rem; margin-bottom:1.4rem; }
+.confirm-modal .form-actions{ justify-content:center; }
+
+/* keyboard shortcuts modal */
+.kbd-list{ display:flex; flex-direction:column; gap:0.6rem; }
+.kbd-row{ display:flex; align-items:center; justify-content:space-between; font-size:0.85rem; color:var(--text-muted); }
+kbd{ background:var(--surface-2); border:1px solid var(--border-strong); border-bottom-width:2px; border-radius:6px; padding:0.2rem 0.5rem; font-family:var(--font-mono); font-size:0.75rem; color:var(--text); }
+
+/* auto-refresh control */
+.autorefresh-wrap{ display:flex; align-items:center; gap:0.5rem; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:0.4rem 0.7rem; font-size:0.76rem; color:var(--text-muted); }
+.autorefresh-wrap select{ background:transparent; border:none; color:var(--text); font-family:inherit; font-size:0.78rem; cursor:pointer; }
+.autorefresh-wrap select:focus{ outline:none; }
+.autorefresh-dot{ width:7px; height:7px; border-radius:50%; background:var(--text-faint); flex-shrink:0; }
+.autorefresh-wrap.on .autorefresh-dot{ background:var(--success); animation:pulse 2s ease-in-out infinite; }
+
+/* health/overdue emphasis card */
+.stat-card.c-danger{ border-color:rgba(240,85,95,0.3); }
+.stat-card.c-danger i{ color:var(--danger); }
+.stat-card.c-danger .num{ color:var(--danger); }
+
+@media (max-width:960px){
+    .quick-actions{ gap:0.45rem; }
+    .quick-actions .btn{ flex:1 1 auto; justify-content:center; }
+    .autorefresh-wrap{ width:100%; justify-content:space-between; }
+    [data-tip]::after{ display:none; } /* avoid stuck hover tooltips on touch */
+}
+@media (max-width:520px){
+    .stat-grid{ grid-template-columns:repeat(2,1fr); }
+    .exec-summary-grid{ grid-template-columns:1fr; }
+}
 </style>
 </head>
 <body>
+
+<a href="#mainContent" class="skip-link">Skip to main content</a>
 
 <!-- ===== ADMIN LOGIN MODAL (same as index.html) ===== -->
 <div class="admin-login-overlay" id="adminLoginModal" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle" aria-hidden="true">
@@ -648,25 +768,48 @@ table.rpt-table tr:nth-child(even) td{ background:#f6f6f6; }
         </div>
     </aside>
 
-    <div class="main">
+    <div class="main" id="mainContent">
         <div class="topbar">
             <div class="topbar-title">
                 <h1 id="pageTitle">Projects &amp; Meetings</h1>
                 <p id="pageSubtitle">Live tracker built from upcoming_projects and meeting_minutes — nothing else.</p>
             </div>
             <div class="topbar-actions">
+                <div class="autorefresh-wrap" id="autoRefreshWrap" data-tip="Automatically pull fresh data">
+                    <span class="autorefresh-dot"></span>
+                    <select id="autoRefreshSelect" aria-label="Auto-refresh interval">
+                        <option value="0">Auto-refresh: off</option>
+                        <option value="30000">Every 30s</option>
+                        <option value="60000">Every 1m</option>
+                        <option value="300000">Every 5m</option>
+                    </select>
+                </div>
                 <div class="topbar-clock" id="liveClock"><span id="clockTime">--:--:--</span><span class="date" id="clockDate">---- --, ----</span></div>
-                <button class="btn btn-ghost" id="refreshBtn" title="Refresh data"><i class="fa-solid fa-rotate"></i></button>
+                <button class="btn btn-ghost" id="shortcutsBtn" data-tip="Keyboard shortcuts (?)" aria-label="Show keyboard shortcuts"><i class="fa-solid fa-keyboard"></i></button>
+                <button class="btn btn-ghost" id="refreshBtn" data-tip="Refresh data (R)" aria-label="Refresh data"><i class="fa-solid fa-rotate"></i></button>
             </div>
         </div>
 
         <!-- ===== VIEW: CLUB PROGRESS (Projects + Meetings integration) ===== -->
         <section class="view active" id="view-clubprogress">
 
+            <div class="quick-actions" role="toolbar" aria-label="Quick actions">
+                <button class="btn btn-ghost btn-sm" id="qaOverdue" data-tip="Jump to overdue items"><i class="fa-solid fa-clock-rotate-left"></i> Overdue<span class="qa-badge" id="qaOverdueBadge">0</span></button>
+                <button class="btn btn-ghost btn-sm" id="qaDeadlines" data-tip="Jump to upcoming deadlines"><i class="fa-solid fa-calendar-week"></i> Next 7 days<span class="qa-badge" id="qaDeadlinesBadge">0</span></button>
+                <button class="btn btn-ghost btn-sm" id="qaAddNote" data-tip="Search a project instantly"><i class="fa-solid fa-magnifying-glass"></i> Search projects</button>
+                <button class="btn btn-ghost btn-sm" id="cpExportCsvBtnTop" data-tip="Download CSV export"><i class="fa-solid fa-file-csv"></i> Export</button>
+                <button class="btn btn-ghost btn-sm" id="cpPrintBtnTop" data-tip="Print / export PDF report"><i class="fa-solid fa-print"></i> Print</button>
+            </div>
+
             <div class="section-heading"><h2><i class="fa-solid fa-bullseye"></i> Executive summary</h2><span class="meta" id="execRotaryYearLabel">—</span></div>
             <div class="exec-summary-grid" id="execSummaryGrid"></div>
 
             <div class="stat-grid" id="cpKpiGrid"></div>
+
+            <div class="section-heading"><h2><i class="fa-solid fa-calendar-week"></i> Upcoming deadlines (next 7 days)</h2></div>
+            <div class="panel" id="cpDeadlinesPanel" style="margin-bottom:1.6rem;">
+                <div class="deadline-list" id="cpDeadlineList"></div>
+            </div>
 
             <div class="section-heading"><h2><i class="fa-solid fa-triangle-exclamation"></i> Risk &amp; warning center</h2></div>
             <div class="risk-chip-row" id="cpRiskChips"></div>
@@ -759,7 +902,7 @@ table.rpt-table tr:nth-child(even) td{ background:#f6f6f6; }
 </div>
 
 <!-- ===== PROJECT DETAIL MODAL ===== -->
-<div class="modal-overlay" id="cpDetailModal">
+<div class="modal-overlay" id="cpDetailModal" role="dialog" aria-modal="true" aria-labelledby="cpDetailTitle">
     <div class="modal-content" style="max-width:640px;">
         <button class="modal-close" id="cpDetailCloseBtn"><i class="fa-solid fa-xmark"></i></button>
         <div class="modal-title"><i class="fa-solid fa-diagram-project"></i> <span id="cpDetailTitle">Project detail</span></div>
@@ -770,7 +913,36 @@ table.rpt-table tr:nth-child(even) td{ background:#f6f6f6; }
 <!-- ===== CLUB PROGRESS PRINT AREA ===== -->
 <div id="cpPrintArea"></div>
 
-<div class="toast-stack" id="toastStack"></div>
+<div class="toast-stack" id="toastStack" role="status" aria-live="polite"></div>
+
+<!-- ===== CONFIRM DIALOG (generic, for critical actions) ===== -->
+<div class="modal-overlay confirm-modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+    <div class="modal-content">
+        <button class="modal-close" id="confirmCloseBtn" aria-label="Cancel"><i class="fa-solid fa-xmark"></i></button>
+        <div class="confirm-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="modal-title" id="confirmModalTitle" style="justify-content:center;">Are you sure?</div>
+        <div class="confirm-msg" id="confirmModalMsg">This action cannot be undone.</div>
+        <div class="form-actions">
+            <button class="btn btn-ghost" id="confirmCancelBtn">Cancel</button>
+            <button class="btn btn-accent" id="confirmOkBtn">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== KEYBOARD SHORTCUTS MODAL ===== -->
+<div class="modal-overlay" id="shortcutsModal">
+    <div class="modal-content" style="max-width:400px;">
+        <button class="modal-close" id="shortcutsCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+        <div class="modal-title"><i class="fa-solid fa-keyboard"></i> Keyboard shortcuts</div>
+        <div class="kbd-list">
+            <div class="kbd-row"><span>Focus project search</span><kbd>/</kbd></div>
+            <div class="kbd-row"><span>Refresh data</span><kbd>R</kbd></div>
+            <div class="kbd-row"><span>Print / export report</span><kbd>P</kbd></div>
+            <div class="kbd-row"><span>Close any dialog</span><kbd>Esc</kbd></div>
+            <div class="kbd-row"><span>Show this help</span><kbd>?</kbd></div>
+        </div>
+    </div>
+</div>
 
 <script>
 (() => {
@@ -793,6 +965,46 @@ const escapeHtml = (str) => {
 };
 let currentUser = null;
 let charts = { cpStatus: null, cpFreq: null, cpActions: null, cpMembers: null };
+
+// ============================================================
+// UTILITIES — debounce, confirm dialog, filter persistence
+// ============================================================
+function debounce(fn, wait) {
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+}
+
+const FILTER_KEYS = ['cpFilterStatus', 'cpFilterSearch', 'cpFilterActionStatus', 'cpFilterActionMember', 'cpFilterActionSearch'];
+function saveFilterState() {
+    try {
+        const state = {};
+        FILTER_KEYS.forEach(id => { const el = $(id); if (el) state[id] = el.value; });
+        localStorage.setItem('cpFilterState', JSON.stringify(state));
+    } catch (e) { /* storage unavailable — ignore */ }
+}
+function restoreFilterState() {
+    try {
+        const raw = localStorage.getItem('cpFilterState');
+        if (!raw) return;
+        const state = JSON.parse(raw);
+        FILTER_KEYS.forEach(id => { const el = $(id); if (el && state[id] !== undefined) el.value = state[id]; });
+    } catch (e) { /* ignore malformed state */ }
+}
+
+// generic confirm dialog for critical/irreversible actions
+function confirmAction(message, onConfirm, title) {
+    const m = $('confirmModal');
+    $('confirmModalTitle').textContent = title || 'Are you sure?';
+    $('confirmModalMsg').textContent = message;
+    m.classList.add('active');
+    const okBtn = $('confirmOkBtn');
+    const cleanup = () => { m.classList.remove('active'); okBtn.removeEventListener('click', onOk); };
+    const onOk = () => { cleanup(); onConfirm(); };
+    okBtn.addEventListener('click', onOk, { once: true });
+    $('confirmCancelBtn').onclick = cleanup;
+    $('confirmCloseBtn').onclick = cleanup;
+}
+$('confirmModal').addEventListener('click', (e) => { if (e.target === $('confirmModal')) $('confirmModal').classList.remove('active'); });
 
 // ============================================================
 // TOASTS
@@ -917,17 +1129,20 @@ form.addEventListener('submit', async (e) => {
     }
 });
 
-// ---- Logout ----
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-    await supabase.auth.signOut();
-    sessionStorage.removeItem('auth_user_id');
-    sessionStorage.removeItem('auth_email');
-    sessionStorage.removeItem('auth_role');
-    sessionStorage.removeItem('auth_status');
-    sessionStorage.removeItem('auth_verified');
-    sessionStorage.removeItem('auth_timestamp');
-    currentUser = null;
-    openModal();
+// ---- Logout (confirmed — critical action) ----
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    confirmAction('You will need to sign in again to access this dashboard.', async () => {
+        await supabase.auth.signOut();
+        sessionStorage.removeItem('auth_user_id');
+        sessionStorage.removeItem('auth_email');
+        sessionStorage.removeItem('auth_role');
+        sessionStorage.removeItem('auth_status');
+        sessionStorage.removeItem('auth_verified');
+        sessionStorage.removeItem('auth_timestamp');
+        currentUser = null;
+        stopAutoRefresh();
+        openModal();
+    }, 'Log out?');
 });
 
 // ---- Check session on load ----
@@ -971,9 +1186,18 @@ async function bootDashboard() {
     document.getElementById('adminAvatar').textContent = (currentUser.email || '?').slice(0, 2).toUpperCase();
     document.getElementById('statusStripText').textContent = 'Connected';
 
+    // Restore persisted filters before first render so lists open the way the user left them
+    restoreFilterState();
+
     // Load data and render
+    setSkeletonsVisible(true);
     await loadClubProgressData();
     cpRefreshAll();
+    setSkeletonsVisible(false);
+
+    // Resume auto-refresh if the user had one configured
+    const savedMs = Number(localStorage.getItem('cpAutoRefreshMs')) || 0;
+    if (savedMs) startAutoRefresh(savedMs);
 
     // Show the app shell (if hidden)
     document.querySelector('.app-shell').style.display = 'flex';
@@ -1011,12 +1235,83 @@ function tickClock() {
 tickClock();
 setInterval(tickClock, 1000);
 
-$('refreshBtn').addEventListener('click', async () => {
-    showToast('Refreshing…', 'Pulling latest data from Supabase');
+async function doRefresh(silent) {
+    if (!silent) showToast('Refreshing…', 'Pulling latest data from Supabase');
+    setSkeletonsVisible(true);
     await loadClubProgressData();
     cpRefreshAll();
-    showToast('✅ Refreshed', 'All data is up to date');
+    setSkeletonsVisible(false);
+    if (!silent) showToast('✅ Refreshed', 'All data is up to date');
+}
+$('refreshBtn').addEventListener('click', () => doRefresh(false));
+
+// ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+function openShortcuts() { $('shortcutsModal').classList.add('active'); }
+function closeShortcuts() { $('shortcutsModal').classList.remove('active'); }
+$('shortcutsBtn').addEventListener('click', openShortcuts);
+$('shortcutsCloseBtn').addEventListener('click', closeShortcuts);
+$('shortcutsModal').addEventListener('click', (e) => { if (e.target === $('shortcutsModal')) closeShortcuts(); });
+
+document.addEventListener('keydown', (e) => {
+    const tag = (document.activeElement && document.activeElement.tagName) || '';
+    const typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+    if (e.key === 'Escape') {
+        [$('cpDetailModal'), $('confirmModal'), $('shortcutsModal')].forEach(m => m && m.classList.remove('active'));
+        return;
+    }
+    if (typing) return;
+    if (e.key === '/') { e.preventDefault(); $('cpFilterSearch').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('cpFilterSearch').focus(); }
+    else if (e.key === 'r' || e.key === 'R') { doRefresh(false); }
+    else if (e.key === 'p' || e.key === 'P') { $('cpPrintBtn').click(); }
+    else if (e.key === '?') { openShortcuts(); }
 });
+
+// ============================================================
+// AUTO-REFRESH TIMER
+// ============================================================
+let autoRefreshTimer = null;
+function stopAutoRefresh() {
+    if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
+    $('autoRefreshWrap').classList.remove('on');
+}
+function startAutoRefresh(ms) {
+    stopAutoRefresh();
+    if (!ms) return;
+    autoRefreshTimer = setInterval(() => doRefresh(true), ms);
+    $('autoRefreshWrap').classList.add('on');
+}
+const autoRefreshSelect = $('autoRefreshSelect');
+try {
+    const savedMs = localStorage.getItem('cpAutoRefreshMs');
+    if (savedMs) autoRefreshSelect.value = savedMs;
+} catch (e) { /* ignore */ }
+autoRefreshSelect.addEventListener('change', () => {
+    const ms = Number(autoRefreshSelect.value) || 0;
+    try { localStorage.setItem('cpAutoRefreshMs', String(ms)); } catch (e) { /* ignore */ }
+    if (ms) startAutoRefresh(ms); else stopAutoRefresh();
+});
+
+// ============================================================
+// LOADING SKELETONS
+// ============================================================
+function setSkeletonsVisible(show) {
+    const kpi = $('cpKpiGrid'), grid = $('cpProjectGrid');
+    if (show) {
+        if (kpi) kpi.innerHTML = Array.from({ length: 5 }).map(() => '<div class="skel skel-stat"></div>').join('');
+        if (grid) grid.innerHTML = Array.from({ length: 3 }).map(() => '<div class="skel skel-card"></div>').join('');
+    }
+}
+
+// ============================================================
+// QUICK ACTIONS
+// ============================================================
+$('qaOverdue').addEventListener('click', () => { document.querySelector('.alert-stack').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+$('qaDeadlines').addEventListener('click', () => { $('cpDeadlinesPanel').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+$('qaAddNote').addEventListener('click', () => { $('cpFilterSearch').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('cpFilterSearch').focus(); });
+$('cpExportCsvBtnTop').addEventListener('click', () => $('cpExportCsvBtn').click());
+$('cpPrintBtnTop').addEventListener('click', () => $('cpPrintBtn').click());
 
 
 // ============================================================
@@ -1098,15 +1393,132 @@ function cpComputeStats() {
     return { statusCount, ongoing, actionPct, avgAttendance, completedItems };
 }
 
+// month-over-month deltas, computed only where the underlying data actually carries a date
+function cpComputeTrends() {
+    const now = new Date();
+    const mStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const pStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const pEnd = mStart;
+    const inRange = (d, a, b) => d && new Date(d) >= a && new Date(d) < b;
+
+    const meetingsThis = cpMeetings.filter(m => inRange(m.meeting_date, mStart, now)).length;
+    const meetingsPrev = cpMeetings.filter(m => inRange(m.meeting_date, pStart, pEnd)).length;
+
+    const actionsThis = cpActionItemsFlat.filter(a => a.status === 'Completed' && inRange(a.deadline, mStart, now)).length;
+    const actionsPrev = cpActionItemsFlat.filter(a => a.status === 'Completed' && inRange(a.deadline, pStart, pEnd)).length;
+
+    const trend = (curr, prev) => {
+        if (prev === 0 && curr === 0) return { dir: 'flat', text: 'No change' };
+        if (prev === 0) return { dir: 'up', text: `+${curr} vs last mo.` };
+        const pct = Math.round(((curr - prev) / prev) * 100);
+        if (pct === 0) return { dir: 'flat', text: 'Flat vs last mo.' };
+        return { dir: pct > 0 ? 'up' : 'down', text: `${pct > 0 ? '↑' : '↓'} ${Math.abs(pct)}% vs last mo.` };
+    };
+    return { meetings: trend(meetingsThis, meetingsPrev), actions: trend(actionsThis, actionsPrev) };
+}
+
 function cpRenderKPIs() {
     const s = cpComputeStats();
+    const t = cpComputeTrends();
+    const r = cpComputeRisks();
+    const overdueTotal = r.overdueProjects.length + r.overdueActions.length;
+    const trendHtml = (tr) => tr ? `<span class="trend ${tr.dir}"><i class="fa-solid fa-arrow-${tr.dir === 'up' ? 'up' : (tr.dir === 'down' ? 'down' : 'right')}"></i> ${tr.text}</span>` : '';
     $('cpKpiGrid').innerHTML = `
-        <div class="stat-card"><i class="fa-solid fa-diagram-project"></i><div class="num">${cpProjects.length}</div><div class="label">Total projects</div></div>
-        <div class="stat-card c-accent2"><i class="fa-solid fa-bolt"></i><div class="num">${s.ongoing}</div><div class="label">Ongoing</div></div>
-        <div class="stat-card"><i class="fa-solid fa-users-rectangle"></i><div class="num">${cpMeetings.length}</div><div class="label">Meetings held</div></div>
-        <div class="stat-card c-success"><i class="fa-solid fa-list-check"></i><div class="num">${s.actionPct}%</div><div class="label">Action items done</div></div>
-        <div class="stat-card c-purple"><i class="fa-solid fa-chart-simple"></i><div class="num">${s.avgAttendance}%</div><div class="label">Avg. attendance</div></div>
+        <div class="stat-card" data-kpi="total" tabindex="0" role="button" aria-label="Total projects, view details" data-tip="Click for details">
+            <i class="fa-solid fa-diagram-project"></i><div class="num">${cpProjects.length}</div><div class="label">Total projects</div>
+            <span class="drill-hint">View list →</span>
+        </div>
+        <div class="stat-card c-accent2" data-kpi="ongoing" tabindex="0" role="button" aria-label="Ongoing projects, view details" data-tip="Click for details">
+            <i class="fa-solid fa-bolt"></i><div class="num">${s.ongoing}</div><div class="label">Ongoing</div>
+            <span class="drill-hint">View list →</span>
+        </div>
+        <div class="stat-card" data-kpi="meetings" tabindex="0" role="button" aria-label="Meetings held, view details" data-tip="Click for details">
+            <i class="fa-solid fa-users-rectangle"></i><div class="num">${cpMeetings.length}</div><div class="label">Meetings held</div>
+            ${trendHtml(t.meetings)}<span class="drill-hint">View list →</span>
+        </div>
+        <div class="stat-card c-success" data-kpi="actions" tabindex="0" role="button" aria-label="Action items done, view details" data-tip="Click for details">
+            <i class="fa-solid fa-list-check"></i><div class="num">${s.actionPct}%</div><div class="label">Action items done</div>
+            ${trendHtml(t.actions)}<span class="drill-hint">View list →</span>
+        </div>
+        <div class="stat-card c-purple" data-kpi="attendance" tabindex="0" role="button" aria-label="Average attendance, view details" data-tip="Click for details">
+            <i class="fa-solid fa-chart-simple"></i><div class="num">${s.avgAttendance}%</div><div class="label">Avg. attendance</div>
+            <span class="drill-hint">View list →</span>
+        </div>
+        <div class="stat-card c-danger" data-kpi="overdue" tabindex="0" role="button" aria-label="Overdue items, view details" data-tip="Click for details">
+            <i class="fa-solid fa-triangle-exclamation"></i><div class="num">${overdueTotal}</div><div class="label">Overdue items</div>
+            <span class="drill-hint">View list →</span>
+        </div>
     `;
+    $('qaOverdueBadge').textContent = overdueTotal;
+    $('cpKpiGrid').querySelectorAll('.stat-card[data-kpi]').forEach(card => {
+        card.addEventListener('click', () => cpOpenKpiDrill(card.dataset.kpi));
+        card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cpOpenKpiDrill(card.dataset.kpi); } });
+    });
+}
+
+// ============================================================
+// CLUB PROGRESS — KPI drill-down (reuses the project detail modal shell)
+// ============================================================
+function cpOpenKpiDrill(kind) {
+    const rowsOf = (arr, mapper) => arr.length
+        ? arr.map(mapper).join('')
+        : '<div class="detail-mini-row"><i class="fa-solid fa-inbox"></i> Nothing here right now.</div>';
+
+    let title = 'Details', body = '';
+    if (kind === 'total' || kind === 'ongoing') {
+        const list = kind === 'ongoing' ? cpProjects.filter(p => p.status === 'ongoing') : cpProjects.slice();
+        title = kind === 'ongoing' ? 'Ongoing projects' : 'All projects';
+        body = rowsOf(list, p => `<div class="detail-mini-row"><i class="fa-solid fa-diagram-project"></i> ${escapeHtml(p.name)} — <span class="pill pill-status-${p.status === 'completed' ? 'completed' : 'in_progress'}">${escapeHtml(p.status || 'upcoming')}</span></div>`);
+    } else if (kind === 'meetings') {
+        title = 'Meetings held';
+        body = rowsOf(cpMeetings.slice(0, 25), m => `<div class="detail-mini-row"><i class="fa-solid fa-users-rectangle"></i> ${escapeHtml(m.meeting_number)} — ${m.meeting_date ? new Date(m.meeting_date).toLocaleDateString() : '—'}</div>`);
+    } else if (kind === 'actions') {
+        title = 'Action items — completed';
+        body = rowsOf(cpActionItemsFlat.filter(a => a.status === 'Completed').slice(0, 25), a => `<div class="detail-mini-row"><i class="fa-solid fa-circle-check"></i> ${escapeHtml(a.task || 'Task')} — ${escapeHtml(a.person || 'unassigned')}</div>`);
+    } else if (kind === 'attendance') {
+        title = 'Member attendance';
+        body = rowsOf(cpMembers, m => `<div class="detail-mini-row"><i class="fa-solid fa-user"></i> ${escapeHtml(m.name || 'Member')} — ${m.attendance_percentage || 0}%</div>`);
+    } else if (kind === 'overdue') {
+        const r = cpComputeRisks();
+        title = 'Overdue items';
+        body = rowsOf(r.overdueProjects, ({ p, diffDays }) => `<div class="detail-mini-row"><i class="fa-solid fa-triangle-exclamation"></i> Project: ${escapeHtml(p.name)} — ${Math.abs(diffDays)}d overdue</div>`)
+             + rowsOf(r.overdueActions, ({ a, diffDays }) => `<div class="detail-mini-row"><i class="fa-solid fa-triangle-exclamation"></i> Task: ${escapeHtml(a.task || 'Task')} — ${Math.abs(diffDays)}d overdue</div>`);
+    }
+    $('cpDetailTitle').textContent = title;
+    $('cpDetailBody').innerHTML = `<div class="detail-block">${body}</div>`;
+    $('cpDetailModal').classList.add('active');
+}
+
+// ============================================================
+// CLUB PROGRESS — upcoming deadlines (next 7 days, projects + actions merged)
+// ============================================================
+function cpRenderDeadlines7() {
+    const now = new Date(); now.setHours(0, 0, 0, 0);
+    const in7 = new Date(now.getTime() + 7 * 86400000);
+    const items = [];
+    cpProjects.forEach(p => {
+        if (!p.date || ['completed', 'cancelled'].includes(p.status)) return;
+        const d = new Date(p.date);
+        if (d >= now && d <= in7) items.push({ date: d, title: p.name, sub: escapeHtml(p.location || 'Project'), icon: 'fa-diagram-project' });
+    });
+    cpActionItemsFlat.forEach(a => {
+        if (!a.deadline || a.status === 'Completed') return;
+        const d = new Date(a.deadline);
+        if (d >= now && d <= in7) items.push({ date: d, title: a.task || 'Task', sub: `Assigned to ${escapeHtml(a.person || 'unassigned')}`, icon: 'fa-list-check' });
+    });
+    items.sort((a, b) => a.date - b.date);
+    $('qaDeadlinesBadge').textContent = items.length;
+    const list = $('cpDeadlineList');
+    if (!items.length) {
+        list.innerHTML = '<div class="empty-state"><i class="fa-solid fa-mug-hot"></i>Nothing due in the next 7 days<div class="es-sub">Enjoy the breathing room.</div></div>';
+        return;
+    }
+    list.innerHTML = items.map(it => `
+        <div class="deadline-row">
+            <div class="deadline-date">${it.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+            <div class="deadline-body"><div class="deadline-title"><i class="fa-solid ${it.icon}"></i> ${escapeHtml(it.title)}</div><div class="deadline-sub">${it.sub}</div></div>
+        </div>
+    `).join('');
 }
 
 // ============================================================
@@ -1407,8 +1819,9 @@ function cpRenderProjects() {
     const lastUpd = cpProjects.reduce((max, p) => p.updated_at && p.updated_at > max ? p.updated_at : max, '');
     $('cpLastUpdateMeta').textContent = lastUpd ? new Date(lastUpd).toLocaleString() : '—';
 }
-[$('cpFilterStatus')].forEach(el => el.addEventListener('change', cpRenderProjects));
-$('cpFilterSearch').addEventListener('input', cpRenderProjects);
+const cpRenderProjectsDebounced = debounce(cpRenderProjects, 250);
+[$('cpFilterStatus')].forEach(el => el.addEventListener('change', () => { cpRenderProjects(); saveFilterState(); }));
+$('cpFilterSearch').addEventListener('input', () => { cpRenderProjectsDebounced(); saveFilterState(); });
 
 function cpOpenDetail(id) {
     const p = cpProjects.find(p => String(p.id) === String(id));
@@ -1470,8 +1883,9 @@ function cpRenderActionTable() {
         }));
     }
 }
-[$('cpFilterActionStatus'), $('cpFilterActionMember')].forEach(el => el.addEventListener('change', cpRenderActionTable));
-$('cpFilterActionSearch').addEventListener('input', cpRenderActionTable);
+const cpRenderActionTableDebounced = debounce(cpRenderActionTable, 250);
+[$('cpFilterActionStatus'), $('cpFilterActionMember')].forEach(el => el.addEventListener('change', () => { cpRenderActionTable(); saveFilterState(); }));
+$('cpFilterActionSearch').addEventListener('input', () => { cpRenderActionTableDebounced(); saveFilterState(); });
 
 async function cpToggleActionItem(meetingId, itemIndex, checked) {
     const meeting = cpMeetings.find(m => String(m.id) === String(meetingId));
@@ -1605,6 +2019,7 @@ $('cpPrintBtn').addEventListener('click', () => {
 function cpRefreshAll() {
     cpRenderExecutiveSummary();
     cpRenderKPIs();
+    cpRenderDeadlines7();
     cpRenderAlerts();
     cpRenderCharts();
     cpRenderProjects();
