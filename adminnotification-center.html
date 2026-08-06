@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notification Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  :root{
+    --bg:#0e1116;
+    --panel:#161b22;
+    --panel-2:#1c232d;
+    --border:#2a3240;
+    --text:#e6e9ef;
+    --text-dim:#8b95a5;
+    --accent:#4f8cff;
+    --accent-dim:#28466b;
+    --green:#3ecf8e;
+    --yellow:#e8c547;
+    --red:#ef5b5b;
+    --radius:10px;
+    font-size:15px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  body.light{
+    --bg:#f5f6f8;
+    --panel:#ffffff;
+    --panel-2:#f0f1f4;
+    --border:#e0e3e8;
+    --text:#1a1d24;
+    --text-dim:#666e7d;
+  }
+
+  /* ---------- Auth screen ---------- */
+  #auth-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .auth-card{
+    width:100%;
+    max-width:360px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:32px;
+  }
+  .auth-card h1{
+    font-size:1.15rem;
+    margin:0 0 4px;
+  }
+  .auth-card p.sub{
+    color:var(--text-dim);
+    font-size:0.85rem;
+    margin:0 0 24px;
+  }
+  .field{ margin-bottom:14px; }
+  .field label{
+    display:block;
+    font-size:0.78rem;
+    color:var(--text-dim);
+    margin-bottom:6px;
+  }
+  .field input{
+    width:100%;
+    padding:10px 12px;
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    color:var(--text);
+    font-size:0.9rem;
+  }
+  .field input:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    padding:10px 16px;
+    border-radius:8px;
+    border:1px solid transparent;
+    background:var(--accent);
+    color:#fff;
+    font-size:0.88rem;
+    font-weight:600;
+    cursor:pointer;
+    width:100%;
+  }
+  .btn:disabled{ opacity:0.6; cursor:default; }
+  .btn.secondary{
+    background:transparent;
+    border-color:var(--border);
+    color:var(--text);
+  }
+  .error-msg{
+    color:var(--red);
+    font-size:0.8rem;
+    margin-top:10px;
+    min-height:1em;
+  }
+  .denied-icon{ font-size:2rem; margin-bottom:8px; }
+
+  /* ---------- App shell ---------- */
+  #app{ display:block; min-height:100vh; transition:filter 0.3s ease; }
+  header.topbar{
+    position:sticky; top:0; z-index:20;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 22px;
+    background:var(--panel);
+    border-bottom:1px solid var(--border);
+  }
+  .topbar-left{ display:flex; align-items:center; gap:10px; }
+  .topbar-left .bell{ position:relative; font-size:1.2rem; }
+  .badge{
+    position:absolute; top:-6px; right:-10px;
+    background:var(--red); color:#fff;
+    font-size:0.65rem; font-weight:700;
+    min-width:16px; height:16px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 4px;
+  }
+  .topbar-right{ display:flex; align-items:center; gap:10px; }
+  .icon-btn{
+    background:var(--panel-2); border:1px solid var(--border);
+    color:var(--text); border-radius:8px; padding:7px 10px;
+    cursor:pointer; font-size:0.82rem;
+  }
+
+  main{ padding:22px; max-width:1200px; margin:0 auto; }
+
+  .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:12px;
+    margin-bottom:22px;
+  }
+  .stat-card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:14px 16px;
+  }
+  .stat-card .num{ font-size:1.6rem; font-weight:700; }
+  .stat-card .label{ font-size:0.75rem; color:var(--text-dim); margin-top:2px; }
+
+  .toolbar{
+    display:flex; flex-wrap:wrap; gap:8px;
+    margin-bottom:16px;
+    align-items:center;
+  }
+  .toolbar select, .toolbar input[type="text"]{
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    color:var(--text);
+    border-radius:8px;
+    padding:8px 10px;
+    font-size:0.82rem;
+  }
+  .toolbar input[type="text"]{ flex:1; min-width:160px; }
+  .chip{
+    padding:6px 12px; border-radius:20px;
+    background:var(--panel-2); border:1px solid var(--border);
+    font-size:0.78rem; cursor:pointer; color:var(--text-dim);
+  }
+  .chip.active{ background:var(--accent-dim); color:var(--accent); border-color:var(--accent); }
+
+  .notif-list{ display:flex; flex-direction:column; gap:8px; }
+  .notif-card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-left:3px solid var(--border);
+    border-radius:var(--radius);
+    padding:12px 16px;
+    display:flex; justify-content:space-between; align-items:flex-start;
+    gap:12px;
+  }
+  .notif-card.age-new{ border-left-color:var(--green); }
+  .notif-card.age-mid{ border-left-color:var(--yellow); }
+  .notif-card.age-old{ border-left-color:var(--text-dim); opacity:0.75; }
+  .notif-card.unread{ background:var(--panel-2); }
+  .notif-main{ flex:1; min-width:0; }
+  .notif-top{ display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap; }
+  .new-badge{
+    background:var(--red); color:#fff; font-size:0.62rem;
+    font-weight:700; padding:2px 6px; border-radius:4px; letter-spacing:.03em;
+  }
+  .table-tag{
+    background:var(--panel-2); color:var(--text-dim);
+    font-size:0.68rem; padding:2px 7px; border-radius:4px;
+    border:1px solid var(--border);
+  }
+  .notif-title{ font-weight:600; font-size:0.92rem; }
+  .notif-meta{ color:var(--text-dim); font-size:0.78rem; margin-top:2px; }
+  .notif-actions{ display:flex; gap:6px; flex-shrink:0; }
+  .notif-actions button{
+    background:var(--panel-2); border:1px solid var(--border);
+    color:var(--text-dim); border-radius:6px; padding:5px 9px;
+    font-size:0.72rem; cursor:pointer;
+  }
+  .notif-actions button:hover{ color:var(--text); }
+
+  .empty-state{
+    text-align:center; padding:60px 20px; color:var(--text-dim);
+  }
+  .empty-state .icon{ font-size:2.2rem; margin-bottom:8px; }
+
+  /* ---------- Toast ---------- */
+  #toast-container{
+    position:fixed; top:16px; right:16px; z-index:100;
+    display:flex; flex-direction:column; gap:10px;
+    max-width:320px;
+  }
+  .toast{
+    background:var(--panel);
+    border:1px solid var(--accent);
+    border-radius:var(--radius);
+    padding:12px 14px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.35);
+    animation:slide-in 0.25s ease;
+  }
+  @keyframes slide-in{ from{ transform:translateX(20px); opacity:0; } to{ transform:translateX(0); opacity:1; } }
+  .toast .t-title{ font-weight:600; font-size:0.85rem; margin-bottom:2px; }
+  .toast .t-sub{ color:var(--text-dim); font-size:0.76rem; }
+
+  .skel{
+    height:56px; border-radius:var(--radius);
+    background:linear-gradient(90deg,var(--panel) 25%,var(--panel-2) 37%,var(--panel) 63%);
+    background-size:400% 100%;
+    animation:shimmer 1.4s ease infinite;
+  }
+  @keyframes shimmer{ 0%{background-position:100% 0;} 100%{background-position:0 0;} }
+
+  @media (max-width:640px){
+    header.topbar{ padding:12px 14px; }
+    main{ padding:14px; }
+    .notif-card{ flex-direction:column; }
+    .notif-actions{ flex-wrap:wrap; }
+  }
+
+  /* ================= LOGIN POPUP (ported from adminlogin.html) ================= */
+  :root{
+    --lp-accent:#e2823f;
+    --lp-accent-dim:rgba(226,130,63,0.14);
+    --lp-accent-2:#33d6c0;
+    --lp-purple:#9b8cf0;
+    --lp-danger:#f0555f;
+    --lp-danger-dim:rgba(240,85,95,0.14);
+    --lp-surface:#12161f;
+    --lp-surface-2:#171c28;
+    --lp-border:rgba(255,255,255,0.08);
+    --lp-border-strong:rgba(255,255,255,0.16);
+    --lp-text-muted:#8b93a3;
+    --lp-text-faint:#5b6272;
+    --font-display:'Space Grotesk',sans-serif;
+    --lp-ease:cubic-bezier(0.16,1,0.3,1);
+  }
+
+  #popup-overlay{
+    position:fixed; inset:0; z-index:200;
+    display:flex; align-items:center; justify-content:center;
+    padding:20px;
+    background:rgba(6,8,12,0.72);
+    backdrop-filter:blur(10px);
+    animation:lp-fade 0.3s var(--lp-ease);
+  }
+  @keyframes lp-fade{ from{opacity:0;} to{opacity:1;} }
+
+  .login-wrapper{ width:100%; max-width:420px; animation:lp-slide 0.5s var(--lp-ease); }
+  @keyframes lp-slide{ from{opacity:0; transform:translateY(24px);} to{opacity:1; transform:translateY(0);} }
+
+  .login-card{
+    background:var(--lp-surface);
+    border:1px solid var(--lp-border-strong);
+    border-radius:20px;
+    padding:40px 36px 36px;
+    box-shadow:0 30px 60px rgba(0,0,0,0.5);
+    position:relative;
+    overflow:hidden;
+    color:#f2efe9;
+  }
+  .login-card::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg,var(--lp-accent),var(--lp-accent-2),var(--lp-purple));
+    opacity:0.6;
+  }
+  .login-brand{ display:flex; align-items:center; gap:0.7rem; margin-bottom:28px; }
+  .login-brand .mark{
+    width:44px; height:44px; border-radius:12px;
+    background:var(--lp-accent-dim); color:var(--lp-accent);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.2rem; flex-shrink:0;
+    border:1px solid rgba(226,130,63,0.3);
+  }
+  .login-brand .name{ font-family:var(--font-display); font-weight:700; font-size:1.15rem; line-height:1.2; }
+  .login-brand .sub{ font-size:0.7rem; color:var(--lp-text-faint); text-transform:uppercase; letter-spacing:0.08em; margin-top:1px; }
+  .login-title{ font-family:var(--font-display); font-size:1.3rem; font-weight:700; margin-bottom:4px; }
+  .login-subtitle{ color:var(--lp-text-muted); font-size:0.85rem; margin-bottom:24px; }
+
+  .login-form{ display:flex; flex-direction:column; gap:16px; }
+  .form-group{ display:flex; flex-direction:column; gap:5px; }
+  .form-group label{ font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; color:var(--lp-text-muted); }
+  .form-group .input-wrap{ position:relative; display:flex; align-items:center; }
+  .form-group .input-wrap i{ position:absolute; left:12px; color:var(--lp-text-faint); font-size:0.9rem; pointer-events:none; }
+  .form-group input{
+    width:100%; padding:11px 14px 11px 40px;
+    background:var(--lp-surface-2); border:1px solid var(--lp-border); border-radius:10px;
+    color:#f2efe9; font-family:'Inter',sans-serif; font-size:0.9rem;
+    transition:border-color 0.25s var(--lp-ease), box-shadow 0.25s var(--lp-ease);
+  }
+  .form-group input::placeholder{ color:var(--lp-text-faint); }
+  .form-group input:focus{ border-color:var(--lp-accent); box-shadow:0 0 0 3px var(--lp-accent-dim); outline:none; }
+
+  .login-error{ display:none; padding:10px 14px; border-radius:10px; background:var(--lp-danger-dim); border:1px solid rgba(240,85,95,0.25); color:var(--lp-danger); font-size:0.82rem; margin-top:4px; align-items:center; gap:0.5rem; }
+  .login-error.visible{ display:flex; }
+
+  .btn-login{
+    width:100%; padding:13px; border:none; border-radius:10px;
+    background:var(--lp-accent); color:#0a0d13;
+    font-family:var(--font-display); font-weight:700; font-size:0.95rem;
+    cursor:pointer; transition:transform 0.25s var(--lp-ease), background 0.25s var(--lp-ease), opacity 0.25s;
+    display:flex; align-items:center; justify-content:center; gap:0.6rem;
+    margin-top:4px;
+  }
+  .btn-login:hover:not(:disabled){ transform:translateY(-2px); background:#d4732e; }
+  .btn-login:disabled{ opacity:0.6; cursor:not-allowed; transform:none; }
+  .btn-login .spinner{ display:none; width:18px; height:18px; border:2px solid rgba(10,13,19,0.2); border-top-color:#0a0d13; border-radius:50%; animation:lp-spin 0.7s linear infinite; }
+  .btn-login.loading .spinner{ display:block; }
+  .btn-login.loading .btn-text{ display:none; }
+  @keyframes lp-spin{ to{ transform:rotate(360deg); } }
+
+  .login-footer{ margin-top:24px; padding-top:18px; border-top:1px solid var(--lp-border); text-align:center; font-size:0.75rem; color:var(--lp-text-faint); }
+
+  .access-denied-card{
+    background:var(--lp-surface); border:1px solid var(--lp-border-strong); border-radius:20px;
+    padding:48px 40px; max-width:460px; width:100%; text-align:center; color:#f2efe9;
+    box-shadow:0 30px 60px rgba(0,0,0,0.5); animation:lp-slide 0.5s var(--lp-ease);
+  }
+  .access-denied-card .icon-big{ font-size:2.6rem; color:var(--lp-danger); margin-bottom:18px; display:block; }
+  .access-denied-card h2{ font-family:var(--font-display); font-size:1.6rem; font-weight:700; margin-bottom:10px; }
+  .access-denied-card p{ color:var(--lp-text-muted); font-size:0.95rem; margin-bottom:22px; }
+  .access-denied-card .btn-redirect{
+    display:inline-block; background:var(--lp-accent); color:#0a0d13; padding:13px 36px;
+    border-radius:10px; text-decoration:none; font-weight:700; font-size:0.95rem;
+    transition:transform 0.3s var(--lp-ease); border:none; cursor:pointer;
+  }
+  .access-denied-card .btn-redirect:hover{ transform:translateY(-2px); }
+
+  #app.blurred{ filter:blur(6px); pointer-events:none; user-select:none; }
+
+  @media (max-width:480px){
+    .login-card{ padding:28px 20px 24px; }
+    .access-denied-card{ padding:32px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH POPUP ============ -->
+<div id="popup-overlay">
+  <div class="login-wrapper" id="login-card">
+    <div class="login-card">
+      <div class="login-brand">
+        <span class="mark"><i class="fa-solid fa-layer-group"></i></span>
+        <div>
+          <div class="name">Central Hub</div>
+          <div class="sub">Admin Console</div>
+        </div>
+      </div>
+      <h1 class="login-title">Welcome back</h1>
+      <p class="login-subtitle">Sign in to open the Notification Center.</p>
+
+      <form class="login-form" id="login-form" novalidate>
+        <div class="form-group">
+          <label for="login-email">Email address</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-envelope"></i>
+            <input type="email" id="login-email" placeholder="admin@club.org" required autocomplete="username" autofocus />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password" />
+          </div>
+        </div>
+        <div class="login-error" id="login-error">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span id="login-error-text"></span>
+        </div>
+        <button type="submit" class="btn-login" id="login-btn">
+          <span class="spinner"></span>
+          <span class="btn-text"><i class="fa-solid fa-arrow-right-to-bracket"></i> Sign in</span>
+        </button>
+      </form>
+
+      <div class="login-footer">Secure access · Powered by Supabase</div>
+    </div>
+  </div>
+
+  <div class="login-wrapper" id="denied-card" style="display:none;">
+    <div class="access-denied-card">
+      <span class="icon-big"><i class="fa-solid fa-triangle-exclamation"></i></span>
+      <h2>Access denied</h2>
+      <p id="denied-msg">Only active administrator accounts can open this console.</p>
+      <button class="btn-redirect" id="denied-signout">Sign out</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" class="blurred">
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="bell">🔔<span class="badge" id="unread-badge" style="display:none;">0</span></span>
+      <strong>Notification Center</strong>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="sound-toggle">🔊 Sound</button>
+      <button class="icon-btn" id="upload-sound-btn">🎵 Upload sound</button>
+      <input type="file" id="upload-sound-input" accept="audio/*" style="display:none;" />
+      <button class="icon-btn" id="browser-notif-toggle">🖥 Browser alerts</button>
+      <button class="icon-btn" id="theme-toggle">🌙 Theme</button>
+      <button class="icon-btn" id="export-btn">⬇ Export CSV</button>
+      <button class="icon-btn" id="signout-btn">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="stats-grid" id="stats-grid"></div>
+
+    <div class="toolbar">
+      <div class="chip active" data-filter="all">All recent</div>
+      <div class="chip" data-filter="today">Today</div>
+      <div class="chip" data-filter="3days">Last 3 days</div>
+      <div class="chip" data-filter="unread">Unread</div>
+      <div class="chip" data-filter="reviewed">Reviewed</div>
+      <input type="text" id="search-box" placeholder="Search by name, table, or record ID…" />
+      <select id="table-filter"><option value="">All tables</option></select>
+      <button class="icon-btn" id="mark-all-read">Mark all read</button>
+      <button class="icon-btn" id="refresh-btn">↻ Refresh</button>
+    </div>
+
+    <div class="notif-list" id="notif-list">
+      <div class="skel"></div><div class="skel"></div><div class="skel"></div>
+    </div>
+  </main>
+</div>
+
+<div id="toast-container"></div>
+<audio id="notif-sound" src="notification.mp3" preload="auto"></audio>
+<script>
+  document.getElementById("notif-sound").addEventListener("error", () => {
+    console.error('Could not load notification.mp3 — check the file is in the same folder as this HTML page and named exactly "notification.mp3".');
+  });
+</script>
+
+<script>
+/* ================= CONFIG ================= */
+const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const RETENTION_DAYS = 3;
+const AUTO_REFRESH_MS = 30000;
+
+/* ================= STATE ================= */
+let currentUser = null;
+let notifications = [];
+let activeFilter = "all";
+let searchTerm = "";
+let tableFilter = "";
+let soundOn = true;
+let browserNotifOn = false;
+let soundQueue = false;
+
+/* ================= DOM ================= */
+const $ = (sel) => document.querySelector(sel);
+const popupOverlay = $("#popup-overlay");
+const loginCard = $("#login-card");
+const deniedCard = $("#denied-card");
+const appEl = $("#app");
+const notifSound = $("#notif-sound");
+const loginForm = $("#login-form");
+const loginBtn = $("#login-btn");
+const loginErrorEl = $("#login-error");
+const loginErrorText = $("#login-error-text");
+
+/* ================= AUTH ================= */
+loginForm.addEventListener("submit", handleLogin);
+
+async function handleLogin(e){
+  e.preventDefault();
+  const email = $("#login-email").value.trim();
+  const password = $("#login-password").value;
+  loginErrorEl.classList.remove("visible");
+  if(!email || !password){
+    loginErrorText.textContent = "Enter your email and password.";
+    loginErrorEl.classList.add("visible");
+    return;
+  }
+
+  loginBtn.disabled = true; loginBtn.classList.add("loading");
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+  loginBtn.disabled = false; loginBtn.classList.remove("loading");
+
+  if(error){
+    loginErrorText.textContent = error.message;
+    loginErrorEl.classList.add("visible");
+    $("#login-password").value = "";
+    return;
+  }
+  await checkAdminAndEnter(data.user);
+}
+
+async function checkAdminAndEnter(user){
+  currentUser = user;
+
+  const { data: roleRow, error } = await sb
+    .from("user_roles")
+    .select("role, status")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  const isActiveAdmin = roleRow && roleRow.role === "admin" && roleRow.status === "active";
+
+  if(error || !isActiveAdmin){
+    showDenied();
+    return;
+  }
+
+  popupOverlay.style.display = "none";
+  appEl.classList.remove("blurred");
+  await initDashboard();
+}
+
+function showDenied(){
+  loginCard.style.display = "none";
+  deniedCard.style.display = "block";
+  popupOverlay.style.display = "flex";
+  appEl.classList.add("blurred");
+}
+
+$("#denied-signout").addEventListener("click", async () => {
+  await sb.auth.signOut();
+  deniedCard.style.display = "none";
+  loginCard.style.display = "block";
+});
+
+$("#signout-btn").addEventListener("click", async () => {
+  await sb.auth.signOut();
+  location.reload();
+});
+
+/* Restore session on load */
+(async function bootstrap(){
+  const { data: { session } } = await sb.auth.getSession();
+  if(session && session.user){
+    await checkAdminAndEnter(session.user);
+  }
+})();
+
+/* ================= DASHBOARD ================= */
+let realtimeChannel = null;
+
+async function initDashboard(){
+  await loadNotificationSound();
+  await loadNotifications();
+  renderAll();
+  subscribeRealtime();
+  requestBrowserPermissionQuietly();
+  setInterval(loadAndRender, AUTO_REFRESH_MS);
+  attachToolbarEvents();
+  attachSoundUploadEvents();
+}
+
+const SOUND_BUCKET = "notification-sounds";
+
+async function loadNotificationSound(){
+  const { data, error } = await sb
+    .from("app_settings")
+    .select("setting_value")
+    .eq("setting_key", "notification_sound_url")
+    .maybeSingle();
+
+  if(!error && data && data.setting_value){
+    notifSound.src = data.setting_value;
+  }
+  // otherwise keep the default local notification.mp3 already on the tag
+}
+
+function attachSoundUploadEvents(){
+  $("#upload-sound-btn").addEventListener("click", () => {
+    $("#upload-sound-input").click();
+  });
+
+  $("#upload-sound-input").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+
+    const btn = $("#upload-sound-btn");
+    btn.disabled = true;
+    btn.textContent = "Uploading…";
+
+    try{
+      const ext = file.name.split(".").pop();
+      const path = `notification-${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await sb.storage
+        .from(SOUND_BUCKET)
+        .upload(path, file, { upsert: true, contentType: file.type });
+
+      if(uploadError) throw uploadError;
+
+      const { data: urlData } = sb.storage.from(SOUND_BUCKET).getPublicUrl(path);
+      const publicUrl = urlData.publicUrl;
+
+      const { error: saveError } = await sb
+        .from("app_settings")
+        .update({ setting_value: publicUrl, updated_at: new Date().toISOString(), updated_by: currentUser?.id })
+        .eq("setting_key", "notification_sound_url");
+
+      if(saveError) throw saveError;
+
+      notifSound.src = publicUrl;
+      btn.textContent = "🎵 Upload sound";
+      btn.disabled = false;
+      showToast({ person_name: "Notification sound updated", table_name: "New alerts will use this sound", created_at: new Date().toISOString() });
+    } catch(err){
+      console.error("Sound upload failed:", err);
+      btn.textContent = "🎵 Upload sound";
+      btn.disabled = false;
+      showToast({ person_name: "Upload failed", table_name: err.message || "Check console for details", created_at: new Date().toISOString() });
+    }
+
+    e.target.value = ""; // allow re-selecting the same file later
+  });
+}
+
+async function loadAndRender(){
+  await loadNotifications();
+  renderAll();
+}
+
+async function loadNotifications(){
+  const since = new Date(Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await sb
+    .from("notifications")
+    .select("*")
+    .gte("created_at", since)
+    .order("created_at", { ascending: false })
+    .limit(500);
+
+  if(!error && data){
+    notifications = data;
+  }
+}
+
+function subscribeRealtime(){
+  realtimeChannel = sb
+    .channel("notifications-live")
+    .on("postgres_changes",
+      { event: "INSERT", schema: "public", table: "notifications" },
+      (payload) => {
+        notifications.unshift(payload.new);
+        renderAll();
+        showToast(payload.new);
+        playSound();
+        maybeBrowserNotify(payload.new);
+      }
+    )
+    .subscribe();
+}
+
+/* ================= RENDER ================= */
+function renderAll(){
+  renderStats();
+  renderTableFilterOptions();
+  renderList();
+  renderUnreadBadge();
+}
+
+function renderStats(){
+  const now = Date.now();
+  const day = 24*60*60*1000;
+  const total = notifications.length;
+  const unread = notifications.filter(n => !n.is_read).length;
+  const today = notifications.filter(n => new Date(n.created_at).toDateString() === new Date().toDateString()).length;
+  const last24 = notifications.filter(n => now - new Date(n.created_at).getTime() <= day).length;
+  const last3 = notifications.length; // already scoped to 3 days by query
+  const read = notifications.filter(n => n.is_read).length;
+  const reviewed = notifications.filter(n => n.is_reviewed).length;
+
+  const stats = [
+    ["Total", total], ["Unread", unread], ["Today", today],
+    ["Last 24h", last24], ["Last 3 days", last3], ["Read", read], ["Reviewed", reviewed]
+  ];
+
+  $("#stats-grid").innerHTML = stats.map(([label,num]) =>
+    `<div class="stat-card"><div class="num">${num}</div><div class="label">${label}</div></div>`
+  ).join("");
+}
+
+function renderTableFilterOptions(){
+  const sel = $("#table-filter");
+  const current = sel.value;
+  const tables = [...new Set(notifications.map(n => n.table_name))].sort();
+  sel.innerHTML = `<option value="">All tables</option>` +
+    tables.map(t => `<option value="${t}">${t}</option>`).join("");
+  sel.value = current;
+}
+
+function ageClass(createdAt){
+  const hrs = (Date.now() - new Date(createdAt).getTime()) / 3600000;
+  if(hrs < 24) return "age-new";
+  if(hrs <= 72) return "age-mid";
+  return "age-old";
+}
+
+function filteredNotifications(){
+  return notifications.filter(n => {
+    if(activeFilter === "today" && new Date(n.created_at).toDateString() !== new Date().toDateString()) return false;
+    if(activeFilter === "unread" && n.is_read) return false;
+    if(activeFilter === "reviewed" && !n.is_reviewed) return false;
+    if(tableFilter && n.table_name !== tableFilter) return false;
+    if(searchTerm){
+      const hay = `${n.person_name||""} ${n.table_name} ${n.record_id}`.toLowerCase();
+      if(!hay.includes(searchTerm.toLowerCase())) return false;
+    }
+    return true;
+  });
+}
+
+function renderList(){
+  const list = $("#notif-list");
+  const items = filteredNotifications();
+
+  if(items.length === 0){
+    list.innerHTML = `<div class="empty-state"><div class="icon">📭</div>No notifications match this view.</div>`;
+    return;
+  }
+
+  list.innerHTML = items.map(n => `
+    <div class="notif-card ${ageClass(n.created_at)} ${n.is_read ? "" : "unread"}" data-id="${n.id}">
+      <div class="notif-main">
+        <div class="notif-top">
+          ${!n.is_read ? '<span class="new-badge">NEW</span>' : ""}
+          <span class="table-tag">${n.table_name}</span>
+          <span class="notif-title">${n.person_name || "Unnamed submission"}</span>
+        </div>
+        <div class="notif-meta">
+          Record #${n.record_id} · ${new Date(n.created_at).toLocaleString()}
+          ${n.status ? " · Status: " + n.status : ""}
+          ${n.is_reviewed ? " · ✅ Reviewed" : ""}
+        </div>
+      </div>
+      <div class="notif-actions">
+        ${!n.is_read ? `<button data-action="read" data-id="${n.id}">Mark read</button>` : ""}
+        ${!n.is_reviewed ? `<button data-action="review" data-id="${n.id}">Mark reviewed</button>` : ""}
+        <button data-action="delete" data-id="${n.id}">Delete</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderUnreadBadge(){
+  const unread = notifications.filter(n => !n.is_read).length;
+  const badge = $("#unread-badge");
+  if(unread > 0){
+    badge.style.display = "flex";
+    badge.textContent = unread > 99 ? "99+" : unread;
+  } else {
+    badge.style.display = "none";
+  }
+}
+
+/* ================= ACTIONS ================= */
+$("#notif-list").addEventListener("click", async (e) => {
+  const btn = e.target.closest("button[data-action]");
+  if(!btn) return;
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+
+  if(action === "read"){
+    await sb.from("notifications").update({ is_read: true, read_at: new Date().toISOString(), read_by: currentUser.id }).eq("id", id);
+  } else if(action === "review"){
+    await sb.from("notifications").update({ is_reviewed: true, reviewed_at: new Date().toISOString(), reviewed_by: currentUser.id }).eq("id", id);
+  } else if(action === "delete"){
+    await sb.from("notifications").delete().eq("id", id);
+  }
+  await loadAndRender();
+});
+
+$("#mark-all-read").addEventListener("click", async () => {
+  const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
+  if(unreadIds.length === 0) return;
+  await sb.from("notifications").update({ is_read: true, read_at: new Date().toISOString(), read_by: currentUser.id }).in("id", unreadIds);
+  await loadAndRender();
+});
+
+$("#refresh-btn").addEventListener("click", loadAndRender);
+
+function attachToolbarEvents(){
+  document.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      activeFilter = chip.dataset.filter;
+      renderList();
+    });
+  });
+
+  $("#search-box").addEventListener("input", (e) => {
+    searchTerm = e.target.value;
+    renderList();
+  });
+
+  $("#table-filter").addEventListener("change", (e) => {
+    tableFilter = e.target.value;
+    renderList();
+  });
+
+  $("#sound-toggle").addEventListener("click", () => {
+    soundOn = !soundOn;
+    $("#sound-toggle").textContent = soundOn ? "🔊 Sound" : "🔇 Sound";
+  });
+
+  $("#browser-notif-toggle").addEventListener("click", async () => {
+    if(!browserNotifOn){
+      const perm = await Notification.requestPermission();
+      browserNotifOn = perm === "granted";
+    } else {
+      browserNotifOn = false;
+    }
+    $("#browser-notif-toggle").textContent = browserNotifOn ? "🖥 Browser alerts (on)" : "🖥 Browser alerts";
+  });
+
+  $("#theme-toggle").addEventListener("click", () => {
+    document.body.classList.toggle("light");
+  });
+
+  $("#export-btn").addEventListener("click", exportCsv);
+}
+
+function exportCsv(){
+  const rows = filteredNotifications();
+  const header = ["id","table_name","record_id","person_name","status","is_read","is_reviewed","created_at"];
+  const csv = [header.join(",")].concat(
+    rows.map(n => header.map(h => `"${(n[h] ?? "").toString().replace(/"/g,'""')}"`).join(","))
+  ).join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `notifications-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ================= TOAST / SOUND / BROWSER NOTIF ================= */
+function showToast(n){
+  const container = $("#toast-container");
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.innerHTML = `
+    <div class="t-title">🔔 ${n.person_name || "New submission"}</div>
+    <div class="t-sub">${n.table_name} · ${new Date(n.created_at).toLocaleTimeString()}</div>
+  `;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 6000);
+}
+
+function playSound(){
+  if(!soundOn) return;
+  if(soundQueue) return; // avoid overlapping playback
+  soundQueue = true;
+  notifSound.currentTime = 0;
+  notifSound.play().catch((err) => {
+    console.warn("Notification sound blocked or failed to load:", err.message);
+    if(err.name === "NotAllowedError"){
+      // Browser hasn't seen a user gesture yet on this page load — prime it.
+      showToast({ person_name: "Sound is muted", table_name: "Click anywhere on the page once to enable audio alerts", created_at: new Date().toISOString() });
+    } else if(err.name === "NotSupportedError"){
+      showToast({ person_name: "notification.mp3 not found", table_name: "Check it's in the same folder as this HTML file", created_at: new Date().toISOString() });
+    }
+  });
+  notifSound.onended = () => { soundQueue = false; };
+  setTimeout(() => { soundQueue = false; }, 3000); // fallback unlock
+}
+
+/* Unlock audio playback: browsers require a real user gesture on the page
+   before any audio (even a later one triggered by realtime) is allowed
+   to play. Priming it once here means the *first* notification sound
+   after that click will actually be heard instead of silently rejected. */
+let audioUnlocked = false;
+function unlockAudioOnce(){
+  if(audioUnlocked) return;
+  audioUnlocked = true;
+  notifSound.play().then(() => {
+    notifSound.pause();
+    notifSound.currentTime = 0;
+  }).catch(() => { /* still fine — real playSound() call will retry and report */ });
+  document.removeEventListener("click", unlockAudioOnce);
+}
+document.addEventListener("click", unlockAudioOnce);
+
+function requestBrowserPermissionQuietly(){
+  // Only reflect current state on load; actual request happens on toggle click.
+  if("Notification" in window && Notification.permission === "granted"){
+    browserNotifOn = true;
+    $("#browser-notif-toggle").textContent = "🖥 Browser alerts (on)";
+  }
+}
+
+function maybeBrowserNotify(n){
+  if(!browserNotifOn || !("Notification" in window)) return;
+  const notif = new Notification("New submission received", {
+    body: `${n.person_name || "Someone"} submitted to ${n.table_name}.`,
+  });
+  notif.onclick = () => { window.focus(); };
+}
+</script>
+</body>
+</html>

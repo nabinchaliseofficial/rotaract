@@ -413,15 +413,7 @@
             font-weight: 400;
             color: var(--text-faint);
         }
-
-        /* ============================================================
-           NOTIFICATION BELL + DROPDOWN
-           ============================================================ */
-        .notif-bell-wrap {
-            position: relative;
-        }
         .notif-bell {
-            position: relative;
             width: 44px;
             height: 44px;
             border-radius: 10px;
@@ -438,270 +430,6 @@
         .notif-bell:hover {
             background: var(--surface-hover);
             border-color: var(--border-strong);
-        }
-        .notif-bell.ringing {
-            animation: bellring .6s ease;
-        }
-        @keyframes bellring {
-            0%,
-            100% {
-                transform: rotate(0);
-            }
-            20% {
-                transform: rotate(14deg);
-            }
-            40% {
-                transform: rotate(-12deg);
-            }
-            60% {
-                transform: rotate(8deg);
-            }
-            80% {
-                transform: rotate(-6deg);
-            }
-        }
-        .notif-badge {
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            min-width: 19px;
-            height: 19px;
-            padding: 0 5px;
-            border-radius: 10px;
-            background: var(--danger);
-            color: #fff;
-            font-size: 0.68rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: var(--font-mono);
-            border: 2px solid var(--bg);
-        }
-        .notif-badge.hidden {
-            display: none;
-        }
-        .notif-panel {
-            position: absolute;
-            top: calc(100% + 10px);
-            right: 0;
-            width: 340px;
-            max-width: calc(100vw - 2rem);
-            max-height: 420px;
-            overflow-y: auto;
-            background: var(--surface);
-            border: 1px solid var(--border-strong);
-            border-radius: var(--radius);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
-            z-index: 600;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-8px);
-            transition: opacity .18s var(--ease), transform .18s var(--ease), visibility .18s;
-        }
-        .notif-panel.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        .notif-panel-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.9rem 1.1rem;
-            border-bottom: 1px solid var(--border);
-            font-family: var(--font-display);
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        .notif-panel-head button {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 0.72rem;
-            cursor: pointer;
-            font-family: var(--font-body);
-        }
-        .notif-panel-head button:hover {
-            color: var(--accent);
-        }
-        .notif-panel-list {
-            display: flex;
-            flex-direction: column;
-        }
-        .notif-panel-empty {
-            padding: 2rem 1.1rem;
-            text-align: center;
-            color: var(--text-faint);
-            font-size: 0.82rem;
-        }
-        .notif-row {
-            display: flex;
-            gap: 0.7rem;
-            padding: 0.8rem 1.1rem;
-            border-bottom: 1px solid var(--border);
-            align-items: flex-start;
-        }
-        .notif-row:last-child {
-            border-bottom: none;
-        }
-        .notif-row .ni-icon {
-            width: 34px;
-            height: 34px;
-            border-radius: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            background: var(--accent-dim);
-            color: var(--accent);
-            font-size: 0.9rem;
-        }
-        .notif-row .ni-body {
-            flex: 1;
-            min-width: 0;
-        }
-        .notif-row .ni-title {
-            font-size: 0.83rem;
-            font-weight: 600;
-            color: var(--text);
-        }
-        .notif-row .ni-title b {
-            color: var(--accent);
-            font-weight: 700;
-        }
-        .notif-row .ni-sub {
-            font-size: 0.74rem;
-            color: var(--text-muted);
-            margin-top: 1px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .notif-row .ni-time {
-            font-size: 0.68rem;
-            color: var(--text-faint);
-            margin-top: 3px;
-            font-family: var(--font-mono);
-        }
-
-        /* ============================================================
-           TOAST NOTIFICATIONS (top-right, stacked)
-           ============================================================ */
-        .toast-stack {
-            position: fixed;
-            top: 1.2rem;
-            right: 1.2rem;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 0.7rem;
-            width: min(360px, calc(100vw - 2.4rem));
-            pointer-events: none;
-        }
-        .toast-card {
-            pointer-events: auto;
-            background: var(--surface);
-            border: 1px solid var(--border-strong);
-            border-left: 3px solid var(--accent);
-            border-radius: 12px;
-            padding: 0.85rem 1rem;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
-            display: flex;
-            gap: 0.75rem;
-            align-items: flex-start;
-            animation: toastIn .35s var(--ease);
-            position: relative;
-            overflow: hidden;
-        }
-        .toast-card.leaving {
-            animation: toastOut .3s var(--ease) forwards;
-        }
-        @keyframes toastIn {
-            from {
-                opacity: 0;
-                transform: translateX(40px) scale(0.96);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0) scale(1);
-            }
-        }
-        @keyframes toastOut {
-            from {
-                opacity: 1;
-                transform: translateX(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateX(40px) scale(0.96);
-            }
-        }
-        .toast-card .t-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            background: var(--accent-2-dim);
-            color: var(--accent-2);
-            font-size: 1rem;
-        }
-        .toast-card .t-body {
-            flex: 1;
-            min-width: 0;
-        }
-        .toast-card .t-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            font-family: var(--font-display);
-        }
-        .toast-card .t-name {
-            font-size: 0.82rem;
-            color: var(--text);
-            margin-top: 2px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .toast-card .t-name b {
-            color: var(--accent);
-        }
-        .toast-card .t-meta {
-            font-size: 0.7rem;
-            color: var(--text-faint);
-            margin-top: 4px;
-            font-family: var(--font-mono);
-        }
-        .toast-card .t-close {
-            background: none;
-            border: none;
-            color: var(--text-faint);
-            cursor: pointer;
-            font-size: 0.85rem;
-            padding: 2px;
-            flex-shrink: 0;
-        }
-        .toast-card .t-close:hover {
-            color: var(--text);
-        }
-        .toast-card .t-bar {
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            height: 2px;
-            background: var(--accent);
-            animation: toastBar 7s linear forwards;
-        }
-        @keyframes toastBar {
-            from {
-                width: 100%;
-            }
-            to {
-                width: 0%;
-            }
         }
 
         /* ============================================================
@@ -1557,6 +1285,7 @@
                 <button class="nav-item" data-module="adminprogress.html"><i class="fa-solid fa-chart-simple"></i> Progress Report</button>
                 <!-- NEW: Index Gallery -->
                 <button class="nav-item" data-module="admingallery.html"><i class="fa-solid fa-images"></i> Index Gallery</button>
+                <button class="nav-item" data-module="adminnotification-center.html"><i class="fa-solid fa-bell"></i> Notification Center</button>
 
                 <div class="nav-group-label">Account</div>
                 <button class="nav-item" data-module="/admin.html"><i class="fa-solid fa-newspaper"></i> Blog dashboard</button>
@@ -1579,21 +1308,9 @@
                     <span>Search site…</span>
                     <kbd>Ctrl K</kbd>
                 </button>
-                <div class="notif-bell-wrap" id="notifBellWrap">
-                    <button class="notif-bell" id="notifBellBtn" type="button" title="Notifications" aria-label="Notifications">
-                        <i class="fa-solid fa-bell"></i>
-                        <span class="notif-badge hidden" id="notifBadge">0</span>
-                    </button>
-                    <div class="notif-panel" id="notifPanel">
-                        <div class="notif-panel-head">
-                            <span>Notifications</span>
-                            <button type="button" id="notifClearBtn">Clear all</button>
-                        </div>
-                        <div class="notif-panel-list" id="notifPanelList">
-                            <div class="notif-panel-empty">No notifications yet.</div>
-                        </div>
-                    </div>
-                </div>
+                <button class="notif-bell" id="notifOpenBtn" type="button" title="Notification Center" aria-label="Notification Center" onclick="document.querySelector('[data-module=\'adminnotification-center.html\']').click()">
+                    <i class="fa-solid fa-bell"></i>
+                </button>
                 <div class="topbar-clock" id="liveClock">
                     <span id="clockTime">--:--:--</span>
                     <span class="date" id="clockDate">---- --, ----</span>
@@ -1687,6 +1404,13 @@
                         <p>Manage gallery images and media</p>
                         <span class="go">Open <i class="fa-solid fa-arrow-right"></i></span>
                     </div>
+                    <!-- NEW: Notification Center -->
+                    <div class="module-card c-notifications" data-module="adminnotification-center.html" role="button" tabindex="0">
+                        <span class="icon-wrap"><i class="fa-solid fa-bell"></i></span>
+                        <h3>Notification Center</h3>
+                        <p>Live alerts for new submissions across all tables</p>
+                        <span class="go">Open <i class="fa-solid fa-arrow-right"></i></span>
+                    </div>
                 </div>
 
                 <div class="section-heading">
@@ -1697,12 +1421,12 @@
 
                 <div class="schema-card" style="margin-top:1.2rem;">
                     <div class="section-heading" style="margin-bottom:0.8rem;">
-                        <h3 style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;display:flex;align-items:center;gap:0.5rem;"><i class="fa-solid fa-bell" style="color:var(--accent);"></i> Live notifications</h3>
-                        <span class="meta">watching <span id="notifTableCount">0</span> tables · toast + sound on new entries</span>
+                        <h3 style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;display:flex;align-items:center;gap:0.5rem;"><i class="fa-solid fa-bell" style="color:var(--accent);"></i> Notifications</h3>
                     </div>
-                    <div class="notif-panel-list" id="snapshotNotifList">
-                        <div class="notif-panel-empty">No notifications yet — new entries in any table will show up here.</div>
-                    </div>
+                    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:0.8rem;">Live submissions across all monitored tables now live in their own module.</p>
+                    <button class="btn-redirect" type="button" onclick="document.querySelector('[data-module=\'adminnotification-center.html\']').click()">
+                        Open Notification Center
+                    </button>
                 </div>
             </section>
 
@@ -1909,7 +1633,6 @@
         </div>
     </div>
 
-    <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
     <div class="search-overlay" id="searchOverlay">
         <div class="search-modal">
@@ -2072,6 +1795,8 @@
                 // NEW: Index Gallery
                 'admingallery.html': { title: 'Index Gallery', icon: 'fa-solid fa-images',
                     sub: 'Manage gallery images and media.' },
+                'adminnotification-center.html': { title: 'Notification Center', icon: 'fa-solid fa-bell',
+                    sub: 'Live alerts for new submissions across all tables.' },
                 '/admin.html': { title: 'Blog dashboard', icon: 'fa-solid fa-newspaper',
                     sub: 'Write and manage blog posts.' },
                 '/index.html': { title: 'Portfolio home', icon: 'fa-solid fa-house',
@@ -2239,53 +1964,6 @@
                 }
             }
 
-            // ============================================================
-            // FORM NOTIFICATIONS
-            // ============================================================
-            const NOTIFY_TABLES = {
-                inquiries: { label: 'New inquiry', icon: 'fa-envelope' },
-                course_inquiries: { label: 'New course inquiry', icon: 'fa-graduation-cap' },
-                member_registrations: { label: 'New membership sign-up', icon: 'fa-user-plus' },
-                rotaract_galkot_members: { label: 'New Rotaract member', icon: 'fa-users' },
-                project_applications: { label: 'New project application', icon: 'fa-diagram-project' },
-                page_visits: { label: 'New website visit', icon: 'fa-globe', nameField: null, isVisit: true },
-                members: { label: 'New member added', icon: 'fa-user' },
-                blogs: { label: 'New blog post', icon: 'fa-newspaper' },
-                upcoming_projects: { label: 'New upcoming project', icon: 'fa-calendar-check' },
-                approved_applications: { label: 'New approved application', icon: 'fa-check-circle' },
-                certifications: { label: 'New certification', icon: 'fa-certificate' },
-                blood_bridge_galkot: { label: 'New blood donor', icon: 'fa-droplet' },
-                bloodbridge_register: { label: 'New blood donor registration', icon: 'fa-droplet' },
-                blood_bridge_registration: { label: 'New blood donor registration', icon: 'fa-droplet' },
-                blood_bridge_admins: { label: 'New blood bridge admin', icon: 'fa-user-shield' },
-                attendance_registrations: { label: 'New attendance registration', icon: 'fa-clipboard-check' },
-                course_records: { label: 'New course record', icon: 'fa-file-lines' },
-                live_chat_sessions: { label: 'New live chat session', icon: 'fa-comments' },
-                live_chat_messages: { label: 'New chat message', icon: 'fa-comment-dots' },
-                admin_activity_log: { label: 'Admin activity', icon: 'fa-user-shield' },
-                admin_users: { label: 'New admin user', icon: 'fa-user-shield' },
-                role_audit_log: { label: 'Role change', icon: 'fa-user-gear' },
-                user_roles: { label: 'User role updated', icon: 'fa-user-gear' },
-                rotaract_lhe: { label: 'New letterhead', icon: 'fa-file-signature' },
-                rotaract_lhe_requests: { label: 'New letterhead request', icon: 'fa-circle-question' },
-                rotaract_verify: { label: 'New verification letter', icon: 'fa-shield-halved' },
-                verification_logs: { label: 'New verification check', icon: 'fa-magnifying-glass' },
-                running_programs: { label: 'New running program', icon: 'fa-calendar-check' },
-                next_event: { label: 'Next event updated', icon: 'fa-calendar-days' },
-                partners_sponsors: { label: 'New partner/sponsor', icon: 'fa-handshake' },
-                project2026_coordinators: { label: 'New project coordinator', icon: 'fa-user-tie' },
-                spiritual_quotes: { label: 'New spiritual quote', icon: 'fa-quote-left' },
-                meetings: { label: 'New meeting', icon: 'fa-users' },
-                meeting_minutes: { label: 'New meeting minutes', icon: 'fa-file-lines' },
-                meeting_minutes_history: { label: 'Meeting minutes updated', icon: 'fa-file-lines' },
-                meeting_minutes_v2: { label: 'New meeting minutes', icon: 'fa-file-lines' },
-                banner_settings: { label: 'Banner updated', icon: 'fa-image' },
-                banner_backgrounds: { label: 'New banner background', icon: 'fa-image' },
-                app_settings: { label: 'Setting updated', icon: 'fa-gear' },
-                certificate_settings: { label: 'Certificate setting updated', icon: 'fa-gear' },
-                profiles: { label: 'New profile', icon: 'fa-id-badge' },
-                pages: { label: 'Page updated', icon: 'fa-file-pen' }
-            };
 
             const ALL_DB_TABLES = [
                 'admin_activity_log', 'admin_users', 'app_settings', 'approved_applications',
@@ -2300,153 +1978,7 @@
                 'rotaract_verify', 'running_programs', 'spiritual_quotes', 'upcoming_projects',
                 'user_roles', 'verification_logs'
             ];
-            if ($('notifTableCount')) $('notifTableCount').textContent = ALL_DB_TABLES.length;
 
-            const GENERIC_NAME_FIELDS = [
-                'full_name', 'person_name', 'applicant_name', 'participant_name', 'visitor_name',
-                'student_name', 'coordinator_name', 'admin_email', 'program_name', 'program_event_name',
-                'project_name', 'meeting_name', 'title', 'name', 'subject', 'email'
-            ];
-
-            function resolveRecordName(record) {
-                if (!record) return null;
-                for (const f of GENERIC_NAME_FIELDS) {
-                    if (record[f]) return record[f];
-                }
-                return null;
-            }
-
-            let notifList = [];
-            let notifUnread = 0;
-            let audioCtx = null;
-
-            function playNotifChime() {
-                try {
-                    audioCtx = audioCtx || new(window.AudioContext || window.webkitAudioContext)();
-                    const now = audioCtx.currentTime;
-                    [880, 1175].forEach((freq, i) => {
-                        const osc = audioCtx.createOscillator();
-                        const gain = audioCtx.createGain();
-                        osc.type = 'sine';
-                        osc.frequency.value = freq;
-                        gain.gain.setValueAtTime(0.0001, now + i * 0.12);
-                        gain.gain.exponentialRampToValueAtTime(0.18, now + i * 0.12 + 0.02);
-                        gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.12 + 0.28);
-                        osc.connect(gain).connect(audioCtx.destination);
-                        osc.start(now + i * 0.12);
-                        osc.stop(now + i * 0.12 + 0.3);
-                    });
-                } catch (_) {}
-            }
-
-            if ('Notification' in window && Notification.permission === 'default') {
-                document.addEventListener('click', function requestNotifOnce() {
-                    Notification.requestPermission().catch(() => {});
-                    document.removeEventListener('click', requestNotifOnce);
-                }, { once: true });
-            }
-
-            function showToast(def, name) {
-                const stack = $('toastStack');
-                const card = document.createElement('div');
-                card.className = 'toast-card';
-                const nameLine = name ?
-                    `From <b>${escapeHtml(name)}</b>` :
-                    'Someone just visited your site';
-                card.innerHTML = `
-                        <div class="t-icon"><i class="fa-solid ${def.icon}"></i></div>
-                        <div class="t-body">
-                            <div class="t-title">${escapeHtml(def.label)}</div>
-                            <div class="t-name">${nameLine}</div>
-                            <div class="t-meta">${new Date().toLocaleTimeString()}</div>
-                        </div>
-                        <button class="t-close" type="button" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></button>
-                        <div class="t-bar"></div>`;
-                const remove = () => { card.classList.add('leaving');
-                    setTimeout(() => card.remove(), 300); };
-                card.querySelector('.t-close').addEventListener('click', remove);
-                const timer = setTimeout(remove, 7000);
-                card.addEventListener('mouseenter', () => clearTimeout(timer));
-                stack.appendChild(card);
-                while (stack.children.length > 5) stack.removeChild(stack.firstChild);
-            }
-
-            function bumpBell() {
-                const bell = $('notifBellBtn');
-                bell.classList.remove('ringing');
-                void bell.offsetWidth;
-                bell.classList.add('ringing');
-            }
-
-            function updateNotifBadge() {
-                const badge = $('notifBadge');
-                if (notifUnread > 0) {
-                    badge.textContent = notifUnread > 99 ? '99+' : String(notifUnread);
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                }
-            }
-
-            function renderNotifPanel() {
-                const rowsHtml = (limit) => notifList.slice(0, limit).map(n => `
-                        <div class="notif-row">
-                            <div class="ni-icon"><i class="fa-solid ${n.icon}"></i></div>
-                            <div class="ni-body">
-                                <div class="ni-title">${escapeHtml(n.label)}${n.name ? ' — <b>' + escapeHtml(n.name) + '</b>' : ''}</div>
-                                <div class="ni-sub">${escapeHtml(n.table)}</div>
-                                <div class="ni-time">${timeAgo(n.time)}</div>
-                            </div>
-                        </div>`).join('');
-
-                const list = $('notifPanelList');
-                list.innerHTML = notifList.length === 0 ?
-                    '<div class="notif-panel-empty">No notifications yet.</div>' :
-                    rowsHtml(30);
-
-                const snapList = document.getElementById('snapshotNotifList');
-                if (snapList) {
-                    snapList.innerHTML = notifList.length === 0 ?
-                        '<div class="notif-panel-empty">No notifications yet — new entries in any table will show up here.</div>' :
-                        rowsHtml(8);
-                }
-            }
-
-            function notifyFormEvent(table, record) {
-                const def = NOTIFY_TABLES[table] || {
-                    label: 'New entry — ' + table.replace(/_/g, ' '),
-                    icon: 'fa-database'
-                };
-                const name = def.isVisit ? null : (resolveRecordName(record) || 'Someone');
-                notifList.unshift({ label: def.label, icon: def.icon, name, table, time: new Date() });
-                if (notifList.length > 50) notifList.pop();
-                notifUnread++;
-                updateNotifBadge();
-                renderNotifPanel();
-                showToast(def, name);
-                bumpBell();
-                playNotifChime();
-                if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
-                    try { new Notification(def.label, { body: name || 'Someone just visited your site' }); } catch (
-                    _) {}
-                }
-            }
-
-            $('notifBellBtn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                const panel = $('notifPanel');
-                panel.classList.toggle('active');
-                if (panel.classList.contains('active')) { notifUnread = 0;
-                    updateNotifBadge(); }
-            });
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('#notifBellWrap')) $('notifPanel').classList.remove('active');
-            });
-            $('notifClearBtn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                notifList = [];
-                renderNotifPanel();
-            });
 
             // ============================================================
             // SITE SEARCH
@@ -2948,9 +2480,6 @@
                             .on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
                                 pushFeed(`${table} · ${payload.eventType.toUpperCase()}`, payload.eventType
                                     .toLowerCase());
-                                if (payload.eventType === 'INSERT') {
-                                    notifyFormEvent(table, payload.new);
-                                }
                                 refreshDashboard();
                             })
                             .subscribe();
