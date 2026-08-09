@@ -44,6 +44,7 @@
     font-size:15px;background:#fff;color:var(--text);transition:border-color .15s;
   }
   input:focus, select:focus{outline:none;border-color:var(--red);}
+  input:disabled{background:#f3f1f1;color:var(--muted);cursor:not-allowed;}
   input.invalid{border-color:var(--error);}
   input.valid{border-color:var(--success);}
   .field-error{font-size:12px;color:var(--error);margin-top:5px;display:none;}
@@ -71,11 +72,34 @@
   .msg.warn{background:#fef3c7;color:#b45309;}
   .note{font-size:12px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.5;}
 
-  .credits-footer{
-    text-align:center;margin-top:20px;padding:14px;font-size:12px;color:var(--muted);
-    line-height:1.8;
+  .header .cta-line{
+    margin:10px auto 0;max-width:520px;font-size:13.5px;line-height:1.6;color:var(--muted);
   }
-  .credits-footer strong{color:var(--text);}
+  .header .cta-line strong{color:var(--red-dark);}
+
+  /* ==== Credits slider ==== */
+  .credits-slider{
+    position:relative;max-width:520px;margin:16px auto 0;
+    background:var(--bg);border:1px solid var(--border);
+    border-radius:12px;padding:10px 18px;height:40px;
+    overflow:hidden;
+  }
+  .credits-slide{
+    position:absolute;left:18px;right:18px;top:50%;
+    transform:translate(100%,-50%);opacity:0;
+    font-size:12.5px;line-height:1.5;color:var(--muted);
+    transition:transform .7s cubic-bezier(.4,0,.2,1),opacity .7s cubic-bezier(.4,0,.2,1);
+  }
+  .credits-slide strong{color:var(--red-dark);font-weight:700;}
+  .credits-slide.active{transform:translate(0,-50%);opacity:1;}
+  .credits-slide.exit{transform:translate(-100%,-50%);opacity:0;}
+  @media (max-width:480px){
+    .credits-slider{padding:8px 14px;height:auto;min-height:52px;max-width:100%;}
+    .credits-slide{font-size:11px;left:14px;right:14px;white-space:normal;top:50%;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .credits-slide{transition:opacity .5s ease;}
+  }
 
   /* Honeypot — hidden from real users, catches basic bots */
   .hp-field{position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;overflow:hidden;}
@@ -117,6 +141,13 @@
     <div class="drop" aria-hidden="true">🩸</div>
     <h1>Blood Bridge Galkot</h1>
     <p>New Donor Registration Form</p>
+    <p class="cta-line">Interested in donating blood? <strong>Register now</strong> if you live within Galkot Municipality.</p>
+
+    <div class="credits-slider" id="creditsSlider" role="group" aria-label="Project credits" aria-live="off">
+      <p class="credits-slide" data-index="0"><strong>Vision by:</strong> Rtr. Anil Shrestha, PP (RY 2021/22), ISD / Advisor (RY 2026/27)</p>
+      <p class="credits-slide" data-index="1"><strong>Supported by:</strong> Dr. Rajesh Poudel &amp; Galkot Nagar Hospital Team</p>
+      <p class="credits-slide" data-index="2"><strong>Tech Support by:</strong> Rtr. Nabin Chalise, President, RY 2026/27, RAC Galkot Baglung</p>
+    </div>
   </div>
 
   <div class="card">
@@ -162,12 +193,25 @@
       <div class="row2">
         <div class="field">
           <label for="municipality">Municipality <span class="req">*</span></label>
-          <input type="text" id="municipality" required placeholder="e.g. Galkot Municipality" aria-describedby="err_municipality" />
+          <input type="text" id="municipality" value="Galkot Municipality" readonly disabled aria-describedby="err_municipality" />
           <div class="field-error" id="err_municipality"></div>
         </div>
         <div class="field">
-          <label for="ward_number">Ward No.</label>
-          <input type="number" id="ward_number" min="1" max="35" placeholder="e.g. 5" aria-describedby="err_ward" />
+          <label for="ward_number">Ward No. <span class="req">*</span></label>
+          <select id="ward_number" required aria-describedby="err_ward">
+            <option value="" selected disabled>Select Ward</option>
+            <option value="1">Ward 1</option>
+            <option value="2">Ward 2</option>
+            <option value="3">Ward 3</option>
+            <option value="4">Ward 4</option>
+            <option value="5">Ward 5</option>
+            <option value="6">Ward 6</option>
+            <option value="7">Ward 7</option>
+            <option value="8">Ward 8</option>
+            <option value="9">Ward 9</option>
+            <option value="10">Ward 10</option>
+            <option value="11">Ward 11</option>
+          </select>
           <div class="field-error" id="err_ward"></div>
         </div>
       </div>
@@ -204,12 +248,6 @@
 
     <p class="note" id="formNote">Your information will appear in the public list only after it is approved by an admin.</p>
   </div>
-
-  <div class="credits-footer">
-    <p><strong>Vision by:</strong> Rtr. Anil Shrestha, PP (RY 2021/22), ISD / Advisor (RY 2026/27)</p>
-    <p><strong>Supported by:</strong> Dr. Rajesh Poudel &amp; Galkot Nagar Hospital Team</p>
-    <p><strong>Tech Support by:</strong> Rtr. Nabin Chalise, President, RY 2026/27, RAC Galkot Baglung</p>
-  </div>
 </div>
 
 <!-- Confirmation modal -->
@@ -223,6 +261,40 @@
     </div>
   </div>
 </div>
+
+<script>
+  // Header credits slider — self-contained, independent of Supabase/form logic.
+  (function(){
+    var slides = document.querySelectorAll('#creditsSlider .credits-slide');
+    if(!slides.length) return;
+    var current = 0;
+    slides[current].classList.add('active');
+
+    function next(){
+      var prevEl = slides[current];
+      var nextIndex = (current + 1) % slides.length;
+      var nextEl = slides[nextIndex];
+
+      prevEl.classList.remove('active');
+      prevEl.classList.add('exit');
+
+      nextEl.classList.remove('exit');
+      // force reflow so the enter transition runs from the off-screen state
+      void nextEl.offsetWidth;
+      nextEl.classList.add('active');
+
+      setTimeout(function(){
+        prevEl.style.transition = 'none';
+        prevEl.classList.remove('exit');
+        void prevEl.offsetWidth;
+        prevEl.style.transition = '';
+      }, 750);
+      current = nextIndex;
+    }
+
+    setInterval(next, 3000);
+  })();
+</script>
 
 <script>
 // ==================== CONFIG ====================
@@ -297,15 +369,15 @@ function validateAge(){
   return true;
 }
 function validateMunicipality(){
-  const v = document.getElementById("municipality").value.trim();
-  if (!v) { setFieldError("municipality", "Municipality is required."); return false; }
+  // Municipality is locked to "Galkot Municipality" and cannot be changed by the user.
   clearFieldError("municipality");
   return true;
 }
 function validateWard(){
-  const v = document.getElementById("ward_number").value.trim();
-  if (v && (Number(v) < 1 || Number(v) > 35)) {
-    setFieldError("ward", "Ward number looks invalid.");
+  const v = document.getElementById("ward_number").value;
+  const n = Number(v);
+  if (!v || !Number.isInteger(n) || n < 1 || n > 11) {
+    setFieldError("ward", "Please select a ward.");
     return false;
   }
   clearFieldError("ward");
@@ -419,7 +491,7 @@ function getFormData(){
     age: document.getElementById("age").value.trim(),
     sex: document.getElementById("sex").value,
     blood_group: selectedBloodGroup,
-    municipality: document.getElementById("municipality").value.trim(),
+    municipality: "Galkot Municipality",
     ward_number: document.getElementById("ward_number").value.trim(),
     phone_number: phoneInput.value.trim(),
     data_entry_by: document.getElementById("data_entry_by").value.trim()

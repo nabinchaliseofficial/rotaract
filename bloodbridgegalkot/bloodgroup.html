@@ -60,6 +60,31 @@
   .header .drop{font-size:38px;margin-bottom:6px;}
   .header h1{margin:0 0 4px;font-size:clamp(20px,4vw,26px);}
   .header p{margin:0;opacity:.92;font-size:14px;}
+
+  /* ==== Credits slider ==== */
+  .credits-slider{
+    position:relative;max-width:640px;margin:14px auto 0;
+    background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);
+    border-radius:12px;padding:10px 18px;height:40px;
+    overflow:hidden;backdrop-filter:blur(2px);
+  }
+  .credits-slide{
+    position:absolute;left:18px;right:18px;top:50%;
+    transform:translate(100%,-50%);opacity:0;
+    font-size:12.5px;line-height:1.5;color:#fff;
+    transition:transform .7s cubic-bezier(.4,0,.2,1),opacity .7s cubic-bezier(.4,0,.2,1);
+  }
+  .credits-slide strong{color:#fff;font-weight:700;}
+  .credits-slide.active{transform:translate(0,-50%);opacity:1;}
+  .credits-slide.exit{transform:translate(-100%,-50%);opacity:0;}
+  @media (max-width:480px){
+    .credits-slider{padding:8px 14px;height:auto;min-height:52px;max-width:100%;}
+    .credits-slide{font-size:11px;left:14px;right:14px;white-space:normal;top:50%;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .credits-slide{transition:opacity .5s ease;}
+  }
+
   .live-dot{
     display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.16);
     padding:5px 13px;border-radius:20px;font-size:12px;margin-top:12px;
@@ -93,23 +118,181 @@
   .result-count{font-size:13px;color:var(--muted);}
   .sort-row select{padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg-elevated);color:var(--text);}
 
-  .stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
-  .stat-card{
-    background:var(--card);border-radius:12px;padding:14px 12px;flex:1;min-width:82px;
-    text-align:center;box-shadow:var(--shadow);border:1px solid var(--border);
+  .top-entries-wrap{margin-bottom:20px;}
+  .top-entries-slider{
+    position:relative;background:var(--card);border-radius:var(--radius);
+    border:1px solid var(--border);box-shadow:var(--shadow-lg);
+    padding:18px 20px;height:112px;overflow:hidden;
   }
-  .stat-card .num{font-size:22px;font-weight:800;color:var(--red);}
-  .stat-card .label{font-size:11px;color:var(--muted);margin-top:2px;}
-
-  .top-entries{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+  .top-entries-header{
+    display:flex;align-items:center;gap:10px;margin-bottom:10px;
+  }
+  .top-entries-header .te-trophy{
+    font-size:22px;line-height:1;flex-shrink:0;
+    filter:drop-shadow(0 2px 4px rgba(185,28,28,0.25));
+  }
+  .top-entries-header .te-titles{line-height:1.25;}
+  .top-entries-header .te-titles .te-t1{
+    font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--red);
+  }
+  .top-entries-header .te-titles .te-t2{
+    font-size:14px;font-weight:800;color:var(--text);
+  }
   .top-entry-card{
-    background:var(--card);border-radius:12px;padding:12px 14px;flex:1;min-width:160px;
-    box-shadow:var(--shadow);border:1px solid var(--border);display:flex;align-items:center;gap:10px;
+    position:absolute;left:20px;right:20px;top:58px;
+    transform:translate(36px,0);opacity:0;
+    display:flex;align-items:center;gap:12px;
+    transition:transform .6s cubic-bezier(.4,0,.2,1),opacity .6s cubic-bezier(.4,0,.2,1);
   }
-  .top-entry-card .medal{font-size:20px;line-height:1;}
+  .top-entry-card.active{transform:translate(0,0);opacity:1;}
+  .top-entry-card.exit{transform:translate(-36px,0);opacity:0;}
+  .top-entry-card .medal{
+    font-size:26px;line-height:1;flex-shrink:0;width:38px;text-align:center;
+  }
+  .top-entry-card .medal.rank-badge{
+    font-size:13px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--red),var(--red-dark));
+    border-radius:999px;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;
+  }
   .top-entry-card .info{flex:1;min-width:0;}
-  .top-entry-card .name{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .top-entry-card .count{font-size:11px;color:var(--muted);margin-top:2px;}
+  .top-entry-card .name{
+    font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    color:var(--text);
+  }
+  .top-entry-card .count{font-size:12.5px;font-weight:700;color:var(--red);margin-top:3px;}
+  [data-theme="dark"] .top-entry-card .count{color:var(--red-dark);}
+  @media (prefers-reduced-motion: reduce){
+    .top-entry-card{transition:opacity .5s ease;}
+  }
+  @media (max-width:480px){
+    .top-entries-slider{padding:14px 16px;height:104px;}
+    .top-entry-card{left:16px;right:16px;top:52px;}
+    .top-entry-card .name{font-size:14.5px;}
+  }
+
+  /* ==== Emergency request banner ==== */
+  .emergency-banner{
+    background:linear-gradient(135deg,var(--red),var(--red-dark));
+    color:#fff;border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:var(--shadow-lg);
+    position:relative;overflow:hidden;
+  }
+  .emergency-banner .eb-icon{
+    font-size:30px;flex-shrink:0;animation:eb-pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes eb-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
+  .emergency-banner .eb-text{flex:1;min-width:180px;}
+  .emergency-banner .eb-text h2{margin:0 0 3px;font-size:17px;font-weight:800;}
+  .emergency-banner .eb-text p{margin:0;font-size:12.5px;opacity:.92;}
+  .emergency-banner .eb-btn{
+    background:#fff;color:var(--red-dark);border:none;padding:11px 20px;border-radius:10px;
+    font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap;flex-shrink:0;
+    transition:transform .15s ease,box-shadow .15s ease;
+  }
+  .emergency-banner .eb-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.2);}
+  .emergency-banner .eb-btn:active{transform:translateY(0);}
+
+  /* ==== Compact blood group quick-filter selector ==== */
+  .bg-quickpick{margin-bottom:14px;}
+  .bg-quickpick-grid{
+    display:flex;gap:9px;flex-wrap:wrap;overflow-x:auto;padding:2px 2px 6px;-webkit-overflow-scrolling:touch;
+  }
+  .bg-avail-card{
+    flex-shrink:0;background:var(--card);border:1.5px solid var(--border);border-radius:999px;
+    padding:8px 16px;text-align:center;display:inline-flex;align-items:center;gap:7px;
+    box-shadow:0 1px 3px rgba(185,28,28,0.06);
+    transition:transform .18s cubic-bezier(.4,0,.2,1),background .18s ease,border-color .18s ease,
+      box-shadow .18s ease,color .18s ease;
+    cursor:pointer;user-select:none;position:relative;
+  }
+  .bg-avail-card .bg-avail-icon{font-size:12px;line-height:1;opacity:.85;}
+  .bg-avail-card:hover{
+    transform:translateY(-2px);border-color:var(--red);
+    box-shadow:0 6px 16px rgba(185,28,28,0.16);
+  }
+  .bg-avail-card:active{transform:translateY(0);}
+  .bg-avail-card:focus-visible{outline:var(--focus);outline-offset:2px;}
+  .bg-avail-card.active{
+    background:linear-gradient(135deg,var(--red),var(--red-dark));border-color:var(--red);
+    box-shadow:0 4px 14px rgba(185,28,28,0.35),0 0 0 3px var(--red-light);
+    transform:translateY(-1px);
+  }
+  .bg-avail-card.active .bg-avail-group{color:#fff !important;}
+  .bg-avail-card.active .bg-avail-count{color:rgba(255,255,255,0.88);}
+  .bg-avail-card.active .bg-avail-icon{opacity:1;filter:drop-shadow(0 0 3px rgba(255,255,255,0.6));}
+  .bg-avail-card .bg-avail-group{font-size:13.5px;font-weight:800;white-space:nowrap;letter-spacing:.2px;}
+  .bg-avail-card .bg-avail-count{
+    font-size:10.5px;font-weight:700;color:var(--muted);white-space:nowrap;
+    background:var(--bg);border-radius:999px;padding:1px 7px;
+  }
+  .bg-avail-card.active .bg-avail-count{background:rgba(255,255,255,0.2);}
+  .bg-avail-card .bg-avail-status{display:none;}
+  @media (max-width:640px){
+    .bg-quickpick-grid{flex-wrap:nowrap;}
+  }
+
+  /* ==== Ward-wise summary ==== */
+  .ward-summary{margin-bottom:20px;}
+  .ward-summary h2{font-size:15px;margin:0 0 10px;color:var(--text);}
+  .ward-summary-grid{display:flex;gap:8px;flex-wrap:wrap;}
+  .ward-chip{
+    background:var(--card);border:1.5px solid var(--border);border-radius:20px;
+    padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--text);
+    transition:transform .15s ease,background .15s ease,border-color .15s ease;user-select:none;
+  }
+  .ward-chip:hover{transform:translateY(-1px);background:var(--red-light);}
+  .ward-chip:focus-visible{outline:var(--focus);outline-offset:2px;}
+  .ward-chip.active{background:var(--red);border-color:var(--red);color:#fff;}
+  .ward-chip .wc-count{opacity:.8;font-weight:500;}
+  .ward-summary-empty{font-size:12.5px;color:var(--muted);}
+
+  /* ==== Active filter chips ==== */
+  .active-filters{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;
+  }
+  .active-filters:empty{display:none;margin:0;}
+  .filter-chip{
+    display:inline-flex;align-items:center;gap:6px;background:var(--red-light);color:var(--red);
+    border:1px solid var(--red);border-radius:20px;padding:5px 8px 5px 12px;font-size:12px;font-weight:600;
+  }
+  .filter-chip button{
+    background:rgba(0,0,0,0.08);border:none;color:inherit;width:18px;height:18px;border-radius:50%;
+    cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;
+  }
+  .filter-chip button:hover{background:rgba(0,0,0,0.18);}
+  .clear-all-chip{
+    background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:20px;
+    padding:6px 13px;font-size:12px;font-weight:600;cursor:pointer;
+  }
+  .clear-all-chip:hover{background:var(--red-light);color:var(--red);border-color:var(--red);}
+
+
+  /* ==== How it works ==== */
+  .how-it-works{
+    margin-top:32px;background:var(--card);border-radius:var(--radius);padding:24px 20px;
+    box-shadow:var(--shadow);border:1px solid var(--border);
+  }
+  .how-it-works h2{margin:0 0 4px;font-size:17px;text-align:center;}
+  .how-it-works .hiw-sub{margin:0 0 20px;font-size:12.5px;color:var(--muted);text-align:center;}
+  .hiw-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .hiw-step{
+    text-align:center;padding:16px 12px;border-radius:12px;border:1px solid var(--border);
+    background:var(--bg-elevated);transition:transform .15s ease,box-shadow .15s ease;
+  }
+  .hiw-step:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
+  .hiw-step .hiw-num{
+    display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;
+    border-radius:50%;background:var(--red-light);color:var(--red);font-weight:800;font-size:13px;margin-bottom:8px;
+  }
+  .hiw-step .hiw-icon{font-size:24px;margin-bottom:6px;}
+  .hiw-step h3{margin:0 0 5px;font-size:13.5px;}
+  .hiw-step p{margin:0;font-size:12px;color:var(--muted);line-height:1.5;}
+  @media (max-width:640px){
+    .hiw-steps{grid-template-columns:1fr;}
+    .emergency-banner{padding:18px;}
+    .emergency-banner .eb-btn{width:100%;text-align:center;}
+    .ward-summary-grid{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;}
+    .ward-chip{flex-shrink:0;}
+  }
 
   .donor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;}
   .donor-card{
@@ -220,12 +403,6 @@
   }
   .cta-footer a:hover{background:var(--red-dark);}
 
-  .credits-footer{
-    text-align:center;margin-top:22px;padding:16px;font-size:12px;color:var(--muted);
-    line-height:1.8;border-top:1px solid var(--border);
-  }
-  .credits-footer strong{color:var(--text);}
-
   .toast{
     position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
     background:var(--text);color:var(--bg);padding:12px 20px;border-radius:10px;font-size:14px;
@@ -250,9 +427,58 @@
   <p>List of Available Blood Donors</p>
   <div class="live-dot"><span class="dot" aria-hidden="true"></span> Live Updates</div>
   <div id="connStatus" role="status" aria-live="polite"></div>
+
+  <div class="credits-slider" id="creditsSlider" role="group" aria-label="Project credits" aria-live="off">
+    <p class="credits-slide" data-index="0"><strong>Vision by:</strong> Rtr. Anil Shrestha, PP (RY 2021/22), ISD / Advisor (RY 2026/27)</p>
+    <p class="credits-slide" data-index="1"><strong>Supported by:</strong> Dr. Rajesh Poudel &amp; Galkot Nagar Hospital Team</p>
+    <p class="credits-slide" data-index="2"><strong>Tech Support by:</strong> Rtr. Nabin Chalise, President, RY 2026/27, RAC Galkot Baglung</p>
+  </div>
 </div>
 
+<script>
+  // Header credits slider — self-contained, independent of donor/search/filter logic.
+  (function(){
+    var slides = document.querySelectorAll('#creditsSlider .credits-slide');
+    if(!slides.length) return;
+    var current = 0;
+    slides[current].classList.add('active');
+
+    function next(){
+      var prevEl = slides[current];
+      var nextIndex = (current + 1) % slides.length;
+      var nextEl = slides[nextIndex];
+
+      prevEl.classList.remove('active');
+      prevEl.classList.add('exit');
+
+      nextEl.classList.remove('exit');
+      // force reflow so the enter transition runs from the off-screen state
+      void nextEl.offsetWidth;
+      nextEl.classList.add('active');
+
+      setTimeout(function(){
+        prevEl.style.transition = 'none';
+        prevEl.classList.remove('exit');
+        void prevEl.offsetWidth;
+        prevEl.style.transition = '';
+      }, 750);
+      current = nextIndex;
+    }
+
+    setInterval(next, 3000);
+  })();
+</script>
+
 <main class="wrap" id="main">
+  <div class="emergency-banner">
+    <div class="eb-icon" aria-hidden="true">🚨</div>
+    <div class="eb-text">
+      <h2>Need Blood Urgently?</h2>
+      <p>Find an available blood donor quickly.</p>
+    </div>
+    <button type="button" class="eb-btn" id="findDonorBtn">🔍 Find Blood Donor</button>
+  </div>
+
   <div class="load-error" id="loadError" role="alert"></div>
 
   <div class="verified-banner" id="verifiedBanner" role="status" aria-live="polite">
@@ -261,15 +487,22 @@
     <button class="vclose" id="verifiedClose" aria-label="Dismiss">✕</button>
   </div>
 
-  <section class="stats" id="statsRow" aria-label="Donor statistics"></section>
+  <section class="top-entries-wrap" id="topEntriesSection" aria-label="Top data entry volunteers"></section>
 
-  <section class="top-entries" id="topEntriesSection" aria-label="Top data entry volunteers"></section>
+  <section class="bg-quickpick" aria-label="Blood group quick filter">
+    <div class="bg-quickpick-grid" id="bgAvailGrid"></div>
+  </section>
+
+  <section class="ward-summary" aria-label="Ward-wise donor summary">
+    <h2>📍 Ward-wise Donor Summary</h2>
+    <div class="ward-summary-grid" id="wardSummaryGrid"></div>
+  </section>
 
   <form class="toolbar" role="search" aria-label="Search donors" onsubmit="return false;">
     <div class="search-field">
       <span class="icon" aria-hidden="true">🔍</span>
-      <input type="text" id="searchInput" aria-label="Search by name, phone, municipality or ward"
-             placeholder="Search by name, phone, municipality, or ward..." autocomplete="off" />
+      <input type="text" id="searchInput" aria-label="Search by name, phone, blood group or ward"
+             placeholder="Search by name, phone, blood group, or ward..." autocomplete="off" />
     </div>
     <select id="bgFilter" aria-label="Filter by blood group">
       <option value="">All Blood Groups</option>
@@ -278,14 +511,13 @@
       <option value="AB+">AB+</option><option value="AB-">AB-</option>
       <option value="O+">O+</option><option value="O-">O-</option>
     </select>
-    <select id="muniFilter" aria-label="Filter by municipality">
-      <option value="">All Municipalities</option>
-    </select>
     <select id="wardFilter" aria-label="Filter by ward">
       <option value="">All Wards</option>
     </select>
     <button type="button" class="clear-btn" id="clearFilters">Clear</button>
   </form>
+
+  <div class="active-filters" id="activeFilters" aria-live="polite"></div>
 
   <div class="sort-row">
     <span class="result-count" id="resultCount" role="status" aria-live="polite"></span>
@@ -310,16 +542,36 @@
     <p>No donors found. Try adjusting your search or filters.</p>
   </div>
 
+  <section class="how-it-works" aria-label="How Blood Bridge works">
+    <h2>❤️ How Blood Bridge Works</h2>
+    <p class="hiw-sub">Three simple steps to connect donors and those in need.</p>
+    <div class="hiw-steps">
+      <div class="hiw-step">
+        <div class="hiw-num">01</div>
+        <div class="hiw-icon" aria-hidden="true">🔍</div>
+        <h3>Search</h3>
+        <p>Select your required blood group and find available donors.</p>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-num">02</div>
+        <div class="hiw-icon" aria-hidden="true">📞</div>
+        <h3>Contact</h3>
+        <p>Use the available contact/WhatsApp option to contact the donor.</p>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-num">03</div>
+        <div class="hiw-icon" aria-hidden="true">🤝</div>
+        <h3>Help</h3>
+        <p>Coordinate with the donor for urgent blood support.</p>
+      </div>
+    </div>
+  </section>
+
   <div class="cta-footer">
     <p>Want to become a blood donor?</p>
     <a href="bloodgroupregister.html">Register as a New Donor →</a>
   </div>
 
-  <div class="credits-footer">
-    <p><strong>Vision by:</strong> Rtr. Anil Shrestha, PP (RY 2021/22), ISD / Advisor (RY 2026/27)</p>
-    <p><strong>Supported by:</strong> Dr. Rajesh Poudel &amp; Galkot Nagar Hospital Team</p>
-    <p><strong>Tech Support by:</strong> Rtr. Nabin Chalise, President, RY 2026/27, RAC Galkot Baglung</p>
-  </div>
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -379,6 +631,13 @@ document.getElementById("themeToggle").addEventListener("click", () => {
   document.getElementById("themeToggle").textContent = next === "dark" ? "☀️" : "🌙";
 });
 initTheme();
+
+// ==================== EMERGENCY CTA ====================
+document.getElementById("findDonorBtn").addEventListener("click", () => {
+  const searchInput = document.getElementById("searchInput");
+  searchInput.scrollIntoView({ behavior: "smooth", block: "center" });
+  setTimeout(() => searchInput.focus(), 350);
+});
 
 // ==================== UTIL ====================
 function escapeHtml(str) {
@@ -452,7 +711,9 @@ async function fetchDonors() {
     allDonors = data || [];
     visibleCount = PAGE_SIZE;
     populateFilters();
-    renderStats();
+    renderBGAvailability();
+    renderWardSummary();
+    renderActiveFilterChips();
     renderTopEntries();
     renderDonors();
     checkVerifyParam();
@@ -467,14 +728,8 @@ async function fetchDonors() {
 }
 
 function populateFilters() {
-  const muniSelect = document.getElementById("muniFilter");
   const wardSelect = document.getElementById("wardFilter");
-  const curMuni = muniSelect.value, curWard = wardSelect.value;
-
-  const munis = [...new Set(allDonors.map(d => d.municipality).filter(Boolean))].sort();
-  muniSelect.innerHTML = '<option value="">All Municipalities</option>' +
-    munis.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join("");
-  muniSelect.value = curMuni;
+  const curWard = wardSelect.value;
 
   const wards = [...new Set(allDonors.map(d => d.ward_number).filter(Boolean))]
     .sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
@@ -483,64 +738,239 @@ function populateFilters() {
   wardSelect.value = curWard;
 }
 
-function renderStats() {
-  const total = allDonors.length;
-  const groups = {};
+// ==================== BLOOD GROUP SUMMARY (interactive, frontend-only, reuses allDonors) ====================
+const BG_ORDER = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+function renderBGAvailability() {
+  const grid = document.getElementById("bgAvailGrid");
+  if (!grid) return;
+  const counts = {};
   allDonors.forEach(d => {
-    const g = d.blood_group || "Unknown";
-    groups[g] = (groups[g] || 0) + 1;
+    const g = d.blood_group;
+    if (!g) return;
+    counts[g] = (counts[g] || 0) + 1;
   });
-  const statsRow = document.getElementById("statsRow");
-  let html = `<div class="stat-card"><div class="num">${total}</div><div class="label">Total Donors</div></div>`;
-  Object.keys(groups).sort().forEach(g => {
-    html += `<div class="stat-card"><div class="num" style="color:${BG_COLORS[g] || 'var(--red)'}">${groups[g]}</div><div class="label">${escapeHtml(g)}</div></div>`;
-  });
-  statsRow.innerHTML = html;
+  const selectedBG = document.getElementById("bgFilter").value;
+
+  let html = `
+    <div class="bg-avail-card${selectedBG === "" ? " active" : ""}" data-bg="" role="button" tabindex="0" aria-pressed="${selectedBG === ""}">
+      <span class="bg-avail-icon" aria-hidden="true">🩸</span>
+      <span class="bg-avail-group" style="color:var(--red)">All</span>
+      <span class="bg-avail-count">${allDonors.length}</span>
+    </div>
+  `;
+  html += BG_ORDER.map(g => {
+    const count = counts[g] || 0;
+    const isActive = selectedBG === g;
+    return `
+      <div class="bg-avail-card${isActive ? " active" : ""}" data-bg="${g}" role="button" tabindex="0" aria-pressed="${isActive}">
+        <span class="bg-avail-icon" aria-hidden="true">🩸</span>
+        <span class="bg-avail-group" style="color:${BG_COLORS[g] || 'var(--red)'}">${g}</span>
+        <span class="bg-avail-count">${count}</span>
+      </div>
+    `;
+  }).join("");
+  grid.innerHTML = html;
 }
 
+function selectBloodGroup(group) {
+  const bgFilter = document.getElementById("bgFilter");
+  // clicking the already-active group clears the Blood Group filter
+  bgFilter.value = (bgFilter.value === group) ? "" : group;
+  onFilterChange();
+}
+
+document.getElementById("bgAvailGrid").addEventListener("click", (e) => {
+  const card = e.target.closest(".bg-avail-card");
+  if (card) selectBloodGroup(card.dataset.bg);
+});
+document.getElementById("bgAvailGrid").addEventListener("keydown", (e) => {
+  const card = e.target.closest(".bg-avail-card");
+  if (card && (e.key === "Enter" || e.key === " ")) {
+    e.preventDefault();
+    selectBloodGroup(card.dataset.bg);
+  }
+});
+
+// ==================== WARD-WISE SUMMARY (interactive, frontend-only, reuses allDonors) ====================
+function renderWardSummary() {
+  const grid = document.getElementById("wardSummaryGrid");
+  if (!grid) return;
+  const selectedBG = document.getElementById("bgFilter").value;
+  const selectedWard = document.getElementById("wardFilter").value;
+
+  // Ward counts respect the current Blood Group selection, per spec — but never the Ward
+  // filter itself, so every ward chip stays visible and comparable.
+  const source = selectedBG ? allDonors.filter(d => d.blood_group === selectedBG) : allDonors;
+  const counts = {};
+  source.forEach(d => {
+    const w = d.ward_number;
+    if (!w) return;
+    counts[w] = (counts[w] || 0) + 1;
+  });
+  const wards = Object.keys(counts).sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
+
+  if (wards.length === 0) {
+    grid.innerHTML = `<span class="ward-summary-empty">No ward data available${selectedBG ? " for " + escapeHtml(selectedBG) : ""}.</span>`;
+    return;
+  }
+
+  grid.innerHTML = wards.map(w => {
+    const isActive = String(selectedWard) === String(w);
+    return `
+      <button type="button" class="ward-chip${isActive ? " active" : ""}" data-ward="${escapeHtml(w)}" aria-pressed="${isActive}">
+        Ward ${escapeHtml(w)} <span class="wc-count">— ${counts[w]}</span>
+      </button>
+    `;
+  }).join("");
+}
+
+document.getElementById("wardSummaryGrid").addEventListener("click", (e) => {
+  const chip = e.target.closest(".ward-chip");
+  if (!chip) return;
+  const wardFilter = document.getElementById("wardFilter");
+  wardFilter.value = (String(wardFilter.value) === String(chip.dataset.ward)) ? "" : chip.dataset.ward;
+  onFilterChange();
+});
+
+// ==================== ACTIVE FILTER CHIPS ====================
+function renderActiveFilterChips() {
+  const wrap = document.getElementById("activeFilters");
+  if (!wrap) return;
+  const search = document.getElementById("searchInput").value.trim();
+  const bg = document.getElementById("bgFilter").value;
+  const ward = document.getElementById("wardFilter").value;
+
+  const chips = [];
+  if (bg) chips.push({ type: "bg", label: `Blood Group: ${bg}` });
+  if (ward) chips.push({ type: "ward", label: `Ward: ${ward}` });
+  if (search) chips.push({ type: "search", label: `Search: "${search}"` });
+
+  if (chips.length === 0) {
+    wrap.innerHTML = "";
+    return;
+  }
+
+  wrap.innerHTML = chips.map(c => `
+    <span class="filter-chip" data-type="${c.type}">
+      ${escapeHtml(c.label)}
+      <button type="button" data-remove="${c.type}" aria-label="Remove filter">✕</button>
+    </span>
+  `).join("") + `<button type="button" class="clear-all-chip" id="clearAllChipsBtn">Clear All Filters</button>`;
+}
+
+document.getElementById("activeFilters").addEventListener("click", (e) => {
+  const removeBtn = e.target.closest("[data-remove]");
+  if (removeBtn) {
+    const type = removeBtn.dataset.remove;
+    if (type === "bg") document.getElementById("bgFilter").value = "";
+    if (type === "ward") document.getElementById("wardFilter").value = "";
+    if (type === "search") document.getElementById("searchInput").value = "";
+    onFilterChange();
+    return;
+  }
+  if (e.target.closest("#clearAllChipsBtn")) {
+    document.getElementById("clearFilters").click();
+  }
+});
+
+// ==================== SHARED FILTER-CHANGE HANDLER ====================
+// Central hook so Blood Group cards, Ward chips, filter chips, dropdowns and search
+// all stay in sync and reuse the same render pipeline — no duplicate filtering logic.
+function onFilterChange() {
+  visibleCount = PAGE_SIZE;
+  renderDonors();
+  renderBGAvailability();
+  renderWardSummary();
+  renderActiveFilterChips();
+}
+
+
+
+let topEntriesTimer = null;
 function renderTopEntries() {
   const section = document.getElementById("topEntriesSection");
+  if (topEntriesTimer) { clearInterval(topEntriesTimer); topEntriesTimer = null; }
+
   const counts = {};
   allDonors.forEach(d => {
     const who = d.data_entry_by;
-    if (!who) return;
+    if (!who || !String(who).trim()) return;
     counts[who] = (counts[who] || 0) + 1;
   });
   const top10 = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
   if (top10.length === 0) { section.innerHTML = ""; return; }
 
   const medals = ["🥇", "🥈", "🥉"];
+  const slidesHtml = top10.map(([name, c], i) => {
+    const medal = medals[i]
+      ? `<span class="medal" aria-hidden="true">${medals[i]}</span>`
+      : `<span class="medal rank-badge" aria-hidden="true">#${i + 1}</span>`;
+    return `
+    <div class="top-entry-card" data-index="${i}">
+      ${medal}
+      <div class="info">
+        <div class="name">${escapeHtml(name)}</div>
+        <div class="count">${c} Donor Entr${c === 1 ? "y" : "ies"}</div>
+      </div>
+    </div>`;
+  }).join("");
+
   section.innerHTML = `
-    <div class="top-entry-card" style="flex-basis:100%;padding:6px 14px 0;box-shadow:none;border:none;background:transparent;">
-      <span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;">🏆 Highest Entry — Top Volunteers</span>
-    </div>` +
-    top10.map(([name, c], i) => `
-      <div class="top-entry-card">
-        <span class="medal" aria-hidden="true">${medals[i] || (i + 1) + "."}</span>
-        <div class="info">
-          <div class="name">${escapeHtml(name)}</div>
-          <div class="count">${c} entr${c === 1 ? "y" : "ies"}</div>
+    <div class="top-entries-slider" id="topEntriesSlider" role="group" aria-label="Top data entry volunteers" aria-live="off">
+      <div class="top-entries-header">
+        <span class="te-trophy" aria-hidden="true">🏆</span>
+        <div class="te-titles">
+          <div class="te-t1">Highest Entry</div>
+          <div class="te-t2">Top Volunteers</div>
         </div>
-      </div>`).join("");
+      </div>
+      ${slidesHtml}
+    </div>
+  `;
+
+  const slides = section.querySelectorAll(".top-entry-card");
+  if (!slides.length) return;
+  let current = 0;
+  slides[current].classList.add("active");
+  if (slides.length === 1) return; // nothing to slide
+
+  topEntriesTimer = setInterval(() => {
+    const prevEl = slides[current];
+    const nextIndex = (current + 1) % slides.length;
+    const nextEl = slides[nextIndex];
+
+    prevEl.classList.remove("active");
+    prevEl.classList.add("exit");
+
+    nextEl.classList.remove("exit");
+    void nextEl.offsetWidth; // force reflow so enter transition runs from off-screen state
+    nextEl.classList.add("active");
+
+    setTimeout(() => {
+      prevEl.style.transition = "none";
+      prevEl.classList.remove("exit");
+      void prevEl.offsetWidth;
+      prevEl.style.transition = "";
+    }, 650);
+    current = nextIndex;
+  }, 3000);
 }
 
 // ==================== FILTER / SORT / RENDER ====================
 function getFilteredSorted() {
   const search = document.getElementById("searchInput").value.trim().toLowerCase();
   const bg = document.getElementById("bgFilter").value;
-  const muni = document.getElementById("muniFilter").value;
   const ward = document.getElementById("wardFilter").value;
   const sortBy = document.getElementById("sortBy").value;
 
   let rows = allDonors;
   if (bg) rows = rows.filter(d => d.blood_group === bg);
-  if (muni) rows = rows.filter(d => d.municipality === muni);
   if (ward) rows = rows.filter(d => String(d.ward_number) === String(ward));
   if (search) {
     rows = rows.filter(d =>
       (d.person_name || "").toLowerCase().includes(search) ||
       (d.phone_number || "").toLowerCase().includes(search) ||
-      (d.municipality || "").toLowerCase().includes(search) ||
+      (d.blood_group || "").toLowerCase().includes(search) ||
       String(d.ward_number || "").toLowerCase().includes(search)
     );
   }
@@ -622,23 +1052,20 @@ document.getElementById("loadMoreBtn").addEventListener("click", () => {
 });
 
 document.getElementById("searchInput").addEventListener("input", debounce(() => {
-  visibleCount = PAGE_SIZE;
-  renderDonors();
+  onFilterChange();
 }, 300));
-["bgFilter", "muniFilter", "wardFilter", "sortBy"].forEach(id => {
+["bgFilter", "wardFilter", "sortBy"].forEach(id => {
   document.getElementById(id).addEventListener("change", () => {
-    visibleCount = PAGE_SIZE;
-    renderDonors();
+    if (id === "sortBy") { visibleCount = PAGE_SIZE; renderDonors(); return; }
+    onFilterChange();
   });
 });
 document.getElementById("clearFilters").addEventListener("click", () => {
   document.getElementById("searchInput").value = "";
   document.getElementById("bgFilter").value = "";
-  document.getElementById("muniFilter").value = "";
   document.getElementById("wardFilter").value = "";
   document.getElementById("sortBy").value = "recent";
-  visibleCount = PAGE_SIZE;
-  renderDonors();
+  onFilterChange();
 });
 
 // ==================== SHARE / QR MODAL ====================
