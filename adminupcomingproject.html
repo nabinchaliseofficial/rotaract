@@ -644,19 +644,54 @@
                     <label>Project Name *</label>
                     <input type="text" id="projectName" placeholder="e.g. Project Akshara: Rural Library" required />
                 </div>
+                <!-- Legacy `date` column kept in sync automatically from Start Date below,
+                     so existing expiry/filter logic elsewhere keeps working untouched. -->
+                <input type="hidden" id="projectDate" />
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Date *</label>
-                        <input type="text" id="projectDate" placeholder="e.g. August 2026 or 2026-08-15" required />
+                        <label>Start Date *</label>
+                        <input type="date" id="projectStartDate" required />
                     </div>
                     <div class="form-group">
-                        <label>Target Audience *</label>
-                        <input type="text" id="projectAudience" placeholder="e.g. Public School Students" required />
+                        <label>Start Time</label>
+                        <input type="time" id="projectStartTime" />
                     </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" id="projectEndDate" />
+                    </div>
+                    <div class="form-group">
+                        <label>End Time</label>
+                        <input type="time" id="projectEndTime" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Target Audience *</label>
+                    <input type="text" id="projectAudience" placeholder="e.g. Public School Students" required />
                 </div>
                 <div class="form-group">
                     <label>Location *</label>
                     <input type="text" id="projectLocation" placeholder="e.g. Ward No. 3, Galkot, Baglung" required />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Participants Count</label>
+                        <input type="number" id="projectParticipants" min="0" placeholder="e.g. 10" />
+                    </div>
+                    <div class="form-group">
+                        <label>Volunteering Hours (auto-calculated)</label>
+                        <input type="text" id="projectVolunteerHours" readonly placeholder="Fill in dates/time + participants" style="opacity:0.75;" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Club Got Certificate?</label>
+                    <select id="projectCertificate">
+                        <option value="">— Not set —</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>Status</label>
@@ -672,6 +707,47 @@
                 <div class="form-group">
                     <label>Description</label>
                     <textarea id="projectDescription" placeholder="Brief description of the project..." rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Project Coordinator</label>
+                    <select id="projectCoordinator">
+                        <option value="">— None —</option>
+                    </select>
+                    <div id="coordinatorContactBox" style="margin-top:0.5rem; font-size:0.85rem; color:var(--text-muted); display:none;">
+                        <i class="fa-solid fa-address-card"></i> Contact Project Coordinator:
+                        <span id="coordinatorContactText">—</span>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Avenue of Service</label>
+                        <select id="projectAvenue">
+                            <option value="">— Select Avenue —</option>
+                            <option value="Membership Development">Membership Development</option>
+                            <option value="Club Administration">Club Administration</option>
+                            <option value="Service Project">Service Project</option>
+                            <option value="International Service">International Service</option>
+                            <option value="Professional Development">Professional Development</option>
+                            <option value="Finance">Finance</option>
+                            <option value="The Rotary Foundation">The Rotary Foundation</option>
+                            <option value="Public Image">Public Image</option>
+                            <option value="Young Leaders Contact">Young Leaders Contact</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Total Cost</label>
+                        <input type="text" id="projectTotalCost" placeholder="e.g. NPR 25,500" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Report ID</label>
+                        <input type="text" id="projectReportId" placeholder="e.g. RACGB-2026-001" />
+                    </div>
+                    <div class="form-group">
+                        <label>Report URL</label>
+                        <input type="url" id="projectReportUrl" placeholder="https://example.com/project-report" />
+                    </div>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="action-btn btn-cancel-modal" id="modalCancelBtn">Cancel</button>
@@ -709,6 +785,7 @@
 
             let allProjects = [];
             let editingId = null;
+            let membersList = []; // for Project Coordinator dropdown
 
             // ── Helpers ──
             function escapeHtml(str) {
@@ -755,6 +832,37 @@
                 if (isNaN(d.getTime())) return false;
                 d.setHours(0, 0, 0, 0);
                 return d < today;
+            }
+
+            // A project is only "expired" once its End Date has passed, when one is
+            // set; otherwise falls back to the legacy single `date` field untouched.
+            function isProjectExpired(p) {
+                return isDateExpired(p.end_date || p.date);
+            }
+
+            function formatDateTimePart(dateStr, timeStr) {
+                if (!dateStr) return '';
+                let out = dateStr;
+                try {
+                    out = new Date(dateStr + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                } catch (e) { /* keep raw dateStr */ }
+                if (timeStr) {
+                    try {
+                        out += ' · ' + new Date('2000-01-01T' + timeStr).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+                    } catch (e) { out += ' · ' + timeStr; }
+                }
+                return out;
+            }
+
+            // Renders "Start–End" range text; falls back to legacy `date` when the
+            // new start/end fields aren't set on an old record.
+            function formatProjectDateRange(p) {
+                if (!p.start_date) return escapeHtml(p.date || 'TBD');
+                const start = formatDateTimePart(p.start_date, p.start_time);
+                const end = (p.end_date && p.end_date !== p.start_date) || p.end_time
+                    ? formatDateTimePart(p.end_date || p.start_date, p.end_time)
+                    : '';
+                return escapeHtml(end ? `${start} → ${end}` : start);
             }
 
             // ── Toast ──
@@ -815,6 +923,86 @@
                 }
             }
 
+            // ── Load Members (for Project Coordinator dropdown + contact lookup) ──
+            // Selects '*' so this keeps working regardless of what the phone/email
+            // columns are actually named in the `members` table (phone, phone_number,
+            // mobile, email, email_address, ...) — see getMemberContact() below.
+            async function loadMembersList() {
+                try {
+                    const { data, error } = await supabase
+                        .from('members')
+                        .select('*')
+                        .order('name', { ascending: true });
+                    if (error) throw error;
+                    membersList = data || [];
+                    const coordSelect = document.getElementById('projectCoordinator');
+                    if (coordSelect) {
+                        coordSelect.innerHTML = '<option value="">— None —</option>' +
+                            membersList.map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('');
+                    }
+                } catch (err) {
+                    console.error('Failed to load members for coordinator dropdown:', err.message || err);
+                }
+            }
+
+            // Reads a member's phone/email regardless of the exact column name used
+            // in the `members` table, so nothing needs to be duplicated per-project.
+            function getMemberContact(memberId) {
+                const m = membersList.find(mm => String(mm.id) === String(memberId));
+                if (!m) return null;
+                const phone = m.phone || m.phone_number || m.mobile || m.contact_number || m.contact || null;
+                const email = m.email || m.email_address || null;
+                return { name: m.name || '', phone, email };
+            }
+
+            function renderCoordinatorContact(memberId) {
+                const box = document.getElementById('coordinatorContactBox');
+                const text = document.getElementById('coordinatorContactText');
+                if (!memberId) { box.style.display = 'none'; return; }
+                const contact = getMemberContact(memberId);
+                if (!contact || (!contact.phone && !contact.email)) {
+                    box.style.display = 'block';
+                    text.textContent = 'No phone/email on file for this member.';
+                    return;
+                }
+                box.style.display = 'block';
+                text.textContent = [contact.phone, contact.email].filter(Boolean).join('  ·  ');
+            }
+
+            document.getElementById('projectCoordinator').addEventListener('change', (e) => {
+                renderCoordinatorContact(e.target.value);
+            });
+
+            // ── Volunteering Hours: Total Duration (hrs) × Participants Count ──
+            // Recalculated live any time start/end date-time or participants change,
+            // and again authoritatively at save time — admin never enters this manually.
+            function computeVolunteeringHours(startDate, startTime, endDate, endTime, participants) {
+                const count = parseInt(participants, 10);
+                if (!startDate || !count || count <= 0) return null;
+                const startISO = `${startDate}T${startTime || '00:00'}`;
+                const endISO = `${endDate || startDate}T${endTime || startTime || '00:00'}`;
+                const start = new Date(startISO);
+                const end = new Date(endISO);
+                if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+                let durationHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+                if (durationHours < 0) durationHours = 0; // guard against end before start
+                const hours = durationHours * count;
+                return Math.round(hours * 100) / 100;
+            }
+
+            function updateVolunteerHoursPreview() {
+                const hours = computeVolunteeringHours(
+                    document.getElementById('projectStartDate').value,
+                    document.getElementById('projectStartTime').value,
+                    document.getElementById('projectEndDate').value,
+                    document.getElementById('projectEndTime').value,
+                    document.getElementById('projectParticipants').value
+                );
+                document.getElementById('projectVolunteerHours').value = hours !== null ? `${hours} hrs` : '';
+            }
+            ['projectStartDate', 'projectStartTime', 'projectEndDate', 'projectEndTime', 'projectParticipants']
+                .forEach(id => document.getElementById(id).addEventListener('input', updateVolunteerHoursPreview));
+
             // ── Load Projects ──
             async function loadProjects() {
                 const authorized = await checkAdminRole();
@@ -836,11 +1024,11 @@
                     document.getElementById('statTotal').textContent = allProjects.length;
                     const openCount = allProjects.filter(p =>
                         (p.status === 'upcoming' || p.status === 'ongoing' || p.status === 'closing') &&
-                        !isDateExpired(p.date)
+                        !isProjectExpired(p)
                     ).length;
                     document.getElementById('statOpen').textContent = openCount;
                     const expiredCount = allProjects.filter(p =>
-                        p.status === 'expired' || isDateExpired(p.date)
+                        p.status === 'expired' || isProjectExpired(p)
                     ).length;
                     document.getElementById('statExpired').textContent = expiredCount;
 
@@ -857,7 +1045,7 @@
 
                     // Render projects
                     projectsFeed.innerHTML = allProjects.map(p => {
-                        const status = isDateExpired(p.date) && p.status !== 'completed' && p.status !== 'cancelled' ?
+                        const status = isProjectExpired(p) && p.status !== 'completed' && p.status !== 'cancelled' ?
                             'expired' : (p.status || 'upcoming');
                         const badgeClass = getStatusBadge(status);
                         const borderColor = status === 'expired' ? '#6b7280' :
@@ -866,15 +1054,27 @@
                             status === 'closing' ? '#fbbf24' :
                             status === 'ongoing' ? '#34d399' : '#3b82f6';
 
+                        const coordContact = p.project_coordinator_id ? getMemberContact(p.project_coordinator_id) : null;
+                        const hours = p.volunteering_hours != null
+                            ? p.volunteering_hours
+                            : computeVolunteeringHours(p.start_date, p.start_time, p.end_date, p.end_time, p.participants_count);
+
                         return `
                             <article class="project-node" style="border-left: 4px solid ${borderColor};">
                                 <div class="node-meta">
                                     <span>ID: ${p.id}</span>
-                                    <span>${escapeHtml(p.date || 'TBD')}</span>
+                                    <span>${formatProjectDateRange(p)}</span>
                                 </div>
                                 <div class="node-title">${escapeHtml(p.name)}</div>
                                 <div class="node-detail"><i class="fa-solid fa-users"></i> ${escapeHtml(p.target_audience || '—')}</div>
                                 <div class="node-detail"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(p.location || '—')}</div>
+                                <div class="node-detail"><i class="fa-solid fa-tag"></i> ${escapeHtml(p.avenue || '—')}</div>
+                                <div class="node-detail"><i class="fa-solid fa-money-bill-wave"></i> ${escapeHtml(p.total_cost || '—')}</div>
+                                ${p.participants_count != null ? `<div class="node-detail"><i class="fa-solid fa-people-group"></i> ${escapeHtml(p.participants_count)} participants</div>` : ''}
+                                ${hours != null ? `<div class="node-detail"><i class="fa-solid fa-hourglass-half"></i> ${escapeHtml(hours)} volunteering hrs</div>` : ''}
+                                ${coordContact ? `<div class="node-detail"><i class="fa-solid fa-address-card"></i> Contact Project Coordinator: ${escapeHtml([coordContact.phone, coordContact.email].filter(Boolean).join('  ·  ') || '—')}</div>` : ''}
+                                <div class="node-detail"><i class="fa-solid fa-certificate"></i> Club Certificate: ${p.club_certificate === true ? 'Yes' : p.club_certificate === false ? 'No' : '—'}</div>
+                                ${p.report_id ? `<div class="node-detail"><i class="fa-solid fa-file-lines"></i> ${escapeHtml(p.report_id)}</div>` : ''}
                                 <div>
                                     <span class="status-badge ${badgeClass}">${getStatusDisplay(status)}</span>
                                 </div>
@@ -994,10 +1194,25 @@
                 document.getElementById('projectId').value = id;
                 document.getElementById('projectName').value = project.name || '';
                 document.getElementById('projectDate').value = project.date || '';
+                // Older projects saved before this feature only have the legacy `date`
+                // field — fall back to it for Start Date so nothing appears blank.
+                document.getElementById('projectStartDate').value = project.start_date || project.date || '';
+                document.getElementById('projectStartTime').value = project.start_time || '';
+                document.getElementById('projectEndDate').value = project.end_date || '';
+                document.getElementById('projectEndTime').value = project.end_time || '';
                 document.getElementById('projectAudience').value = project.target_audience || '';
                 document.getElementById('projectLocation').value = project.location || '';
+                document.getElementById('projectParticipants').value = project.participants_count != null ? project.participants_count : '';
+                document.getElementById('projectCertificate').value = project.club_certificate === true ? 'yes' : project.club_certificate === false ? 'no' : '';
                 document.getElementById('projectStatus').value = project.status || 'upcoming';
                 document.getElementById('projectDescription').value = project.description || '';
+                document.getElementById('projectCoordinator').value = project.project_coordinator_id || '';
+                renderCoordinatorContact(project.project_coordinator_id || '');
+                document.getElementById('projectAvenue').value = project.avenue || '';
+                document.getElementById('projectTotalCost').value = project.total_cost || '';
+                document.getElementById('projectReportId').value = project.report_id || '';
+                document.getElementById('projectReportUrl').value = project.report_url || '';
+                updateVolunteerHoursPreview();
                 modal.classList.add('active');
             }
 
@@ -1007,7 +1222,21 @@
                 submitBtnText.textContent = 'Save Project';
                 document.getElementById('projectForm').reset();
                 document.getElementById('projectId').value = '';
+                document.getElementById('projectDate').value = '';
+                document.getElementById('projectStartDate').value = '';
+                document.getElementById('projectStartTime').value = '';
+                document.getElementById('projectEndDate').value = '';
+                document.getElementById('projectEndTime').value = '';
+                document.getElementById('projectParticipants').value = '';
+                document.getElementById('projectVolunteerHours').value = '';
+                document.getElementById('projectCertificate').value = '';
                 document.getElementById('projectStatus').value = 'upcoming';
+                document.getElementById('projectCoordinator').value = '';
+                document.getElementById('coordinatorContactBox').style.display = 'none';
+                document.getElementById('projectAvenue').value = '';
+                document.getElementById('projectTotalCost').value = '';
+                document.getElementById('projectReportId').value = '';
+                document.getElementById('projectReportUrl').value = '';
                 modal.classList.add('active');
             }
 
@@ -1020,13 +1249,38 @@
             document.getElementById('projectForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
 
+                const startDate = document.getElementById('projectStartDate').value;
+                const startTime = document.getElementById('projectStartTime').value;
+                const endDate = document.getElementById('projectEndDate').value;
+                const endTime = document.getElementById('projectEndTime').value;
+                const participantsRaw = document.getElementById('projectParticipants').value;
+                const participants = participantsRaw !== '' ? parseInt(participantsRaw, 10) : null;
+                const certValue = document.getElementById('projectCertificate').value;
+
                 const data = {
                     name: document.getElementById('projectName').value.trim(),
-                    date: document.getElementById('projectDate').value.trim(),
+                    // Legacy `date` column kept in sync from Start Date so existing
+                    // expiry/filter logic on every page keeps working unmodified.
+                    date: startDate,
+                    start_date: startDate || null,
+                    start_time: startTime || null,
+                    end_date: endDate || null,
+                    end_time: endTime || null,
                     target_audience: document.getElementById('projectAudience').value.trim(),
                     location: document.getElementById('projectLocation').value.trim(),
                     status: document.getElementById('projectStatus').value,
-                    description: document.getElementById('projectDescription').value.trim()
+                    description: document.getElementById('projectDescription').value.trim(),
+                    project_coordinator_id: document.getElementById('projectCoordinator').value || null,
+                    participants_count: (participants != null && !isNaN(participants)) ? participants : null,
+                    // Auto-calculated: Total Project Duration (hrs) × Participants — never entered manually.
+                    volunteering_hours: computeVolunteeringHours(startDate, startTime, endDate, endTime, participants),
+                    club_certificate: certValue === 'yes' ? true : certValue === 'no' ? false : null,
+                    // ── New fields (require existing `upcoming_projects` columns:
+                    // avenue, total_cost, report_id, report_url — see note below) ──
+                    avenue: document.getElementById('projectAvenue').value || null,
+                    total_cost: document.getElementById('projectTotalCost').value.trim() || null,
+                    report_id: document.getElementById('projectReportId').value.trim() || null,
+                    report_url: document.getElementById('projectReportUrl').value.trim() || null
                 };
 
                 if (!data.name || !data.date || !data.target_audience || !data.location) {
@@ -1098,8 +1352,11 @@
                 if (!id) { showToast('Select a project to view.', 'error'); return; }
                 const p = allProjects.find(item => item.id == id);
                 if (p) {
+                    const hours = p.volunteering_hours != null
+                        ? p.volunteering_hours
+                        : computeVolunteeringHours(p.start_date, p.start_time, p.end_date, p.end_time, p.participants_count);
                     alert(
-                        `📋 Project Details\n\nName: ${p.name}\nDate: ${p.date}\nStatus: ${getStatusDisplay(p.status)}\nAudience: ${p.target_audience}\nLocation: ${p.location}${p.description ? '\n\nDescription: ' + p.description : ''}`
+                        `📋 Project Details\n\nName: ${p.name}\nWhen: ${formatProjectDateRange(p).replace(/&amp;/g,'&')}\nStatus: ${getStatusDisplay(p.status)}\nAudience: ${p.target_audience}\nLocation: ${p.location}\nParticipants: ${p.participants_count != null ? p.participants_count : '—'}\nVolunteering Hours: ${hours != null ? hours : '—'}\nClub Certificate: ${p.club_certificate === true ? 'Yes' : p.club_certificate === false ? 'No' : '—'}${p.description ? '\n\nDescription: ' + p.description : ''}`
                     );
                 }
             });
@@ -1190,7 +1447,7 @@
             document.addEventListener('DOMContentLoaded', async () => {
                 const authorized = await checkAdminRole();
                 if (authorized) {
-                    await Promise.all([loadProjects(), loadApplications()]);
+                    await Promise.all([loadProjects(), loadApplications(), loadMembersList()]);
                     setupSubscriptions();
                 }
             });

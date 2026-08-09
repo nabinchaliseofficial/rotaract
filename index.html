@@ -1854,10 +1854,18 @@
       try {
         const { data, error } = await supabase
           .from('next_event')
-          .select('name, date_time')
+          .select('name, date_time, is_active')
           .eq('id', 1)
           .single();
         if (error) throw error;
+
+        if (data.is_active === false) {
+          // Admin has turned the countdown off — hide it from the homepage
+          nextEventData = null;
+          countdownWidget.classList.add('hidden');
+          if (countdownIntervalId) clearInterval(countdownIntervalId);
+          return;
+        }
 
         nextEventData = data;
         countdownWidget.classList.remove('hidden');

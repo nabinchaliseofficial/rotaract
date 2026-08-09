@@ -584,7 +584,6 @@
       <option value="upcoming">Upcoming</option>
       <option value="ongoing">Ongoing</option>
       <option value="closing">Closing</option>
-      <option value="completed">Completed</option>
       <option value="expired">Expired</option>
       <option value="cancelled">Cancelled</option>
     </select>
@@ -687,6 +686,10 @@
     const PER_PAGE = 6;
     let currentProjectName = '';
     let currentProjectDate = '';
+    let membersList = [];
+    let coordinatorMap = {}; // { member_id: member_name } for displaying Project Coordinator
+    // Unique-share-link support: ?project=<id> focuses that single project.
+    let focusedProjectId = new URLSearchParams(window.location.search).get('project') || null;
 
     // ── Toast ──
     function showToast(msg, isError = false) {
@@ -718,6 +721,37 @@
       return d < today;
     }
 
+    // Prefers End Date when a project has one; falls back to the legacy `date`
+    // field so old projects without start/end fields behave exactly as before.
+    function isProjectExpired(p) {
+      return isDateExpired(p.end_date || p.date);
+    }
+
+    function formatDateTimePart(dateStr, timeStr) {
+      if (!dateStr) return '';
+      let out = dateStr;
+      try {
+        out = new Date(dateStr + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+      } catch (e) { /* keep raw dateStr */ }
+      if (timeStr) {
+        try {
+          out += ' · ' + new Date('2000-01-01T' + timeStr).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+        } catch (e) { out += ' · ' + timeStr; }
+      }
+      return out;
+    }
+
+    // Full Start–End date/time range; falls back to the legacy `date` value
+    // for projects created before this feature existed.
+    function formatProjectDateRange(p) {
+      if (!p.start_date) return p.date || 'TBD';
+      const start = formatDateTimePart(p.start_date, p.start_time);
+      const end = (p.end_date && p.end_date !== p.start_date) || p.end_time
+        ? formatDateTimePart(p.end_date || p.start_date, p.end_time)
+        : '';
+      return end ? `${start} → ${end}` : start;
+    }
+
     function getStatusBadgeClass(status) {
       const map = {
         'upcoming': 'badge-upcoming',
@@ -741,6 +775,24 @@
         'closing': 'Closing Soon'
       };
       return map[status.toLowerCase()] || status;
+    }
+
+    // ── Shared-link focus banner ──
+    function renderShareFocusBanner() {
+      let banner = document.getElementById('shareFocusBanner');
+      if (!focusedProjectId) {
+        if (banner) banner.remove();
+        return;
+      }
+      if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'shareFocusBanner';
+        banner.className = 'glass-card';
+        banner.style.cssText = 'padding:0.7rem 1.2rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:0.9rem;';
+        banner.innerHTML = `<span><i class="fas fa-link"></i> Viewing a shared project link</span>
+          <a href="${escapeHTML(window.location.pathname)}" class="nav-btn primary" style="text-decoration:none;">View all projects</a>`;
+        grid.parentNode.insertBefore(banner, grid);
+      }
     }
 
     // ── Render Skeletons ──
@@ -770,24 +822,36 @@
       let html = '';
       list.forEach(p => {
         const status = p.status || 'upcoming';
-        const isExpired = isDateExpired(p.date);
+        const isExpired = isProjectExpired(p);
         const displayStatus = isExpired && status !== 'completed' && status !== 'cancelled'
           ? 'expired'
           : status;
         const badgeClass = getStatusBadgeClass(displayStatus);
         const isDisabled = displayStatus === 'expired' || displayStatus === 'completed' || displayStatus === 'cancelled';
+        const coordContact = p.project_coordinator_id ? getMemberContact(p.project_coordinator_id) : null;
+        const highlighted = focusedProjectId && String(p.id) === String(focusedProjectId);
 
-        html += `<div class="project-card">
+        html += `<div class="project-card"${highlighted ? ' style="border-color:#C2185B;box-shadow:0 0 0 3px rgba(194,24,91,0.15);"' : ''} data-project-id="${escapeHTML(p.id)}">
           <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
             <span class="badge ${badgeClass}">${escapeHTML(getDisplayStatus(displayStatus))}</span>
             ${isExpired && displayStatus !== 'expired' ? '<span class="badge badge-expired">Expired</span>' : ''}
           </div>
           <div class="project-title">${escapeHTML(p.name || 'Untitled')}</div>
           <div class="project-meta">
-            <span><i class="fas fa-calendar"></i> ${escapeHTML(p.date || 'TBD')}</span>
+            <span><i class="fas fa-calendar"></i> ${escapeHTML(formatProjectDateRange(p))}</span>
             <span><i class="fas fa-map-pin"></i> ${escapeHTML(p.location || '—')}</span>
             <span><i class="fas fa-users"></i> ${escapeHTML(p.target_audience || 'All')}</span>
+            <span><i class="fas fa-user-tie"></i> ${escapeHTML(coordinatorMap[p.project_coordinator_id] || '—')}</span>
+            <span><i class="fas fa-tag"></i> ${escapeHTML(p.avenue || '—')}</span>
+            <span><i class="fas fa-money-bill-wave"></i> ${escapeHTML(p.total_cost || '—')}</span>
           </div>
+          ${coordContact ? `<div class="project-meta" style="margin-top:-0.3rem;">
+            <span><i class="fas fa-address-card"></i> Contact Project Coordinator:
+              ${coordContact.phone ? `<a href="tel:${escapeHTML(coordContact.phone)}" style="color:inherit;">${escapeHTML(coordContact.phone)}</a>` : ''}
+              ${coordContact.phone && coordContact.email ? ' · ' : ''}
+              ${coordContact.email ? `<a href="mailto:${escapeHTML(coordContact.email)}" style="color:inherit;">${escapeHTML(coordContact.email)}</a>` : ''}
+            </span>
+          </div>` : ''}
           <div class="description-box">${escapeHTML(p.description || 'No description provided.')}</div>
           <div class="organizer">
             <span class="organizer-avatar"><i class="fas fa-user"></i></span>
@@ -797,7 +861,7 @@
             <button class="btn-register register-btn"
                     data-id="${escapeHTML(p.id)}"
                     data-name="${escapeHTML(p.name || 'Project')}"
-                    data-date="${escapeHTML(p.date || '')}"
+                    data-date="${escapeHTML(p.end_date || p.date || '')}"
                     ${isDisabled ? 'disabled' : ''}>
               <i class="fas fa-hand-peace"></i>
               ${isDisabled ? 'Closed' : 'Register'}
@@ -805,7 +869,9 @@
             <button class="btn-outline view-detail" data-id="${escapeHTML(p.id)}">
               <i class="fas fa-eye"></i>
             </button>
-            <button class="btn-outline"><i class="fas fa-share-alt"></i></button>
+            <button class="btn-outline share-btn" data-id="${escapeHTML(p.id)}">
+              <i class="fas fa-share-alt"></i>
+            </button>
           </div>
         </div>`;
       });
@@ -830,6 +896,28 @@
           const id = this.dataset.id;
           const proj = projects.find(p => String(p.id) === String(id));
           if (proj) showToast(`📄 ${proj.name} — details view (demo)`);
+        });
+      });
+
+      // ── Share Button: unique per-project link (?project=<id>) ──
+      document.querySelectorAll('.share-btn').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+          e.stopPropagation();
+          const id = this.dataset.id;
+          const url = new URL(window.location.href);
+          url.search = '';
+          url.searchParams.set('project', id);
+          const shareUrl = url.toString();
+          try {
+            if (navigator.share) {
+              await navigator.share({ title: 'Rotaract Project', url: shareUrl });
+              return;
+            }
+            await navigator.clipboard.writeText(shareUrl);
+            showToast('🔗 Project link copied to clipboard!');
+          } catch (err) {
+            showToast('🔗 ' + shareUrl);
+          }
         });
       });
 
@@ -906,6 +994,38 @@
       document.body.style.overflow = '';
       submitBtn.disabled = false;
       submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit';
+    }
+
+    // ── Load members list (used only to display Project Coordinator name
+    // on each public project card — no editing capability here) ──
+    async function loadMembersList() {
+      try {
+        // '*' so this keeps working regardless of the actual phone/email column
+        // names in `members` — see getMemberContact() below.
+        const { data, error } = await supabase
+          .from('members')
+          .select('*')
+          .order('name', { ascending: true });
+        if (error) throw error;
+        membersList = data || [];
+        coordinatorMap = {};
+        membersList.forEach(m => { coordinatorMap[m.id] = m.name; });
+      } catch (err) {
+        console.error('Failed to load members:', err);
+        membersList = [];
+        coordinatorMap = {};
+      }
+    }
+
+    // Reads a coordinator's phone/email live from `members` — if it's corrected
+    // there later, this page automatically shows the updated info (no duplication).
+    function getMemberContact(memberId) {
+      const m = membersList.find(mm => String(mm.id) === String(memberId));
+      if (!m) return null;
+      const phone = m.phone || m.phone_number || m.mobile || m.contact_number || m.contact || null;
+      const email = m.email || m.email_address || null;
+      if (!phone && !email) return null;
+      return { phone, email };
     }
 
     // ── Register Form Submit ──
@@ -985,21 +1105,33 @@
 
         if (error) throw error;
 
-        projects = data || [];
+        // Public page only ever shows non-completed projects — a project
+        // marked "completed" on the admin side disappears from here
+        // immediately and shows up on the Past Projects page instead.
+        projects = (data || []).filter(p => (p.status || '').toLowerCase() !== 'completed');
 
         // ── Update Stats ──
         document.getElementById('totalCount').textContent = projects.length;
         document.getElementById('statTotal').textContent = projects.length;
 
         const openCount = projects.filter(p =>
-          (p.status === 'upcoming' || p.status === 'ongoing') && !isDateExpired(p.date)
+          (p.status === 'upcoming' || p.status === 'ongoing') && !isProjectExpired(p)
         ).length;
         document.getElementById('statOpen').textContent = openCount;
 
         const closingCount = projects.filter(p =>
-          p.status === 'closing' && !isDateExpired(p.date)
+          p.status === 'closing' && !isProjectExpired(p)
         ).length;
         document.getElementById('statClosing').textContent = closingCount;
+
+        // ── Unique shared-project link (?project=<id>): focus on just that
+        // project, while keeping all existing functionality (registration,
+        // filters) intact. A banner lets the visitor return to the full list.
+        renderShareFocusBanner();
+        if (focusedProjectId) {
+          const match = projects.find(p => String(p.id) === String(focusedProjectId));
+          if (match) projects = [match];
+        }
 
         const { count: appCount } = await supabase
           .from('project_applications')
@@ -1028,7 +1160,10 @@
     }
 
     // ── Event Listeners ──
-    document.addEventListener('DOMContentLoaded', fetchProjects);
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadMembersList();
+      await fetchProjects();
+    });
     document.getElementById('searchInput').addEventListener('input', filterAndPaginate);
     document.getElementById('statusFilter').addEventListener('change', filterAndPaginate);
     document.getElementById('locationFilter').addEventListener('change', filterAndPaginate);

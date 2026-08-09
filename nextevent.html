@@ -355,6 +355,78 @@
             font-weight: 600;
             margin-bottom: 16px;
         }
+        .visibility-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 16px;
+            margin-bottom: 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-sm);
+        }
+        .visibility-row .visibility-text {
+            text-align: left;
+        }
+        .visibility-row .visibility-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .visibility-row .visibility-sub {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 2px;
+        }
+        .visibility-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .visibility-status {
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            min-width: 30px;
+            text-align: center;
+        }
+        .visibility-status.is-on { color: var(--gold); }
+        .visibility-status.is-off { color: rgba(255, 255, 255, 0.35); }
+        .visibility-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            transition: background 0.3s ease;
+            flex-shrink: 0;
+        }
+        .visibility-switch .thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        }
+        .visibility-switch.is-on {
+            background: var(--gold);
+        }
+        .visibility-switch.is-on .thumb {
+            left: 27px;
+        }
+        .visibility-switch:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
         .admin-form {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -842,6 +914,20 @@
                     <div class="admin-badge">
                         <i class="fas fa-shield-alt"></i> Admin · <span id="adminEmailDisplay">—</span>
                     </div>
+
+                    <div class="visibility-row">
+                        <div class="visibility-text">
+                            <div class="visibility-title">Show on Homepage</div>
+                            <div class="visibility-sub">Countdown widget on index.html</div>
+                        </div>
+                        <div class="visibility-controls">
+                            <span class="visibility-status is-off" id="visibilityStatusText">OFF</span>
+                            <button type="button" class="visibility-switch" id="eventVisibilityToggle" role="switch" aria-checked="false" aria-label="Toggle event visibility on homepage">
+                                <span class="thumb"></span>
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="admin-label"><i class="fas fa-pen"></i> Update Next Event</div>
 
                     <form class="admin-form" id="adminEventForm">
@@ -947,6 +1033,8 @@
             const updateEventBtn = document.getElementById('updateEventBtn');
             const adminFormError = document.getElementById('adminFormError');
             const adminFormSuccess = document.getElementById('adminFormSuccess');
+            const eventVisibilityToggle = document.getElementById('eventVisibilityToggle');
+            const visibilityStatusText = document.getElementById('visibilityStatusText');
 
             // Login overlay
             const adminLoginPopup = document.getElementById('adminLoginPopup');
@@ -962,7 +1050,7 @@
             const themeToggle = document.getElementById('themeToggle');
 
             // ---------- STATE ----------
-            let currentEvent = null; // { name, date_time }
+            let currentEvent = null; // { name, date_time, is_active }
             let countdownInterval = null;
             let isAdmin = false;
             let adminUser = null;
@@ -1014,7 +1102,7 @@
                 try {
                     const { data, error } = await supabase
                         .from('next_event')
-                        .select('name, date_time, updated_at')
+                        .select('name, date_time, updated_at, is_active')
                         .maybeSingle();
 
                     if (error) throw error;
@@ -1025,7 +1113,8 @@
                         // No record yet — create a default one
                         const defaultEvent = {
                             name: 'Community Service Project',
-                            date_time: new Date(Date.now() + 7 * 86400000).toISOString() // 7 days from now
+                            date_time: new Date(Date.now() + 7 * 86400000).toISOString(), // 7 days from now
+                            is_active: true
                         };
                         const { data: inserted, error: insError } = await supabase
                             .from('next_event')
@@ -1043,7 +1132,8 @@
                     // Fallback: use hardcoded default
                     const fallback = {
                         name: 'Community Service Project',
-                        date_time: new Date(Date.now() + 7 * 86400000).toISOString()
+                        date_time: new Date(Date.now() + 7 * 86400000).toISOString(),
+                        is_active: true
                     };
                     currentEvent = fallback;
                     renderEvent();
@@ -1068,8 +1158,59 @@
                     eventDateInput.value = formatDateForInput(dateStr);
                 }
 
+                renderVisibilityToggle();
+
                 // Start countdown
                 startCountdown(dateStr);
+
+                // If event time already passed, disable button right away too
+                if (new Date(dateStr).getTime() - Date.now() <= 0 && adminLoginBtn) {
+                    adminLoginBtn.disabled = true;
+                    adminLoginBtn.classList.add('is-disabled');
+                    adminLoginBtn.style.opacity = '0.5';
+                    adminLoginBtn.style.cursor = 'not-allowed';
+                    adminLoginBtn.style.pointerEvents = 'none';
+                }
+            }
+
+            // ---------- VISIBILITY TOGGLE (ON/OFF) ----------
+            function renderVisibilityToggle() {
+                if (!eventVisibilityToggle) return;
+                const isOn = currentEvent?.is_active !== false; // treat missing/null as ON
+                eventVisibilityToggle.classList.toggle('is-on', isOn);
+                eventVisibilityToggle.setAttribute('aria-checked', String(isOn));
+                if (visibilityStatusText) {
+                    visibilityStatusText.textContent = isOn ? 'ON' : 'OFF';
+                    visibilityStatusText.classList.toggle('is-on', isOn);
+                    visibilityStatusText.classList.toggle('is-off', !isOn);
+                }
+            }
+
+            async function toggleEventVisibility() {
+                if (!currentEvent) return;
+                const nextState = !(currentEvent.is_active !== false);
+                eventVisibilityToggle.disabled = true;
+                try {
+                    const { data, error } = await supabase
+                        .from('next_event')
+                        .upsert([{ id: 1, is_active: nextState }], { onConflict: 'id' })
+                        .select()
+                        .maybeSingle();
+
+                    if (error) throw error;
+
+                    currentEvent = { ...currentEvent, ...(data || { is_active: nextState }) };
+                    renderVisibilityToggle();
+                    adminFormSuccess.textContent = nextState
+                        ? '✅ Countdown is now visible on the homepage.'
+                        : '✅ Countdown is now hidden from the homepage.';
+                    adminFormError.textContent = '';
+                } catch (err) {
+                    console.error('Toggle visibility error:', err);
+                    adminFormError.textContent = err.message || 'Failed to update visibility.';
+                } finally {
+                    eventVisibilityToggle.disabled = false;
+                }
             }
 
             // ---------- COUNTDOWN LOGIC ----------
@@ -1087,6 +1228,17 @@
                         cdMins.textContent = '00';
                         cdSecs.textContent = '00';
                         statusText.innerHTML = '<span class="live">🎉 Event is live! Join us now!</span>';
+
+                        // Auto turn off the Admin Login button once countdown ends
+                        if (adminLoginBtn && !adminLoginBtn.disabled) {
+                            adminLoginBtn.disabled = true;
+                            adminLoginBtn.classList.add('is-disabled');
+                            adminLoginBtn.style.opacity = '0.5';
+                            adminLoginBtn.style.cursor = 'not-allowed';
+                            adminLoginBtn.style.pointerEvents = 'none';
+                        }
+
+                        if (countdownInterval) clearInterval(countdownInterval);
                         return;
                     }
 
@@ -1209,6 +1361,7 @@
                         eventNameInput.value = currentEvent.name || '';
                         eventDateInput.value = formatDateForInput(currentEvent.date_time);
                     }
+                    renderVisibilityToggle();
                 } else {
                     isAdmin = false;
                     adminUser = null;
@@ -1331,6 +1484,9 @@
 
             // Admin logout
             adminLogoutBtn?.addEventListener('click', handleAdminLogout);
+
+            // Event visibility toggle (show/hide countdown on homepage)
+            eventVisibilityToggle?.addEventListener('click', toggleEventVisibility);
 
             // "Set to Now" button
             setNowBtn?.addEventListener('click', () => {

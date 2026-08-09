@@ -332,6 +332,9 @@
       const bloodBadge = member.bloodEntryCount > 0
         ? `<span class="blood-badge"><i class="fas fa-droplet"></i> ${member.bloodEntryCount} (+${member.bloodBonus})</span>`
         : '';
+      const coordinatorBadge = member.coordinatorPoints > 0
+        ? `<span class="bonus-badge"><i class="fas fa-clipboard-check"></i> Project Coordinator +${member.coordinatorPoints}</span>`
+        : '';
       return `
         <div class="winner-item">
           <div class="avatar">${getAvatarHtml(name, photo)}</div>
@@ -342,6 +345,7 @@
               <span><i class="fas fa-user-check"></i> ${attendancePct}%</span>
               <span class="bonus-badge"><i class="fas fa-plus-circle"></i> +${bonus}</span>
               ${bloodBadge}
+              ${coordinatorBadge}
               <span class="final-score"><i class="fas fa-star"></i> ${score.toFixed(1)}</span>
             </div>
           </div>
@@ -482,6 +486,30 @@
           console.warn('Blood donor entry bonus skipped:', bloodErr.message || bloodErr);
         }
 
+        // Completed-project coordinator bonus: +1 per project where a
+        // member is project_coordinator_id AND status is exactly
+        // 'completed'. Matched by member id (not name) so it's exact and
+        // can't double-count on a name collision. Calculated fresh on every
+        // load directly from upcoming_projects - nothing is stored on the
+        // members table, so there's no risk of double-crediting on refresh.
+        // Soft-fails like the blood donor bonus above: a problem here never
+        // breaks the rest of the recognition scoring.
+        const coordinatorPointsMap = {}; // member id -> completed project count
+        try {
+          const { data: coordProjects, error: coordError } = await supabase
+            .from('upcoming_projects')
+            .select('project_coordinator_id, status')
+            .eq('status', 'completed');
+          if (coordError) throw coordError;
+          (coordProjects || []).forEach(row => {
+            const coordId = row.project_coordinator_id;
+            if (!coordId) return;
+            coordinatorPointsMap[coordId] = (coordinatorPointsMap[coordId] || 0) + 1;
+          });
+        } catch (coordErr) {
+          console.warn('Completed project coordinator bonus skipped:', coordErr.message || coordErr);
+        }
+
         // Only count meetings whose minutes are finalized. Draft minutes are
         // excluded from attendance % and bonus points since they aren't
         // official yet - remove the .filter() below if drafts should count too.
@@ -555,7 +583,8 @@
           const actionBonus = bonusMap[key] || 0;
           const bloodEntryCount = bloodEntryCountMap[key] || 0;
           const bloodBonus = Math.floor(bloodEntryCount / 10); // 10 entries = 1 point
-          const bonus = actionBonus + bloodBonus;
+          const coordinatorPoints = coordinatorPointsMap[m.id] || 0; // matched by members.id
+          const bonus = actionBonus + bloodBonus + coordinatorPoints;
           const photoUrl = m.photo_url || m.photo || m.profile_image || null;
           const finalScore = attendancePct + bonus;
 
@@ -569,6 +598,7 @@
             actionBonus,
             bloodEntryCount,
             bloodBonus,
+            coordinatorPoints,
             finalScore,
             isBoard: classification.isBoard,
             isPresident: classification.isPresident,
@@ -653,6 +683,7 @@
         'Action Item Bonus': m.actionBonus,
         'Blood Donor Entries': m.bloodEntryCount,
         'Blood Entry Bonus': m.bloodBonus,
+        'Completed Project Coordinator Points': m.coordinatorPoints || 0,
         'Total Bonus': m.bonus,
         'Final Score': Number(m.finalScore.toFixed(1)),
         'Award': m.award
@@ -662,7 +693,7 @@
       worksheet['!cols'] = [
         { wch: 26 }, { wch: 20 }, { wch: 22 }, { wch: 16 },
         { wch: 16 }, { wch: 13 }, { wch: 16 }, { wch: 18 },
-        { wch: 16 }, { wch: 13 }, { wch: 12 }, { wch: 24 }
+        { wch: 16 }, { wch: 26 }, { wch: 13 }, { wch: 12 }, { wch: 24 }
       ];
 
       const workbook = XLSX.utils.book_new();
