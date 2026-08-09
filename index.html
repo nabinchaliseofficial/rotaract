@@ -1968,31 +1968,97 @@
     }
     createParticles();
 
-    // ---------- STATISTICS (unchanged) ----------
+    // ---------- STATISTICS (data source now 100% dynamic from Supabase) ----------
     const statsData = [
-      { icon: 'fa-users', label: 'Total Members', value: 0, suffix: '' },
-      { icon: 'fa-user-check', label: 'Active Members', value: 0, suffix: '' },
-      { icon: 'fa-tasks', label: 'Projects Completed', value: 47, suffix: '' },
-      { icon: 'fa-clock', label: 'Volunteer Hours', value: 2840, suffix: '+' },
-      { icon: 'fa-trophy', label: 'Awards Won', value: 12, suffix: '' },
-      { icon: 'fa-hand-holding-usd', label: 'Funds Raised', value: 125, suffix: 'K' },
-      { icon: 'fa-globe-asia', label: 'Communities Served', value: 23, suffix: '' }
+      { icon: 'fa-users', label: 'Total Members', value: 0, suffix: '', decimals: 0 },
+      { icon: 'fa-user-check', label: 'Active Members', value: 0, suffix: '', decimals: 0 },
+      { icon: 'fa-tasks', label: 'Projects Completed', value: 0, suffix: '', decimals: 0 },
+      { icon: 'fa-clock', label: 'Volunteer Hours', value: 0, suffix: '', decimals: 0 },
+      { icon: 'fa-trophy', label: 'Awards Won', value: 0, suffix: '', decimals: 0 },
+      { icon: 'fa-hand-holding-usd', label: 'Funds Raised', value: 0, suffix: '', prefix: 'Rs ', decimals: 0 },
+      { icon: 'fa-globe-asia', label: 'Communities Served', value: 0, suffix: '', decimals: 0 }
     ];
 
     async function updateStatsFromSupabase() {
+      // Each stat is fetched independently so one failing query never
+      // blocks the others or breaks the page.
+
+      // 1 & 2. Total Members (active + inactive) and Active Members
       try {
-        const { count, error } = await supabase
+        const { count: totalCount, error: totalErr } = await supabase
+          .from('members')
+          .select('*', { count: 'exact', head: true });
+        if (!totalErr) statsData[0].value = totalCount || 0;
+      } catch (e) {
+        console.warn('Could not fetch total member count:', e);
+      }
+
+      try {
+        const { count: activeCount, error: activeErr } = await supabase
           .from('members')
           .select('*', { count: 'exact', head: true })
           .eq('status', 'active');
+        if (!activeErr) statsData[1].value = activeCount || 0;
+      } catch (e) {
+        console.warn('Could not fetch active member count:', e);
+      }
 
-        if (!error) {
-          statsData[0].value = count || 0;
-          statsData[1].value = count || 0;
+      // 3, 4, 5, 7. Pull all upcoming_projects rows once and derive
+      // Projects Completed, Volunteer Hours, Awards Won, and
+      // Communities Served from them.
+      let allProjects = [];
+      try {
+        const { data, error } = await supabase
+          .from('upcoming_projects')
+          .select('status, volunteering_hours, club_certificate, location');
+        if (!error && data) allProjects = data;
+      } catch (e) {
+        console.warn('Could not fetch upcoming_projects:', e);
+      }
+
+      try {
+        const completed = allProjects.filter(p => p.status === 'completed');
+
+        // 3. Projects Completed
+        statsData[2].value = completed.length;
+
+        // 4. Volunteer Hours — sum of already-stored per-project values, null = 0
+        const totalHours = completed.reduce((sum, p) => sum + (Number(p.volunteering_hours) || 0), 0);
+        statsData[3].value = totalHours;
+
+        // 5. Awards Won — club_certificate = TRUE (boolean column)
+        const awards = completed.filter(p => p.club_certificate === true);
+        statsData[4].value = awards.length;
+      } catch (e) {
+        console.warn('Could not derive project-based stats:', e);
+      }
+
+      // 6. Funds Raised — existing Net Balance source (financial_accounts.current_balance)
+      try {
+        const { data: accounts, error: fundsErr } = await supabase
+          .from('financial_accounts')
+          .select('current_balance');
+        if (!fundsErr && accounts) {
+          const netBalance = accounts.reduce((sum, a) => sum + (Number(a.current_balance) || 0), 0);
+          statsData[5].value = netBalance;
+          statsData[5].decimals = (netBalance % 1 !== 0) ? 2 : 0;
         }
       } catch (e) {
-        console.warn('Could not fetch member count:', e);
+        console.warn('Could not fetch funds raised / net balance:', e);
       }
+
+      // 7. Communities Served — unique normalized locations across all projects
+      try {
+        const seen = new Set();
+        allProjects.forEach(p => {
+          const loc = (p.location || '').trim().toLowerCase().replace(/\s+/g, ' ');
+          if (loc) seen.add(loc);
+        });
+        statsData[6].value = seen.size;
+      } catch (e) {
+        console.warn('Could not derive communities served:', e);
+      }
+
       renderStats();
     }
 
@@ -2001,7 +2067,7 @@
       grid.innerHTML = statsData.map((stat, i) => `
         <div class="stat-card reveal" style="transition-delay:${i * 0.08}s">
           <span class="stat-icon"><i class="fas ${stat.icon}"></i></span>
-          <div class="stat-number" data-target="${stat.value}">0</div>
+          <div class="stat-number" data-target="${stat.value}" data-suffix="${stat.suffix || ''}" data-prefix="${stat.prefix || ''}" data-decimals="${stat.decimals || 0}">0</div>
           <div class="stat-label">${stat.label}</div>
         </div>
       `).join('');
@@ -2025,20 +2091,28 @@
     }
 
     function animateNumber(el) {
-      const target = parseInt(el.dataset.target);
+      const target = parseFloat(el.dataset.target) || 0;
+      const decimals = parseInt(el.dataset.decimals) || 0;
+      const suffix = el.dataset.suffix || '';
+      const prefix = el.dataset.prefix || '';
       const duration = 2000;
       const startTime = performance.now();
+
+      const fmt = (n) => n.toLocaleString(undefined, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
 
       function update(currentTime) {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
-        const current = Math.round(eased * target);
-        el.textContent = current.toLocaleString() + (el.dataset.suffix || '');
+        const current = eased * target;
+        el.textContent = prefix + fmt(current) + suffix;
         if (progress < 1) {
           requestAnimationFrame(update);
         } else {
-          el.textContent = target.toLocaleString() + (el.dataset.suffix || '');
+          el.textContent = prefix + fmt(target) + suffix;
         }
       }
       requestAnimationFrame(update);
