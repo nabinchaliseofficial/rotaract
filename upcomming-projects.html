@@ -367,6 +367,42 @@
       margin-bottom: 0.2rem;
     }
     .modal-box h2 i { color: #C2185B; }
+
+    /* ── Coming Soon Popup (reuses .modal-overlay / .modal-box) ── */
+    .coming-soon-box { text-align: center; padding: 2.4rem 2rem 2rem; }
+    .coming-soon-icon {
+      width: 64px; height: 64px;
+      margin: 0 auto 1rem;
+      border-radius: 50%;
+      background: #fef3c7;
+      color: #92400e;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+    }
+    .coming-soon-box h2 { justify-content: center; }
+    .coming-soon-text {
+      color: #475569;
+      font-size: 0.95rem;
+      margin: 0.6rem 0 1.4rem;
+    }
+    .coming-soon-progress {
+      height: 4px;
+      background: #eef2f6;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .coming-soon-progress span {
+      display: block;
+      height: 100%;
+      width: 100%;
+      background: #C2185B;
+      transform-origin: left;
+      animation: comingSoonShrink 3s linear forwards;
+    }
+    @keyframes comingSoonShrink {
+      from { transform: scaleX(1); }
+      to   { transform: scaleX(0); }
+    }
     .project-name-display {
       color: #475569;
       font-size: 0.9rem;
@@ -651,6 +687,16 @@
   </div>
 </div>
 
+<!-- ===== COMING SOON POPUP ===== -->
+<div class="modal-overlay" id="comingSoonModal">
+  <div class="modal-box coming-soon-box">
+    <div class="coming-soon-icon"><i class="fas fa-hourglass-half"></i></div>
+    <h2>Coming Soon</h2>
+    <p class="coming-soon-text">Registration for this project will be available soon. Please check back later.</p>
+    <div class="coming-soon-progress"><span id="comingSoonProgressBar"></span></div>
+  </div>
+</div>
+
 <!-- ===== TOAST ===== -->
 <div class="toast" id="toast"></div>
 
@@ -759,7 +805,8 @@
         'completed': 'badge-completed',
         'cancelled': 'badge-cancelled',
         'expired': 'badge-expired',
-        'closing': 'badge-closing'
+        'closing': 'badge-closing',
+        'coming_soon': 'badge-closing'
       };
       return map[status?.toLowerCase()] || 'badge-upcoming';
     }
@@ -772,7 +819,8 @@
         'completed': 'Completed',
         'cancelled': 'Cancelled',
         'expired': 'Expired',
-        'closing': 'Closing Soon'
+        'closing': 'Closing Soon',
+        'coming_soon': 'Coming Soon'
       };
       return map[status.toLowerCase()] || status;
     }
@@ -827,6 +875,7 @@
           ? 'expired'
           : status;
         const badgeClass = getStatusBadgeClass(displayStatus);
+        const isComingSoon = status.toLowerCase() === 'coming_soon';
         const isDisabled = displayStatus === 'expired' || displayStatus === 'completed' || displayStatus === 'cancelled';
         const coordContact = p.project_coordinator_id ? getMemberContact(p.project_coordinator_id) : null;
         const highlighted = focusedProjectId && String(p.id) === String(focusedProjectId);
@@ -858,6 +907,13 @@
             Rotaract Club of Galkot Baglung
           </div>
           <div class="card-actions">
+            ${isComingSoon ? `
+            <button class="btn-register coming-soon-btn"
+                    data-id="${escapeHTML(p.id)}"
+                    data-name="${escapeHTML(p.name || 'Project')}">
+              <i class="fas fa-hourglass-half"></i>
+              Coming Soon
+            </button>` : `
             <button class="btn-register register-btn"
                     data-id="${escapeHTML(p.id)}"
                     data-name="${escapeHTML(p.name || 'Project')}"
@@ -865,7 +921,7 @@
                     ${isDisabled ? 'disabled' : ''}>
               <i class="fas fa-hand-peace"></i>
               ${isDisabled ? 'Closed' : 'Register'}
-            </button>
+            </button>`}
             <button class="btn-outline view-detail" data-id="${escapeHTML(p.id)}">
               <i class="fas fa-eye"></i>
             </button>
@@ -887,6 +943,14 @@
             return;
           }
           openRegisterModal(this.dataset.id, this.dataset.name, this.dataset.date);
+        });
+      });
+
+      // ── Coming Soon Button Listeners ──
+      document.querySelectorAll('.coming-soon-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          openComingSoonPopup();
         });
       });
 
@@ -994,6 +1058,18 @@
       document.body.style.overflow = '';
       submitBtn.disabled = false;
       submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit';
+    }
+
+    // ── Coming Soon Popup: shows briefly, then auto-closes and redirects
+    // to index.html with no further user action required. ──
+    const comingSoonModal = document.getElementById('comingSoonModal');
+    function openComingSoonPopup() {
+      comingSoonModal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => {
+        comingSoonModal.classList.remove('active');
+        window.location.href = 'index.html';
+      }, 3000);
     }
 
     // ── Load members list (used only to display Project Coordinator name

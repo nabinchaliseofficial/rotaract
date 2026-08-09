@@ -167,6 +167,112 @@
             color: var(--primary-color);
         }
 
+        /* 2026-27 Projects Slider — continuous auto-loop carousel */
+        .slider-section {
+            margin-bottom: 45px;
+        }
+        .rc-slider {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+        }
+        .rc-slider-track {
+            display: flex;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+        .rc-slide {
+            flex: 0 0 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #003a63 100%);
+            color: #ffffff;
+            padding: 34px 5% 30px;
+            min-height: 190px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 8px;
+        }
+        .rc-slide .rc-slide-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .rc-slide .rc-slide-badges span {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 3px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .rc-slide h3 {
+            font-size: 1.4rem;
+            line-height: 1.3;
+            max-width: 800px;
+        }
+        .rc-slide .rc-slide-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        .rc-slide .rc-slide-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .rc-slider-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--secondary-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            z-index: 2;
+        }
+        .rc-slider-nav:hover { background: #ffffff; transform: translateY(-50%) scale(1.08); }
+        .rc-slider-prev { left: 16px; }
+        .rc-slider-next { right: 16px; }
+        .rc-slider-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 14px;
+        }
+        .rc-slider-dots button {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            border: none;
+            background: var(--border-color);
+            cursor: pointer;
+            padding: 0;
+            transition: var(--transition);
+        }
+        .rc-slider-dots button.active {
+            background: var(--primary-color);
+            width: 22px;
+            border-radius: 6px;
+        }
+        @media (max-width: 640px) {
+            .rc-slide { padding: 26px 6% 24px; min-height: 220px; }
+            .rc-slide h3 { font-size: 1.15rem; }
+            .rc-slider-nav { width: 34px; height: 34px; }
+        }
+
         /* Cumulative Analytics Dashboard Dashboard Component */
         .stats-section {
             margin-bottom: 45px;
@@ -352,12 +458,17 @@
         .table-responsive {
             background: var(--card-bg);
             border-radius: var(--radius-md);
-            overflow: hidden;
             box-shadow: var(--shadow-md);
             border: 1px solid var(--border-color);
+            /* Auto-fit behavior: table scrolls horizontally inside its own
+               rounded card on any width where columns can't fit naturally,
+               instead of overflowing the page or cutting data off. */
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         table {
             width: 100%;
+            min-width: 980px; /* keeps columns readable; card scrolls instead of squeezing text */
             border-collapse: collapse;
             text-align: left;
             font-size: 0.95rem;
@@ -447,8 +558,10 @@
 
         /* Adaptive Responsive Cards alternative layout for smaller Mobile Views */
         @media (max-width: 768px) {
+            .table-responsive { overflow-x: visible; }
             table, thead, tbody, th, td, tr { 
                 display: block; 
+                min-width: 0;
             }
             thead { display: none; }
             tbody tr {
@@ -509,7 +622,18 @@
     </header>
 
     <main class="container">
-        
+
+        <!-- 2026-27 Projects Slider (loaded live from Supabase, no hardcoded data) -->
+        <section class="slider-section" id="ry2627-slider-section" style="display:none;">
+            <h2 class="section-title"><i class="fa-solid fa-star"></i> R.Y. 2026-27 Projects</h2>
+            <div class="rc-slider" id="ry2627-slider">
+                <div class="rc-slider-track" id="ry2627-slider-track"></div>
+                <button class="rc-slider-nav rc-slider-prev" id="ry2627-prev" aria-label="Previous project"><i class="fa-solid fa-chevron-left"></i></button>
+                <button class="rc-slider-nav rc-slider-next" id="ry2627-next" aria-label="Next project"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="rc-slider-dots" id="ry2627-dots"></div>
+        </section>
+
         <!-- Dynamic Metrics Dashboard Component -->
         <section class="stats-section">
             <h2 class="section-title"><i class="fa-solid fa-chart-pie"></i> Cumulative Project Analytics Dashboard</h2>
@@ -599,8 +723,6 @@
                         <th>Start–End Date/Time</th>
                         <th>Total Cost</th>
                         <th>Participants</th>
-                        <th>Volunteering Hours</th>
-                        <th>Certificate</th>
                     </tr>
                 </thead>
                 <tbody id="projects-table-body">
@@ -866,8 +988,10 @@
                 }
 
                 const participantsCell = project.participants != null ? escapeHTML(project.participants) : '—';
-                const hoursCell = project.volunteeringHours != null ? `${escapeHTML(project.volunteeringHours)} hrs` : '—';
-                const certificateCell = project.certificate || '—';
+                // Volunteering Hours & Certificate are intentionally NOT rendered on this
+                // page's UI (per request), but project.volunteeringHours / project.certificate
+                // are still computed/fetched above and remain available in mergedPastProjects
+                // for other pages/features to consume.
 
                 row.innerHTML = `
                     <td data-label="Report ID" class="report-id-cell">${reportCell}</td>
@@ -878,8 +1002,6 @@
                     <td data-label="Start–End Date/Time">${dateRangeCell}</td>
                     <td data-label="Total Cost" class="${costClass}">${escapeHTML(costValue)}</td>
                     <td data-label="Participants">${participantsCell}</td>
-                    <td data-label="Volunteering Hours">${hoursCell}</td>
-                    <td data-label="Certificate">${escapeHTML(certificateCell)}</td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -911,6 +1033,79 @@
             renderTable(filteredData);
         }
 
+        // ── 2026-27 Projects Slider ── uses the same live-fetched Supabase
+        // data as the table (no extra query, no hardcoded projects).
+        let sliderProjects = [];
+        let sliderIndex = 0;
+        let sliderTimer = null;
+
+        function renderSlider(projects2627) {
+            const section = document.getElementById('ry2627-slider-section');
+            const track = document.getElementById('ry2627-slider-track');
+            const dots = document.getElementById('ry2627-dots');
+
+            sliderProjects = projects2627 || [];
+            if (sliderProjects.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            section.style.display = 'block';
+
+            track.innerHTML = sliderProjects.map(p => `
+                <div class="rc-slide">
+                    <div class="rc-slide-badges">
+                        <span><i class="fa-solid fa-star"></i> R.Y. ${escapeHTML(p.ry)}</span>
+                        <span>${escapeHTML(p.avenue)}</span>
+                    </div>
+                    <h3>${escapeHTML(p.name)}</h3>
+                    <div class="rc-slide-meta">
+                        <span><i class="fa-solid fa-location-dot"></i> ${escapeHTML(p.location)}</span>
+                        ${p.startDate ? `<span><i class="fa-solid fa-calendar"></i> ${escapeHTML(formatDateTimePart(p.startDate, p.startTime))}</span>` : ''}
+                        ${p.participants != null ? `<span><i class="fa-solid fa-people-group"></i> ${escapeHTML(p.participants)} participants</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            dots.innerHTML = sliderProjects.map((_, i) =>
+                `<button data-index="${i}" aria-label="Go to project ${i + 1}"></button>`
+            ).join('');
+            dots.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', () => goToSlide(parseInt(btn.dataset.index, 10)));
+            });
+
+            sliderIndex = 0;
+            updateSliderPosition();
+            startSliderAutoplay();
+        }
+
+        function updateSliderPosition() {
+            const track = document.getElementById('ry2627-slider-track');
+            track.style.transform = `translateX(-${sliderIndex * 100}%)`;
+            document.querySelectorAll('#ry2627-dots button').forEach((btn, i) => {
+                btn.classList.toggle('active', i === sliderIndex);
+            });
+        }
+
+        function goToSlide(index) {
+            if (sliderProjects.length === 0) return;
+            sliderIndex = (index + sliderProjects.length) % sliderProjects.length;
+            updateSliderPosition();
+            startSliderAutoplay(); // reset the timer on manual interaction
+        }
+
+        function startSliderAutoplay() {
+            clearInterval(sliderTimer);
+            if (sliderProjects.length <= 1) return;
+            // Continuous loop: wraps back to slide 0 after the last project.
+            sliderTimer = setInterval(() => {
+                sliderIndex = (sliderIndex + 1) % sliderProjects.length;
+                updateSliderPosition();
+            }, 4000);
+        }
+
+        document.getElementById('ry2627-prev').addEventListener('click', () => goToSlide(sliderIndex - 1));
+        document.getElementById('ry2627-next').addEventListener('click', () => goToSlide(sliderIndex + 1));
+
         window.onload = async () => {
             // Render immediately with static historical data so the page
             // never looks empty/blank while the network call is in flight.
@@ -926,6 +1121,10 @@
                 calculateStatistics();
                 filterEngine(); // re-apply current filter/search state, not just raw render
             }
+
+            // Slider only ever shows R.Y. 2026-27 projects, pulled from the
+            // same dataset already fetched above — no separate query.
+            renderSlider(mergedPastProjects.filter(p => p.ry === '2026-27'));
         };
 
         // Material Ripple Click Interaction Sequence on Navigation Elements
