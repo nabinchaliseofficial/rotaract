@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- Icon Library -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         /* --- Color Palette & Variable Definitions --- */
@@ -420,7 +422,6 @@
             font-weight: 600;
             font-size: 0.9rem;
             border-radius: var(--radius-sm);
-            cursor: pointer;
             transition: var(--transition);
             white-space: nowrap;
             display: flex;
@@ -428,7 +429,18 @@
             gap: 6px;
         }
 
-        .btn-complete:hover {
+        .status-badge {
+            cursor: default;
+            border-color: var(--text-muted);
+            color: var(--text-muted);
+        }
+
+        .poa-item.completed .status-badge {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-complete:not(.status-badge):hover {
             background-color: var(--accent);
             color: var(--card-bg);
         }
@@ -449,6 +461,29 @@
             background-color: var(--accent);
             color: var(--card-bg);
         }
+
+        .kpi-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--accent);
+        }
+        .kpi-card .kpi-area {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.4rem;
+        }
+        .kpi-card .kpi-target {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        .loading-state, .error-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+        .error-state { color: #DC2626; }
 
         /* --- Footer Section --- */
         footer {
@@ -491,7 +526,7 @@
     <header class="hero">
         <div class="hero-content">
             <h1>Rotaract Club of <span>Galkot Baglung</span></h1>
-            <p>Strategic Blueprint & Plan of Action | Rota Year 2026-27</p>
+            <p id="heroSubtitle">Loading...</p>
         </div>
     </header>
 
@@ -505,62 +540,28 @@
                     <i class="fa-solid fa-eye"></i>
                     <h3>Our Vision</h3>
                 </div>
-                <p>"To be a strong, community-driven Rotaract Club that empowers youth and brings sustainable development to Galkot."</p>
+                <p id="visionText">Loading...</p>
             </div>
             <div class="vm-card mission">
                 <div class="vm-header">
                     <i class="fa-solid fa-bolt"></i>
                     <h3>Our Mission</h3>
                 </div>
-                <p>"To inspire young leaders through service, fellowship, and innovation while creating lasting positive impact in our community."</p>
+                <p id="missionText">Loading...</p>
             </div>
         </section>
 
         <!-- Strategic Pillars Container Section -->
         <section>
             <h2 class="section-title">Our Strategic Pillars</h2>
-            <div class="tabs-wrapper">
-                <button class="tab-btn active" onclick="openPillar(event, 'growth')">Club Growth & Retention</button>
-                <button class="tab-btn" onclick="openPillar(event, 'impact')">Sustainable Impact</button>
-                <button class="tab-btn" onclick="openPillar(event, 'publicity')">Public Image & Bonding</button>
-            </div>
-
-            <div id="growth" class="tab-content active">
-                <h3>Membership Fellowship & Engagement</h3>
-                <p>Focusing heavily on shifting from mere numbers to active youth engagement across Galkot. Ensuring every new member finds value, professional mentorship, and leadership pathways inside the club structure.</p>
-            </div>
-
-            <div id="impact" class="tab-content">
-                <h3>Community-First Initiatives</h3>
-                <p>Developing long-term, high-impact regional initiatives in healthcare literacy, digital education integration in public schools, and climate resilience specialized for the hilly typography of Baglung District.</p>
-            </div>
-
-            <div id="publicity" class="tab-content">
-                <h3>Digital Footprint & Rotary Synergy</h3>
-                <p>Enhancing our grassroots communication channel networks, maintaining an active local press presence, and organizing deep joint fellowships with our parent Rotary Club of Baglung.</p>
-            </div>
+            <div class="tabs-wrapper" id="pillarsTabs"></div>
+            <div id="pillarsContent"></div>
         </section>
 
         <!-- Club Goals Area Grid -->
         <section>
             <h2 class="section-title">Club Goals (RY 2026-27)</h2>
-            <div class="goals-grid">
-                <div class="goal-card">
-                    <div class="goal-stat"><i class="fa-solid fa-user-check"></i> 85%</div>
-                    <h3>Retention Rate</h3>
-                    <p>Retain existing members through customized leadership progression tracks and interactive professional development circles.</p>
-                </div>
-                <div class="goal-card">
-                    <div class="goal-stat"><i class="fa-solid fa-hands-holding-child"></i> 2</div>
-                    <h3>Signature Projects</h3>
-                    <p>Launch two long-term, sustainable signature projects within Galkot targeted at literacy and primary community healthcare infrastructure.</p>
-                </div>
-                <div class="goal-card">
-                    <div class="goal-stat"><i class="fa-solid fa-award"></i> Platinum</div>
-                    <h3>Rotary Citation Excellence</h3>
-                    <p>Fulfill all mandatory criteria laid down by Rotary International to achieve the Platinum level Rotary Citation.</p>
-                </div>
-            </div>
+            <div class="goals-grid" id="goalsGrid"></div>
         </section>
 
         <!-- Plan of Action Interactive Matrix Segment -->
@@ -568,53 +569,13 @@
             <h2 class="section-title">Plan of Action Execution Matrix</h2>
             <p class="matrix-intro">Track the operational progress of planned projects dynamically below:</p>
             
-            <ul class="poa-list">
-                <li class="poa-item">
-                    <div class="task-left">
-                        <span class="quarter-badge">Q1</span>
-                        <span class="task-text">Conduct Club Officers Orientation & Leadership Training Seminar</span>
-                    </div>
-                    <button class="btn-complete" onclick="toggleTask(this)">
-                        <i class="fa-regular fa-circle-check"></i> <span>Done</span>
-                    </button>
-                </li>
-                <li class="poa-item">
-                    <div class="task-left">
-                        <span class="quarter-badge">Q1</span>
-                        <span class="task-text">Massive Emergency Blood Grouping & Donation Camp at Galkot Bazaar</span>
-                    </div>
-                    <button class="btn-complete" onclick="toggleTask(this)">
-                        <i class="fa-regular fa-circle-check"></i> <span>Done</span>
-                    </button>
-                </li>
-                <li class="poa-item">
-                    <div class="task-left">
-                        <span class="quarter-badge">Q2</span>
-                        <span class="task-text">Establish Digital E-Library corner in a remote public school of Baglung</span>
-                    </div>
-                    <button class="btn-complete" onclick="toggleTask(this)">
-                        <i class="fa-regular fa-circle-check"></i> <span>Done</span>
-                    </button>
-                </li>
-                <li class="poa-item">
-                    <div class="task-left">
-                        <span class="quarter-badge">Q3</span>
-                        <span class="task-text">Joint Professional Networking Conclave with Rotary Club of Baglung</span>
-                    </div>
-                    <button class="btn-complete" onclick="toggleTask(this)">
-                        <i class="fa-regular fa-circle-check"></i> <span>Done</span>
-                    </button>
-                </li>
-                <li class="poa-item">
-                    <div class="task-left">
-                        <span class="quarter-badge">Q4</span>
-                        <span class="task-text">Execute 6th Annual Galkot Community Cleanliness & Sanitation Run</span>
-                    </div>
-                    <button class="btn-complete" onclick="toggleTask(this)">
-                        <i class="fa-regular fa-circle-check"></i> <span>Done</span>
-                    </button>
-                </li>
-            </ul>
+            <ul class="poa-list" id="poaList"></ul>
+        </section>
+
+        <!-- KPI Section -->
+        <section>
+            <h2 class="section-title">Annual Success Indicators (KPIs)</h2>
+            <div class="goals-grid" id="kpiGrid"></div>
         </section>
 
     </main>
@@ -626,6 +587,104 @@
 
     <!-- Interactive UI Control Elements Scripting -->
     <script>
+        // ---- Supabase Setup ----
+        const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function escapeHtml(str) {
+            const d = document.createElement('div');
+            d.innerText = str ?? '';
+            return d.innerHTML;
+        }
+
+        async function loadStrategicPlan() {
+            const { data, error } = await sb
+                .from('strategic_planning')
+                .select('data')
+                .eq('id', 1)
+                .single();
+
+            if (error || !data) {
+                document.querySelector('.main-container').innerHTML =
+                    '<div class="error-state"><i class="fa-solid fa-triangle-exclamation"></i> Could not load strategic planning content. Please try again later.</div>';
+                console.error(error);
+                return;
+            }
+
+            renderPlan(data.data);
+        }
+
+        function renderPlan(plan) {
+            // Hero subtitle
+            document.getElementById('heroSubtitle').innerText = plan.hero_subtitle || '';
+
+            // Vision / Mission
+            document.getElementById('visionText').innerText = `"${plan.vision || ''}"`;
+            document.getElementById('missionText').innerText = `"${plan.mission || ''}"`;
+
+            // Pillars (tabs)
+            const tabsWrap = document.getElementById('pillarsTabs');
+            const contentWrap = document.getElementById('pillarsContent');
+            tabsWrap.innerHTML = '';
+            contentWrap.innerHTML = '';
+            (plan.pillars || []).forEach((p, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'tab-btn' + (i === 0 ? ' active' : '');
+                btn.innerText = p.tab_label;
+                btn.onclick = (e) => openPillar(e, p.key);
+                tabsWrap.appendChild(btn);
+
+                const div = document.createElement('div');
+                div.id = p.key;
+                div.className = 'tab-content' + (i === 0 ? ' active' : '');
+                div.innerHTML = `<h3>${escapeHtml(p.title)}</h3><p>${escapeHtml(p.description)}</p>`;
+                contentWrap.appendChild(div);
+            });
+
+            // Goals
+            const goalsGrid = document.getElementById('goalsGrid');
+            goalsGrid.innerHTML = '';
+            (plan.goals || []).forEach(g => {
+                const card = document.createElement('div');
+                card.className = 'goal-card';
+                card.innerHTML = `
+                    <div class="goal-stat"><i class="${escapeHtml(g.icon || 'fa-solid fa-bullseye')}"></i> ${escapeHtml(g.stat)}</div>
+                    <h3>${escapeHtml(g.title)}</h3>
+                    <p>${escapeHtml(g.description)}</p>`;
+                goalsGrid.appendChild(card);
+            });
+
+            // Plan of Action (status is admin-controlled and persisted from Supabase)
+            const poaList = document.getElementById('poaList');
+            poaList.innerHTML = '';
+            (plan.plan_of_action || []).forEach(item => {
+                const isDone = !!item.completed;
+                const li = document.createElement('li');
+                li.className = 'poa-item' + (isDone ? ' completed' : '');
+                li.innerHTML = `
+                    <div class="task-left">
+                        <span class="quarter-badge">${escapeHtml(item.quarter)}</span>
+                        <span class="task-text">${escapeHtml(item.task)}</span>
+                    </div>
+                    <span class="btn-complete status-badge">
+                        <i class="fa-solid ${isDone ? 'fa-circle-check' : 'fa-hourglass-half'}"></i>
+                        <span>${isDone ? 'Completed' : 'In Progress'}</span>
+                    </span>`;
+                poaList.appendChild(li);
+            });
+
+            // KPIs
+            const kpiGrid = document.getElementById('kpiGrid');
+            kpiGrid.innerHTML = '';
+            (plan.kpis || []).forEach(k => {
+                const card = document.createElement('div');
+                card.className = 'kpi-card';
+                card.innerHTML = `<div class="kpi-area">${escapeHtml(k.area)}</div><div class="kpi-target">${escapeHtml(k.target)}</div>`;
+                kpiGrid.appendChild(card);
+            });
+        }
+
         // Professional Material Ripple Button Navigation Sequence
         document.getElementById('interactiveHomeBtn').addEventListener('click', function(e) {
             e.preventDefault();
@@ -664,22 +723,8 @@
             evt.currentTarget.classList.add("active");
         }
 
-        // Action Matrix Toggle State Logic
-        function toggleTask(button) {
-            const listItem = button.parentElement;
-            const labelText = button.querySelector('span');
-            const iconElement = button.querySelector('i');
-            
-            listItem.classList.toggle('completed');
-             
-            if (listItem.classList.contains('completed')) {
-                labelText.innerText = "Completed";
-                iconElement.className = "fa-solid fa-circle-check";
-            } else {
-                labelText.innerText = "Done";
-                iconElement.className = "fa-regular fa-circle-check";
-            }
-        }
+        // Init
+        loadStrategicPlan();
     </script>
 </body>
 </html>
