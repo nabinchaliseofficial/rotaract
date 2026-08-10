@@ -267,8 +267,7 @@
 
   <div class="footer-note">
     <span><i class="fas fa-calendar-check"></i> Attendance computed from Published meeting minutes</span>
-    <span><i class="fas fa-check-circle"></i> Bonus: +1 per completed action item (any meeting type)</span>
-    <span><i class="fas fa-droplet"></i> Bonus: +1 per 10 blood donor entries (data_entry_by, any status)</span>
+    <span><i class="fas fa-droplet"></i> Bonus: +1 per 10 blood donor entries (data_entry_by, on/before Aug 10, 2026 11:59:59 PM NPT)</span>
     <span><i class="fas fa-users"></i> Leader: Fixed board roster (all meeting types), President excluded</span>
     <span><i class="fas fa-star"></i> Rising Star: Club Members (General/Assembly/Special General/AGM meetings only)</span>
   </div>
@@ -464,21 +463,28 @@
         if (memError) throw new Error('Members fetch failed: ' + memError.message);
 
         // Blood donor data-entry bonus: every 10 rows a member entered into
-        // blood_bridge_galkot (data_entry_by) is worth +1 point, same scale
-        // as the action-item bonus. Counts every row regardless of status
+        // blood_bridge_galkot (data_entry_by) is worth +1 point, counted
+        // only for rows created on or before Aug 10, 2026 11:59:59 PM Nepal
+        // Time (Asia/Kathmandu, UTC+5:45) - entries after that cutoff do not
+        // contribute to the score. Counts every row regardless of status
         // (active/inactive) since the credit is for the entry work done, not
         // for whether that donor record is still active today. Soft-fails
         // (logs a warning, contributes 0) so a problem with this table never
-        // breaks attendance/action-item scoring for everyone else.
+        // breaks attendance scoring for everyone else.
+        // Cutoff expressed as a UTC instant: 2026-08-10 23:59:59 NPT (UTC+5:45)
+        // = 2026-08-10 18:14:59 UTC.
+        const BLOOD_BRIDGE_CUTOFF_UTC_MS = Date.UTC(2026, 7, 10, 18, 14, 59, 999);
         const bloodEntryCountMap = {}; // normalizedName -> row count
         try {
           const { data: bloodRows, error: bloodError } = await supabase
             .from('blood_bridge_galkot')
-            .select('data_entry_by');
+            .select('data_entry_by, created_at');
           if (bloodError) throw bloodError;
           (bloodRows || []).forEach(row => {
             const who = row.data_entry_by;
             if (!who) return;
+            const createdMs = Date.parse(row.created_at);
+            if (Number.isNaN(createdMs) || createdMs > BLOOD_BRIDGE_CUTOFF_UTC_MS) return;
             const key = normalizeKey(who);
             bloodEntryCountMap[key] = (bloodEntryCountMap[key] || 0) + 1;
           });
@@ -553,23 +559,6 @@
           return new Set(list.map(p => normalizeKey(p && (p.name || p.full_name || p))));
         });
 
-        // data.actionItems: [{ task, person, status, deadline }] - person is
-        // a plain string. +1 bonus per completed item, per meeting.
-        const bonusMap = {}; // normalizedName -> bonus count
-
-        publishedMinutes.forEach(meeting => {
-          const items = Array.isArray((meeting.data || {}).actionItems) ? meeting.data.actionItems : [];
-          items.forEach(item => {
-            const isCompleted = (item.status || '').toString().toLowerCase() === 'completed' || item.completed === true;
-            if (!isCompleted) return;
-            const personRaw = item.person || item.responsible_person || item.assignee || item.assigned_to || item.responsible;
-            const personName = typeof personRaw === 'string' ? personRaw : (personRaw && (personRaw.name || personRaw.full_name));
-            if (!personName) return;
-            const key = normalizeKey(personName);
-            bonusMap[key] = (bonusMap[key] || 0) + 1;
-          });
-        });
-
         // Build a score for every member on the official roster
         const memberScores = (members || []).map(m => {
           const key = normalizeKey(m.name);
@@ -580,11 +569,10 @@
           const totalMeetings = classification.isBoard ? totalMeetingsAll : totalMeetingsClub;
           const attended = presentSets.filter(s => s.has(key)).length;
           const attendancePct = totalMeetings > 0 ? Math.round((attended / totalMeetings) * 1000) / 10 : 0;
-          const actionBonus = bonusMap[key] || 0;
           const bloodEntryCount = bloodEntryCountMap[key] || 0;
           const bloodBonus = Math.floor(bloodEntryCount / 10); // 10 entries = 1 point
           const coordinatorPoints = coordinatorPointsMap[m.id] || 0; // matched by members.id
-          const bonus = actionBonus + bloodBonus + coordinatorPoints;
+          const bonus = bloodBonus + coordinatorPoints;
           const photoUrl = m.photo_url || m.photo || m.profile_image || null;
           const finalScore = attendancePct + bonus;
 
@@ -595,7 +583,6 @@
             photoUrl,
             attendancePct,
             bonus,
-            actionBonus,
             bloodEntryCount,
             bloodBonus,
             coordinatorPoints,
@@ -650,7 +637,7 @@
         if (exportBtn) exportBtn.disabled = latestExportData.length === 0;
 
         // Troubleshooting details go to the browser console only (not shown on page)
-        console.log('Recognition data loaded:', { publishedMinutes, members, bonusMap, bloodEntryCountMap, memberScores, leaderWinners, risingWinners });
+        console.log('Recognition data loaded:', { publishedMinutes, members, bloodEntryCountMap, memberScores, leaderWinners, risingWinners });
 
       } catch (err) {
         console.error('Recognition page error:', err);
@@ -680,7 +667,6 @@
         'Meetings Counted': m.totalMeetings,
         'Meetings Attended': m.attended,
         'Attendance %': m.attendancePct,
-        'Action Item Bonus': m.actionBonus,
         'Blood Donor Entries': m.bloodEntryCount,
         'Blood Entry Bonus': m.bloodBonus,
         'Completed Project Coordinator Points': m.coordinatorPoints || 0,
@@ -692,7 +678,7 @@
       const worksheet = XLSX.utils.json_to_sheet(rows);
       worksheet['!cols'] = [
         { wch: 26 }, { wch: 20 }, { wch: 22 }, { wch: 16 },
-        { wch: 16 }, { wch: 13 }, { wch: 16 }, { wch: 18 },
+        { wch: 16 }, { wch: 13 }, { wch: 18 },
         { wch: 16 }, { wch: 26 }, { wch: 13 }, { wch: 12 }, { wch: 24 }
       ];
 

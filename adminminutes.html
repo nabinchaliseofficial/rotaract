@@ -1321,7 +1321,6 @@
             <h2><i class="fa-solid fa-file-lines" style="color: var(--primary);"></i> Real-Time Meeting Minutes Log</h2>
             <div class="panel-actions">
                 <button class="action-btn" id="refresh-minutes-btn"><i class="fa-solid fa-rotate"></i> Refresh</button>
-                <button class="action-btn clear-btn-accent" id="clear-minutes-btn"><i class="fa-solid fa-trash-can" style="color:#ef4444;"></i> Clear All</button>
             </div>
         </div>
         <div class="print-selector-bar">
@@ -2260,11 +2259,19 @@
                 const updatedData = { ...m, actionItems: items.map((it, i) => i === itemIndex ? { ...it, status: newStatus } : it) };
 
                 try {
-                    const { error } = await supabase
+                    const { data: updateResult, error } = await supabase
                         .from('meeting_minutes')
                         .update({ data: updatedData })
-                        .eq('id', meetingId);
+                        .eq('id', row.id)
+                        .select();
+
                     if (error) throw error;
+
+                    if (!updateResult || updateResult.length === 0) {
+                        showToast('❌ Update failed: no row matched (check RLS UPDATE policy on meeting_minutes)', 'error');
+                        renderActionItemsTracker();
+                        return;
+                    }
 
                     // Reflect the change locally without a full reload
                     row.data = updatedData;
@@ -2310,29 +2317,6 @@
                     showToast('❌ Error deleting: ' + err.message, 'error');
                 }
             };
-
-            // ============================================================
-            // ===== CLEAR ALL MINUTES =====
-            // ============================================================
-            document.getElementById('clear-minutes-btn')?.addEventListener('click', async () => {
-                if (!confirm("⚠️ Are you sure you want to DELETE ALL meeting minutes permanently?")) return;
-                const feedContainer = document.getElementById('minutes-feed');
-                feedContainer.innerHTML =
-                    '<div class="status-msg"><i class="fa-solid fa-spinner fa-spin"></i> Deleting all minutes...</div>';
-                try {
-                    const { error } = await supabase
-                        .from('meeting_minutes')
-                        .delete()
-                        .neq('id', '0');
-                    if (error) throw error;
-                    showToast('✅ All minutes deleted!', 'success');
-                    await loadMeetingMinutes();
-                } catch (err) {
-                    feedContainer.innerHTML =
-                        `<div class="status-msg" style="color:#ef4444;"><i class="fa-solid fa-circle-exclamation"></i> Error: ${err.message}</div>`;
-                    showToast('❌ Error clearing minutes: ' + err.message, 'error');
-                }
-            });
 
             // ============================================================
             // ===== POPULATE PRINT PREVIEW =====
@@ -2862,6 +2846,9 @@
             // ===== REALTIME SUBSCRIPTIONS =====
             // ============================================================
             const setupRealtimeSubscriptions = () => {
+                if (window.__realtimeSubscriptionsActive) return;
+                window.__realtimeSubscriptionsActive = true;
+
                 supabase.channel('minutes-changes')
                     .on('postgres_changes', {
                         event: '*',

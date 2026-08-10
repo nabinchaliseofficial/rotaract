@@ -705,12 +705,14 @@
       text-transform: uppercase; letter-spacing: 0.3px;
     }
     .winner-item {
-      display: flex; align-items: center; gap: 16px; background: var(--bg-white);
-      padding: 14px 18px; border-radius: 60px; border: 1px solid rgba(226, 232, 240, 0.3);
+      display: flex; align-items: center; flex-wrap: wrap; gap: 12px 16px; background: var(--bg-white);
+      padding: 14px 18px; border-radius: 28px; border: 1px solid rgba(226, 232, 240, 0.3);
       margin-bottom: 12px; transition: all 0.2s ease;
     }
+    [data-theme="dark"] .winner-item { border-color: rgba(255, 255, 255, 0.08); }
     .winner-item:last-child { margin-bottom: 0; }
     .winner-item:hover { border-color: var(--primary); background: var(--primary-light); }
+    [data-theme="dark"] .winner-item:hover { background: rgba(217, 26, 92, 0.1); }
     .winner-avatar {
       width: 52px; height: 52px; border-radius: 50%; object-fit: cover; background: #e2e8f0;
       flex-shrink: 0; display: flex; align-items: center; justify-content: center;
@@ -718,18 +720,39 @@
       border: 2px solid var(--gold);
     }
     .winner-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .winner-info { flex: 1; min-width: 0; }
+    .winner-info { flex: 1 1 140px; min-width: 0; }
     .winner-name { font-weight: 700; font-size: 1rem; color: var(--text-primary); display: block; }
-    .winner-designation { font-size: 0.8rem; color: var(--text-muted); }
+    .winner-designation {
+      font-size: 0.75rem; color: var(--text-muted); background: rgba(226, 232, 240, 0.5);
+      padding: 2px 10px; border-radius: 30px; display: inline-block; margin-top: 4px;
+    }
+    [data-theme="dark"] .winner-designation { background: rgba(255, 255, 255, 0.06); }
+    .winner-stats {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+      margin-left: auto; width: 100%; justify-content: flex-end;
+    }
+    @media (min-width: 480px) { .winner-stats { width: auto; } }
     .winner-score {
       background: var(--gold); color: var(--dark); font-weight: 700; font-size: 0.85rem;
       padding: 4px 16px; border-radius: 40px; flex-shrink: 0; display: flex; align-items: center; gap: 4px;
     }
+    .attendance-badge, .bonus-badge {
+      background: rgba(226, 232, 240, 0.6); color: var(--text-secondary); font-weight: 700;
+      font-size: 0.72rem; padding: 4px 12px; border-radius: 40px; flex-shrink: 0;
+      display: flex; align-items: center; gap: 4px; white-space: nowrap;
+    }
+    [data-theme="dark"] .attendance-badge, [data-theme="dark"] .bonus-badge { background: rgba(255, 255, 255, 0.08); color: var(--text-muted); }
     .blood-badge {
       background: rgba(217, 26, 92, 0.1); color: var(--primary); font-weight: 700;
       font-size: 0.75rem; padding: 4px 14px; border-radius: 40px; flex-shrink: 0;
-      display: flex; align-items: center; gap: 4px;
+      display: flex; align-items: center; gap: 4px; white-space: nowrap;
     }
+    .coordinator-badge {
+      background: rgba(212, 175, 55, 0.15); color: var(--primary-dark); font-weight: 700;
+      font-size: 0.75rem; padding: 4px 14px; border-radius: 40px; flex-shrink: 0;
+      display: flex; align-items: center; gap: 4px; white-space: nowrap;
+    }
+    [data-theme="dark"] .coordinator-badge { color: var(--gold-light); }
     .no-winner { color: var(--text-muted); font-size: 0.95rem; font-style: italic; padding: 12px 0; text-align: center; }
     .recognition-loading, .recognition-error { text-align: center; padding: 30px 0; font-size: 1.1rem; color: var(--text-muted); }
     .recognition-error { color: #EF4444; }
@@ -737,6 +760,10 @@
       .recognition-grid { grid-template-columns: 1fr; gap: 24px; }
       .recognition-section .section-header h2 { font-size: 2.2rem; }
       .recognition-card .award-title { font-size: 1.3rem; }
+    }
+    @media (max-width: 480px) {
+      .winner-item { border-radius: 20px; padding: 14px; }
+      .winner-stats { justify-content: flex-start; }
     }
 
     /* ===== PAST PRESIDENTS & ADVISORS ===== */
@@ -1467,7 +1494,7 @@
 <section class="recognition-section" id="recognition">
   <div class="section-header">
     <h2><i class="fas fa-trophy" style="color:var(--gold);margin-right:12px;"></i> Recognition · R.Y. 2026-27</h2>
-    <p>Outstanding Club Leader &amp; Rising Star based on attendance and action items</p>
+    <p>Outstanding Club Leader &amp; Rising Star based on attendance and bonus points</p>
   </div>
   <div class="recognition-grid" id="recognitionGrid">
     <div class="recognition-card">
@@ -2279,9 +2306,30 @@
     }
     renderPartnersSponsors();
 
-    // ---------- RECOGNITION (unchanged) ----------
+    // ---------- RECOGNITION (mirrors recognition.html scoring engine) ----------
     const leaderContainer = document.getElementById('leaderWinners');
     const risingContainer = document.getElementById('risingWinners');
+
+    // Case-insensitively strip any existing Rtr/RTR/rtr prefix before
+    // re-adding one canonical "RTR. " prefix, so names never render
+    // inconsistently or double-prefixed. Matches recognition.html exactly.
+    function getFullNameWithPrefix(name) {
+      const raw = (name || '').toString().trim();
+      if (!raw) return 'Member';
+      const withoutRtr = raw.replace(/^rtr(?:\.\s*|\s+)/i, '').trim();
+      if (withoutRtr !== raw) return `RTR. ${withoutRtr}`;
+      if (/^(dr|mr|ms|mrs|rit)(?:\.\s*|\s+)/i.test(raw)) return raw;
+      return `RTR. ${raw}`;
+    }
+
+    function getAvatarHtml(name, photoUrl) {
+      if (photoUrl) {
+        return `<img src="${escapeHtml(photoUrl)}" alt="${escapeHtml(name)}">`;
+      }
+      const withoutTitle = (name || '').replace(/^(rtr|dr|mr|ms|mrs|rit)(?:\.\s*|\s+)/i, '');
+      const initials = withoutTitle.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+      return escapeHtml(initials || 'M');
+    }
 
     async function fetchRecognitionData() {
       leaderContainer.innerHTML = `<div class="recognition-loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>`;
@@ -2313,21 +2361,50 @@
 
         if (memError) throw new Error('Members fetch failed: ' + memError.message);
 
-        // Blood donor entry bonus
+        // Blood donor entry bonus: +1 per 10 rows entered into
+        // blood_bridge_galkot (data_entry_by), counted only for rows
+        // created on or before Aug 10, 2026 11:59:59 PM Nepal Time
+        // (Asia/Kathmandu, UTC+5:45). Soft-fails so a problem here never
+        // breaks the rest of the scoring.
+        // Cutoff expressed as a UTC instant: 2026-08-10 23:59:59 NPT (UTC+5:45)
+        // = 2026-08-10 18:14:59 UTC.
+        const BLOOD_BRIDGE_CUTOFF_UTC_MS = Date.UTC(2026, 7, 10, 18, 14, 59, 999);
         const bloodEntryCountMap = {};
         try {
           const { data: bloodRows, error: bloodError } = await supabase
             .from('blood_bridge_galkot')
-            .select('data_entry_by');
+            .select('data_entry_by, created_at');
           if (bloodError) throw bloodError;
           (bloodRows || []).forEach(row => {
             const who = row.data_entry_by;
             if (!who) return;
+            const createdMs = Date.parse(row.created_at);
+            if (Number.isNaN(createdMs) || createdMs > BLOOD_BRIDGE_CUTOFF_UTC_MS) return;
             const key = normalizeKey(who);
             bloodEntryCountMap[key] = (bloodEntryCountMap[key] || 0) + 1;
           });
         } catch (bloodErr) {
           console.warn('Blood donor entry bonus skipped:', bloodErr.message || bloodErr);
+        }
+
+        // Completed-project coordinator bonus: +1 per project where the
+        // member is project_coordinator_id AND status is 'completed'.
+        // Matched by member id, calculated fresh on every load. Soft-fails
+        // like the blood donor bonus above.
+        const coordinatorPointsMap = {};
+        try {
+          const { data: coordProjects, error: coordError } = await supabase
+            .from('upcoming_projects')
+            .select('project_coordinator_id, status')
+            .eq('status', 'completed');
+          if (coordError) throw coordError;
+          (coordProjects || []).forEach(row => {
+            const coordId = row.project_coordinator_id;
+            if (!coordId) return;
+            coordinatorPointsMap[coordId] = (coordinatorPointsMap[coordId] || 0) + 1;
+          });
+        } catch (coordErr) {
+          console.warn('Completed project coordinator bonus skipped:', coordErr.message || coordErr);
         }
 
         const BOARD_DESIGNATIONS = [
@@ -2384,20 +2461,6 @@
           return new Set(list.map(p => normalizeKey(p && (p.name || p.full_name || p))));
         });
 
-        const bonusMap = {};
-        publishedMinutes.forEach(meeting => {
-          const items = Array.isArray((meeting.data || {}).actionItems) ? meeting.data.actionItems : [];
-          items.forEach(item => {
-            const isCompleted = (item.status || '').toString().toLowerCase() === 'completed' || item.completed === true;
-            if (!isCompleted) return;
-            const personRaw = item.person || item.responsible_person || item.assignee || item.assigned_to || item.responsible;
-            const personName = typeof personRaw === 'string' ? personRaw : (personRaw && (personRaw.name || personRaw.full_name));
-            if (!personName) return;
-            const key = normalizeKey(personName);
-            bonusMap[key] = (bonusMap[key] || 0) + 1;
-          });
-        });
-
         const memberScores = (members || []).map(m => {
           const key = normalizeKey(m.name);
           const classification = classifyMember(m);
@@ -2405,16 +2468,16 @@
           const totalMeetings = classification.isBoard ? totalMeetingsAll : totalMeetingsClub;
           const attended = presentSets.filter(s => s.has(key)).length;
           const attendancePct = totalMeetings > 0 ? Math.round((attended / totalMeetings) * 1000) / 10 : 0;
-          const actionBonus = bonusMap[key] || 0;
           const bloodEntryCount = bloodEntryCountMap[key] || 0;
           const bloodBonus = Math.floor(bloodEntryCount / 10);
-          const bonus = actionBonus + bloodBonus;
+          const coordinatorPoints = coordinatorPointsMap[m.id] || 0;
+          const bonus = bloodBonus + coordinatorPoints;
           const photoUrl = m.photo_url || m.photo || m.profile_image || null;
           const finalScore = attendancePct + bonus;
           return {
             id: m.id, fullName: m.name, designation: classification.designation,
-            photoUrl, attendancePct, bonus, actionBonus, bloodEntryCount, bloodBonus,
-            finalScore, isBoard: classification.isBoard, isPresident: classification.isPresident
+            photoUrl, attendancePct, bonus, bloodEntryCount, bloodBonus,
+            coordinatorPoints, finalScore, isBoard: classification.isBoard, isPresident: classification.isPresident
           };
         });
 
@@ -2431,20 +2494,26 @@
             container.innerHTML = `<div class="no-winner"><i class="fas fa-circle-exclamation"></i> No eligible winner</div>`;
             return;
           }
-          container.innerHTML = winners.map(w => `
+          container.innerHTML = winners.map(w => {
+            const name = getFullNameWithPrefix(w.fullName);
+            const designation = escapeHtml(w.designation || 'Member');
+            return `
             <div class="winner-item">
-              <div class="winner-avatar">
-                ${w.photoUrl ? `<img src="${w.photoUrl}" alt="${w.fullName}">` : 
-                  (w.fullName ? w.fullName.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0,2) : 'M')}
-              </div>
+              <div class="winner-avatar">${getAvatarHtml(name, w.photoUrl)}</div>
               <div class="winner-info">
-                <span class="winner-name">${w.fullName || 'Member'}</span>
-                <span class="winner-designation">${w.designation || 'Member'}</span>
+                <span class="winner-name">${escapeHtml(name)}</span>
+                <span class="winner-designation">${designation}</span>
               </div>
-              ${w.bloodEntryCount > 0 ? `<div class="blood-badge"><i class="fas fa-droplet"></i> ${w.bloodEntryCount} (+${w.bloodBonus})</div>` : ''}
-              <div class="winner-score"><i class="fas fa-star"></i> ${w.finalScore.toFixed(1)}</div>
+              <div class="winner-stats">
+                <span class="attendance-badge"><i class="fas fa-user-check"></i> ${w.attendancePct}%</span>
+                <span class="bonus-badge"><i class="fas fa-plus-circle"></i> +${w.bonus}</span>
+                ${w.bloodEntryCount > 0 ? `<span class="blood-badge"><i class="fas fa-droplet"></i> ${w.bloodEntryCount} (+${w.bloodBonus})</span>` : ''}
+                ${w.coordinatorPoints > 0 ? `<span class="coordinator-badge"><i class="fas fa-clipboard-check"></i> +${w.coordinatorPoints}</span>` : ''}
+                <span class="winner-score"><i class="fas fa-star"></i> ${w.finalScore.toFixed(1)}</span>
+              </div>
             </div>
-          `).join('');
+          `;
+          }).join('');
         }
 
         renderWinnerList(leaderWinners, leaderContainer);
