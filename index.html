@@ -2362,24 +2362,19 @@
         if (memError) throw new Error('Members fetch failed: ' + memError.message);
 
         // Blood donor entry bonus: +1 per 10 rows entered into
-        // blood_bridge_galkot (data_entry_by), counted only for rows
-        // created on or before Aug 10, 2026 11:59:59 PM Nepal Time
-        // (Asia/Kathmandu, UTC+5:45). Soft-fails so a problem here never
-        // breaks the rest of the scoring.
-        // Cutoff expressed as a UTC instant: 2026-08-10 23:59:59 NPT (UTC+5:45)
-        // = 2026-08-10 18:14:59 UTC.
-        const BLOOD_BRIDGE_CUTOFF_UTC_MS = Date.UTC(2026, 7, 10, 18, 14, 59, 999);
+        // blood_bridge_galkot (data_entry_by). No date cutoff - always
+        // counts every row currently in the table, recalculated fresh from
+        // the database on every page load. Soft-fails so a problem here
+        // never breaks the rest of the scoring.
         const bloodEntryCountMap = {};
         try {
           const { data: bloodRows, error: bloodError } = await supabase
             .from('blood_bridge_galkot')
-            .select('data_entry_by, created_at');
+            .select('data_entry_by');
           if (bloodError) throw bloodError;
           (bloodRows || []).forEach(row => {
             const who = row.data_entry_by;
             if (!who) return;
-            const createdMs = Date.parse(row.created_at);
-            if (Number.isNaN(createdMs) || createdMs > BLOOD_BRIDGE_CUTOFF_UTC_MS) return;
             const key = normalizeKey(who);
             bloodEntryCountMap[key] = (bloodEntryCountMap[key] || 0) + 1;
           });

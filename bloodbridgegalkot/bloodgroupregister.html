@@ -223,11 +223,6 @@
         <div class="field-hint" id="phoneHint"></div>
       </div>
 
-      <div class="field">
-        <label for="data_entry_by">Your Name (entered by)</label>
-        <input type="text" id="data_entry_by" placeholder="Optional" />
-      </div>
-
       <!-- Honeypot field: real users never see or fill this. Bots often do. -->
       <div class="hp-field" aria-hidden="true">
         <label for="website">Leave this field blank</label>
@@ -493,8 +488,7 @@ function getFormData(){
     blood_group: selectedBloodGroup,
     municipality: "Galkot Municipality",
     ward_number: document.getElementById("ward_number").value.trim(),
-    phone_number: phoneInput.value.trim(),
-    data_entry_by: document.getElementById("data_entry_by").value.trim()
+    phone_number: phoneInput.value.trim()
   };
 }
 
@@ -524,7 +518,6 @@ document.getElementById("confirmSubmitBtn").addEventListener("click", async () =
       municipality: payload.municipality,
       ward_number: payload.ward_number || null,
       phone_number: payload.phone_number,
-      data_entry_by: payload.data_entry_by || null,
       status: "pending"
     }]);
 

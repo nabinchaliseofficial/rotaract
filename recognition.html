@@ -463,28 +463,23 @@
         if (memError) throw new Error('Members fetch failed: ' + memError.message);
 
         // Blood donor data-entry bonus: every 10 rows a member entered into
-        // blood_bridge_galkot (data_entry_by) is worth +1 point, counted
-        // only for rows created on or before Aug 10, 2026 11:59:59 PM Nepal
-        // Time (Asia/Kathmandu, UTC+5:45) - entries after that cutoff do not
-        // contribute to the score. Counts every row regardless of status
-        // (active/inactive) since the credit is for the entry work done, not
-        // for whether that donor record is still active today. Soft-fails
-        // (logs a warning, contributes 0) so a problem with this table never
-        // breaks attendance scoring for everyone else.
-        // Cutoff expressed as a UTC instant: 2026-08-10 23:59:59 NPT (UTC+5:45)
-        // = 2026-08-10 18:14:59 UTC.
-        const BLOOD_BRIDGE_CUTOFF_UTC_MS = Date.UTC(2026, 7, 10, 18, 14, 59, 999);
+        // blood_bridge_galkot (data_entry_by) is worth +1 point. No date
+        // cutoff - always counts every row currently in the table
+        // (including brand-new entries), recalculated fresh from the
+        // database on every page load. Counts every row regardless of
+        // status (active/inactive) since the credit is for the entry work
+        // done, not for whether that donor record is still active today.
+        // Soft-fails (logs a warning, contributes 0) so a problem with this
+        // table never breaks attendance scoring for everyone else.
         const bloodEntryCountMap = {}; // normalizedName -> row count
         try {
           const { data: bloodRows, error: bloodError } = await supabase
             .from('blood_bridge_galkot')
-            .select('data_entry_by, created_at');
+            .select('data_entry_by');
           if (bloodError) throw bloodError;
           (bloodRows || []).forEach(row => {
             const who = row.data_entry_by;
             if (!who) return;
-            const createdMs = Date.parse(row.created_at);
-            if (Number.isNaN(createdMs) || createdMs > BLOOD_BRIDGE_CUTOFF_UTC_MS) return;
             const key = normalizeKey(who);
             bloodEntryCountMap[key] = (bloodEntryCountMap[key] || 0) + 1;
           });
@@ -559,6 +554,49 @@
           return new Set(list.map(p => normalizeKey(p && (p.name || p.full_name || p))));
         });
 
+        // ==================================================================
+        // RECOGNITION SCORE FORMULA (documentation only - logic unchanged)
+        // ==================================================================
+        // 1. Attendance Percentage
+        //    - Board Members: counted against ALL Published meetings
+        //      (totalMeetingsAll / presentSetsAll).
+        //    - Club Members: counted only against General Meeting, Club
+        //      Assembly, Special General Meeting, and Annual General Meeting
+        //      (AGM) - Board Meeting and Special Board Meeting are excluded
+        //      (totalMeetingsClub / presentSetsClub, via isBoardOnlyMeetingType).
+        //    Formula: Attendance % = (Meetings Attended / Meetings Counted) x 100
+        //    Rounded to one decimal place (Math.round(... * 1000) / 10).
+        //
+        // 2. Blood Donation Bonus
+        //    Source: blood_bridge_galkot table, grouped by data_entry_by.
+        //    No date/cutoff restriction - always counts every record
+        //    currently in the table, recalculated fresh from the database
+        //    on every page load, so new entries are reflected immediately.
+        //    Formula: Blood Bonus = floor(Blood Entry Count / 10)
+        //    e.g. 9 entries = 0, 10 = +1, 20 = +2, 30 = +3, 45 = +4.
+        //
+        // 3. Project Coordinator Bonus
+        //    Source: upcoming_projects where project_coordinator_id matches
+        //    the member and status = 'completed' (coordinatorPointsMap).
+        //    Formula: Coordinator Bonus = Number of Completed Projects
+        //    (+1 point per completed project coordinated).
+        //
+        // 4. Total Bonus
+        //    Formula: Total Bonus = Blood Bonus + Coordinator Bonus
+        //
+        // 5. Final Recognition Score
+        //    Formula: Final Score = Attendance % + Total Bonus
+        //    Example: Attendance 92.5% + Blood Bonus 2 + Coordinator Bonus 3
+        //             = Total Bonus 5 -> Final Score 97.5
+        //
+        // 6. Winner Selection (logic unchanged, see below)
+        //    - Outstanding Club Leader: highest Final Score among eligible
+        //      Board Members, excluding the President.
+        //    - Rising Star: highest Final Score among eligible Club Members
+        //      (non-board members).
+        //    - Ties: all members sharing the highest Final Score are all
+        //      shown as winners (see leaderWinners / risingWinners filters).
+        // ==================================================================
         // Build a score for every member on the official roster
         const memberScores = (members || []).map(m => {
           const key = normalizeKey(m.name);
