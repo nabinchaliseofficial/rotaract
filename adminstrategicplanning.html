@@ -291,13 +291,16 @@
 
         async function checkAdminAndLoad(user) {
             currentUser = user;
-            const { data: adminRow, error } = await sb
-                .from('admin_users')
-                .select('id')
+            
+            // Check if user has admin role in user_roles table
+            const { data: roleData, error } = await sb
+                .from('user_roles')
+                .select('role')
                 .eq('user_id', user.id)
+                .eq('status', 'active')
                 .maybeSingle();
 
-            if (error || !adminRow) {
+            if (error || !roleData || roleData.role !== 'admin') {
                 document.getElementById('loginModal').style.display = 'none';
                 document.getElementById('adminApp').style.display = 'none';
                 document.getElementById('blockedState').style.display = 'block';

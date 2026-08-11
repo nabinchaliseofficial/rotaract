@@ -1286,6 +1286,8 @@
                 <!-- NEW: Index Gallery -->
                 <button class="nav-item" data-module="admingallery.html"><i class="fa-solid fa-images"></i> Index Gallery</button>
                 <button class="nav-item" data-module="adminnotification-center.html"><i class="fa-solid fa-bell"></i> Notification Center</button>
+                <!-- NEW: Strategic Planning -->
+                <button class="nav-item" data-module="adminstrategicplanning.html"><i class="fa-solid fa-chess"></i> Strategic Planning</button>
 
                 <div class="nav-group-label">Account</div>
                 <button class="nav-item" data-module="blog/dashboard.html"><i class="fa-solid fa-newspaper"></i> Blog dashboard</button>
@@ -1409,6 +1411,13 @@
                         <span class="icon-wrap"><i class="fa-solid fa-bell"></i></span>
                         <h3>Notification Center</h3>
                         <p>Live alerts for new submissions across all tables</p>
+                        <span class="go">Open <i class="fa-solid fa-arrow-right"></i></span>
+                    </div>
+                    <!-- NEW: Strategic Planning -->
+                    <div class="module-card c-strategic" data-module="adminstrategicplanning.html" role="button" tabindex="0">
+                        <span class="icon-wrap"><i class="fa-solid fa-chess"></i></span>
+                        <h3>Strategic Planning</h3>
+                        <p>Club strategic planning and goals editor</p>
                         <span class="go">Open <i class="fa-solid fa-arrow-right"></i></span>
                     </div>
                 </div>
@@ -1797,6 +1806,9 @@
                     sub: 'Manage gallery images and media.' },
                 'adminnotification-center.html': { title: 'Notification Center', icon: 'fa-solid fa-bell',
                     sub: 'Live alerts for new submissions across all tables.' },
+                // NEW: Strategic Planning
+                'adminstrategicplanning.html': { title: 'Strategic Planning', icon: 'fa-solid fa-chess',
+                    sub: 'Club strategic planning and goals editor.' },
                 'blog/dashboard.html': { title: 'Blog dashboard', icon: 'fa-solid fa-newspaper',
                     sub: 'Write and manage blog posts.' },
                 '/index.html': { title: 'Portfolio home', icon: 'fa-solid fa-house',
@@ -1976,7 +1988,16 @@
                 'partners_sponsors', 'profiles', 'project2026_coordinators', 'project_applications',
                 'role_audit_log', 'rotaract_galkot_members', 'rotaract_lhe', 'rotaract_lhe_requests',
                 'rotaract_verify', 'running_programs', 'spiritual_quotes', 'upcoming_projects',
-                'user_roles', 'verification_logs'
+                'user_roles', 'verification_logs',
+                // NEW: additional live tables
+                'dashboard_stats', 'financial_accounts', 'financial_audit_logs', 'financial_categories',
+                'financial_transactions', 'gallery_photos', 'meeting_minutes_view', 'meeting_mode_value',
+                'member_attendance_from_meetings', 'monthly_financial_summary', 'notification_admin_settings',
+                'notification_audit_log', 'notification_source_tables', 'notifications',
+                'project_applications_view', 'qr_codes', 'rotaract_suchana', 'rotaract_verify_backup',
+                'setting_value', 'site_stats', 'strategic_planning', 'v_account_balance_summary',
+                'v_category_wise_summary', 'v_daily_summary', 'v_monthly_financial_report',
+                'v_pending_approvals', 'v_transaction_details', 'verification_stats'
             ];
 
 
@@ -2303,6 +2324,109 @@
                 spiritual_quotes: ['id', 'day', 'quote', 'author', 'category', 'created_at', 'updated_at'],
                 upcoming_projects: ['id', 'name', 'description', 'date', 'target_audience', 'location', 'status',
                     'created_at', 'updated_at'
+                ],
+                // NEW: additional live tables
+                dashboard_stats: ['total_students', 'certificates_issued', 'average_grade', 'passed_students',
+                    'failed_students', 'total_courses', 'total_verifications'
+                ],
+                financial_accounts: ['id', 'account_name', 'account_type', 'bank_name', 'account_number',
+                    'account_holder', 'opening_balance', 'current_balance', 'currency', 'status', 'notes',
+                    'created_by', 'created_at', 'updated_at', 'deleted_at', 'deleted_by'
+                ],
+                financial_audit_logs: ['id', 'user_id', 'user_email', 'user_role', 'action', 'transaction_id',
+                    'transfer_id', 'table_name', 'record_id', 'old_data', 'new_data', 'reason', 'ip_address',
+                    'user_agent', 'created_at'
+                ],
+                financial_categories: ['id', 'category_type', 'category_name', 'description', 'is_active',
+                    'sort_order', 'status', 'created_at'
+                ],
+                financial_transactions: ['id', 'transaction_type', 'transaction_date', 'category', 'description',
+                    'amount', 'payment_method', 'account_id', 'reference_number', 'receipt_number', 'voucher_number',
+                    'income_source', 'received_by', 'paid_to', 'bill_receipt_url', 'remarks', 'attachment_url',
+                    'approval_status', 'approved_by', 'approved_at', 'rejection_reason', 'rejected_by',
+                    'rejected_at', 'created_by', 'created_at', 'updated_at', 'updated_by', 'deleted_at',
+                    'deleted_by', 'deletion_reason'
+                ],
+                gallery_photos: ['id', 'project_name', 'description', 'photo_url', 'storage_path', 'display_order',
+                    'status', 'created_by', 'created_at', 'updated_at'
+                ],
+                meeting_minutes_view: ['id', 'data', 'created_at', 'user_id', 'status', 'prepared_by',
+                    'approved_by', 'meeting_type', 'rotary_year', 'fiscal_year', 'quorum_status', 'meeting_start',
+                    'meeting_end', 'duration', 'members_present', 'guests_count', 'online_count',
+                    'attendance_percent', 'closing_remarks', 'updated_at', 'meeting_number', 'venue',
+                    'chairperson', 'meeting_date'
+                ],
+                meeting_mode_value: ['setting_value'],
+                member_attendance_from_meetings: ['member_id', 'name', 'designation', 'photo_url',
+                    'meetings_attended', 'total_meetings', 'attendance_percentage'
+                ],
+                monthly_financial_summary: ['id', 'month', 'transaction_type', 'total_amount',
+                    'transaction_count', 'approval_status', 'created_at', 'updated_at'
+                ],
+                notification_admin_settings: ['admin_id', 'saved_filters', 'theme', 'sound_enabled',
+                    'sound_volume', 'browser_notif_enabled', 'email_notif_enabled', 'widget_layout', 'updated_at'
+                ],
+                notification_audit_log: ['id', 'notification_id', 'admin_id', 'admin_email', 'action', 'details',
+                    'created_at'
+                ],
+                notification_source_tables: ['id', 'table_name', 'person_name_column', 'status_column',
+                    'summary_column', 'created_by_column', 'enabled', 'created_at', 'default_priority'
+                ],
+                notifications: ['id', 'table_name', 'record_id', 'person_name', 'submitted_by', 'status',
+                    'summary', 'is_read', 'read_at', 'read_by', 'is_reviewed', 'reviewed_at', 'reviewed_by',
+                    'email_sent', 'created_at', 'created_by', 'metadata', 'event_type', 'priority', 'is_archived',
+                    'is_pinned', 'is_starred', 'snoozed_until', 'assigned_admin', 'note', 'ip_address',
+                    'user_agent'
+                ],
+                project_applications_view: ['id', 'project_name', 'applicant_name', 'email', 'phone_number',
+                    'message', 'application_status', 'application_date', 'project_description', 'project_date',
+                    'project_location'
+                ],
+                qr_codes: ['id', 'title', 'url', 'sort_order', 'created_at', 'updated_at', 'description',
+                    'category', 'status', 'featured', 'start_date', 'expiry_date', 'fg_color', 'bg_color',
+                    'deleted_at'
+                ],
+                rotaract_suchana: ['id', 'fiscal_year', 'date', 'to_address', 'subject', 'title', 'club',
+                    'issued_by', 'created_at', 'updated_at', 'body', 'letter_type', 'signed_by', 'designation',
+                    'letter_status', 'verification_id'
+                ],
+                rotaract_verify_backup: ['id', 'fiscal_year', 'ref_no', 'date', 'to_address', 'subject', 'title',
+                    'club', 'issued_by', 'created_at', 'updated_at', 'body', 'letter_type', 'signed_by',
+                    'designation', 'letter_status', 'verification_id', 'recipient_name', 'recipient_club_name',
+                    'recipient_rid', 'rotary_year', 'sponsored_club', 'sender_rid', 'sender_sponsored_club',
+                    'president_signature_url', 'secretary_name', 'secretary_signature_url',
+                    'international_chair_name', 'international_chair_signature_url', 'sign_place', 'message',
+                    'doc_type'
+                ],
+                setting_value: ['setting_value'],
+                site_stats: ['id', 'visits'],
+                strategic_planning: ['id', 'data', 'updated_at', 'updated_by'],
+                v_account_balance_summary: ['id', 'account_name', 'account_type', 'bank_name', 'account_number',
+                    'opening_balance', 'current_balance', 'total_income', 'total_expense', 'status',
+                    'created_at', 'updated_at'
+                ],
+                v_category_wise_summary: ['category', 'transaction_type', 'transaction_count', 'total_amount',
+                    'average_amount', 'last_transaction_date'
+                ],
+                v_daily_summary: ['transaction_date', 'transaction_type', 'count', 'total_amount'],
+                v_monthly_financial_report: ['month', 'transaction_type', 'transaction_count', 'total_amount',
+                    'average_amount', 'min_amount', 'max_amount', 'approval_status'
+                ],
+                v_pending_approvals: ['id', 'transaction_type', 'transaction_date', 'category', 'description',
+                    'amount', 'payment_method', 'account_id', 'remarks', 'approval_status', 'created_by',
+                    'created_at', 'account_name', 'account_type', 'bank_name', 'submitted_by_name',
+                    'submitted_by_email'
+                ],
+                v_transaction_details: ['id', 'transaction_type', 'transaction_date', 'category', 'description',
+                    'amount', 'payment_method', 'account_id', 'reference_number', 'receipt_number',
+                    'voucher_number', 'income_source', 'received_by', 'paid_to', 'bill_receipt_url', 'remarks',
+                    'attachment_url', 'approval_status', 'approved_by', 'approved_at', 'rejection_reason',
+                    'rejected_by', 'rejected_at', 'created_by', 'created_at', 'updated_at', 'updated_by',
+                    'deleted_at', 'deleted_by', 'deletion_reason', 'account_name', 'account_type', 'bank_name',
+                    'created_by_name', 'created_by_email', 'approved_by_name', 'updated_by_name'
+                ],
+                verification_stats: ['total_students', 'passed', 'failed', 'pass_percentage',
+                    'certificates_issued', 'last_updated'
                 ]
             };
             const TABLE_NAMES = Object.keys(TABLE_SCHEMA);

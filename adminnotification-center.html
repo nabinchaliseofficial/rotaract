@@ -275,6 +275,38 @@
   .kbd{ background:var(--panel-2); border:1px solid var(--border); border-radius:4px; padding:1px 6px; font-size:0.7rem; font-family:monospace; }
   .sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
   [data-tooltip]{ position:relative; }
+
+  /* ---------- Category badge (config-driven) ---------- */
+  .category-tag{ background:var(--purple); color:#fff; font-size:0.62rem; padding:2px 7px; border-radius:4px; opacity:0.85; }
+
+  /* ---------- Connection status detail (sidebar foot) ---------- */
+  .sync-dot.recovering{ background:var(--orange); animation:pulse 1s infinite; }
+  .sync-detail{ font-size:0.68rem; color:var(--text-dim); margin-top:4px; line-height:1.5; }
+  .sync-detail b{ color:var(--text); }
+
+  /* ---------- Health dashboard ---------- */
+  .health-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-bottom:18px; }
+  .health-card{ background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:14px; }
+  .health-card .h-label{ font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; }
+  .health-card .h-val{ font-size:1.3rem; font-weight:700; }
+  .health-card .h-val.ok{ color:var(--green); }
+  .health-card .h-val.warn{ color:var(--orange); }
+  .health-card .h-val.bad{ color:var(--red); }
+  .health-sub{ font-size:0.72rem; color:var(--text-dim); margin-top:2px; }
+
+  /* ---------- Failed notification manager ---------- */
+  .failed-table{ width:100%; border-collapse:collapse; font-size:0.8rem; }
+  .failed-table th{ text-align:left; color:var(--text-dim); font-weight:600; font-size:0.7rem; text-transform:uppercase; letter-spacing:.04em; padding:8px; border-bottom:1px solid var(--border); }
+  .failed-table td{ padding:8px; border-bottom:1px solid var(--border); vertical-align:top; }
+  .failed-table tr:hover td{ background:var(--panel-2); }
+  .retry-count{ background:var(--panel-2); border-radius:10px; padding:1px 8px; font-size:0.7rem; }
+
+  /* ---------- Drawer timeline / json actions ---------- */
+  .timeline{ display:flex; flex-direction:column; gap:8px; }
+  .timeline-item{ display:flex; gap:8px; font-size:0.78rem; }
+  .timeline-item .t-dot{ width:7px; height:7px; border-radius:50%; background:var(--accent); margin-top:5px; flex-shrink:0; }
+  .timeline-item .t-body .t-action{ font-weight:600; }
+  .timeline-item .t-body .t-meta{ color:var(--text-dim); font-size:0.7rem; }
 </style>
 </head>
 <body>
@@ -320,13 +352,18 @@
       <div class="nav-item" data-priority="high"><i class="fa-solid fa-circle" style="color:var(--orange);"></i><span>High</span><span class="count" id="cnt-high">0</span></div>
       <div class="nav-item" data-priority="medium"><i class="fa-solid fa-circle" style="color:var(--yellow);"></i><span>Medium</span><span class="count" id="cnt-medium">0</span></div>
       <div class="nav-item" data-priority="low"><i class="fa-solid fa-circle" style="color:var(--text-dim);"></i><span>Low</span><span class="count" id="cnt-low">0</span></div>
+      <div class="nav-section-label">Categories</div>
+      <div id="sidebar-categories"><!-- populated dynamically from notification_source_tables --></div>
       <div class="nav-section-label">Tables</div>
       <div id="sidebar-tables"><!-- populated dynamically --></div>
       <div class="nav-section-label">Dashboard</div>
       <div class="nav-item" data-view="analytics"><i class="fa-solid fa-chart-column"></i><span>Analytics</span></div>
+      <div class="nav-item" data-view="health"><i class="fa-solid fa-heart-pulse"></i><span>Health</span></div>
+      <div class="nav-item" data-view="failed"><i class="fa-solid fa-triangle-exclamation"></i><span>Failed</span><span class="count" id="cnt-failed">0</span></div>
     </nav>
     <div class="sidebar-foot">
-      <span class="sync-dot" id="sync-dot"></span><span id="sync-label">Connecting…</span>
+      <div><span class="sync-dot" id="sync-dot"></span><span id="sync-label">Connecting…</span></div>
+      <div class="sync-detail" id="sync-detail"></div>
     </div>
   </aside>
 
@@ -484,7 +521,32 @@ const TABLE_ADMIN_LINKS = {
   rotaract_verify: "letter/adminletter.html",
   members: "adminmembers.html",
   course_records: "admin.html",
-  certifications: "admin.html"
+  certifications: "admin.html",
+  // NEW: additional source tables
+  strategic_planning: "adminstrategicplanning.html",
+  approved_applications: "adminupcomingproject.html",
+  project2026_coordinators: "adminupcomingproject.html",
+  project_applications_view: "adminupcomingproject.html",
+  upcoming_projects: "adminupcomingproject.html",
+  blogs: "blog/dashboard.html",
+  gallery_photos: "admingallery.html",
+  banner_backgrounds: "adminbanner.html",
+  banner_settings: "adminbanner.html",
+  qr_codes: "adminqr.html",
+  meeting_minutes: "adminminutes.html",
+  meeting_minutes_history: "adminminutes.html",
+  meeting_minutes_v2: "adminminutes.html",
+  meeting_minutes_view: "adminminutes.html",
+  meetings: "adminminutes.html",
+  next_event: "nextevent.html",
+  blood_bridge_admins: "bloodbridgegalkot/adminbloodbridge.html",
+  certificate_settings: "cert/admindigitalcert.html",
+  verification_logs: "cert/admindigitalcert.html",
+  verification_stats: "cert/admindigitalcert.html",
+  rotaract_lhe: "letter/adminletter.html",
+  rotaract_lhe_requests: "letter/adminletter.html",
+  rotaract_suchana: "letter/adminletter.html",
+  rotaract_verify_backup: "letter/adminletter.html"
 };
 
 const PRIORITY_ORDER = { critical: 0, high: 1, medium: 2, low: 3 };
