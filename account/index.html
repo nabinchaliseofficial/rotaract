@@ -1863,6 +1863,10 @@
                             <option value="deleted">Deleted</option>
                             <option value="all">All</option>
                         </select>
+                        <select id="filterSortOrder" style="min-width:120px;" onchange="onTxnSortChange()">
+                            <option value="desc">Newest First</option>
+                            <option value="asc">Oldest First</option>
+                        </select>
                         <button class="btn btn-primary btn-sm" onclick="loadTransactions()"><i class="fas fa-search"></i></button>
                         <button class="btn btn-outline btn-sm" onclick="resetFilters()"><i class="fas fa-undo"></i></button>
                     </div>
@@ -1884,6 +1888,14 @@
                             <tbody id="transactionsBody">
                                 <tr><td colspan="8"><div class="loading"><i class="fas fa-spinner"></i> Loading...</div></td></tr>
                             </tbody>
+                            <tfoot id="transactionsTotalFoot">
+                                <tr>
+                                    <td colspan="3" style="text-align:right;font-weight:700;">TOTAL</td>
+                                    <td id="txnTotalDebit" style="text-align:right;font-weight:700;color:#e53e3e;">Rs. 0</td>
+                                    <td id="txnTotalCredit" style="text-align:right;font-weight:700;color:#38a169;">Rs. 0</td>
+                                    <td colspan="3"></td>
+                                </tr>
+                            </tfoot>
                         </table>
                         <div class="transaction-cards" id="transactionCards"></div>
                     </div>
@@ -1967,6 +1979,10 @@
                         <select id="reportType"><option value="all">All</option><option value="income">Income</option><option value="expense">Expense</option></select>
                         <div class="filter-group"><label>From</label><input type="date" id="reportDateFrom" /></div>
                         <div class="filter-group"><label>To</label><input type="date" id="reportDateTo" /></div>
+                        <select id="reportSortOrderSelect" style="min-width:120px;" onchange="onReportSortChange()">
+                            <option value="desc">Newest First</option>
+                            <option value="asc">Oldest First</option>
+                        </select>
                         <button class="btn btn-primary btn-sm" onclick="loadReport()"><i class="fas fa-search"></i> Generate</button>
                     </div>
                     <div id="reportData" style="margin-top:0.6rem;">
@@ -2207,6 +2223,8 @@
         var currentPage = 1;
         var pageSize = 20;
         var totalRecords = 0;
+        var txnSortOrder = 'desc';
+        var reportSortOrder = 'desc';
         var chartInstances = {};
         var isInitialized = false;
         var syncInProgress = false;
@@ -3403,10 +3421,11 @@
                 var dateFrom = document.getElementById('filterDateFrom')?.value || '';
                 var dateTo = document.getElementById('filterDateTo')?.value || '';
                 var deletedFilter = document.getElementById('filterDeleted')?.value || 'active';
+                txnSortOrder = document.getElementById('filterSortOrder')?.value || 'desc';
 
                 var query = supabase.from('financial_transactions')
                     .select('*', { count: 'exact' })
-                    .order('transaction_date', { ascending: false });
+                    .order('transaction_date', { ascending: (txnSortOrder === 'asc') });
 
                 if (deletedFilter === 'active') {
                     query = query.is('deleted_at', null);
@@ -3430,6 +3449,32 @@
 
                 var rawTransactions = result.data || [];
                 totalRecords = result.count || 0;
+
+                var totalsQuery = supabase.from('financial_transactions')
+                    .select('transaction_type, amount');
+
+                if (deletedFilter === 'active') {
+                    totalsQuery = totalsQuery.is('deleted_at', null);
+                } else if (deletedFilter === 'deleted') {
+                    totalsQuery = totalsQuery.not('deleted_at', 'is', null);
+                }
+                if (search) totalsQuery = totalsQuery.ilike('description', '%' + search + '%');
+                if (type) totalsQuery = totalsQuery.eq('transaction_type', type);
+                if (category) totalsQuery = totalsQuery.eq('category', category);
+                if (account) totalsQuery = totalsQuery.eq('account_id', account);
+                if (dateFrom) totalsQuery = totalsQuery.gte('transaction_date', dateFrom);
+                if (dateTo) totalsQuery = totalsQuery.lte('transaction_date', dateTo);
+
+                var totalsResult = await totalsQuery;
+                var totalsRows = (totalsResult && totalsResult.data) || [];
+                var txnTotalIncome = 0,
+                    txnTotalExpense = 0;
+                totalsRows.forEach(function(t) {
+                    var amt = parseFloat(t.amount) || 0;
+                    if (t.transaction_type === 'income') txnTotalIncome += amt;
+                    else if (t.transaction_type === 'expense') txnTotalExpense += amt;
+                });
+                updateTransactionsTotalRow(txnTotalIncome, txnTotalExpense);
 
                 await loadAccountNamesForTransactions(rawTransactions);
                 await loadUserNamesForTransactions(rawTransactions);
@@ -3649,8 +3694,27 @@
                 'filterDateTo', 'filterDeleted'
             ].forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
             document.getElementById('filterDeleted').value = 'active';
+            var sortEl = document.getElementById('filterSortOrder');
+            if (sortEl) sortEl.value = 'desc';
+            txnSortOrder = 'desc';
             currentPage = 1;
             loadTransactions();
+        }
+
+        function updateTransactionsTotalRow(totalIncome, totalExpense) {
+            var debitEl = document.getElementById('txnTotalDebit');
+            var creditEl = document.getElementById('txnTotalCredit');
+            if (debitEl) debitEl.textContent = 'Rs. ' + formatNumber(totalExpense);
+            if (creditEl) creditEl.textContent = 'Rs. ' + formatNumber(totalIncome);
+        }
+
+        function onTxnSortChange() {
+            currentPage = 1;
+            loadTransactions();
+        }
+
+        function onReportSortChange() {
+            loadReport();
         }
 
         // ============================================================
@@ -4576,14 +4640,15 @@
                 var type = document.getElementById('reportType')?.value || 'all';
                 var from = document.getElementById('reportDateFrom')?.value || '';
                 var to = document.getElementById('reportDateTo')?.value || '';
+                reportSortOrder = document.getElementById('reportSortOrderSelect')?.value || 'desc';
 
-                console.log('📊 Loading report with filters:', { type, from, to });
+                console.log('📊 Loading report with filters:', { type, from, to, reportSortOrder });
 
                 var query = supabase.from('financial_transactions')
                     .select('*')
                     .is('deleted_at', null)
                     .eq('approval_status', 'approved')
-                    .order('transaction_date', { ascending: true });
+                    .order('transaction_date', { ascending: (reportSortOrder === 'asc') });
 
                 if (type === 'income' || type === 'expense') {
                     query = query.eq('transaction_type', type);
@@ -4743,6 +4808,10 @@
                         '<td>' + escapeHtml(row.approved_by_name) + '</td>' +
                         '</tr>';
                 }
+                html += '<tr style="font-weight:700;"><td colspan="5" style="text-align:right;">TOTAL (Income / Expense)</td>' +
+                    '<td>Income: Rs. ' + formatNumber(totalIncome) + '<br>Expense: Rs. ' + formatNumber(
+                        totalExpense) + '</td>' +
+                    '<td colspan="6"></td></tr>';
                 html += '</tbody></table></div>';
 
                 container.innerHTML = html;
@@ -4808,10 +4877,11 @@
                 var dateFrom = document.getElementById('filterDateFrom')?.value || '';
                 var dateTo = document.getElementById('filterDateTo')?.value || '';
                 var deletedFilter = document.getElementById('filterDeleted')?.value || 'active';
+                var printSortOrder = document.getElementById('filterSortOrder')?.value || 'desc';
 
                 var query = supabase.from('financial_transactions')
                     .select('*')
-                    .order('transaction_date', { ascending: false });
+                    .order('transaction_date', { ascending: (printSortOrder === 'asc') });
 
                 if (deletedFilter === 'active') {
                     query = query.is('deleted_at', null);
@@ -4903,6 +4973,11 @@
                         '</td></tr>';
                 });
 
+                html += '<tr style="font-weight:700;"><td colspan="3" style="text-align:right;">TOTAL</td>' +
+                    '<td style="text-align:right;color:#e53e3e;">Rs. ' + escapeHtml(formatNumber(totalExpense)) +
+                    '</td><td style="text-align:right;color:#38a169;">Rs. ' + escapeHtml(formatNumber(totalIncome)) +
+                    '</td><td colspan="2"></td></tr>';
+
                 html += '</tbody></table>';
 
                 html += '<div class="pr-sig">' +
@@ -4931,12 +5006,13 @@
                 var type = document.getElementById('reportType')?.value || 'all';
                 var from = document.getElementById('reportDateFrom')?.value || '';
                 var to = document.getElementById('reportDateTo')?.value || '';
+                var printReportSortOrder = document.getElementById('reportSortOrderSelect')?.value || 'desc';
 
                 var query = supabase.from('financial_transactions')
                     .select('*')
                     .is('deleted_at', null)
                     .eq('approval_status', 'approved')
-                    .order('transaction_date', { ascending: true });
+                    .order('transaction_date', { ascending: (printReportSortOrder === 'asc') });
 
                 if (type === 'income' || type === 'expense') {
                     query = query.eq('transaction_type', type);
@@ -5022,6 +5098,10 @@
                             .payment_method || '-') + '</td><td>' + escapeHtml(t.account_name || '-') +
                         '</td><td>' + escapeHtml(t.remarks || '-') + '</td></tr>';
                 });
+
+                html += '<tr style="font-weight:700;"><td colspan="5" style="text-align:right;">TOTAL</td>' +
+                    '<td>Income: Rs. ' + escapeHtml(formatNumber(totalIncome)) + '<br>Expense: Rs. ' +
+                    escapeHtml(formatNumber(totalExpense)) + '</td><td colspan="3"></td></tr>';
 
                 html += '</tbody></table>';
 
@@ -5228,6 +5308,8 @@
             var type = document.getElementById('reportType')?.value || 'all';
             var from = document.getElementById('reportDateFrom')?.value || '';
             var to = document.getElementById('reportDateTo')?.value || '';
+            var exportSortOrder = document.getElementById('reportSortOrderSelect')?.value || reportSortOrder ||
+                'desc';
 
             (async function() {
                 try {
@@ -5235,7 +5317,7 @@
                         .select('*')
                         .is('deleted_at', null)
                         .eq('approval_status', 'approved')
-                        .order('transaction_date', { ascending: true });
+                        .order('transaction_date', { ascending: (exportSortOrder === 'asc') });
 
                     if (type === 'income') query = query.eq('transaction_type', 'income');
                     else if (type === 'expense') query = query.eq('transaction_type', 'expense');
@@ -5286,6 +5368,22 @@
                         else if (data[j].transaction_type === 'expense') totalExpense += amt;
                     }
                     var netBalance = totalIncome - totalExpense;
+
+                    rows.push({
+                        'SN': '',
+                        'Date': '',
+                        'Type': '',
+                        'Category': '',
+                        'Particular': 'TOTAL',
+                        'Amount': '',
+                        'Debit': totalExpense,
+                        'Credit': totalIncome,
+                        'Payment Method': '',
+                        'Account': '',
+                        'Remarks': '',
+                        'Status': '',
+                        'Created By': ''
+                    });
 
                     var summaryRows = [
                         { 'Metric': 'Total Income', 'Value': totalIncome },
