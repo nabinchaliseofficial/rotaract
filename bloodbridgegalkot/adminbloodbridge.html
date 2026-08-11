@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Blood Bridge Galkot | Admin Panel</title>
 <meta name="robots" content="noindex, nofollow" />
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --red:#b91c1c; --red-dark:#7f1d1d; --bg:#f8f9fb; --card:#fff;
@@ -14,6 +14,7 @@
     --amber:#b45309; --amber-bg:#fef3c7;
     --blue:#1d4ed8; --blue-bg:#dbeafe;
     --focus: 3px solid #93c5fd;
+    --gold: #d97706;
   }
   [data-theme="dark"]{
     --bg:#121212; --card:#1c1c1c; --text:#eee; --muted:#9ca3af; --border:#333;
@@ -40,7 +41,7 @@
   }
   #offlineBanner.show{display:block;}
 
-  /* Login screen */
+  /* Login Screen */
   #loginScreen{
     max-width:380px;margin:80px auto;background:var(--card);padding:32px 28px;
     border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);
@@ -75,7 +76,7 @@
   .panel.active{display:block;}
 
   /* Dashboard */
-  .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px;}
+  .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:22px;}
   .dash-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
   .dash-card .num{font-size:26px;font-weight:800;}
   .dash-card .label{font-size:12px;color:var(--muted);margin-top:4px;}
@@ -84,6 +85,10 @@
   .dash-card.pending .num{color:var(--amber);}
   .dash-card.rejected .num{color:var(--red);}
   .dash-card.inactive .num{color:var(--muted);}
+  .dash-card.donation .num{color:var(--blue);}
+  .dash-card.highest .num{color:var(--gold);}
+  .dash-card.today .num{color:var(--green);}
+  .dash-card.month .num{color:#7c3aed;}
 
   .dash-columns{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
   @media (max-width:760px){ .dash-columns{grid-template-columns:1fr;} }
@@ -132,9 +137,11 @@
   .pill.pending{background:var(--amber-bg);color:var(--amber);}
   .pill.approved, .pill.active{background:var(--green-bg);color:var(--green);}
   .pill.rejected, .pill.inactive{background:#fee2e2;color:var(--red);}
-  [data-theme="dark"] .pill.rejected, [data-theme="dark"] .pill.inactive{background:#3a1616;}
+  .pill.in_progress{background:var(--blue-bg);color:var(--blue);}
+  .pill.completed{background:var(--green-bg);color:var(--green);}
+  .pill.cancelled{background:#fee2e2;color:var(--red);}
 
-  .actions{display:flex;gap:6px;}
+  .actions{display:flex;gap:6px;flex-wrap:wrap;}
   .btn{border:none;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;}
   .btn-approve{background:var(--green-bg);color:var(--green);}
   .btn-reject{background:#fee2e2;color:var(--red);}
@@ -142,8 +149,8 @@
   .btn-edit{background:var(--blue-bg);color:var(--blue);}
   .btn-view{background:#f3f4f6;color:#374151;}
   .btn-toggle{background:var(--amber-bg);color:var(--amber);}
+  .btn-donation{background:var(--blue-bg);color:var(--blue);}
   .btn:hover{filter:brightness(0.95);}
-  [data-theme="dark"] .btn-delete, [data-theme="dark"] .btn-view{background:#2a2a2a;color:#ddd;}
 
   .empty{padding:40px;text-align:center;color:var(--muted);}
   .skeleton-row td{background:linear-gradient(90deg,var(--border) 25%,var(--bg) 50%,var(--border) 75%);
@@ -164,11 +171,19 @@
     align-items:center;justify-content:center;z-index:50;padding:16px;
   }
   .modal-overlay.show{display:flex;}
-  .modal{background:var(--card);color:var(--text);border-radius:14px;padding:24px;max-width:440px;width:100%;max-height:88vh;overflow:auto;}
+  .modal{
+    background:var(--card);color:var(--text);border-radius:14px;padding:24px;
+    max-width:440px;width:100%;max-height:88vh;overflow:auto;
+  }
+  .modal.wide{max-width:600px;}
   .modal h3{margin-top:0;}
   .modal .field{margin-bottom:12px;}
   .modal label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--muted);}
-  .modal input, .modal select{width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--card);color:var(--text);}
+  .modal input, .modal select, .modal textarea{
+    width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;
+    font-size:14px;background:var(--card);color:var(--text);
+  }
+  .modal textarea{resize:vertical;min-height:60px;}
   .modal .modal-actions{display:flex;gap:10px;margin-top:16px;}
   .modal .modal-actions button{flex:1;padding:10px;border:none;border-radius:8px;font-weight:700;cursor:pointer;}
   .modal .btn-save{background:var(--red);color:#fff;}
@@ -177,6 +192,35 @@
   .detail-list li{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);gap:10px;}
   .detail-list li span:first-child{color:var(--muted);}
   .detail-list li span:last-child{font-weight:600;text-align:right;}
+
+  /* Donation History Styles */
+  .donation-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:8px 0 16px;}
+  .donation-stat{text-align:center;padding:10px;background:var(--bg);border-radius:8px;}
+  .donation-stat .num{font-size:20px;font-weight:800;color:var(--red);}
+  .donation-stat .label{font-size:10px;color:var(--muted);text-transform:uppercase;}
+
+  .donation-timeline{position:relative;padding-left:24px;border-left:3px solid var(--red);margin:12px 0;}
+  .donation-timeline-item{position:relative;padding:8px 0 8px 16px;border-bottom:1px solid var(--border);}
+  .donation-timeline-item:last-child{border-bottom:none;}
+  .donation-timeline-item::before{
+    content:'';position:absolute;left:-7px;top:14px;width:11px;height:11px;
+    border-radius:50%;background:var(--red);
+  }
+  .donation-timeline-item .date{font-weight:600;color:var(--text);}
+  .donation-timeline-item .details{font-size:12px;color:var(--muted);}
+  .donation-timeline-item .actions{margin-top:4px;}
+
+  .badge-display{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;}
+  .badge-display.bronze{background:#fcd34d;color:#92400e;}
+  .badge-display.silver{background:#e5e7eb;color:#374151;}
+  .badge-display.gold{background:#fbbf24;color:#78350f;}
+  .badge-display.platinum{background:#a78bfa;color:#4c1d95;}
+  .badge-display.legend{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#78350f;}
+
+  .record-donation-form{background:var(--bg);padding:16px;border-radius:10px;margin:12px 0;}
+  .record-donation-form .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .record-donation-form textarea{grid-column:1/-1;}
+  @media (max-width:640px){.record-donation-form .form-row{grid-template-columns:1fr;}}
 
   .toast{
     position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
@@ -193,6 +237,9 @@
     body{background:#fff;}
     table{box-shadow:none;}
   }
+
+  /* Role-based hidden elements */
+  .role-hidden{display:none !important;}
 </style>
 </head>
 <body>
@@ -209,6 +256,7 @@
   </form>
   <div class="err" id="loginErr" role="alert"></div>
   <p class="hint">Access is restricted to approved admins. Contact the system owner if you need an account.</p>
+  <p class="hint" style="font-size:11px;color:var(--muted);">👑 Super Admin: theanilshrestha@gmail.com<br>🏥 Hospital: admininagarhospital@gmail.com</p>
 </div>
 
 <!-- ADMIN APP -->
@@ -217,8 +265,9 @@
     <h1>🩸 Blood Bridge Galkot — Admin</h1>
     <div class="user-info">
       <span id="userEmail"></span>
+      <span id="userRole" style="font-size:11px;background:rgba(255,255,255,0.2);padding:2px 10px;border-radius:10px;"></span>
       <button id="themeToggle" class="icon-btn" aria-label="Toggle dark mode">🌙</button>
-      <button id="logoutBtn">Log Out</button>
+      <button id="logoutBtn" class="icon-btn" style="background:rgba(255,0,0,0.3);border-color:rgba(255,0,0,0.5);">Log Out</button>
     </div>
   </div>
 
@@ -227,6 +276,7 @@
       <button class="tab active" role="tab" data-panel="dashboard">Dashboard</button>
       <button class="tab" role="tab" data-panel="pending">Registration Requests <span class="badge-count" id="pendingCount">0</span></button>
       <button class="tab" role="tab" data-panel="donors">Donor List</button>
+      <button class="tab" role="tab" data-panel="urgent">Urgent Blood Call <span class="badge-count" id="urgentBadge">0</span></button>
       <button class="tab" role="tab" data-panel="entryby">Entry By</button>
     </div>
   </div>
@@ -250,6 +300,10 @@
         <h3>Recent Registrations</h3>
         <ul class="recent-list" id="recentList"></ul>
       </div>
+      <div class="dash-panel" style="margin-top:16px;">
+        <h3>🏆 Top Donors by Donation Count</h3>
+        <div id="topDonorRanking"></div>
+      </div>
     </div>
 
     <!-- PENDING REGISTRATIONS PANEL -->
@@ -270,8 +324,8 @@
       <div class="bulk-bar" id="regBulkBar">
         <span id="regBulkCount">0 selected</span>
         <button class="bb-approve" data-bulk="approve">Approve</button>
-        <button class="bb-reject" data-bulk="reject">Reject</button>
-        <button class="bb-delete" data-bulk="delete">Delete</button>
+        <button class="bb-reject role-hidden" data-bulk="reject" id="regBulkReject">Reject</button>
+        <button class="bb-delete role-hidden" data-bulk="delete" id="regBulkDelete">Delete</button>
         <button class="bb-clear" data-bulk="clear">Clear selection</button>
       </div>
       <div class="table-wrap">
@@ -301,13 +355,20 @@
         </select>
         <select id="donorBgFilter"><option value="">All Blood Groups</option></select>
         <select id="donorMuniFilter"><option value="">All Municipalities</option></select>
+        <select id="donorSortBy">
+          <option value="id">ID</option>
+          <option value="name">Name</option>
+          <option value="donations">Highest Donations</option>
+          <option value="lastDonation">Latest Donation</option>
+          <option value="oldestDonation">Oldest Donation</option>
+        </select>
         <button class="icon-btn" style="color:var(--red);border-color:var(--red);" id="exportDonorCsv">⬇ Export CSV</button>
         <button class="icon-btn" style="color:var(--red);border-color:var(--red);" id="printDonors">🖨 Print</button>
       </div>
       <div class="bulk-bar" id="donorBulkBar">
         <span id="donorBulkCount">0 selected</span>
         <button class="bb-export" data-bulk="export">Export Selected</button>
-        <button class="bb-delete" data-bulk="delete">Delete</button>
+        <button class="bb-delete role-hidden" data-bulk="delete" id="donorBulkDelete">Delete</button>
         <button class="bb-clear" data-bulk="clear">Clear selection</button>
       </div>
       <div class="table-wrap">
@@ -316,12 +377,43 @@
             <tr>
               <th><input type="checkbox" id="donorSelectAll" aria-label="Select all donors" /></th>
               <th>S.N.</th><th>Name</th><th>Age</th><th>Sex</th><th>Blood Group</th>
-              <th>Municipality</th><th>Ward</th><th>Phone</th><th>Status</th><th>Actions</th>
+              <th>Municipality</th><th>Ward</th><th>Phone</th><th>Status</th>
+              <th>Total Donations</th><th>Last Donation</th><th>Badge</th><th>Actions</th>
             </tr>
           </thead>
           <tbody id="donorTbody"></tbody>
         </table>
         <div class="empty" id="donorEmpty" style="display:none;">No data found</div>
+      </div>
+    </div>
+
+    <!-- URGENT BLOOD CALL PANEL -->
+    <div class="panel" id="panel-urgent">
+      <div class="last-updated" id="urgentLastUpdated"></div>
+      <div class="toolbar">
+        <select id="urgentStatusFilter">
+          <option value="all">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <select id="urgentBgFilter"><option value="">All Blood Groups</option></select>
+        <input type="text" id="urgentSearch" placeholder="Search by name, phone, or hospital..." />
+        <button class="icon-btn" style="color:var(--red);border-color:var(--red);" id="exportUrgentCsv">⬇ Export CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table id="urgentTable">
+          <thead>
+            <tr>
+              <th>SN</th><th>Requester</th><th>Phone</th><th>Blood Group</th>
+              <th>Pints</th><th>Hospital</th><th>Needed Date</th><th>Needed Time</th>
+              <th>Status</th><th>Read</th><th>Submitted</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="urgentTbody"></tbody>
+        </table>
+        <div class="empty" id="urgentEmpty" style="display:none;">No urgent requests found.</div>
       </div>
     </div>
 
@@ -369,9 +461,9 @@
   </div>
 </div>
 
-<!-- VIEW DETAILS MODAL (donor or registration) -->
+<!-- VIEW DETAILS MODAL -->
 <div class="modal-overlay" id="viewModalOverlay">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="viewModalTitle">
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="viewModalTitle">
     <h3 id="viewModalTitle">Details</h3>
     <ul class="detail-list" id="viewDetailList"></ul>
     <div class="modal-actions">
@@ -380,7 +472,51 @@
   </div>
 </div>
 
-<!-- GENERIC CONFIRM MODAL -->
+<!-- DONATION HISTORY MODAL -->
+<div class="modal-overlay" id="donationHistoryModal">
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="donationHistoryTitle" style="max-width:600px;">
+    <h3 id="donationHistoryTitle">🩸 Donation History</h3>
+    <div id="donationHistoryContent">
+      <div class="donation-stats" id="donationStats"></div>
+      <div class="donation-timeline" id="donationTimeline"></div>
+      <div class="record-donation-form" id="recordDonationForm">
+        <h4 style="margin:0 0 10px;font-size:14px;">📝 Record New Donation</h4>
+        <div class="form-row">
+          <input type="date" id="donationDate" />
+          <input type="text" id="donationHospital" placeholder="Hospital / Blood Bank (optional)" />
+        </div>
+        <textarea id="donationNotes" placeholder="Notes (optional)" rows="2"></textarea>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button class="btn-save" id="saveDonationBtn" style="flex:1;padding:10px;border:none;border-radius:8px;font-weight:700;background:var(--red);color:#fff;cursor:pointer;">💾 Save Donation</button>
+          <button class="btn-cancel" id="closeDonationHistoryBtn" style="padding:10px 20px;border:none;border-radius:8px;background:#f3f4f6;color:#374151;cursor:pointer;">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- URGENT REQUEST DETAIL MODAL -->
+<div class="modal-overlay" id="urgentDetailModal">
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="urgentDetailTitle">
+    <h3 id="urgentDetailTitle">📋 Urgent Blood Request Details</h3>
+    <ul class="detail-list" id="urgentDetailList"></ul>
+    <div class="field" style="margin-top:12px;">
+      <label for="urgentDetailStatus">Change Status</label>
+      <select id="urgentDetailStatus">
+        <option value="pending">Pending</option>
+        <option value="in_progress">In Progress</option>
+        <option value="completed">Completed</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn-save" id="urgentDetailUpdateBtn" style="flex:1;padding:10px;border:none;border-radius:8px;font-weight:700;background:var(--red);color:#fff;cursor:pointer;">Update Status</button>
+      <button class="btn-cancel" id="urgentDetailCloseBtn" style="padding:10px 20px;border:none;border-radius:8px;background:#f3f4f6;color:#374151;cursor:pointer;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
 <div class="modal-overlay" id="confirmModalOverlay">
   <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="confirmModalTitle" style="max-width:380px;">
     <h3 id="confirmModalTitle">Are you sure?</h3>
@@ -396,23 +532,25 @@
 
 <script>
 // ==================== CONFIG ====================
-// SECURITY NOTE: This is the Supabase *anon/publishable* key, which is safe to
-// expose client-side ONLY because every table this app touches must have
-// Row Level Security (RLS) enabled with policies that:
-//   - allow public SELECT on blood_bridge_galkot where status = 'active'
-//   - allow public INSERT on bloodbridge_register (status forced to 'pending')
-//   - restrict SELECT/UPDATE/DELETE/INSERT on blood_bridge_galkot and
-//     UPDATE/DELETE on bloodbridge_register to rows where the caller is
-//     verified as an active admin (e.g. via a policy that checks
-//     auth.uid() against blood_bridge_admins).
-// Never use a service_role key in any client-side file — it bypasses RLS entirely.
 const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
 let supabaseClient = null;
+let currentUserRole = null;
 
 const loginScreen = document.getElementById("loginScreen");
 const app = document.getElementById("app");
 const toast = document.getElementById("toast");
+
+// ==================== ROLE PERMISSIONS ====================
+function isSuperAdmin() { return currentUserRole === "super_admin"; }
+function isHospitalAdmin() { return currentUserRole === "hospital"; }
+function canEditDonor() { return isSuperAdmin(); }
+function canDeleteDonor() { return isSuperAdmin(); }
+function canRejectRegistration() { return isSuperAdmin(); }
+function canDeleteRegistration() { return isSuperAdmin(); }
+function canApproveRegistration() { return true; }
+function canManageDonation() { return true; }
+function canViewUrgent() { return isSuperAdmin() || isHospitalAdmin(); }
 
 // ==================== UTIL ====================
 function escapeHtml(str) {
@@ -432,8 +570,6 @@ function debounce(fn, ms) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }
-
-// Generic confirm modal — replaces window.confirm() for a consistent, accessible UI
 function confirmDialog(message, title = "Are you sure?") {
   return new Promise((resolve) => {
     const overlay = document.getElementById("confirmModalOverlay");
@@ -469,16 +605,47 @@ function downloadCsv(filename, rows, columns) {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
-// Note: for an "Excel export" experience, this CSV opens directly and cleanly
-// in Excel/Google Sheets — a dedicated .xlsx library isn't needed for this use case.
+
+function getDonorBadge(totalDonations) {
+  if (totalDonations >= 50) return { emoji: '👑', label: 'Legend Donor', class: 'legend' };
+  if (totalDonations >= 35) return { emoji: '💎', label: 'Platinum Donor', class: 'platinum' };
+  if (totalDonations >= 20) return { emoji: '🥇', label: 'Gold Donor', class: 'gold' };
+  if (totalDonations >= 10) return { emoji: '🥈', label: 'Silver Donor', class: 'silver' };
+  if (totalDonations >= 5) return { emoji: '🥉', label: 'Bronze Donor', class: 'bronze' };
+  if (totalDonations >= 1) return { emoji: '🩸', label: 'Blood Donor', class: '' };
+  return null;
+}
+
+function getBadgeLabel(total) {
+  if (total >= 50) return 'Legend Donor';
+  if (total >= 35) return 'Platinum Donor';
+  if (total >= 20) return 'Gold Donor';
+  if (total >= 10) return 'Silver Donor';
+  if (total >= 5) return 'Bronze Donor';
+  if (total >= 1) return 'Blood Donor';
+  return '';
+}
 
 const DONOR_CSV_COLUMNS = [
-  { key: "id", label: "ID" }, { key: "person_name", label: "Name" }, { key: "age", label: "Age" },
-  { key: "sex", label: "Sex" }, { key: "blood_group", label: "Blood Group" },
-  { key: "municipality", label: "Municipality" }, { key: "ward_number", label: "Ward" },
-  { key: "phone_number", label: "Phone" }, { key: "status", label: "Status" }
+  { key: "id", label: "ID" }, { key: "person_name", label: "Name" },
+  { key: "age", label: "Age" }, { key: "sex", label: "Sex" },
+  { key: "blood_group", label: "Blood Group" }, { key: "municipality", label: "Municipality" },
+  { key: "ward_number", label: "Ward" }, { key: "phone_number", label: "Phone" },
+  { key: "status", label: "Status" }, { key: "total_donations", label: "Total Donations" },
+  { key: "last_donation_date", label: "Last Donation Date" }
 ];
-const REG_CSV_COLUMNS = [...DONOR_CSV_COLUMNS, { key: "created_at", label: "Submitted At" }];
+
+const REG_CSV_COLUMNS = [...DONOR_CSV_COLUMNS.slice(0, 9), { key: "created_at", label: "Submitted At" }];
+
+const URGENT_CSV_COLUMNS = [
+  { key: "id", label: "ID" }, { key: "requester_name", label: "Requester Name" },
+  { key: "phone_number", label: "Phone" }, { key: "blood_group_needed", label: "Blood Group Needed" },
+  { key: "pints_required", label: "Pints" }, { key: "hospital_location", label: "Hospital" },
+  { key: "needed_date", label: "Needed Date" }, { key: "needed_time", label: "Needed Time" },
+  { key: "notes", label: "Notes" }, { key: "status", label: "Status" },
+  { key: "request_read", label: "Read" }, { key: "created_by", label: "Created By" },
+  { key: "created_at", label: "Submitted At" }
+];
 
 // ==================== OFFLINE DETECTION ====================
 function updateOfflineBanner() {
@@ -521,14 +688,50 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   loginBtn.disabled = true;
   loginBtn.textContent = "Logging in...";
   try {
-    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) {
       errBox.textContent = "Login failed: " + error.message;
       errBox.style.display = "block";
       return;
     }
+    
+    const { data: adminData, error: adminError } = await supabaseClient
+      .from("blood_bridge_admins")
+      .select("role, status")
+      .eq("user_id", data.user.id)
+      .maybeSingle();
+      
+    if (adminError) {
+      console.error("Admin check error:", adminError);
+      errBox.textContent = "Error checking admin status. Please try again.";
+      errBox.style.display = "block";
+      await supabaseClient.auth.signOut();
+      return;
+    }
+    
+    if (!adminData) {
+      errBox.textContent = "You are not registered as an admin. Please contact the system administrator.";
+      errBox.style.display = "block";
+      await supabaseClient.auth.signOut();
+      return;
+    }
+    
+    if (adminData.status !== "active") {
+      errBox.textContent = "Your admin account is inactive. Please contact the system administrator.";
+      errBox.style.display = "block";
+      await supabaseClient.auth.signOut();
+      return;
+    }
+    
+    currentUserRole = adminData.role;
+    sessionStorage.setItem("userRole", adminData.role);
+    sessionStorage.setItem("userEmail", data.user.email);
+    
+    applyRoleRestrictions();
+    
     await checkAdminAndInit();
   } catch (err) {
+    console.error("Login error:", err);
     errBox.textContent = "Network error: could not reach the server. (" + err.message + ")";
     errBox.style.display = "block";
   } finally {
@@ -537,9 +740,41 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   }
 });
 
+// ==================== ROLE-BASED UI RESTRICTIONS ====================
+function applyRoleRestrictions() {
+  const regBulkReject = document.getElementById("regBulkReject");
+  const regBulkDelete = document.getElementById("regBulkDelete");
+  if (regBulkReject) regBulkReject.classList.toggle("role-hidden", !canRejectRegistration());
+  if (regBulkDelete) regBulkDelete.classList.toggle("role-hidden", !canDeleteRegistration());
+  
+  const donorBulkDelete = document.getElementById("donorBulkDelete");
+  if (donorBulkDelete) donorBulkDelete.classList.toggle("role-hidden", !canDeleteDonor());
+  
+  // Show/hide Urgent Blood Call tab
+  const urgentTab = document.querySelector('.tab[data-panel="urgent"]');
+  if (urgentTab) {
+    urgentTab.style.display = canViewUrgent() ? '' : 'none';
+  }
+}
+
+// ==================== LOGOUT ====================
 document.getElementById("logoutBtn").addEventListener("click", async () => {
-  await supabaseClient.auth.signOut();
-  location.reload();
+  try {
+    sessionStorage.clear();
+    await supabaseClient.auth.signOut();
+    loginScreen.style.display = "block";
+    app.style.display = "none";
+    document.getElementById("loginEmail").value = "";
+    document.getElementById("loginPassword").value = "";
+    document.getElementById("loginErr").style.display = "none";
+    showToast("Logged out successfully.", "info");
+  } catch (err) {
+    console.error("Logout error:", err);
+    sessionStorage.clear();
+    loginScreen.style.display = "block";
+    app.style.display = "none";
+    showToast("Logged out.", "info");
+  }
 });
 
 async function checkAdminAndInit() {
@@ -549,33 +784,18 @@ async function checkAdminAndInit() {
     app.style.display = "none";
     return;
   }
-  // Admin verification relies on server-side RLS on blood_bridge_admins —
-  // a row only becomes visible to this SELECT if the policy allows it for
-  // the current auth.uid(), so this check cannot be bypassed by editing
-  // client-side JS.
+  
   const { data: adminRow, error } = await supabaseClient
     .from("blood_bridge_admins")
-    .select("status")
+    .select("role, status")
     .eq("user_id", user.id)
     .maybeSingle();
 
   const isAdmin = adminRow && adminRow.status === "active";
+  currentUserRole = adminRow?.role || null;
 
-  if (error) {
-    document.getElementById("loginErr").textContent =
-      "Could not verify admin access: " + error.message;
-    document.getElementById("loginErr").style.display = "block";
-    await supabaseClient.auth.signOut();
-    loginScreen.style.display = "block";
-    app.style.display = "none";
-    return;
-  }
-
-  if (!isAdmin) {
-    document.getElementById("loginErr").textContent =
-      adminRow
-        ? "Your admin access is inactive. Contact another admin to reactivate it."
-        : "You do not have admin access for " + user.email + ".";
+  if (error || !isAdmin) {
+    document.getElementById("loginErr").textContent = "You do not have admin access.";
     document.getElementById("loginErr").style.display = "block";
     await supabaseClient.auth.signOut();
     loginScreen.style.display = "block";
@@ -584,22 +804,43 @@ async function checkAdminAndInit() {
   }
 
   document.getElementById("userEmail").textContent = user.email;
+  
+  const roleBadge = document.getElementById("userRole");
+  if (currentUserRole === "super_admin") {
+    roleBadge.textContent = "👑 Super Admin";
+    roleBadge.style.background = "rgba(255,215,0,0.3)";
+  } else if (currentUserRole === "hospital") {
+    roleBadge.textContent = "🏥 Hospital Admin";
+    roleBadge.style.background = "rgba(59,130,246,0.3)";
+  } else {
+    roleBadge.textContent = "👤 Admin";
+    roleBadge.style.background = "rgba(255,255,255,0.2)";
+  }
+  
+  sessionStorage.setItem("userRole", currentUserRole);
+  sessionStorage.setItem("userEmail", user.email);
+  
   loginScreen.style.display = "none";
   app.style.display = "block";
+  
+  applyRoleRestrictions();
+  
   await Promise.all([loadRegistrations(), loadDonors()]);
   renderDashboard();
   setupRealtimeSync();
+  
+  // Load urgent requests if user has permission
+  if (canViewUrgent()) {
+    setupUrgentRealtime();
+    loadUrgentRequests();
+  }
 }
 
 // ==================== REALTIME AUTO-REFRESH ====================
-// Subscribes to live changes on both tables so the admin panel updates
-// automatically (no manual refresh needed) whenever a donor/registration
-// row is inserted, updated, or deleted — from this device or any other.
 let realtimeChannel = null;
 let realtimeDebounceTimer = null;
 
 function scheduleRealtimeReload(kind) {
-  // Debounce so a burst of changes (e.g. bulk delete) triggers one reload.
   clearTimeout(realtimeDebounceTimer);
   realtimeDebounceTimer = setTimeout(async () => {
     if (kind === "registrations") {
@@ -612,13 +853,16 @@ function scheduleRealtimeReload(kind) {
 }
 
 function setupRealtimeSync() {
-  if (realtimeChannel) return; // already subscribed, avoid duplicate channels
+  if (realtimeChannel) return;
   realtimeChannel = supabaseClient
     .channel("blood_bridge_admin_live")
     .on("postgres_changes", { event: "*", schema: "public", table: "bloodbridge_register" }, () => {
       scheduleRealtimeReload("registrations");
     })
     .on("postgres_changes", { event: "*", schema: "public", table: "blood_bridge_galkot" }, () => {
+      scheduleRealtimeReload("donors");
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "blood_donation_history" }, () => {
       scheduleRealtimeReload("donors");
     })
     .subscribe();
@@ -630,9 +874,13 @@ document.querySelectorAll(".tab").forEach(tab => {
     document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
     document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
     tab.classList.add("active");
-    document.getElementById("panel-" + tab.dataset.panel).classList.add("active");
+    const panelId = "panel-" + tab.dataset.panel;
+    document.getElementById(panelId).classList.add("active");
     if (tab.dataset.panel === "dashboard") renderDashboard();
     if (tab.dataset.panel === "entryby") renderDonorEntryBreakdown();
+    if (tab.dataset.panel === "urgent" && canViewUrgent()) {
+      loadUrgentRequests();
+    }
   });
 });
 
@@ -643,6 +891,18 @@ function renderDashboard() {
   const inactiveDonors = allDonors.filter(d => d.status === "inactive").length;
   const pendingRegs = allRegistrations.filter(r => r.status === "pending").length;
   const rejectedRegs = allRegistrations.filter(r => r.status === "rejected").length;
+  
+  const totalDonations = allDonors.reduce((sum, d) => sum + (d.total_donations || 0), 0);
+  const maxDonations = Math.max(0, ...allDonors.map(d => d.total_donations || 0));
+  const today = new Date().toISOString().split('T')[0];
+  const todayDonations = allDonors.filter(d => d.last_donation_date === today).length;
+  const thisMonth = new Date().getMonth();
+  const thisYear = new Date().getFullYear();
+  const monthDonations = allDonors.filter(d => {
+    if (!d.last_donation_date) return false;
+    const date = new Date(d.last_donation_date);
+    return date.getMonth() === thisMonth && date.getFullYear() === thisYear;
+  }).length;
 
   document.getElementById("dashGrid").innerHTML = `
     <div class="dash-card total"><div class="num">${totalDonors}</div><div class="label">Total Donors</div></div>
@@ -650,6 +910,10 @@ function renderDashboard() {
     <div class="dash-card inactive"><div class="num">${inactiveDonors}</div><div class="label">Inactive Donors</div></div>
     <div class="dash-card pending"><div class="num">${pendingRegs}</div><div class="label">Pending Requests</div></div>
     <div class="dash-card rejected"><div class="num">${rejectedRegs}</div><div class="label">Rejected Requests</div></div>
+    <div class="dash-card donation"><div class="num">${totalDonations}</div><div class="label">Total Blood Donations</div></div>
+    <div class="dash-card highest"><div class="num">${maxDonations}</div><div class="label">Highest Donation Count</div></div>
+    <div class="dash-card today"><div class="num">${todayDonations}</div><div class="label">Today's Donations</div></div>
+    <div class="dash-card month"><div class="num">${monthDonations}</div><div class="label">This Month Donations</div></div>
   `;
 
   const bgCounts = {};
@@ -679,9 +943,47 @@ function renderDashboard() {
       <span><span class="name">${escapeHtml(r.person_name)}</span> — ${escapeHtml(r.blood_group || "-")}</span>
       <span class="meta">${r.created_at ? new Date(r.created_at).toLocaleDateString() : ""} · <span class="pill ${r.status}">${escapeHtml(r.status)}</span></span>
     </li>`).join("") || `<li style="color:var(--muted);">No registrations yet.</li>`;
+
+  renderTopDonorRanking();
 }
 
-// ==================== REGISTRATIONS (bloodbridge_register) ====================
+function renderTopDonorRanking() {
+  const container = document.getElementById("topDonorRanking");
+  const sorted = [...allDonors]
+    .filter(d => d.status === "active" && (d.total_donations || 0) > 0)
+    .sort((a, b) => {
+      if ((b.total_donations || 0) !== (a.total_donations || 0)) {
+        return (b.total_donations || 0) - (a.total_donations || 0);
+      }
+      if (b.last_donation_date && a.last_donation_date) {
+        return new Date(b.last_donation_date) - new Date(a.last_donation_date);
+      }
+      return (a.person_name || "").localeCompare(b.person_name || "");
+    })
+    .slice(0, 10);
+  
+  if (sorted.length === 0) {
+    container.innerHTML = '<p style="color:var(--muted);font-size:13px;">No donation data yet.</p>';
+    return;
+  }
+  
+  const medals = ["🥇", "🥈", "🥉"];
+  container.innerHTML = sorted.map((d, i) => {
+    const medal = medals[i] || `#${i+1}`;
+    const badge = getDonorBadge(d.total_donations || 0);
+    return `
+      <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:20px;width:36px;text-align:center;">${medal}</span>
+        <span style="font-weight:600;flex:1;">${escapeHtml(d.person_name || "-")}</span>
+        <span style="font-size:13px;color:var(--muted);">${escapeHtml(d.blood_group || "-")}</span>
+        <span style="font-weight:700;color:var(--red);">${d.total_donations || 0}</span>
+        ${badge ? `<span class="badge-display ${badge.class}" style="font-size:10px;padding:2px 8px;">${badge.emoji}</span>` : ''}
+      </div>
+    `;
+  }).join("");
+}
+
+// ==================== REGISTRATIONS ====================
 let allRegistrations = [];
 let selectedRegIds = new Set();
 
@@ -713,6 +1015,10 @@ function populateSelectFilter(id, values, allLabel) {
   const uniq = [...new Set(values.filter(Boolean))].sort();
   select.innerHTML = `<option value="">${allLabel}</option>` + uniq.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
   select.value = cur;
+}
+
+function statusLabel(s) {
+  return { pending: "Pending", approved: "Approved", rejected: "Rejected" }[s] || s;
 }
 
 function renderRegistrations() {
@@ -747,6 +1053,21 @@ function renderRegistrations() {
 
   rows.forEach(r => {
     const tr = document.createElement("tr");
+    let actionsHtml = `
+      <button class="btn btn-view" data-id="${r.id}" data-action="view-reg">View</button>
+    `;
+    if (r.status === "pending") {
+      actionsHtml += `
+        <button class="btn btn-approve" data-id="${r.id}" data-action="approve">Approve</button>
+      `;
+      if (canRejectRegistration()) {
+        actionsHtml += `<button class="btn btn-reject" data-id="${r.id}" data-action="reject">Reject</button>`;
+      }
+    }
+    if (canDeleteRegistration()) {
+      actionsHtml += `<button class="btn btn-delete" data-id="${r.id}" data-action="delete-reg">Delete</button>`;
+    }
+
     tr.innerHTML = `
       <td><input type="checkbox" class="reg-check" data-id="${r.id}" ${selectedRegIds.has(r.id) ? "checked" : ""} aria-label="Select ${escapeHtml(r.person_name)}" /></td>
       <td>${escapeHtml(r.person_name)}</td>
@@ -757,22 +1078,11 @@ function renderRegistrations() {
       <td>${escapeHtml(r.ward_number || "-")}</td>
       <td>${escapeHtml(r.phone_number)}</td>
       <td><span class="pill ${r.status}">${statusLabel(r.status)}</span></td>
-      <td class="actions">
-        <button class="btn btn-view" data-id="${r.id}" data-action="view-reg">View</button>
-        ${r.status === "pending" ? `
-          <button class="btn btn-approve" data-id="${r.id}" data-action="approve">Approve</button>
-          <button class="btn btn-reject" data-id="${r.id}" data-action="reject">Reject</button>
-        ` : ""}
-        <button class="btn btn-delete" data-id="${r.id}" data-action="delete-reg">Delete</button>
-      </td>
+      <td class="actions">${actionsHtml}</td>
     `;
     tbody.appendChild(tr);
   });
   updateRegBulkBar();
-}
-
-function statusLabel(s) {
-  return { pending: "Pending", approved: "Approved", rejected: "Rejected" }[s] || s;
 }
 
 document.getElementById("statusFilter").addEventListener("change", renderRegistrations);
@@ -784,7 +1094,6 @@ document.getElementById("exportRegCsv").addEventListener("click", () => {
   downloadCsv("blood_bridge_registrations.csv", allRegistrations, REG_CSV_COLUMNS);
 });
 
-// Row selection
 document.getElementById("regTbody").addEventListener("change", (e) => {
   if (!e.target.classList.contains("reg-check")) return;
   const id = Number(e.target.dataset.id);
@@ -805,6 +1114,7 @@ function updateRegBulkBar() {
   document.getElementById("regBulkCount").textContent = `${count} selected`;
   bar.classList.toggle("show", count > 0);
 }
+
 document.getElementById("regBulkBar").addEventListener("click", async (e) => {
   const action = e.target.dataset.bulk;
   if (!action) return;
@@ -812,6 +1122,15 @@ document.getElementById("regBulkBar").addEventListener("click", async (e) => {
 
   const ids = [...selectedRegIds];
   if (ids.length === 0) return;
+
+  if (action === "delete" && !canDeleteRegistration()) {
+    showToast("You don't have permission to delete registrations.", "error");
+    return;
+  }
+  if (action === "reject" && !canRejectRegistration()) {
+    showToast("You don't have permission to reject registrations.", "error");
+    return;
+  }
 
   if (action === "delete") {
     const ok = await confirmDialog(`Delete ${ids.length} registration(s)? This cannot be undone.`, "Bulk Delete");
@@ -832,7 +1151,6 @@ document.getElementById("regBulkBar").addEventListener("click", async (e) => {
         .update({ status: "rejected", reviewed_at: new Date().toISOString() }).in("id", ids);
       if (error) { showToast("Error: " + error.message, "error"); return; }
     } else {
-      // Approve each individually since approval also inserts into blood_bridge_galkot
       for (const id of ids) {
         const record = allRegistrations.find(r => r.id === id);
         if (record) await approveRegistration(record, { silent: true });
@@ -865,9 +1183,17 @@ document.getElementById("regTbody").addEventListener("click", async (e) => {
     const ok = await confirmDialog(`Approve ${record.person_name} as an active donor?`, "Approve Registration");
     if (ok) await approveRegistration(record);
   } else if (action === "reject") {
+    if (!canRejectRegistration()) {
+      showToast("You don't have permission to reject registrations.", "error");
+      return;
+    }
     const ok = await confirmDialog(`Reject ${record.person_name}'s registration?`, "Reject Registration");
     if (ok) await updateRegistrationStatus(id, "rejected");
   } else if (action === "delete-reg") {
+    if (!canDeleteRegistration()) {
+      showToast("You don't have permission to delete registrations.", "error");
+      return;
+    }
     const ok = await confirmDialog(`Delete ${record.person_name}'s registration permanently?`, "Delete Registration");
     if (!ok) return;
     try {
@@ -908,7 +1234,9 @@ async function approveRegistration(record, opts = {}) {
       ward_number: record.ward_number,
       phone_number: record.phone_number,
       data_entry_by: record.data_entry_by,
-      status: "active"
+      status: "active",
+      total_donations: 0,
+      last_donation_date: null
     }]);
 
     if (insertError) {
@@ -923,13 +1251,13 @@ async function approveRegistration(record, opts = {}) {
   }
 }
 
-// ==================== DONORS (blood_bridge_galkot) ====================
+// ==================== DONORS ====================
 let allDonors = [];
 let selectedDonorIds = new Set();
 
 async function loadDonors() {
   const tbody = document.getElementById("donorTbody");
-  tbody.innerHTML = Array.from({length: 4}).map(() => `<tr class="skeleton-row"><td colspan="10">&nbsp;</td></tr>`).join("");
+  tbody.innerHTML = Array.from({length: 4}).map(() => `<tr class="skeleton-row"><td colspan="13">&nbsp;</td></tr>`).join("");
   try {
     const { data, error } = await supabaseClient
       .from("blood_bridge_galkot")
@@ -948,7 +1276,6 @@ async function loadDonors() {
   }
 }
 
-// Count of donor records entered by each volunteer (data_entry_by), sorted highest first
 function renderDonorEntryBreakdown() {
   const counts = {};
   allDonors.forEach(d => {
@@ -970,6 +1297,7 @@ function renderDonors() {
   const statusFilter = document.getElementById("donorStatusFilter").value;
   const bgFilter = document.getElementById("donorBgFilter").value;
   const muniFilter = document.getElementById("donorMuniFilter").value;
+  const sortBy = document.getElementById("donorSortBy").value;
   let rows = allDonors;
 
   if (statusFilter !== "all") rows = rows.filter(d => d.status === statusFilter);
@@ -984,6 +1312,28 @@ function renderDonors() {
     );
   }
 
+  if (sortBy === "name") {
+    rows.sort((a, b) => (a.person_name || "").localeCompare(b.person_name || ""));
+  } else if (sortBy === "donations") {
+    rows.sort((a, b) => (b.total_donations || 0) - (a.total_donations || 0));
+  } else if (sortBy === "lastDonation") {
+    rows.sort((a, b) => {
+      if (!a.last_donation_date && !b.last_donation_date) return 0;
+      if (!a.last_donation_date) return 1;
+      if (!b.last_donation_date) return -1;
+      return new Date(b.last_donation_date) - new Date(a.last_donation_date);
+    });
+  } else if (sortBy === "oldestDonation") {
+    rows.sort((a, b) => {
+      if (!a.last_donation_date && !b.last_donation_date) return 0;
+      if (!a.last_donation_date) return 1;
+      if (!b.last_donation_date) return -1;
+      return new Date(a.last_donation_date) - new Date(b.last_donation_date);
+    });
+  } else {
+    rows.sort((a, b) => (b.id || 0) - (a.id || 0));
+  }
+
   const tbody = document.getElementById("donorTbody");
   const empty = document.getElementById("donorEmpty");
   tbody.innerHTML = "";
@@ -996,7 +1346,22 @@ function renderDonors() {
   empty.style.display = "none";
 
   rows.forEach(d => {
+    const badge = getDonorBadge(d.total_donations || 0);
     const tr = document.createElement("tr");
+    
+    let actionsHtml = `
+      <button class="btn btn-view" data-id="${d.id}" data-action="view-donor">View</button>
+    `;
+    actionsHtml += `<button class="btn btn-toggle" data-id="${d.id}" data-action="toggle">${d.status === "active" ? "Deactivate" : "Activate"}</button>`;
+    actionsHtml += `<button class="btn btn-donation" data-id="${d.id}" data-action="donation-history">🩸 Donations</button>`;
+    
+    if (canEditDonor()) {
+      actionsHtml += `<button class="btn btn-edit" data-id="${d.id}" data-action="edit">Edit</button>`;
+    }
+    if (canDeleteDonor()) {
+      actionsHtml += `<button class="btn btn-delete" data-id="${d.id}" data-action="delete-donor">Delete</button>`;
+    }
+
     tr.innerHTML = `
       <td><input type="checkbox" class="donor-check" data-id="${d.id}" ${selectedDonorIds.has(d.id) ? "checked" : ""} aria-label="Select ${escapeHtml(d.person_name)}" /></td>
       <td>${d.sn ?? d.id}</td>
@@ -1008,12 +1373,10 @@ function renderDonors() {
       <td>${escapeHtml(d.ward_number || "-")}</td>
       <td>${escapeHtml(d.phone_number || "-")}</td>
       <td><span class="pill ${d.status}">${d.status === "active" ? "Active" : "Inactive"}</span></td>
-      <td class="actions">
-        <button class="btn btn-view" data-id="${d.id}" data-action="view-donor">View</button>
-        <button class="btn btn-edit" data-id="${d.id}" data-action="edit">Edit</button>
-        <button class="btn btn-toggle" data-id="${d.id}" data-action="toggle">${d.status === "active" ? "Deactivate" : "Activate"}</button>
-        <button class="btn btn-delete" data-id="${d.id}" data-action="delete-donor">Delete</button>
-      </td>
+      <td><strong>${d.total_donations || 0}</strong></td>
+      <td>${d.last_donation_date ? new Date(d.last_donation_date).toLocaleDateString() : "-"}</td>
+      <td>${badge ? `<span class="badge-display ${badge.class}">${badge.emoji} ${badge.label}</span>` : "-"}</td>
+      <td class="actions">${actionsHtml}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -1024,13 +1387,18 @@ document.getElementById("donorSearch").addEventListener("input", debounce(render
 document.getElementById("donorStatusFilter").addEventListener("change", renderDonors);
 document.getElementById("donorBgFilter").addEventListener("change", renderDonors);
 document.getElementById("donorMuniFilter").addEventListener("change", renderDonors);
+document.getElementById("donorSortBy").addEventListener("change", renderDonors);
 
 document.getElementById("exportDonorCsv").addEventListener("click", () => {
-  downloadCsv("blood_bridge_donors.csv", allDonors, DONOR_CSV_COLUMNS);
+  const exportData = allDonors.map(d => ({
+    ...d,
+    badge: getBadgeLabel(d.total_donations || 0)
+  }));
+  const cols = [...DONOR_CSV_COLUMNS, { key: "badge", label: "Badge" }];
+  downloadCsv("blood_bridge_donors.csv", exportData, cols);
 });
 document.getElementById("printDonors").addEventListener("click", () => window.print());
 
-// Row selection
 document.getElementById("donorTbody").addEventListener("change", (e) => {
   if (!e.target.classList.contains("donor-check")) return;
   const id = Number(e.target.dataset.id);
@@ -1051,6 +1419,7 @@ function updateDonorBulkBar() {
   document.getElementById("donorBulkCount").textContent = `${count} selected`;
   bar.classList.toggle("show", count > 0);
 }
+
 document.getElementById("donorBulkBar").addEventListener("click", async (e) => {
   const action = e.target.dataset.bulk;
   if (!action) return;
@@ -1060,11 +1429,20 @@ document.getElementById("donorBulkBar").addEventListener("click", async (e) => {
 
   if (action === "export") {
     const rows = allDonors.filter(d => ids.includes(d.id));
-    downloadCsv("blood_bridge_donors_selected.csv", rows, DONOR_CSV_COLUMNS);
+    const exportData = rows.map(d => ({
+      ...d,
+      badge: getBadgeLabel(d.total_donations || 0)
+    }));
+    const cols = [...DONOR_CSV_COLUMNS, { key: "badge", label: "Badge" }];
+    downloadCsv("blood_bridge_donors_selected.csv", exportData, cols);
     return;
   }
 
   if (action === "delete") {
+    if (!canDeleteDonor()) {
+      showToast("You don't have permission to delete donors.", "error");
+      return;
+    }
     if (ids.length === 0) return;
     const ok = await confirmDialog(`Delete ${ids.length} donor(s)? This cannot be undone.`, "Bulk Delete");
     if (!ok) return;
@@ -1085,14 +1463,26 @@ document.getElementById("donorTbody").addEventListener("click", async (e) => {
   const record = allDonors.find(d => d.id === id);
   if (!record) return;
 
+  if (action === "donation-history") {
+    await openDonationHistory(id);
+    return;
+  }
+
   if (action === "edit") {
+    if (!canEditDonor()) {
+      showToast("You don't have permission to edit donors.", "error");
+      return;
+    }
     openEditModal(record);
   } else if (action === "view-donor") {
     openViewModal("Donor Details", record, [
       ["Name", record.person_name], ["Age", record.age], ["Sex", record.sex],
       ["Blood Group", record.blood_group], ["Municipality", record.municipality],
       ["Ward", record.ward_number], ["Phone", record.phone_number],
-      ["Entered By", record.data_entry_by], ["Status", record.status === "active" ? "Active" : "Inactive"]
+      ["Entered By", record.data_entry_by], ["Status", record.status === "active" ? "Active" : "Inactive"],
+      ["Total Donations", record.total_donations || 0],
+      ["Last Donation", record.last_donation_date ? new Date(record.last_donation_date).toLocaleDateString() : "Never"],
+      ["Badge", getDonorBadge(record.total_donations || 0)?.label || "-"]
     ]);
   } else if (action === "toggle") {
     const newStatus = record.status === "active" ? "inactive" : "active";
@@ -1104,6 +1494,10 @@ document.getElementById("donorTbody").addEventListener("click", async (e) => {
     loadDonors();
     renderDashboard();
   } else if (action === "delete-donor") {
+    if (!canDeleteDonor()) {
+      showToast("You don't have permission to delete donors.", "error");
+      return;
+    }
     const ok = await confirmDialog(`Delete ${record.person_name} permanently?`, "Delete Donor");
     if (!ok) return;
     try {
@@ -1116,6 +1510,388 @@ document.getElementById("donorTbody").addEventListener("click", async (e) => {
       showToast("Network error: " + err.message, "error");
     }
   }
+});
+
+// ==================== URGENT BLOOD REQUESTS ====================
+let allUrgentRequests = [];
+let urgentRealtimeChannel = null;
+
+async function loadUrgentRequests() {
+  if (!canViewUrgent()) return;
+  
+  const tbody = document.getElementById("urgentTbody");
+  tbody.innerHTML = Array.from({length: 3}).map(() => `<tr class="skeleton-row"><td colspan="11">&nbsp;</td></tr>`).join("");
+  try {
+    const { data, error } = await supabaseClient
+      .from("urgent_blood_requests")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) { showToast("Error: " + error.message, "error"); return; }
+    allUrgentRequests = data || [];
+    populateSelectFilter("urgentBgFilter", allUrgentRequests.map(r => r.blood_group_needed), "All Blood Groups");
+    document.getElementById("urgentLastUpdated").textContent = formatTime();
+    renderUrgentRequests();
+  } catch (err) {
+    showToast("Network error: " + err.message, "error");
+  }
+}
+
+function renderUrgentRequests() {
+  const statusFilter = document.getElementById("urgentStatusFilter").value;
+  const bgFilter = document.getElementById("urgentBgFilter").value;
+  const search = document.getElementById("urgentSearch").value.trim().toLowerCase();
+  let rows = allUrgentRequests;
+
+  if (statusFilter !== "all") rows = rows.filter(r => r.status === statusFilter);
+  if (bgFilter) rows = rows.filter(r => r.blood_group_needed === bgFilter);
+  if (search) {
+    rows = rows.filter(r =>
+      (r.requester_name || "").toLowerCase().includes(search) ||
+      (r.phone_number || "").toLowerCase().includes(search) ||
+      (r.hospital_location || "").toLowerCase().includes(search)
+    );
+  }
+
+  const tbody = document.getElementById("urgentTbody");
+  const empty = document.getElementById("urgentEmpty");
+  tbody.innerHTML = "";
+
+  if (rows.length === 0) {
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  const unreadCount = allUrgentRequests.filter(r => !r.request_read).length;
+  document.getElementById("urgentBadge").textContent = unreadCount;
+
+  const statusLabels = {
+    pending: "Pending",
+    in_progress: "In Progress",
+    completed: "Completed",
+    cancelled: "Cancelled"
+  };
+
+  rows.forEach((r, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td>${escapeHtml(r.requester_name)}</td>
+      <td>${escapeHtml(r.phone_number)}</td>
+      <td><b>${escapeHtml(r.blood_group_needed)}</b></td>
+      <td>${r.pints_required}</td>
+      <td>${escapeHtml(r.hospital_location)}</td>
+      <td>${r.needed_date ? new Date(r.needed_date).toLocaleDateString() : '-'}</td>
+      <td>${r.needed_time || '-'}</td>
+      <td><span class="pill ${r.status}">${statusLabels[r.status] || r.status}</span></td>
+      <td>${r.request_read ? '✅ Read' : '🔴 Unread'}</td>
+      <td>${r.created_at ? new Date(r.created_at).toLocaleString() : '-'}</td>
+      <td class="actions">
+        <button class="btn btn-view" data-id="${r.id}" data-action="view-urgent">View</button>
+        <button class="btn btn-toggle" data-id="${r.id}" data-action="toggle-read">${r.request_read ? 'Mark Unread' : 'Mark Read'}</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById("urgentStatusFilter").addEventListener("change", renderUrgentRequests);
+document.getElementById("urgentBgFilter").addEventListener("change", renderUrgentRequests);
+document.getElementById("urgentSearch").addEventListener("input", debounce(renderUrgentRequests, 250));
+
+document.getElementById("exportUrgentCsv").addEventListener("click", () => {
+  const exportData = allUrgentRequests.map(r => ({
+    ...r,
+    request_read: r.request_read ? "Read" : "Unread"
+  }));
+  downloadCsv("urgent_blood_requests.csv", exportData, URGENT_CSV_COLUMNS);
+});
+
+document.getElementById("urgentTbody").addEventListener("click", async (e) => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+  const record = allUrgentRequests.find(r => String(r.id) === String(id));
+  if (!record) return;
+
+  if (action === "view-urgent") {
+    openUrgentDetail(record);
+  } else if (action === "toggle-read") {
+    const newStatus = !record.request_read;
+    const { error } = await supabaseClient
+      .from("urgent_blood_requests")
+      .update({ request_read: newStatus })
+      .eq("id", id);
+    if (error) { showToast("Error: " + error.message, "error"); return; }
+    showToast(newStatus ? "Marked as read." : "Marked as unread.", "success");
+    loadUrgentRequests();
+  }
+});
+
+function openUrgentDetail(record) {
+  const statusLabels = {
+    pending: "Pending",
+    in_progress: "In Progress",
+    completed: "Completed",
+    cancelled: "Cancelled"
+  };
+  
+  document.getElementById("urgentDetailList").innerHTML = `
+    <li><span>Requester Name</span><span>${escapeHtml(record.requester_name)}</span></li>
+    <li><span>Phone Number</span><span>${escapeHtml(record.phone_number)}</span></li>
+    <li><span>Blood Group Needed</span><span>${escapeHtml(record.blood_group_needed)}</span></li>
+    <li><span>Pints Required</span><span>${record.pints_required}</span></li>
+    <li><span>Hospital / Location</span><span>${escapeHtml(record.hospital_location)}</span></li>
+    <li><span>Needed Date</span><span>${record.needed_date ? new Date(record.needed_date).toLocaleDateString() : '-'}</span></li>
+    <li><span>Needed Time</span><span>${record.needed_time || '-'}</span></li>
+    <li><span>Additional Notes</span><span>${escapeHtml(record.notes || '-')}</span></li>
+    <li><span>Status</span><span>${statusLabels[record.status] || record.status}</span></li>
+    <li><span>Read Status</span><span>${record.request_read ? '✅ Read' : '🔴 Unread'}</span></li>
+    <li><span>Submitted By</span><span>${escapeHtml(record.created_by || 'Anonymous')}</span></li>
+    <li><span>Submitted At</span><span>${record.created_at ? new Date(record.created_at).toLocaleString() : '-'}</span></li>
+    ${record.updated_at ? `<li><span>Last Updated</span><span>${new Date(record.updated_at).toLocaleString()}</span></li>` : ''}
+  `;
+  
+  document.getElementById("urgentDetailStatus").value = record.status;
+  document.getElementById("urgentDetailModal").classList.add("show");
+  
+  document.getElementById("urgentDetailUpdateBtn").onclick = async () => {
+    const newStatus = document.getElementById("urgentDetailStatus").value;
+    const { error } = await supabaseClient
+      .from("urgent_blood_requests")
+      .update({ status: newStatus })
+      .eq("id", record.id);
+    if (error) { showToast("Error: " + error.message, "error"); return; }
+    showToast("Status updated to " + newStatus.replace('_', ' '), "success");
+    document.getElementById("urgentDetailModal").classList.remove("show");
+    loadUrgentRequests();
+  };
+}
+
+document.getElementById("urgentDetailCloseBtn").addEventListener("click", () => {
+  document.getElementById("urgentDetailModal").classList.remove("show");
+});
+
+function setupUrgentRealtime() {
+  if (urgentRealtimeChannel) return;
+  if (!canViewUrgent()) return;
+  
+  urgentRealtimeChannel = supabaseClient
+    .channel("urgent_blood_requests_live")
+    .on("postgres_changes", 
+      { event: "*", schema: "public", table: "urgent_blood_requests" },
+      () => {
+        loadUrgentRequests();
+        // Show notification toast for new requests
+        if (navigator.onLine) {
+          showToast("📢 New urgent blood request received!", "info");
+        }
+      }
+    )
+    .subscribe();
+}
+
+// ==================== DONATION HISTORY ====================
+let currentDonorId = null;
+
+async function openDonationHistory(donorId) {
+  currentDonorId = donorId;
+  const modal = document.getElementById("donationHistoryModal");
+  modal.classList.add("show");
+  
+  document.getElementById("donationDate").value = new Date().toISOString().split('T')[0];
+  document.getElementById("donationHospital").value = '';
+  document.getElementById("donationNotes").value = '';
+  
+  await loadDonationHistory(donorId);
+}
+
+async function loadDonationHistory(donorId) {
+  const donor = allDonors.find(d => d.id === donorId);
+  if (!donor) return;
+  
+  document.getElementById("donationStats").innerHTML = `
+    <div class="donation-stat">
+      <div class="num">${donor.total_donations || 0}</div>
+      <div class="label">Total Donations</div>
+    </div>
+    <div class="donation-stat">
+      <div class="num">${donor.last_donation_date ? new Date(donor.last_donation_date).toLocaleDateString() : '-'}</div>
+      <div class="label">Last Donation</div>
+    </div>
+    ${getDonorBadge(donor.total_donations || 0) ? `
+    <div class="donation-stat">
+      <div class="num" style="font-size:24px;">${getDonorBadge(donor.total_donations || 0).emoji}</div>
+      <div class="label">${getDonorBadge(donor.total_donations || 0).label}</div>
+    </div>` : ''}
+  `;
+  
+  try {
+    const { data, error } = await supabaseClient
+      .from('blood_donation_history')
+      .select('*')
+      .eq('donor_id', donorId)
+      .order('donation_date', { ascending: false });
+      
+    if (error) throw error;
+    
+    const grouped = {};
+    data.forEach(item => {
+      const year = new Date(item.donation_date).getFullYear();
+      if (!grouped[year]) grouped[year] = [];
+      grouped[year].push(item);
+    });
+    
+    let html = '';
+    const years = Object.keys(grouped).sort((a, b) => b - a);
+    years.forEach(year => {
+      html += `<div style="font-weight:700;color:var(--red);margin:8px 0 4px;">${year}</div>`;
+      grouped[year].forEach(item => {
+        const date = new Date(item.donation_date);
+        html += `
+          <div class="donation-timeline-item">
+            <div class="date">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+            ${item.hospital ? `<div class="details">🏥 ${escapeHtml(item.hospital)}</div>` : ''}
+            ${item.notes ? `<div class="details">📝 ${escapeHtml(item.notes)}</div>` : ''}
+            ${item.created_by ? `<div class="details">👤 Recorded by: ${escapeHtml(item.created_by)}</div>` : ''}
+            <div style="margin-top:4px;display:flex;gap:6px;">
+              ${canEditDonor() ? `<button class="btn btn-edit" onclick="editDonation('${item.id}')" style="font-size:11px;padding:2px 8px;">✏️ Edit</button>` : ''}
+              ${canDeleteDonor() ? `<button class="btn btn-delete" onclick="deleteDonation('${item.id}')" style="font-size:11px;padding:2px 8px;">🗑️ Delete</button>` : ''}
+            </div>
+          </div>
+        `;
+      });
+    });
+    
+    if (!data.length) {
+      html = '<p style="color:var(--muted);text-align:center;padding:20px;">No donation history yet.</p>';
+    }
+    
+    document.getElementById('donationTimeline').innerHTML = html;
+    
+  } catch (err) {
+    showToast('Error loading donation history: ' + err.message, 'error');
+  }
+}
+
+document.getElementById('saveDonationBtn').addEventListener('click', async () => {
+  if (!currentDonorId) {
+    showToast('No donor selected.', 'error');
+    return;
+  }
+  
+  const donationDate = document.getElementById('donationDate').value;
+  const hospital = document.getElementById('donationHospital').value.trim();
+  const notes = document.getElementById('donationNotes').value.trim();
+  
+  if (!donationDate) {
+    showToast('Please select a donation date.', 'error');
+    return;
+  }
+  
+  const saveBtn = document.getElementById('saveDonationBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
+  
+  try {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    
+    const generateUUID = () => {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0;
+        var v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    };
+    
+    const newId = generateUUID();
+    
+    const { error } = await supabaseClient
+      .from('blood_donation_history')
+      .insert([{
+        id: newId,
+        donor_id: currentDonorId,
+        donation_date: donationDate,
+        hospital: hospital || null,
+        notes: notes || null,
+        created_by: user?.email || 'admin'
+      }]);
+      
+    if (error) throw error;
+    
+    showToast('Donation recorded successfully! ✅', 'success');
+    await loadDonationHistory(currentDonorId);
+    await loadDonors();
+    renderDashboard();
+    
+    document.getElementById('donationDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('donationHospital').value = '';
+    document.getElementById('donationNotes').value = '';
+    
+  } catch (err) {
+    console.error('Donation error:', err);
+    showToast('Error recording donation: ' + err.message, 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = '💾 Save Donation';
+  }
+});
+
+async function editDonation(donationId) {
+  if (!canEditDonor()) {
+    showToast("You don't have permission to edit donations.", "error");
+    return;
+  }
+  const newDate = prompt('Enter new donation date (YYYY-MM-DD):');
+  if (!newDate) return;
+  
+  try {
+    const { error } = await supabaseClient
+      .from('blood_donation_history')
+      .update({ donation_date: newDate })
+      .eq('id', donationId);
+      
+    if (error) throw error;
+    
+    showToast('Donation updated successfully! ✅', 'success');
+    await loadDonationHistory(currentDonorId);
+    await loadDonors();
+    renderDashboard();
+    
+  } catch (err) {
+    showToast('Error updating donation: ' + err.message, 'error');
+  }
+}
+
+async function deleteDonation(donationId) {
+  if (!canDeleteDonor()) {
+    showToast("You don't have permission to delete donations.", "error");
+    return;
+  }
+  if (!confirm('Delete this donation record? This action cannot be undone.')) return;
+  
+  try {
+    const { error } = await supabaseClient
+      .from('blood_donation_history')
+      .delete()
+      .eq('id', donationId);
+      
+    if (error) throw error;
+    
+    showToast('Donation deleted.', 'success');
+    await loadDonationHistory(currentDonorId);
+    await loadDonors();
+    renderDashboard();
+    
+  } catch (err) {
+    showToast('Error deleting donation: ' + err.message, 'error');
+  }
+}
+
+document.getElementById('closeDonationHistoryBtn').addEventListener('click', () => {
+  document.getElementById('donationHistoryModal').classList.remove('show');
 });
 
 // ==================== VIEW DETAILS MODAL ====================
@@ -1193,8 +1969,15 @@ document.getElementById("editSaveBtn").addEventListener("click", async () => {
 // ==================== INIT ====================
 window.addEventListener("DOMContentLoaded", () => {
   supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  
+  const savedRole = sessionStorage.getItem("userRole");
+  if (savedRole) {
+    currentUserRole = savedRole;
+  }
+  
   checkAdminAndInit();
 });
+
 </script>
 </body>
 </html>

@@ -12,7 +12,7 @@
 <meta property="og:image" content="https://placehold.co/1200x630/b91c1c/ffffff?text=Blood+Bridge+Galkot" />
 <meta name="twitter:card" content="summary_large_image" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🩸</text></svg>" />
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --red:#b91c1c; --red-dark:#7f1d1d; --red-light:#fee2e2;
@@ -23,6 +23,10 @@
     --radius:16px; --radius-sm:10px;
     --green:#15803d; --green-bg:#dcfce7;
     --focus: 3px solid #93c5fd;
+    --gold: #d97706;
+    --ineligible-bg: #fee2e2;
+    --ineligible-border: #dc2626;
+    --ineligible-text: #991b1b;
   }
   [data-theme="dark"]{
     --red:#ef4444; --red-dark:#f87171; --red-light:#3f1d1d;
@@ -31,6 +35,9 @@
     --shadow: 0 2px 12px rgba(0,0,0,0.4);
     --shadow-lg: 0 8px 30px rgba(0,0,0,0.55);
     --green:#4ade80; --green-bg:#123a22;
+    --ineligible-bg: #3f1d1d;
+    --ineligible-border: #dc2626;
+    --ineligible-text: #fca5a5;
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
@@ -51,17 +58,41 @@
     background:linear-gradient(135deg,var(--red),var(--red-dark));
     color:#fff;padding:36px 16px 44px;text-align:center;position:relative;
   }
+  .header-top{
+    display:flex;justify-content:flex-end;align-items:center;gap:12px;
+    position:absolute;top:16px;right:16px;
+  }
   .theme-toggle{
-    position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.18);
+    background:rgba(255,255,255,0.18);
     border:1px solid rgba(255,255,255,0.35);color:#fff;width:40px;height:40px;
     border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;
   }
   .theme-toggle:hover{background:rgba(255,255,255,0.3);}
+  .login-btn-header{
+    background:rgba(255,255,255,0.18);
+    border:1px solid rgba(255,255,255,0.35);color:#fff;
+    padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;
+    transition:background 0.2s;
+    white-space:nowrap;
+  }
+  .login-btn-header:hover{background:rgba(255,255,255,0.3);}
+  .user-badge-header{
+    display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.15);
+    padding:6px 12px 6px 16px;border-radius:20px;font-size:12px;
+  }
+  .user-badge-header .role-badge{
+    background:rgba(255,215,0,0.3);padding:2px 10px;border-radius:10px;font-size:10px;
+    font-weight:700;text-transform:uppercase;
+  }
+  .logout-btn-header{
+    background:rgba(255,0,0,0.3);border:1px solid rgba(255,0,0,0.4);
+    color:#fff;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:11px;
+  }
+  .logout-btn-header:hover{background:rgba(255,0,0,0.5);}
   .header .drop{font-size:38px;margin-bottom:6px;}
   .header h1{margin:0 0 4px;font-size:clamp(20px,4vw,26px);}
   .header p{margin:0;opacity:.92;font-size:14px;}
 
-  /* ==== Credits slider ==== */
   .credits-slider{
     position:relative;max-width:640px;margin:14px auto 0;
     background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);
@@ -96,102 +127,78 @@
 
   .wrap{max-width:1080px;margin:-8px auto 0;padding:0 16px 70px;position:relative;z-index:5;}
 
-  .toolbar{
-    background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-lg);
-    display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;position:sticky;top:10px;z-index:20;
+  /* Latest Donors Section - ALWAYS VISIBLE */
+  .latest-donors-section{
+    margin-bottom:24px;background:var(--card);border-radius:var(--radius);
+    padding:20px;box-shadow:var(--shadow);border:1px solid var(--border);
   }
-  .search-field{position:relative;flex:2;min-width:220px;}
-  .search-field input{width:100%;padding:11px 12px 11px 36px;}
-  .search-field .icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.55;pointer-events:none;}
-  .toolbar input, .toolbar select{
-    padding:11px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;
-    background:var(--bg-elevated);color:var(--text);
+  .latest-donors-section h2{
+    margin:0 0 16px;font-size:18px;display:flex;align-items:center;gap:10px;
   }
-  .toolbar select{flex:1;min-width:130px;}
-  .toolbar .clear-btn{
-    background:transparent;border:1.5px solid var(--border);border-radius:var(--radius-sm);
-    padding:0 14px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;
+  .latest-donors-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;
   }
-  .toolbar .clear-btn:hover{background:var(--red-light);color:var(--red);}
+  .latest-donor-card{
+    background:var(--bg-elevated);border-radius:10px;padding:14px;
+    border:1px solid var(--border);text-align:center;transition:transform .2s ease,box-shadow .2s ease;
+  }
+  .latest-donor-card:hover{
+    transform:translateY(-3px);box-shadow:var(--shadow-lg);
+  }
+  .latest-donor-card .name{font-weight:700;margin:4px 0;}
+  .latest-donor-card .bg{font-size:13px;color:var(--muted);}
+  .latest-donor-card .count{font-weight:700;color:var(--red);font-size:18px;margin:4px 0;}
+  .latest-donor-card .label{font-size:11px;color:var(--muted);}
+  .latest-donor-card .badge{font-size:11px;color:var(--muted);margin-top:4px;}
 
-  .sort-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
-  .result-count{font-size:13px;color:var(--muted);}
-  .sort-row select{padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg-elevated);color:var(--text);}
+  /* Top Donors Section - ALWAYS VISIBLE */
+  .top-donors-section{
+    margin-bottom:24px;background:var(--card);border-radius:var(--radius);
+    padding:20px;box-shadow:var(--shadow);border:1px solid var(--border);
+  }
+  .top-donors-section h2{
+    margin:0 0 16px;font-size:18px;display:flex;align-items:center;gap:10px;
+  }
+  .top-donors-section h2 span{
+    font-size:12px;color:var(--muted);font-weight:normal;
+  }
+  .top-donors-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;
+  }
+  .top-donor-card{
+    background:var(--bg-elevated);border-radius:10px;padding:14px;
+    border:1px solid var(--border);text-align:center;transition:transform .2s ease,box-shadow .2s ease;
+  }
+  .top-donor-card:hover{
+    transform:translateY(-3px);box-shadow:var(--shadow-lg);
+  }
+  .top-donor-card .medal{font-size:28px;}
+  .top-donor-card .name{font-weight:700;margin:4px 0;}
+  .top-donor-card .bg{font-size:13px;color:var(--muted);}
+  .top-donor-card .count{font-weight:700;color:var(--red);font-size:18px;margin:4px 0;}
+  .top-donor-card .label{font-size:11px;color:var(--muted);}
 
-  .top-entries-wrap{margin-bottom:20px;}
-  .top-entries-slider{
-    position:relative;background:var(--card);border-radius:var(--radius);
-    border:1px solid var(--border);box-shadow:var(--shadow-lg);
-    padding:18px 20px;height:112px;overflow:hidden;
+  /* Login Required Overlay for protected sections */
+  .login-required-section{
+    background:var(--card);border-radius:var(--radius);
+    padding:40px 24px;text-align:center;border:2px dashed var(--border);
+    box-shadow:var(--shadow);
+    margin-bottom:24px;
   }
-  .top-entries-header{
-    display:flex;align-items:center;gap:10px;margin-bottom:10px;
+  .login-required-section .lock-icon{font-size:48px;margin-bottom:12px;}
+  .login-required-section h3{color:var(--text);margin:0 0 8px;}
+  .login-required-section p{color:var(--muted);font-size:14px;margin:0 0 16px;}
+  .login-required-section .btn-login-prompt{
+    background:var(--red);color:#fff;border:none;padding:12px 28px;
+    border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;
+    transition:background .15s;
   }
-  .top-entries-header .te-trophy{
-    font-size:22px;line-height:1;flex-shrink:0;
-    filter:drop-shadow(0 2px 4px rgba(185,28,28,0.25));
-  }
-  .top-entries-header .te-titles{line-height:1.25;}
-  .top-entries-header .te-titles .te-t1{
-    font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--red);
-  }
-  .top-entries-header .te-titles .te-t2{
-    font-size:14px;font-weight:800;color:var(--text);
-  }
-  .top-entry-card{
-    position:absolute;left:20px;right:20px;top:58px;
-    transform:translate(36px,0);opacity:0;
-    display:flex;align-items:center;gap:12px;
-    transition:transform .6s cubic-bezier(.4,0,.2,1),opacity .6s cubic-bezier(.4,0,.2,1);
-  }
-  .top-entry-card.active{transform:translate(0,0);opacity:1;}
-  .top-entry-card.exit{transform:translate(-36px,0);opacity:0;}
-  .top-entry-card .medal{
-    font-size:26px;line-height:1;flex-shrink:0;width:38px;text-align:center;
-  }
-  .top-entry-card .medal.rank-badge{
-    font-size:13px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--red),var(--red-dark));
-    border-radius:999px;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;
-  }
-  .top-entry-card .info{flex:1;min-width:0;}
-  .top-entry-card .name{
-    font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-    color:var(--text);
-  }
-  .top-entry-card .count{font-size:12.5px;font-weight:700;color:var(--red);margin-top:3px;}
-  [data-theme="dark"] .top-entry-card .count{color:var(--red-dark);}
-  @media (prefers-reduced-motion: reduce){
-    .top-entry-card{transition:opacity .5s ease;}
-  }
-  @media (max-width:480px){
-    .top-entries-slider{padding:14px 16px;height:104px;}
-    .top-entry-card{left:16px;right:16px;top:52px;}
-    .top-entry-card .name{font-size:14.5px;}
-  }
+  .login-required-section .btn-login-prompt:hover{background:var(--red-dark);}
 
-  /* ==== Emergency request banner ==== */
-  .emergency-banner{
-    background:linear-gradient(135deg,var(--red),var(--red-dark));
-    color:#fff;border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;
-    display:flex;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:var(--shadow-lg);
-    position:relative;overflow:hidden;
-  }
-  .emergency-banner .eb-icon{
-    font-size:30px;flex-shrink:0;animation:eb-pulse 1.8s ease-in-out infinite;
-  }
-  @keyframes eb-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
-  .emergency-banner .eb-text{flex:1;min-width:180px;}
-  .emergency-banner .eb-text h2{margin:0 0 3px;font-size:17px;font-weight:800;}
-  .emergency-banner .eb-text p{margin:0;font-size:12.5px;opacity:.92;}
-  .emergency-banner .eb-btn{
-    background:#fff;color:var(--red-dark);border:none;padding:11px 20px;border-radius:10px;
-    font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap;flex-shrink:0;
-    transition:transform .15s ease,box-shadow .15s ease;
-  }
-  .emergency-banner .eb-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.2);}
-  .emergency-banner .eb-btn:active{transform:translateY(0);}
+  .protected-content{display:none;}
+  .protected-content.show{display:block;}
 
-  /* ==== Compact blood group quick-filter selector ==== */
+  /* Protected sections - hidden by default */
   .bg-quickpick{margin-bottom:14px;}
   .bg-quickpick-grid{
     display:flex;gap:9px;flex-wrap:wrap;overflow-x:auto;padding:2px 2px 6px;-webkit-overflow-scrolling:touch;
@@ -225,12 +232,7 @@
     background:var(--bg);border-radius:999px;padding:1px 7px;
   }
   .bg-avail-card.active .bg-avail-count{background:rgba(255,255,255,0.2);}
-  .bg-avail-card .bg-avail-status{display:none;}
-  @media (max-width:640px){
-    .bg-quickpick-grid{flex-wrap:nowrap;}
-  }
 
-  /* ==== Ward-wise summary ==== */
   .ward-summary{margin-bottom:20px;}
   .ward-summary h2{font-size:15px;margin:0 0 10px;color:var(--text);}
   .ward-summary-grid{display:flex;gap:8px;flex-wrap:wrap;}
@@ -245,7 +247,28 @@
   .ward-chip .wc-count{opacity:.8;font-weight:500;}
   .ward-summary-empty{font-size:12.5px;color:var(--muted);}
 
-  /* ==== Active filter chips ==== */
+  .toolbar{
+    background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-lg);
+    display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;position:sticky;top:10px;z-index:20;
+  }
+  .search-field{position:relative;flex:2;min-width:220px;}
+  .search-field input{width:100%;padding:11px 12px 11px 36px;}
+  .search-field .icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.55;pointer-events:none;}
+  .toolbar input, .toolbar select{
+    padding:11px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;
+    background:var(--bg-elevated);color:var(--text);
+  }
+  .toolbar select{flex:1;min-width:130px;}
+  .toolbar .clear-btn{
+    background:transparent;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+    padding:0 14px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;
+  }
+  .toolbar .clear-btn:hover{background:var(--red-light);color:var(--red);}
+
+  .sort-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .result-count{font-size:13px;color:var(--muted);}
+  .sort-row select{padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg-elevated);color:var(--text);}
+
   .active-filters{
     display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;
   }
@@ -265,35 +288,38 @@
   }
   .clear-all-chip:hover{background:var(--red-light);color:var(--red);border-color:var(--red);}
 
+  .badge-display{
+    display:inline-flex;align-items:center;gap:6px;padding:4px 12px;
+    border-radius:20px;font-size:12px;font-weight:700;
+  }
+  .badge-display.bronze{background:#fcd34d;color:#92400e;}
+  .badge-display.silver{background:#e5e7eb;color:#374151;}
+  .badge-display.gold{background:#fbbf24;color:#78350f;}
+  .badge-display.platinum{background:#a78bfa;color:#4c1d95;}
+  .badge-display.legend{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#78350f;}
 
-  /* ==== How it works ==== */
-  .how-it-works{
-    margin-top:32px;background:var(--card);border-radius:var(--radius);padding:24px 20px;
-    box-shadow:var(--shadow);border:1px solid var(--border);
+  .emergency-banner{
+    background:linear-gradient(135deg,var(--red),var(--red-dark));
+    color:#fff;border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:var(--shadow-lg);
+    position:relative;overflow:hidden;
   }
-  .how-it-works h2{margin:0 0 4px;font-size:17px;text-align:center;}
-  .how-it-works .hiw-sub{margin:0 0 20px;font-size:12.5px;color:var(--muted);text-align:center;}
-  .hiw-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-  .hiw-step{
-    text-align:center;padding:16px 12px;border-radius:12px;border:1px solid var(--border);
-    background:var(--bg-elevated);transition:transform .15s ease,box-shadow .15s ease;
+  .emergency-banner .eb-icon{
+    font-size:30px;flex-shrink:0;animation:eb-pulse 1.8s ease-in-out infinite;
   }
-  .hiw-step:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
-  .hiw-step .hiw-num{
-    display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;
-    border-radius:50%;background:var(--red-light);color:var(--red);font-weight:800;font-size:13px;margin-bottom:8px;
+  @keyframes eb-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
+  .emergency-banner .eb-text{flex:1;min-width:180px;}
+  .emergency-banner .eb-text h2{margin:0 0 3px;font-size:17px;font-weight:800;}
+  .emergency-banner .eb-text p{margin:0;font-size:12.5px;opacity:.92;}
+  .emergency-banner .eb-btn{
+    background:#fff;color:var(--red-dark);border:none;padding:11px 20px;border-radius:10px;
+    font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap;flex-shrink:0;
+    transition:transform .15s ease,box-shadow .15s ease;
   }
-  .hiw-step .hiw-icon{font-size:24px;margin-bottom:6px;}
-  .hiw-step h3{margin:0 0 5px;font-size:13.5px;}
-  .hiw-step p{margin:0;font-size:12px;color:var(--muted);line-height:1.5;}
-  @media (max-width:640px){
-    .hiw-steps{grid-template-columns:1fr;}
-    .emergency-banner{padding:18px;}
-    .emergency-banner .eb-btn{width:100%;text-align:center;}
-    .ward-summary-grid{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;}
-    .ward-chip{flex-shrink:0;}
-  }
+  .emergency-banner .eb-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.2);}
+  .emergency-banner .eb-btn:active{transform:translateY(0);}
 
+  /* Donor Grid */
   .donor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;}
   .donor-card{
     background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);
@@ -321,7 +347,33 @@
   .btn-share{background:#2563eb;color:#fff;}
   .btn-share:hover{background:#1d4ed8;}
 
-  /* ==== Share / QR modal ==== */
+  .donor-card.ineligible{
+    border-color: var(--ineligible-border);
+    background: var(--ineligible-bg);
+  }
+  .donor-card.ineligible .donor-name{
+    color: var(--ineligible-text);
+  }
+  .donor-card.ineligible .donor-detail{
+    color: var(--ineligible-text);
+  }
+  .donor-card.ineligible .bg-badge{
+    background: var(--ineligible-border) !important;
+    color: #fff;
+  }
+  .donor-card .ineligible-tag{
+    display: inline-block;
+    background: var(--ineligible-border);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 6px;
+    letter-spacing: 0.3px;
+  }
+
+  /* Modal */
   .modal-overlay{
     position:fixed;inset:0;background:rgba(0,0,0,0.55);display:none;
     align-items:center;justify-content:center;z-index:80;padding:16px;
@@ -331,6 +383,7 @@
     background:var(--card);border-radius:var(--radius);padding:22px;max-width:340px;width:100%;
     box-shadow:var(--shadow-lg);text-align:center;position:relative;max-height:90vh;overflow-y:auto;
   }
+  .modal-box.wide{max-width:480px;}
   .modal-close{
     position:absolute;top:10px;right:10px;background:transparent;border:none;font-size:20px;
     cursor:pointer;color:var(--muted);width:32px;height:32px;border-radius:50%;
@@ -338,6 +391,13 @@
   .modal-close:hover{background:var(--red-light);color:var(--red);}
   .modal-box h3{margin:0 0 4px;font-size:16px;}
   .modal-box .modal-sub{font-size:12.5px;color:var(--muted);margin:0 0 14px;}
+  .modal-box .field{margin-bottom:12px;text-align:left;}
+  .modal-box label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--muted);}
+  .modal-box input, .modal-box select, .modal-box textarea{
+    width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;
+    font-size:14px;background:var(--bg-elevated);color:var(--text);
+  }
+  .modal-box textarea{resize:vertical;min-height:60px;}
   .qr-canvas-wrap{
     background:#fff;padding:12px;border-radius:12px;display:inline-block;margin-bottom:14px;
     box-shadow:var(--shadow);
@@ -358,8 +418,11 @@
   }
   .modal-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
   .modal-actions .btn-pill{flex:1;justify-content:center;min-width:110px;}
+  .btn-submit{background:var(--red);color:#fff;}
+  .btn-submit:hover{background:var(--red-dark);}
+  .btn-cancel-modal{background:#f3f4f6;color:#374151;}
+  .btn-cancel-modal:hover{background:#e5e7eb;}
 
-  /* ==== Verified banner ==== */
   .verified-banner{
     display:none;align-items:center;gap:12px;background:var(--green-bg);color:var(--green);
     border:1.5px solid var(--green);border-radius:var(--radius);padding:16px;margin-bottom:18px;
@@ -375,14 +438,12 @@
 
   .empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
   .empty-state .big-icon{font-size:42px;margin-bottom:12px;}
-
   .load-error{
     text-align:center;padding:18px;color:var(--red);background:var(--red-light);border-radius:12px;
     margin-bottom:20px;font-size:14px;display:none;
   }
   .load-error button{margin-top:8px;background:var(--red);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600;}
 
-  /* skeletons */
   .skeleton-card{background:var(--card);border-radius:var(--radius);padding:16px;border:1px solid var(--border);}
   .sk-line{background:linear-gradient(90deg,var(--border) 25%,var(--bg) 50%,var(--border) 75%);
     background-size:200% 100%;animation:shimmer 1.3s infinite;border-radius:6px;height:12px;margin-bottom:10px;}
@@ -392,6 +453,37 @@
   .load-more{background:var(--card);border:1.5px solid var(--border);color:var(--red);
     padding:11px 24px;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;}
   .load-more:hover{background:var(--red-light);}
+
+  .how-it-works{
+    margin-top:32px;background:var(--card);border-radius:var(--radius);padding:24px 20px;
+    box-shadow:var(--shadow);border:1px solid var(--border);
+  }
+  .how-it-works h2{margin:0 0 4px;font-size:17px;text-align:center;}
+  .how-it-works .hiw-sub{margin:0 0 20px;font-size:12.5px;color:var(--muted);text-align:center;}
+  .hiw-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .hiw-step{
+    text-align:center;padding:16px 12px;border-radius:12px;border:1px solid var(--border);
+    background:var(--bg-elevated);transition:transform .15s ease,box-shadow .15s ease;
+  }
+  .hiw-step:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
+  .hiw-step .hiw-num{
+    display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;
+    border-radius:50%;background:var(--red-light);color:var(--red);font-weight:800;font-size:13px;margin-bottom:8px;
+  }
+  .hiw-step .hiw-icon{font-size:24px;margin-bottom:6px;}
+  .hiw-step h3{margin:0 0 5px;font-size:13.5px;}
+  .hiw-step p{margin:0;font-size:12px;color:var(--muted);line-height:1.5;}
+  @media (max-width:640px){
+    .hiw-steps{grid-template-columns:1fr;}
+    .emergency-banner{padding:18px;}
+    .emergency-banner .eb-btn{width:100%;text-align:center;}
+    .ward-summary-grid{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;}
+    .ward-chip{flex-shrink:0;}
+    .top-donors-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
+    .latest-donors-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
+    .header-top{position:relative;top:0;right:0;justify-content:center;margin-bottom:12px;flex-wrap:wrap;}
+    .header{padding-top:16px;}
+  }
 
   .cta-footer{
     text-align:center;margin-top:32px;padding:22px;background:var(--card);border-radius:var(--radius);
@@ -410,18 +502,51 @@
   }
   .toast.show{display:block;}
 
+  .ineligible-modal .modal-box{
+    border: 3px solid var(--ineligible-border);
+    background: var(--ineligible-bg);
+  }
+  .ineligible-modal .modal-box h3{
+    color: var(--ineligible-text);
+  }
+  .ineligible-modal .modal-box .modal-sub{
+    color: var(--ineligible-text);
+  }
+  .ineligible-modal .modal-box .share-donor-info{
+    background: var(--bg);
+    color: var(--text);
+  }
+  .ineligible-modal .modal-box .share-donor-info strong{
+    color: var(--text);
+  }
+
   @media (max-width:480px){
     .toolbar{position:static;}
     .card-actions{gap:6px;}
     .btn-pill{flex:1;justify-content:center;}
   }
+
+  /* Login Modal */
+  #loginModal .modal-box{max-width:380px;}
+  #loginModal .field{margin-bottom:14px;}
+  #loginModal .login-error{color:var(--red);font-size:13px;display:none;margin-top:8px;}
+
+  /* Data loading state for public sections */
+  .public-loading{color:var(--muted);text-align:center;padding:20px;font-size:14px;}
+  .public-error{color:var(--red);text-align:center;padding:20px;font-size:14px;}
+  .public-empty{color:var(--muted);text-align:center;padding:20px;font-size:14px;}
 </style>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to donor list</a>
 
 <div class="header">
-  <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
+  <div class="header-top">
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
+    <div id="authSection">
+      <button class="login-btn-header" id="loginBtnHeader">🔑 Login</button>
+    </div>
+  </div>
   <div class="drop" aria-hidden="true">🩸</div>
   <h1>Blood Bridge Galkot</h1>
   <p>List of Available Blood Donors</p>
@@ -436,7 +561,6 @@
 </div>
 
 <script>
-  // Header credits slider — self-contained, independent of donor/search/filter logic.
   (function(){
     var slides = document.querySelectorAll('#creditsSlider .credits-slide');
     if(!slides.length) return;
@@ -452,7 +576,6 @@
       prevEl.classList.add('exit');
 
       nextEl.classList.remove('exit');
-      // force reflow so the enter transition runs from the off-screen state
       void nextEl.offsetWidth;
       nextEl.classList.add('active');
 
@@ -487,61 +610,92 @@
     <button class="vclose" id="verifiedClose" aria-label="Dismiss">✕</button>
   </div>
 
-  <section class="top-entries-wrap" id="topEntriesSection" aria-label="Top data entry volunteers"></section>
-
-  <section class="bg-quickpick" aria-label="Blood group quick filter">
-    <div class="bg-quickpick-grid" id="bgAvailGrid"></div>
-  </section>
-
-  <section class="ward-summary" aria-label="Ward-wise donor summary">
-    <h2>📍 Ward-wise Donor Summary</h2>
-    <div class="ward-summary-grid" id="wardSummaryGrid"></div>
-  </section>
-
-  <form class="toolbar" role="search" aria-label="Search donors" onsubmit="return false;">
-    <div class="search-field">
-      <span class="icon" aria-hidden="true">🔍</span>
-      <input type="text" id="searchInput" aria-label="Search by name, phone, blood group or ward"
-             placeholder="Search by name, phone, blood group, or ward..." autocomplete="off" />
+  <!-- ============ PUBLIC SECTIONS - ALWAYS VISIBLE ============ -->
+  
+  <!-- Latest Donors Section - PUBLIC -->
+  <section class="latest-donors-section" aria-label="Latest blood donors">
+    <h2>📋 Latest Registrations</h2>
+    <div class="latest-donors-grid" id="latestDonorsGrid">
+      <div class="public-loading">Loading latest donors...</div>
     </div>
-    <select id="bgFilter" aria-label="Filter by blood group">
-      <option value="">All Blood Groups</option>
-      <option value="A+">A+</option><option value="A-">A-</option>
-      <option value="B+">B+</option><option value="B-">B-</option>
-      <option value="AB+">AB+</option><option value="AB-">AB-</option>
-      <option value="O+">O+</option><option value="O-">O-</option>
-    </select>
-    <select id="wardFilter" aria-label="Filter by ward">
-      <option value="">All Wards</option>
-    </select>
-    <button type="button" class="clear-btn" id="clearFilters">Clear</button>
-  </form>
+  </section>
 
-  <div class="active-filters" id="activeFilters" aria-live="polite"></div>
+  <!-- Top Donors Section - PUBLIC -->
+  <section class="top-donors-section" aria-label="Top blood donors">
+    <h2>🏆 Top Blood Donors <span>(By donation count)</span></h2>
+    <div class="top-donors-grid" id="topDonorsGrid">
+      <div class="public-loading">Loading top donors...</div>
+    </div>
+  </section>
 
-  <div class="sort-row">
-    <span class="result-count" id="resultCount" role="status" aria-live="polite"></span>
-    <label>
-      <span class="sr-only">Sort by</span>
-      <select id="sortBy" aria-label="Sort donors">
-        <option value="recent">Newest first</option>
-        <option value="name">Name (A–Z)</option>
-        <option value="bg">Blood group</option>
+  <!-- ============ PROTECTED CONTENT (requires login) ============ -->
+  <div id="protectedContent" class="protected-content">
+    
+    <section class="bg-quickpick" aria-label="Blood group quick filter">
+      <div class="bg-quickpick-grid" id="bgAvailGrid"></div>
+    </section>
+
+    <section class="ward-summary" aria-label="Ward-wise donor summary">
+      <h2>📍 Ward-wise Donor Summary</h2>
+      <div class="ward-summary-grid" id="wardSummaryGrid"></div>
+    </section>
+
+    <form class="toolbar" role="search" aria-label="Search donors" onsubmit="return false;">
+      <div class="search-field">
+        <span class="icon" aria-hidden="true">🔍</span>
+        <input type="text" id="searchInput" aria-label="Search by name, phone, blood group or ward"
+               placeholder="Search by name, phone, blood group, or ward..." autocomplete="off" />
+      </div>
+      <select id="bgFilter" aria-label="Filter by blood group">
+        <option value="">All Blood Groups</option>
+        <option value="A+">A+</option><option value="A-">A-</option>
+        <option value="B+">B+</option><option value="B-">B-</option>
+        <option value="AB+">AB+</option><option value="AB-">AB-</option>
+        <option value="O+">O+</option><option value="O-">O-</option>
       </select>
-    </label>
+      <select id="wardFilter" aria-label="Filter by ward">
+        <option value="">All Wards</option>
+      </select>
+      <button type="button" class="clear-btn" id="clearFilters">Clear</button>
+    </form>
+
+    <div class="active-filters" id="activeFilters" aria-live="polite"></div>
+
+    <div class="sort-row">
+      <span class="result-count" id="resultCount" role="status" aria-live="polite"></span>
+      <label>
+        <span class="sr-only">Sort by</span>
+        <select id="sortBy" aria-label="Sort donors">
+          <option value="recent">Newest first</option>
+          <option value="name">Name (A–Z)</option>
+          <option value="bg">Blood group</option>
+          <option value="donations">Most Donations</option>
+          <option value="lastDonation">Recently Donated</option>
+        </select>
+      </label>
+    </div>
+
+    <div id="skeletonGrid" class="donor-grid" aria-hidden="true"></div>
+    <div id="donorGrid" class="donor-grid"></div>
+    <div class="load-more-wrap" id="loadMoreWrap" style="display:none;">
+      <button class="load-more" id="loadMoreBtn">Show more donors</button>
+    </div>
+
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div class="big-icon" aria-hidden="true">🔍</div>
+      <p>No donors found. Try adjusting your search or filters.</p>
+    </div>
   </div>
 
-  <div id="skeletonGrid" class="donor-grid" aria-hidden="true"></div>
-  <div id="donorGrid" class="donor-grid"></div>
-  <div class="load-more-wrap" id="loadMoreWrap" style="display:none;">
-    <button class="load-more" id="loadMoreBtn">Show more donors</button>
+  <!-- ============ LOGIN REQUIRED PLACEHOLDER ============ -->
+  <div id="loginRequiredPlaceholder" class="login-required-section" style="display:none;">
+    <div class="lock-icon" aria-hidden="true">🔒</div>
+    <h3>Login to View Full Donor Details</h3>
+    <p>Access to detailed donor search, blood group filters, and ward-wise summary requires admin login.</p>
+    <button class="btn-login-prompt" id="loginPromptBtn">🔑 Login Now</button>
   </div>
 
-  <div class="empty-state" id="emptyState" style="display:none;">
-    <div class="big-icon" aria-hidden="true">🔍</div>
-    <p>No donors found. Try adjusting your search or filters.</p>
-  </div>
-
+  <!-- ============ PUBLIC SECTION - ALWAYS VISIBLE ============ -->
   <section class="how-it-works" aria-label="How Blood Bridge works">
     <h2>❤️ How Blood Bridge Works</h2>
     <p class="hiw-sub">Three simple steps to connect donors and those in need.</p>
@@ -576,6 +730,94 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<!-- Login Modal -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal-box">
+    <button class="modal-close" id="loginModalClose" aria-label="Close">✕</button>
+    <h3>🔑 Login</h3>
+    <p class="modal-sub">Enter your admin credentials to access donor details.</p>
+    <div class="field">
+      <label for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" placeholder="Enter your email" />
+    </div>
+    <div class="field">
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter your password" />
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-pill btn-cancel-modal" id="loginCancelBtn">Cancel</button>
+      <button type="button" class="btn-pill btn-submit" id="loginSubmitBtn">Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- Urgent Blood Request Modal -->
+<div class="modal-overlay" id="urgentRequestModal">
+  <div class="modal-box wide">
+    <button class="modal-close" id="urgentRequestClose" aria-label="Close">✕</button>
+    <h3>🚨 Urgent Blood Request</h3>
+    <p class="modal-sub">Fill in the details below to request blood urgently.</p>
+    <div class="field">
+      <label for="reqRequesterName">Requester Name *</label>
+      <input type="text" id="reqRequesterName" placeholder="Full name of the requester" />
+    </div>
+    <div class="field">
+      <label for="reqPhone">Phone Number *</label>
+      <input type="text" id="reqPhone" placeholder="Phone number with country code" />
+    </div>
+    <div class="field">
+      <label for="reqBloodGroup">Blood Group Needed *</label>
+      <select id="reqBloodGroup">
+        <option value="">Select Blood Group</option>
+        <option value="A+">A+</option><option value="A-">A-</option>
+        <option value="B+">B+</option><option value="B-">B-</option>
+        <option value="AB+">AB+</option><option value="AB-">AB-</option>
+        <option value="O+">O+</option><option value="O-">O-</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="reqPints">How many pints? *</label>
+      <input type="number" id="reqPints" placeholder="Number of pints needed" min="1" />
+    </div>
+    <div class="field">
+      <label for="reqHospital">Location / Hospital *</label>
+      <input type="text" id="reqHospital" placeholder="Hospital name or location" />
+    </div>
+    <div class="field">
+      <label for="reqDate">Blood Needed Date *</label>
+      <input type="date" id="reqDate" />
+    </div>
+    <div class="field">
+      <label for="reqTime">Blood Needed Time *</label>
+      <input type="time" id="reqTime" />
+    </div>
+    <div class="field">
+      <label for="reqNotes">Additional Notes (optional)</label>
+      <textarea id="reqNotes" placeholder="Any additional information..." rows="2"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-pill btn-cancel-modal" id="urgentRequestCancel">Cancel</button>
+      <button type="button" class="btn-pill btn-submit" id="urgentRequestSubmit">📤 Submit Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- Ineligible Alert Modal -->
+<div class="modal-overlay ineligible-modal" id="ineligibleModal" role="alertdialog" aria-modal="true" aria-labelledby="ineligibleModalTitle">
+  <div class="modal-box">
+    <button class="modal-close" id="ineligibleModalClose" aria-label="Close">✕</button>
+    <div style="font-size:42px;margin-bottom:8px;">⚠️</div>
+    <h3 id="ineligibleModalTitle">Donor Not Eligible</h3>
+    <p class="modal-sub">This donor does not meet the eligibility criteria (last donation was less than 3 months ago).</p>
+    <div class="share-donor-info" id="ineligibleDonorInfo"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-pill" id="ineligibleOkBtn" style="background:var(--red);color:#fff;flex:1;">OK, I Understand</button>
+    </div>
+  </div>
+</div>
+
+<!-- Share Modal -->
 <div class="modal-overlay" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
   <div class="modal-box">
     <button class="modal-close" id="shareModalClose" aria-label="Close">✕</button>
@@ -594,8 +836,8 @@
   </div>
 </div>
 
-<!-- Self-contained QR code generator (davidshimjs/qrcodejs, MIT) — inlined so it never depends on an external CDN link that could break -->
 <script>
+// ==================== QR CODE LIBRARY ====================
 var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this.parsedData=[];for(var b=[],d=0,e=this.data.length;e>d;d++){var f=this.data.charCodeAt(d);f>65536?(b[0]=240|(1835008&f)>>>18,b[1]=128|(258048&f)>>>12,b[2]=128|(4032&f)>>>6,b[3]=128|63&f):f>2048?(b[0]=224|(61440&f)>>>12,b[1]=128|(4032&f)>>>6,b[2]=128|63&f):f>128?(b[0]=192|(1984&f)>>>6,b[1]=128|63&f):b[0]=f,this.parsedData=this.parsedData.concat(b)}this.parsedData.length!=this.data.length&&(this.parsedData.unshift(191),this.parsedData.unshift(187),this.parsedData.unshift(239))}function b(a,b){this.typeNumber=a,this.errorCorrectLevel=b,this.modules=null,this.moduleCount=0,this.dataCache=null,this.dataList=[]}function i(a,b){if(void 0==a.length)throw new Error(a.length+"/"+b);for(var c=0;c<a.length&&0==a[c];)c++;this.num=new Array(a.length-c+b);for(var d=0;d<a.length-c;d++)this.num[d]=a[d+c]}function j(a,b){this.totalCount=a,this.dataCount=b}function k(){this.buffer=[],this.length=0}function m(){return"undefined"!=typeof CanvasRenderingContext2D}function n(){var a=!1,b=navigator.userAgent;return/android/i.test(b)&&(a=!0,aMat=b.toString().match(/android ([0-9]\.[0-9])/i),aMat&&aMat[1]&&(a=parseFloat(aMat[1]))),a}function r(a,b){for(var c=1,e=s(a),f=0,g=l.length;g>=f;f++){var h=0;switch(b){case d.L:h=l[f][0];break;case d.M:h=l[f][1];break;case d.Q:h=l[f][2];break;case d.H:h=l[f][3]}if(h>=e)break;c++}if(c>l.length)throw new Error("Too long data");return c}function s(a){var b=encodeURI(a).toString().replace(/\%[0-9a-fA-F]{2}/g,"a");return b.length+(b.length!=a?3:0)}a.prototype={getLength:function(){return this.parsedData.length},write:function(a){for(var b=0,c=this.parsedData.length;c>b;b++)a.put(this.parsedData[b],8)}},b.prototype={addData:function(b){var c=new a(b);this.dataList.push(c),this.dataCache=null},isDark:function(a,b){if(0>a||this.moduleCount<=a||0>b||this.moduleCount<=b)throw new Error(a+","+b);return this.modules[a][b]},getModuleCount:function(){return this.moduleCount},make:function(){this.makeImpl(!1,this.getBestMaskPattern())},makeImpl:function(a,c){this.moduleCount=4*this.typeNumber+17,this.modules=new Array(this.moduleCount);for(var d=0;d<this.moduleCount;d++){this.modules[d]=new Array(this.moduleCount);for(var e=0;e<this.moduleCount;e++)this.modules[d][e]=null}this.setupPositionProbePattern(0,0),this.setupPositionProbePattern(this.moduleCount-7,0),this.setupPositionProbePattern(0,this.moduleCount-7),this.setupPositionAdjustPattern(),this.setupTimingPattern(),this.setupTypeInfo(a,c),this.typeNumber>=7&&this.setupTypeNumber(a),null==this.dataCache&&(this.dataCache=b.createData(this.typeNumber,this.errorCorrectLevel,this.dataList)),this.mapData(this.dataCache,c)},setupPositionProbePattern:function(a,b){for(var c=-1;7>=c;c++)if(!(-1>=a+c||this.moduleCount<=a+c))for(var d=-1;7>=d;d++)-1>=b+d||this.moduleCount<=b+d||(this.modules[a+c][b+d]=c>=0&&6>=c&&(0==d||6==d)||d>=0&&6>=d&&(0==c||6==c)||c>=2&&4>=c&&d>=2&&4>=d?!0:!1)},getBestMaskPattern:function(){for(var a=0,b=0,c=0;8>c;c++){this.makeImpl(!0,c);var d=f.getLostPoint(this);(0==c||a>d)&&(a=d,b=c)}return b},createMovieClip:function(a,b,c){var d=a.createEmptyMovieClip(b,c),e=1;this.make();for(var f=0;f<this.modules.length;f++)for(var g=f*e,h=0;h<this.modules[f].length;h++){var i=h*e,j=this.modules[f][h];j&&(d.beginFill(0,100),d.moveTo(i,g),d.lineTo(i+e,g),d.lineTo(i+e,g+e),d.lineTo(i,g+e),d.endFill())}return d},setupTimingPattern:function(){for(var a=8;a<this.moduleCount-8;a++)null==this.modules[a][6]&&(this.modules[a][6]=0==a%2);for(var b=8;b<this.moduleCount-8;b++)null==this.modules[6][b]&&(this.modules[6][b]=0==b%2)},setupPositionAdjustPattern:function(){for(var a=f.getPatternPosition(this.typeNumber),b=0;b<a.length;b++)for(var c=0;c<a.length;c++){var d=a[b],e=a[c];if(null==this.modules[d][e])for(var g=-2;2>=g;g++)for(var h=-2;2>=h;h++)this.modules[d+g][e+h]=-2==g||2==g||-2==h||2==h||0==g&&0==h?!0:!1}},setupTypeNumber:function(a){for(var b=f.getBCHTypeNumber(this.typeNumber),c=0;18>c;c++){var d=!a&&1==(1&b>>c);this.modules[Math.floor(c/3)][c%3+this.moduleCount-8-3]=d}for(var c=0;18>c;c++){var d=!a&&1==(1&b>>c);this.modules[c%3+this.moduleCount-8-3][Math.floor(c/3)]=d}},setupTypeInfo:function(a,b){for(var c=this.errorCorrectLevel<<3|b,d=f.getBCHTypeInfo(c),e=0;15>e;e++){var g=!a&&1==(1&d>>e);6>e?this.modules[e][8]=g:8>e?this.modules[e+1][8]=g:this.modules[this.moduleCount-15+e][8]=g}for(var e=0;15>e;e++){var g=!a&&1==(1&d>>e);8>e?this.modules[8][this.moduleCount-e-1]=g:9>e?this.modules[8][15-e-1+1]=g:this.modules[8][15-e-1]=g}this.modules[this.moduleCount-8][8]=!a},mapData:function(a,b){for(var c=-1,d=this.moduleCount-1,e=7,g=0,h=this.moduleCount-1;h>0;h-=2)for(6==h&&h--;;){for(var i=0;2>i;i++)if(null==this.modules[d][h-i]){var j=!1;g<a.length&&(j=1==(1&a[g]>>>e));var k=f.getMask(b,d,h-i);k&&(j=!j),this.modules[d][h-i]=j,e--,-1==e&&(g++,e=7)}if(d+=c,0>d||this.moduleCount<=d){d-=c,c=-c;break}}}},b.PAD0=236,b.PAD1=17,b.createData=function(a,c,d){for(var e=j.getRSBlocks(a,c),g=new k,h=0;h<d.length;h++){var i=d[h];g.put(i.mode,4),g.put(i.getLength(),f.getLengthInBits(i.mode,a)),i.write(g)}for(var l=0,h=0;h<e.length;h++)l+=e[h].dataCount;if(g.getLengthInBits()>8*l)throw new Error("code length overflow. ("+g.getLengthInBits()+">"+8*l+")");for(g.getLengthInBits()+4<=8*l&&g.put(0,4);0!=g.getLengthInBits()%8;)g.putBit(!1);for(;;){if(g.getLengthInBits()>=8*l)break;if(g.put(b.PAD0,8),g.getLengthInBits()>=8*l)break;g.put(b.PAD1,8)}return b.createBytes(g,e)},b.createBytes=function(a,b){for(var c=0,d=0,e=0,g=new Array(b.length),h=new Array(b.length),j=0;j<b.length;j++){var k=b[j].dataCount,l=b[j].totalCount-k;d=Math.max(d,k),e=Math.max(e,l),g[j]=new Array(k);for(var m=0;m<g[j].length;m++)g[j][m]=255&a.buffer[m+c];c+=k;var n=f.getErrorCorrectPolynomial(l),o=new i(g[j],n.getLength()-1),p=o.mod(n);h[j]=new Array(n.getLength()-1);for(var m=0;m<h[j].length;m++){var q=m+p.getLength()-h[j].length;h[j][m]=q>=0?p.get(q):0}}for(var r=0,m=0;m<b.length;m++)r+=b[m].totalCount;for(var s=new Array(r),t=0,m=0;d>m;m++)for(var j=0;j<b.length;j++)m<g[j].length&&(s[t++]=g[j][m]);for(var m=0;e>m;m++)for(var j=0;j<b.length;j++)m<h[j].length&&(s[t++]=h[j][m]);return s};for(var c={MODE_NUMBER:1,MODE_ALPHA_NUM:2,MODE_8BIT_BYTE:4,MODE_KANJI:8},d={L:1,M:0,Q:3,H:2},e={PATTERN000:0,PATTERN001:1,PATTERN010:2,PATTERN011:3,PATTERN100:4,PATTERN101:5,PATTERN110:6,PATTERN111:7},f={PATTERN_POSITION_TABLE:[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],G15:1335,G18:7973,G15_MASK:21522,getBCHTypeInfo:function(a){for(var b=a<<10;f.getBCHDigit(b)-f.getBCHDigit(f.G15)>=0;)b^=f.G15<<f.getBCHDigit(b)-f.getBCHDigit(f.G15);return(a<<10|b)^f.G15_MASK},getBCHTypeNumber:function(a){for(var b=a<<12;f.getBCHDigit(b)-f.getBCHDigit(f.G18)>=0;)b^=f.G18<<f.getBCHDigit(b)-f.getBCHDigit(f.G18);return a<<12|b},getBCHDigit:function(a){for(var b=0;0!=a;)b++,a>>>=1;return b},getPatternPosition:function(a){return f.PATTERN_POSITION_TABLE[a-1]},getMask:function(a,b,c){switch(a){case e.PATTERN000:return 0==(b+c)%2;case e.PATTERN001:return 0==b%2;case e.PATTERN010:return 0==c%3;case e.PATTERN011:return 0==(b+c)%3;case e.PATTERN100:return 0==(Math.floor(b/2)+Math.floor(c/3))%2;case e.PATTERN101:return 0==b*c%2+b*c%3;case e.PATTERN110:return 0==(b*c%2+b*c%3)%2;case e.PATTERN111:return 0==(b*c%3+(b+c)%2)%2;default:throw new Error("bad maskPattern:"+a)}},getErrorCorrectPolynomial:function(a){for(var b=new i([1],0),c=0;a>c;c++)b=b.multiply(new i([1,g.gexp(c)],0));return b},getLengthInBits:function(a,b){if(b>=1&&10>b)switch(a){case c.MODE_NUMBER:return 10;case c.MODE_ALPHA_NUM:return 9;case c.MODE_8BIT_BYTE:return 8;case c.MODE_KANJI:return 8;default:throw new Error("mode:"+a)}else if(27>b)switch(a){case c.MODE_NUMBER:return 12;case c.MODE_ALPHA_NUM:return 11;case c.MODE_8BIT_BYTE:return 16;case c.MODE_KANJI:return 10;default:throw new Error("mode:"+a)}else{if(!(41>b))throw new Error("type:"+b);switch(a){case c.MODE_NUMBER:return 14;case c.MODE_ALPHA_NUM:return 13;case c.MODE_8BIT_BYTE:return 16;case c.MODE_KANJI:return 12;default:throw new Error("mode:"+a)}}},getLostPoint:function(a){for(var b=a.getModuleCount(),c=0,d=0;b>d;d++)for(var e=0;b>e;e++){for(var f=0,g=a.isDark(d,e),h=-1;1>=h;h++)if(!(0>d+h||d+h>=b))for(var i=-1;1>=i;i++)0>e+i||e+i>=b||(0!=h||0!=i)&&g==a.isDark(d+h,e+i)&&f++;f>5&&(c+=3+f-5)}for(var d=0;b-1>d;d++)for(var e=0;b-1>e;e++){var j=0;a.isDark(d,e)&&j++,a.isDark(d+1,e)&&j++,a.isDark(d,e+1)&&j++,a.isDark(d+1,e+1)&&j++,(0==j||4==j)&&(c+=3)}for(var d=0;b>d;d++)for(var e=0;b-6>e;e++)a.isDark(d,e)&&!a.isDark(d,e+1)&&a.isDark(d,e+2)&&a.isDark(d,e+3)&&a.isDark(d,e+4)&&!a.isDark(d,e+5)&&a.isDark(d,e+6)&&(c+=40);for(var e=0;b>e;e++)for(var d=0;b-6>d;d++)a.isDark(d,e)&&!a.isDark(d+1,e)&&a.isDark(d+2,e)&&a.isDark(d+3,e)&&a.isDark(d+4,e)&&!a.isDark(d+5,e)&&a.isDark(d+6,e)&&(c+=40);for(var k=0,e=0;b>e;e++)for(var d=0;b>d;d++)a.isDark(d,e)&&k++;var l=Math.abs(100*k/b/b-50)/5;return c+=10*l}},g={glog:function(a){if(1>a)throw new Error("glog("+a+")");return g.LOG_TABLE[a]},gexp:function(a){for(;0>a;)a+=255;for(;a>=256;)a-=255;return g.EXP_TABLE[a]},EXP_TABLE:new Array(256),LOG_TABLE:new Array(256)},h=0;8>h;h++)g.EXP_TABLE[h]=1<<h;for(var h=8;256>h;h++)g.EXP_TABLE[h]=g.EXP_TABLE[h-4]^g.EXP_TABLE[h-5]^g.EXP_TABLE[h-6]^g.EXP_TABLE[h-8];for(var h=0;255>h;h++)g.LOG_TABLE[g.EXP_TABLE[h]]=h;i.prototype={get:function(a){return this.num[a]},getLength:function(){return this.num.length},multiply:function(a){for(var b=new Array(this.getLength()+a.getLength()-1),c=0;c<this.getLength();c++)for(var d=0;d<a.getLength();d++)b[c+d]^=g.gexp(g.glog(this.get(c))+g.glog(a.get(d)));return new i(b,0)},mod:function(a){if(this.getLength()-a.getLength()<0)return this;for(var b=g.glog(this.get(0))-g.glog(a.get(0)),c=new Array(this.getLength()),d=0;d<this.getLength();d++)c[d]=this.get(d);for(var d=0;d<a.getLength();d++)c[d]^=g.gexp(g.glog(a.get(d))+b);return new i(c,0).mod(a)}},j.RS_BLOCK_TABLE=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],j.getRSBlocks=function(a,b){var c=j.getRsBlockTable(a,b);if(void 0==c)throw new Error("bad rs block @ typeNumber:"+a+"/errorCorrectLevel:"+b);for(var d=c.length/3,e=[],f=0;d>f;f++)for(var g=c[3*f+0],h=c[3*f+1],i=c[3*f+2],k=0;g>k;k++)e.push(new j(h,i));return e},j.getRsBlockTable=function(a,b){switch(b){case d.L:return j.RS_BLOCK_TABLE[4*(a-1)+0];case d.M:return j.RS_BLOCK_TABLE[4*(a-1)+1];case d.Q:return j.RS_BLOCK_TABLE[4*(a-1)+2];case d.H:return j.RS_BLOCK_TABLE[4*(a-1)+3];default:return void 0}},k.prototype={get:function(a){var b=Math.floor(a/8);return 1==(1&this.buffer[b]>>>7-a%8)},put:function(a,b){for(var c=0;b>c;c++)this.putBit(1==(1&a>>>b-c-1))},getLengthInBits:function(){return this.length},putBit:function(a){var b=Math.floor(this.length/8);this.buffer.length<=b&&this.buffer.push(0),a&&(this.buffer[b]|=128>>>this.length%8),this.length++}};var l=[[17,14,11,7],[32,26,20,14],[53,42,32,24],[78,62,46,34],[106,84,60,44],[134,106,74,58],[154,122,86,64],[192,152,108,84],[230,180,130,98],[271,213,151,119],[321,251,177,137],[367,287,203,155],[425,331,241,177],[458,362,258,194],[520,412,292,220],[586,450,322,250],[644,504,364,280],[718,560,394,310],[792,624,442,338],[858,666,482,382],[929,711,509,403],[1003,779,565,439],[1091,857,611,461],[1171,911,661,511],[1273,997,715,535],[1367,1059,751,593],[1465,1125,805,625],[1528,1190,868,658],[1628,1264,908,698],[1732,1370,982,742],[1840,1452,1030,790],[1952,1538,1112,842],[2068,1628,1168,898],[2188,1722,1228,958],[2303,1809,1283,983],[2431,1911,1351,1051],[2563,1989,1423,1093],[2699,2099,1499,1139],[2809,2213,1579,1219],[2953,2331,1663,1273]],o=function(){var a=function(a,b){this._el=a,this._htOption=b};return a.prototype.draw=function(a){function g(a,b){var c=document.createElementNS("http://www.w3.org/2000/svg",a);for(var d in b)b.hasOwnProperty(d)&&c.setAttribute(d,b[d]);return c}var b=this._htOption,c=this._el,d=a.getModuleCount();Math.floor(b.width/d),Math.floor(b.height/d),this.clear();var h=g("svg",{viewBox:"0 0 "+String(d)+" "+String(d),width:"100%",height:"100%",fill:b.colorLight});h.setAttributeNS("http://www.w3.org/2000/xmlns/","xmlns:xlink","http://www.w3.org/1999/xlink"),c.appendChild(h),h.appendChild(g("rect",{fill:b.colorDark,width:"1",height:"1",id:"template"}));for(var i=0;d>i;i++)for(var j=0;d>j;j++)if(a.isDark(i,j)){var k=g("use",{x:String(i),y:String(j)});k.setAttributeNS("http://www.w3.org/1999/xlink","href","#template"),h.appendChild(k)}},a.prototype.clear=function(){for(;this._el.hasChildNodes();)this._el.removeChild(this._el.lastChild)},a}(),p="svg"===document.documentElement.tagName.toLowerCase(),q=p?o:m()?function(){function a(){this._elImage.src=this._elCanvas.toDataURL("image/png"),this._elImage.style.display="block",this._elCanvas.style.display="none"}function d(a,b){var c=this;if(c._fFail=b,c._fSuccess=a,null===c._bSupportDataURI){var d=document.createElement("img"),e=function(){c._bSupportDataURI=!1,c._fFail&&_fFail.call(c)},f=function(){c._bSupportDataURI=!0,c._fSuccess&&c._fSuccess.call(c)};return d.onabort=e,d.onerror=e,d.onload=f,d.src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",void 0}c._bSupportDataURI===!0&&c._fSuccess?c._fSuccess.call(c):c._bSupportDataURI===!1&&c._fFail&&c._fFail.call(c)}if(this._android&&this._android<=2.1){var b=1/window.devicePixelRatio,c=CanvasRenderingContext2D.prototype.drawImage;CanvasRenderingContext2D.prototype.drawImage=function(a,d,e,f,g,h,i,j){if("nodeName"in a&&/img/i.test(a.nodeName))for(var l=arguments.length-1;l>=1;l--)arguments[l]=arguments[l]*b;else"undefined"==typeof j&&(arguments[1]*=b,arguments[2]*=b,arguments[3]*=b,arguments[4]*=b);c.apply(this,arguments)}}var e=function(a,b){this._bIsPainted=!1,this._android=n(),this._htOption=b,this._elCanvas=document.createElement("canvas"),this._elCanvas.width=b.width,this._elCanvas.height=b.height,a.appendChild(this._elCanvas),this._el=a,this._oContext=this._elCanvas.getContext("2d"),this._bIsPainted=!1,this._elImage=document.createElement("img"),this._elImage.style.display="none",this._el.appendChild(this._elImage),this._bSupportDataURI=null};return e.prototype.draw=function(a){var b=this._elImage,c=this._oContext,d=this._htOption,e=a.getModuleCount(),f=d.width/e,g=d.height/e,h=Math.round(f),i=Math.round(g);b.style.display="none",this.clear();for(var j=0;e>j;j++)for(var k=0;e>k;k++){var l=a.isDark(j,k),m=k*f,n=j*g;c.strokeStyle=l?d.colorDark:d.colorLight,c.lineWidth=1,c.fillStyle=l?d.colorDark:d.colorLight,c.fillRect(m,n,f,g),c.strokeRect(Math.floor(m)+.5,Math.floor(n)+.5,h,i),c.strokeRect(Math.ceil(m)-.5,Math.ceil(n)-.5,h,i)}this._bIsPainted=!0},e.prototype.makeImage=function(){this._bIsPainted&&d.call(this,a)},e.prototype.isPainted=function(){return this._bIsPainted},e.prototype.clear=function(){this._oContext.clearRect(0,0,this._elCanvas.width,this._elCanvas.height),this._bIsPainted=!1},e.prototype.round=function(a){return a?Math.floor(1e3*a)/1e3:a},e}():function(){var a=function(a,b){this._el=a,this._htOption=b};return a.prototype.draw=function(a){for(var b=this._htOption,c=this._el,d=a.getModuleCount(),e=Math.floor(b.width/d),f=Math.floor(b.height/d),g=['<table style="border:0;border-collapse:collapse;">'],h=0;d>h;h++){g.push("<tr>");for(var i=0;d>i;i++)g.push('<td style="border:0;border-collapse:collapse;padding:0;margin:0;width:'+e+"px;height:"+f+"px;background-color:"+(a.isDark(h,i)?b.colorDark:b.colorLight)+';"></td>');g.push("</tr>")}g.push("</table>"),c.innerHTML=g.join("");var j=c.childNodes[0],k=(b.width-j.offsetWidth)/2,l=(b.height-j.offsetHeight)/2;k>0&&l>0&&(j.style.margin=l+"px "+k+"px")},a.prototype.clear=function(){this._el.innerHTML=""},a}();QRCode=function(a,b){if(this._htOption={width:256,height:256,typeNumber:4,colorDark:"#000000",colorLight:"#ffffff",correctLevel:d.H},"string"==typeof b&&(b={text:b}),b)for(var c in b)this._htOption[c]=b[c];"string"==typeof a&&(a=document.getElementById(a)),this._android=n(),this._el=a,this._oQRCode=null,this._oDrawing=new q(this._el,this._htOption),this._htOption.text&&this.makeCode(this._htOption.text)},QRCode.prototype.makeCode=function(a){this._oQRCode=new b(r(a,this._htOption.correctLevel),this._htOption.correctLevel),this._oQRCode.addData(a),this._oQRCode.make(),this._el.title=a,this._oDrawing.draw(this._oQRCode),this.makeImage()},QRCode.prototype.makeImage=function(){"function"==typeof this._oDrawing.makeImage&&(!this._android||this._android>=3)&&this._oDrawing.makeImage()},QRCode.prototype.clear=function(){this._oDrawing.clear()},QRCode.CorrectLevel=d}();
 </script>
 
@@ -603,8 +845,9 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 // ==================== CONFIG ====================
 const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
-const WHATSAPP_COUNTRY_CODE = "977"; // Nepal — prepended to local numbers for wa.me links
+const WHATSAPP_COUNTRY_CODE = "977";
 const PAGE_SIZE = 12;
+const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
 
 const BG_COLORS = {
   "A+": "#dc2626", "A-": "#b91c1c", "B+": "#2563eb", "B-": "#1d4ed8",
@@ -614,6 +857,149 @@ const BG_COLORS = {
 let supabaseClient = null;
 let allDonors = [];
 let visibleCount = PAGE_SIZE;
+let isLoggedIn = false;
+let userRole = null;
+let userEmail = null;
+let publicDataLoaded = false;
+
+// ==================== AUTH ====================
+function updateAuthUI() {
+  const section = document.getElementById('authSection');
+  
+  if (isLoggedIn && (userRole === 'super_admin' || userRole === 'hospital')) {
+    section.innerHTML = `
+      <div class="user-badge-header">
+        <span>👤 ${escapeHtml(userEmail || 'User')}</span>
+        <span class="role-badge">${userRole === 'super_admin' ? '👑 Super Admin' : '🏥 Hospital Admin'}</span>
+        <button class="logout-btn-header" id="logoutBtnHeader">Logout</button>
+      </div>
+    `;
+    document.getElementById('logoutBtnHeader').addEventListener('click', logoutUser);
+    showProtectedContent(true);
+  } else {
+    section.innerHTML = `<button class="login-btn-header" id="loginBtnHeader">🔑 Login</button>`;
+    document.getElementById('loginBtnHeader').addEventListener('click', openLoginModal);
+    showProtectedContent(false);
+  }
+}
+
+function showProtectedContent(show) {
+  const protectedEl = document.getElementById('protectedContent');
+  const placeholder = document.getElementById('loginRequiredPlaceholder');
+  
+  if (show) {
+    protectedEl.classList.add('show');
+    placeholder.style.display = 'none';
+    if (allDonors.length > 0) {
+      renderAllProtected();
+    }
+  } else {
+    protectedEl.classList.remove('show');
+    placeholder.style.display = 'block';
+  }
+}
+
+async function loginUser() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errorEl = document.getElementById('loginError');
+  const submitBtn = document.getElementById('loginSubmitBtn');
+  
+  errorEl.style.display = 'none';
+  
+  if (!email || !password) {
+    errorEl.textContent = 'Please enter both email and password.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Logging in...';
+  
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) {
+      errorEl.textContent = 'Login failed: ' + error.message;
+      errorEl.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Login';
+      return;
+    }
+    
+    const { data: adminData, error: adminError } = await supabaseClient
+      .from('blood_bridge_admins')
+      .select('role, status')
+      .eq('user_id', data.user.id)
+      .maybeSingle();
+      
+    if (adminError) {
+      errorEl.textContent = 'Error checking admin status.';
+      errorEl.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Login';
+      return;
+    }
+    
+    if (!adminData || adminData.status !== 'active' || !['super_admin', 'hospital'].includes(adminData.role)) {
+      errorEl.textContent = 'You do not have admin access. Please contact the system administrator.';
+      errorEl.style.display = 'block';
+      await supabaseClient.auth.signOut();
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Login';
+      return;
+    }
+    
+    isLoggedIn = true;
+    userRole = adminData.role;
+    userEmail = data.user.email;
+    
+    document.getElementById('loginModal').classList.remove('show');
+    updateAuthUI();
+    showToast('Logged in as ' + (adminData.role === 'super_admin' ? 'Super Admin' : 'Hospital Admin'), 'success');
+    
+  } catch (err) {
+    errorEl.textContent = 'Network error: ' + err.message;
+    errorEl.style.display = 'block';
+  }
+  
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Login';
+}
+
+async function logoutUser() {
+  try {
+    await supabaseClient.auth.signOut();
+    isLoggedIn = false;
+    userRole = null;
+    userEmail = null;
+    updateAuthUI();
+    showToast('Logged out successfully.', 'info');
+  } catch (err) {
+    showToast('Error logging out.', 'error');
+  }
+}
+
+function openLoginModal() {
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginModal').classList.add('show');
+}
+
+// Login Modal Controls
+document.getElementById('loginModalClose').addEventListener('click', () => {
+  document.getElementById('loginModal').classList.remove('show');
+});
+document.getElementById('loginCancelBtn').addEventListener('click', () => {
+  document.getElementById('loginModal').classList.remove('show');
+});
+document.getElementById('loginSubmitBtn').addEventListener('click', loginUser);
+document.getElementById('loginPassword').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') loginUser();
+});
+
+// Login prompt button from placeholder
+document.getElementById('loginPromptBtn').addEventListener('click', openLoginModal);
 
 // ==================== THEME ====================
 function initTheme(){
@@ -634,9 +1020,79 @@ initTheme();
 
 // ==================== EMERGENCY CTA ====================
 document.getElementById("findDonorBtn").addEventListener("click", () => {
-  const searchInput = document.getElementById("searchInput");
-  searchInput.scrollIntoView({ behavior: "smooth", block: "center" });
-  setTimeout(() => searchInput.focus(), 350);
+  document.getElementById("urgentRequestModal").classList.add("show");
+});
+
+// ==================== URGENT REQUEST FORM ====================
+document.getElementById("urgentRequestClose").addEventListener("click", () => {
+  document.getElementById("urgentRequestModal").classList.remove("show");
+});
+document.getElementById("urgentRequestCancel").addEventListener("click", () => {
+  document.getElementById("urgentRequestModal").classList.remove("show");
+});
+
+document.getElementById("urgentRequestSubmit").addEventListener("click", async () => {
+  const name = document.getElementById("reqRequesterName").value.trim();
+  const phone = document.getElementById("reqPhone").value.trim();
+  const bloodGroup = document.getElementById("reqBloodGroup").value;
+  const pints = document.getElementById("reqPints").value;
+  const hospital = document.getElementById("reqHospital").value.trim();
+  const date = document.getElementById("reqDate").value;
+  const time = document.getElementById("reqTime").value;
+  const notes = document.getElementById("reqNotes").value.trim();
+  
+  if (!name || !phone || !bloodGroup || !pints || !hospital || !date || !time) {
+    showToast("Please fill in all required fields (*).", "error");
+    return;
+  }
+  
+  const submitBtn = document.getElementById("urgentRequestSubmit");
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Submitting...";
+  
+  try {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    
+    const { error } = await supabaseClient
+      .from("urgent_blood_requests")
+      .insert([{
+        requester_name: name,
+        phone_number: phone,
+        blood_group_needed: bloodGroup,
+        pints_required: parseInt(pints),
+        hospital_location: hospital,
+        needed_date: date,
+        needed_time: time,
+        notes: notes || null,
+        created_by: user?.email || null,
+        status: "pending",
+        request_read: false
+      }]);
+      
+    if (error) {
+      showToast("Error submitting request: " + error.message, "error");
+      return;
+    }
+    
+    showToast("✅ Urgent blood request submitted successfully!", "success");
+    document.getElementById("urgentRequestModal").classList.remove("show");
+    
+    // Reset form
+    document.getElementById("reqRequesterName").value = "";
+    document.getElementById("reqPhone").value = "";
+    document.getElementById("reqBloodGroup").value = "";
+    document.getElementById("reqPints").value = "";
+    document.getElementById("reqHospital").value = "";
+    document.getElementById("reqDate").value = "";
+    document.getElementById("reqTime").value = "";
+    document.getElementById("reqNotes").value = "";
+    
+  } catch (err) {
+    showToast("Error: " + err.message, "error");
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "📤 Submit Request";
+  }
 });
 
 // ==================== UTIL ====================
@@ -660,6 +1116,25 @@ function sexLabel(s) {
   return { Male: "Male", Female: "Female", Other: "Other" }[s] || "-";
 }
 
+function getDonorBadge(totalDonations) {
+  if (totalDonations >= 50) return { emoji: '👑', label: 'Legend Donor', class: 'legend' };
+  if (totalDonations >= 35) return { emoji: '💎', label: 'Platinum Donor', class: 'platinum' };
+  if (totalDonations >= 20) return { emoji: '🥇', label: 'Gold Donor', class: 'gold' };
+  if (totalDonations >= 10) return { emoji: '🥈', label: 'Silver Donor', class: 'silver' };
+  if (totalDonations >= 5) return { emoji: '🥉', label: 'Bronze Donor', class: 'bronze' };
+  if (totalDonations >= 1) return { emoji: '🩸', label: 'Blood Donor', class: '' };
+  return null;
+}
+
+// ==================== ELIGIBILITY CHECK ====================
+function isDonorEligible(donor) {
+  if (!donor.last_donation_date) return true;
+  const lastDonation = new Date(donor.last_donation_date);
+  const now = new Date();
+  const diff = now - lastDonation;
+  return diff >= THREE_MONTHS_MS;
+}
+
 // ==================== OFFLINE DETECTION ====================
 function updateConnStatus(){
   const el = document.getElementById("connStatus");
@@ -671,60 +1146,155 @@ function updateConnStatus(){
     el.classList.remove("offline");
   }
 }
-window.addEventListener("online", () => { updateConnStatus(); fetchDonors(); });
+window.addEventListener("online", () => { 
+  updateConnStatus(); 
+  fetchPublicDonors();
+});
 window.addEventListener("offline", updateConnStatus);
 updateConnStatus();
 
-// ==================== SKELETON ====================
-function renderSkeletons(count = 6){
-  const wrap = document.getElementById("skeletonGrid");
-  wrap.innerHTML = Array.from({length: count}).map(() => `
-    <div class="skeleton-card">
-      <div class="sk-line" style="width:60%"></div>
-      <div class="sk-line" style="width:40%"></div>
-      <div class="sk-line" style="width:80%"></div>
-      <div class="sk-line" style="width:50%"></div>
-    </div>
-  `).join("");
-}
-function clearSkeletons(){ document.getElementById("skeletonGrid").innerHTML = ""; }
-
-// ==================== DATA FETCH ====================
-async function fetchDonors() {
+// ==================== PUBLIC DATA FETCH ====================
+async function fetchPublicDonors() {
   const errBox = document.getElementById("loadError");
-  renderSkeletons();
+  const latestGrid = document.getElementById("latestDonorsGrid");
+  const topGrid = document.getElementById("topDonorsGrid");
+  
+  // Show loading states
+  if (latestGrid) latestGrid.innerHTML = '<div class="public-loading">Loading latest donors...</div>';
+  if (topGrid) topGrid.innerHTML = '<div class="public-loading">Loading top donors...</div>';
+  
   try {
-    // select only the columns the UI needs — minimizes bandwidth
+    // --- SQL QUERY: Get all active donors ---
     const { data, error } = await supabaseClient
       .from("blood_bridge_galkot")
-      .select("id, person_name, age, sex, blood_group, municipality, ward_number, phone_number, data_entry_by")
+      .select("id, person_name, age, sex, blood_group, municipality, ward_number, phone_number, total_donations, last_donation_date")
       .eq("status", "active")
       .order("id", { ascending: false });
 
     if (error) {
-      errBox.innerHTML = "Error loading donors: " + escapeHtml(error.message);
+      errBox.innerHTML = "Error loading donor data: " + escapeHtml(error.message);
       errBox.style.display = "block";
-      clearSkeletons();
+      if (latestGrid) latestGrid.innerHTML = '<div class="public-error">⚠️ Error loading donors. Please refresh.</div>';
+      if (topGrid) topGrid.innerHTML = '<div class="public-error">⚠️ Error loading top donors.</div>';
       return;
     }
     errBox.style.display = "none";
+    
+    // Store data
     allDonors = data || [];
-    visibleCount = PAGE_SIZE;
-    populateFilters();
-    renderBGAvailability();
-    renderWardSummary();
-    renderActiveFilterChips();
-    renderTopEntries();
-    renderDonors();
+    publicDataLoaded = true;
+    
+    // --- SQL QUERY: Get latest 3 donors (most recent by ID) ---
+    const latestDonors = [...allDonors]
+      .sort((a, b) => (b.id || 0) - (a.id || 0))
+      .slice(0, 3);
+    
+    // --- Render Latest Donors ---
+    renderLatestDonors(latestDonors);
+    
+    // --- SQL QUERY: Get top donors by donation count ---
+    const topDonors = [...allDonors]
+      .filter(d => (d.total_donations || 0) > 0)
+      .sort((a, b) => {
+        if ((b.total_donations || 0) !== (a.total_donations || 0)) {
+          return (b.total_donations || 0) - (a.total_donations || 0);
+        }
+        if (b.last_donation_date && a.last_donation_date) {
+          return new Date(b.last_donation_date) - new Date(a.last_donation_date);
+        }
+        return (a.person_name || '').localeCompare(b.person_name || '');
+      })
+      .slice(0, 10);
+    
+    // --- Render Top Donors ---
+    renderTopDonors(topDonors);
+    
+    // If logged in, render protected sections
+    if (isLoggedIn) {
+      renderAllProtected();
+    }
+    
     checkVerifyParam();
+    
   } catch (err) {
+    console.error("Fetch error:", err);
     errBox.innerHTML = "Network error: could not reach the server. Check your internet connection." +
       `<br><button id="retryBtn">Retry</button>`;
     errBox.style.display = "block";
-    clearSkeletons();
+    if (latestGrid) latestGrid.innerHTML = '<div class="public-error">⚠️ Connection error. Please refresh.</div>';
+    if (topGrid) topGrid.innerHTML = '<div class="public-error">⚠️ Connection error.</div>';
     const retryBtn = document.getElementById("retryBtn");
-    if (retryBtn) retryBtn.addEventListener("click", fetchDonors);
+    if (retryBtn) retryBtn.addEventListener("click", fetchPublicDonors);
   }
+}
+
+// ==================== RENDER LATEST DONORS ====================
+function renderLatestDonors(donors) {
+  const grid = document.getElementById('latestDonorsGrid');
+  if (!grid) return;
+  
+  if (!donors || donors.length === 0) {
+    grid.innerHTML = '<div class="public-empty">No active donors at the moment. Check back later!</div>';
+    return;
+  }
+  
+  grid.innerHTML = donors.map(d => {
+    const badge = getDonorBadge(d.total_donations || 0);
+    return `
+      <div class="latest-donor-card">
+        <div class="name">${escapeHtml(d.person_name || '-')}</div>
+        <div class="bg">${escapeHtml(d.blood_group || '-')}</div>
+        <div class="count">${d.total_donations || 0}</div>
+        <div class="label">${(d.total_donations || 0) === 1 ? 'Donation' : 'Donations'}</div>
+        ${badge ? `<div style="margin-top:6px;"><span class="badge-display ${badge.class}" style="font-size:11px;">${badge.emoji} ${badge.label}</span></div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ==================== RENDER TOP DONORS ====================
+function renderTopDonors(donors) {
+  const grid = document.getElementById('topDonorsGrid');
+  if (!grid) return;
+  
+  if (!donors || donors.length === 0) {
+    grid.innerHTML = '<div class="public-empty">No donors with donations yet. Check back later!</div>';
+    return;
+  }
+  
+  const medals = ['🥇', '🥈', '🥉'];
+  
+  grid.innerHTML = donors.map((d, i) => {
+    const medal = medals[i] || `#${i+1}`;
+    const badge = getDonorBadge(d.total_donations || 0);
+    const donationCount = d.total_donations || 0;
+    const eligible = isDonorEligible(d);
+    const ineligibleTag = !eligible ? '<span class="ineligible-tag" style="font-size:9px;">⚠️ Not Eligible</span>' : '';
+    
+    return `
+      <div class="top-donor-card">
+        <div class="medal">${medal}</div>
+        <div class="name">${escapeHtml(d.person_name || '-')} ${ineligibleTag}</div>
+        <div class="bg">${escapeHtml(d.blood_group || '-')}</div>
+        <div class="count">${donationCount}</div>
+        <div class="label">${donationCount === 1 ? 'Donation' : 'Donations'}</div>
+        ${badge ? `<div style="margin-top:6px;"><span class="badge-display ${badge.class}" style="font-size:11px;">${badge.emoji} ${badge.label}</span></div>` : 
+          `<div style="margin-top:6px;font-size:11px;color:var(--muted);">${donationCount === 0 ? 'No donations yet' : ''}</div>`}
+      </div>
+    `;
+  }).join('');
+}
+
+// ==================== PROTECTED CONTENT RENDER ====================
+function renderAllProtected() {
+  if (!isLoggedIn) return;
+  if (allDonors.length === 0) return;
+  
+  populateFilters();
+  renderBGAvailability();
+  renderWardSummary();
+  renderActiveFilterChips();
+  renderDonors();
 }
 
 function populateFilters() {
@@ -738,8 +1308,9 @@ function populateFilters() {
   wardSelect.value = curWard;
 }
 
-// ==================== BLOOD GROUP SUMMARY (interactive, frontend-only, reuses allDonors) ====================
+// ==================== BLOOD GROUP SUMMARY - PROTECTED ====================
 const BG_ORDER = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+
 function renderBGAvailability() {
   const grid = document.getElementById("bgAvailGrid");
   if (!grid) return;
@@ -774,7 +1345,6 @@ function renderBGAvailability() {
 
 function selectBloodGroup(group) {
   const bgFilter = document.getElementById("bgFilter");
-  // clicking the already-active group clears the Blood Group filter
   bgFilter.value = (bgFilter.value === group) ? "" : group;
   onFilterChange();
 }
@@ -791,15 +1361,13 @@ document.getElementById("bgAvailGrid").addEventListener("keydown", (e) => {
   }
 });
 
-// ==================== WARD-WISE SUMMARY (interactive, frontend-only, reuses allDonors) ====================
+// ==================== WARD SUMMARY - PROTECTED ====================
 function renderWardSummary() {
   const grid = document.getElementById("wardSummaryGrid");
   if (!grid) return;
   const selectedBG = document.getElementById("bgFilter").value;
   const selectedWard = document.getElementById("wardFilter").value;
 
-  // Ward counts respect the current Blood Group selection, per spec — but never the Ward
-  // filter itself, so every ward chip stays visible and comparable.
   const source = selectedBG ? allDonors.filter(d => d.blood_group === selectedBG) : allDonors;
   const counts = {};
   source.forEach(d => {
@@ -832,7 +1400,7 @@ document.getElementById("wardSummaryGrid").addEventListener("click", (e) => {
   onFilterChange();
 });
 
-// ==================== ACTIVE FILTER CHIPS ====================
+// ==================== ACTIVE FILTER CHIPS - PROTECTED ====================
 function renderActiveFilterChips() {
   const wrap = document.getElementById("activeFilters");
   if (!wrap) return;
@@ -873,87 +1441,13 @@ document.getElementById("activeFilters").addEventListener("click", (e) => {
   }
 });
 
-// ==================== SHARED FILTER-CHANGE HANDLER ====================
-// Central hook so Blood Group cards, Ward chips, filter chips, dropdowns and search
-// all stay in sync and reuse the same render pipeline — no duplicate filtering logic.
+// ==================== SHARED FILTER HANDLER ====================
 function onFilterChange() {
   visibleCount = PAGE_SIZE;
   renderDonors();
   renderBGAvailability();
   renderWardSummary();
   renderActiveFilterChips();
-}
-
-
-
-let topEntriesTimer = null;
-function renderTopEntries() {
-  const section = document.getElementById("topEntriesSection");
-  if (topEntriesTimer) { clearInterval(topEntriesTimer); topEntriesTimer = null; }
-
-  const counts = {};
-  allDonors.forEach(d => {
-    const who = d.data_entry_by;
-    if (!who || !String(who).trim()) return;
-    counts[who] = (counts[who] || 0) + 1;
-  });
-  const top10 = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
-  if (top10.length === 0) { section.innerHTML = ""; return; }
-
-  const medals = ["🥇", "🥈", "🥉"];
-  const slidesHtml = top10.map(([name, c], i) => {
-    const medal = medals[i]
-      ? `<span class="medal" aria-hidden="true">${medals[i]}</span>`
-      : `<span class="medal rank-badge" aria-hidden="true">#${i + 1}</span>`;
-    return `
-    <div class="top-entry-card" data-index="${i}">
-      ${medal}
-      <div class="info">
-        <div class="name">${escapeHtml(name)}</div>
-        <div class="count">${c} Donor Entr${c === 1 ? "y" : "ies"}</div>
-      </div>
-    </div>`;
-  }).join("");
-
-  section.innerHTML = `
-    <div class="top-entries-slider" id="topEntriesSlider" role="group" aria-label="Top data entry volunteers" aria-live="off">
-      <div class="top-entries-header">
-        <span class="te-trophy" aria-hidden="true">🏆</span>
-        <div class="te-titles">
-          <div class="te-t1">Highest Entry</div>
-          <div class="te-t2">Top Volunteers</div>
-        </div>
-      </div>
-      ${slidesHtml}
-    </div>
-  `;
-
-  const slides = section.querySelectorAll(".top-entry-card");
-  if (!slides.length) return;
-  let current = 0;
-  slides[current].classList.add("active");
-  if (slides.length === 1) return; // nothing to slide
-
-  topEntriesTimer = setInterval(() => {
-    const prevEl = slides[current];
-    const nextIndex = (current + 1) % slides.length;
-    const nextEl = slides[nextIndex];
-
-    prevEl.classList.remove("active");
-    prevEl.classList.add("exit");
-
-    nextEl.classList.remove("exit");
-    void nextEl.offsetWidth; // force reflow so enter transition runs from off-screen state
-    nextEl.classList.add("active");
-
-    setTimeout(() => {
-      prevEl.style.transition = "none";
-      prevEl.classList.remove("exit");
-      void prevEl.offsetWidth;
-      prevEl.style.transition = "";
-    }, 650);
-    current = nextIndex;
-  }, 3000);
 }
 
 // ==================== FILTER / SORT / RENDER ====================
@@ -978,7 +1472,15 @@ function getFilteredSorted() {
   rows = [...rows];
   if (sortBy === "name") rows.sort((a, b) => (a.person_name || "").localeCompare(b.person_name || ""));
   else if (sortBy === "bg") rows.sort((a, b) => (a.blood_group || "").localeCompare(b.blood_group || ""));
-  else rows.sort((a, b) => (b.id || 0) - (a.id || 0));
+  else if (sortBy === "donations") rows.sort((a, b) => (b.total_donations || 0) - (a.total_donations || 0));
+  else if (sortBy === "lastDonation") {
+    rows.sort((a, b) => {
+      if (!a.last_donation_date && !b.last_donation_date) return 0;
+      if (!a.last_donation_date) return 1;
+      if (!b.last_donation_date) return -1;
+      return new Date(b.last_donation_date) - new Date(a.last_donation_date);
+    });
+  } else rows.sort((a, b) => (b.id || 0) - (a.id || 0));
 
   return rows;
 }
@@ -1007,16 +1509,30 @@ function renderDonors() {
     const bgColor = BG_COLORS[d.blood_group] || "var(--red)";
     const rawPhone = digitsOnly(d.phone_number);
     const waPhone = rawPhone.length <= 10 ? WHATSAPP_COUNTRY_CODE + rawPhone : rawPhone;
+    const badge = getDonorBadge(d.total_donations || 0);
+    const eligible = isDonorEligible(d);
+    const ineligibleClass = !eligible ? "ineligible" : "";
+    const ineligibleTag = !eligible ? '<span class="ineligible-tag">⚠️ Not Eligible</span>' : '';
+    const lastDonationDate = d.last_donation_date ? new Date(d.last_donation_date).toLocaleDateString() : 'Never';
+    const eligibilityNote = !eligible ? ' <span style="color:var(--ineligible-text);font-size:11px;">(Last donation < 3 months)</span>' : '';
+    
     return `
-      <article class="donor-card" id="donor-${escapeHtml(d.id)}" data-id="${escapeHtml(d.id)}">
+      <article class="donor-card ${ineligibleClass}" id="donor-${escapeHtml(d.id)}" data-id="${escapeHtml(d.id)}">
         <span class="bg-badge" style="background:${bgColor}">${escapeHtml(d.blood_group || "-")}</span>
-        <h3 class="donor-name">${escapeHtml(d.person_name || "-")}</h3>
+        <h3 class="donor-name">${escapeHtml(d.person_name || "-")} ${ineligibleTag}</h3>
         <div class="donor-detail"><span class="icon" aria-hidden="true">🎂</span> ${escapeHtml(d.age || "-")} yrs • ${escapeHtml(sexLabel(d.sex))}</div>
         <div class="donor-detail"><span class="icon" aria-hidden="true">📍</span> ${escapeHtml(d.municipality || "-")}${d.ward_number ? ", Ward " + escapeHtml(d.ward_number) : ""}</div>
         <div class="donor-detail"><span class="icon" aria-hidden="true">📞</span> ${escapeHtml(d.phone_number || "-")}</div>
+        <div class="donor-detail" style="font-weight:600;color:var(--red);">
+          🩸 Total Donations: ${d.total_donations || 0}
+        </div>
+        <div class="donor-detail">
+          📅 Last Donation: ${lastDonationDate}${eligibilityNote}
+        </div>
+        ${badge ? `<div class="donor-detail"><span class="badge-display ${badge.class}">${badge.emoji} ${badge.label}</span></div>` : ''}
         <div class="card-actions">
-          ${d.phone_number ? `<a class="btn-pill btn-call" href="tel:${escapeHtml(rawPhone)}" aria-label="Call ${escapeHtml(d.person_name)}">📞 Call</a>` : ""}
-          ${d.phone_number ? `<a class="btn-pill btn-wa" target="_blank" rel="noopener" href="https://wa.me/${escapeHtml(waPhone)}" aria-label="WhatsApp ${escapeHtml(d.person_name)}">💬 WhatsApp</a>` : ""}
+          ${d.phone_number ? `<a class="btn-pill btn-call" href="tel:${escapeHtml(rawPhone)}" aria-label="Call ${escapeHtml(d.person_name)}" data-donor-id="${escapeHtml(d.id)}">📞 Call</a>` : ""}
+          ${d.phone_number ? `<a class="btn-pill btn-wa" target="_blank" rel="noopener" href="https://wa.me/${escapeHtml(waPhone)}" aria-label="WhatsApp ${escapeHtml(d.person_name)}" data-donor-id="${escapeHtml(d.id)}">💬 WhatsApp</a>` : ""}
           ${d.phone_number ? `<button type="button" class="btn-pill btn-copy" data-phone="${escapeHtml(d.phone_number)}" aria-label="Copy phone number">📋 Copy</button>` : ""}
           <button type="button" class="btn-pill btn-share" data-id="${escapeHtml(d.id)}" aria-label="Share ${escapeHtml(d.person_name)}">🔗 Share</button>
         </div>
@@ -1027,23 +1543,87 @@ function renderDonors() {
   loadMoreWrap.style.display = filtered.length > visible.length ? "block" : "none";
 }
 
-document.getElementById("donorGrid").addEventListener("click", async (e) => {
+// Handle Call and WhatsApp click with eligibility check
+document.getElementById("donorGrid").addEventListener("click", (e) => {
+  const callLink = e.target.closest(".btn-call");
+  const waLink = e.target.closest(".btn-wa");
+  
+  if (callLink || waLink) {
+    e.preventDefault();
+    const donorId = (callLink || waLink).dataset.donorId;
+    const donor = allDonors.find(d => String(d.id) === String(donorId));
+    
+    if (!donor) return;
+    
+    if (!isDonorEligible(donor)) {
+      const modal = document.getElementById("ineligibleModal");
+      const info = document.getElementById("ineligibleDonorInfo");
+      info.innerHTML = `
+        <div><strong>${escapeHtml(donor.person_name || "-")}</strong> — ${escapeHtml(donor.blood_group || "-")}</div>
+        <div>🎂 ${escapeHtml(donor.age || "-")} yrs • ${escapeHtml(sexLabel(donor.sex))}</div>
+        <div>📍 ${escapeHtml(donor.municipality || "-")}${donor.ward_number ? ", Ward " + escapeHtml(donor.ward_number) : ""}</div>
+        <div>📅 Last Donation: ${donor.last_donation_date ? new Date(donor.last_donation_date).toLocaleDateString() : 'Never'}</div>
+        <div style="color:var(--ineligible-text);font-weight:700;margin-top:8px;">⚠️ Last donation was less than 3 months ago.</div>
+      `;
+      modal.classList.add("show");
+      return;
+    }
+    
+    if (callLink) {
+      window.location.href = callLink.href;
+    } else if (waLink) {
+      window.open(waLink.href, '_blank');
+    }
+    return;
+  }
+  
   const copyBtn = e.target.closest(".btn-copy");
   if (copyBtn) {
     try {
-      await navigator.clipboard.writeText(copyBtn.dataset.phone);
+      navigator.clipboard.writeText(copyBtn.dataset.phone);
       showToast("Phone number copied.");
     } catch {
       showToast("Could not copy — please copy manually.");
     }
     return;
   }
+  
   const shareBtn = e.target.closest(".btn-share");
   if (shareBtn) {
     const donor = allDonors.find(d => String(d.id) === String(shareBtn.dataset.id));
     if (donor) openShareModal(donor);
     return;
   }
+});
+
+function renderSkeletons(count = 6){
+  const wrap = document.getElementById("skeletonGrid");
+  if (!wrap) return;
+  wrap.innerHTML = Array.from({length: count}).map(() => `
+    <div class="skeleton-card">
+      <div class="sk-line" style="width:60%"></div>
+      <div class="sk-line" style="width:40%"></div>
+      <div class="sk-line" style="width:80%"></div>
+      <div class="sk-line" style="width:50%"></div>
+    </div>
+  `).join("");
+}
+function clearSkeletons(){ 
+  const wrap = document.getElementById("skeletonGrid");
+  if (wrap) wrap.innerHTML = "";
+}
+
+// Ineligible modal controls
+document.getElementById("ineligibleModalClose").addEventListener("click", () => {
+  document.getElementById("ineligibleModal").classList.remove("show");
+});
+document.getElementById("ineligibleModal").addEventListener("click", (e) => {
+  if (e.target.id === "ineligibleModal") {
+    document.getElementById("ineligibleModal").classList.remove("show");
+  }
+});
+document.getElementById("ineligibleOkBtn").addEventListener("click", () => {
+  document.getElementById("ineligibleModal").classList.remove("show");
 });
 
 document.getElementById("loadMoreBtn").addEventListener("click", () => {
@@ -1085,6 +1665,8 @@ function openShareModal(donor) {
     <div>🎂 ${escapeHtml(donor.age || "-")} yrs • ${escapeHtml(sexLabel(donor.sex))}</div>
     <div>📍 ${escapeHtml(donor.municipality || "-")}${donor.ward_number ? ", Ward " + escapeHtml(donor.ward_number) : ""}</div>
     ${donor.phone_number ? `<div>📞 ${escapeHtml(donor.phone_number)}</div>` : ""}
+    <div>🩸 Total Donations: ${donor.total_donations || 0}</div>
+    <div>📅 Last Donation: ${donor.last_donation_date ? new Date(donor.last_donation_date).toLocaleDateString() : 'Never'}</div>
   `;
 
   const linkInput = document.getElementById("shareLinkInput");
@@ -1095,6 +1677,8 @@ function openShareModal(donor) {
     `Blood Group: ${donor.blood_group || "-"}\n` +
     `Location: ${donor.municipality || "-"}${donor.ward_number ? ", Ward " + donor.ward_number : ""}\n` +
     (donor.phone_number ? `Phone: ${donor.phone_number}\n` : "") +
+    `🩸 Total Donations: ${donor.total_donations || 0}\n` +
+    `📅 Last Donation: ${donor.last_donation_date ? new Date(donor.last_donation_date).toLocaleDateString() : 'Never'}\n` +
     `Verify: ${verifyUrl}`;
   document.getElementById("shareWaBtn").href = "https://wa.me/?text=" + encodeURIComponent(waText);
 
@@ -1115,7 +1699,7 @@ function openShareModal(donor) {
   };
 
   const qrContainer = document.getElementById("shareQrCanvas");
-  qrContainer.innerHTML = ""; // clear any previously drawn QR before drawing the new one
+  qrContainer.innerHTML = "";
   if (window.QRCode) {
     new QRCode(qrContainer, {
       text: verifyUrl,
@@ -1169,7 +1753,8 @@ function checkVerifyParam() {
     textEl.innerHTML = `<strong>Verified Donor ✔</strong><br>
       ${escapeHtml(donor.person_name || "-")} • ${escapeHtml(donor.blood_group || "-")} •
       ${escapeHtml(donor.municipality || "-")}${donor.ward_number ? ", Ward " + escapeHtml(donor.ward_number) : ""}
-      ${donor.phone_number ? " • " + escapeHtml(donor.phone_number) : ""}`;
+      ${donor.phone_number ? " • " + escapeHtml(donor.phone_number) : ""}
+      <br>🩸 ${donor.total_donations || 0} donations • Last: ${donor.last_donation_date ? new Date(donor.last_donation_date).toLocaleDateString() : 'Never'}`;
     banner.classList.add("show");
     const card = document.getElementById("donor-" + donor.id);
     if (card) {
@@ -1189,16 +1774,49 @@ document.getElementById("verifiedClose").addEventListener("click", () => {
 
 // ==================== INIT ====================
 window.addEventListener("DOMContentLoaded", () => {
+  // Initialize Supabase client
   supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  fetchDonors();
+  
+  // Check for existing session
+  supabaseClient.auth.getSession().then(({ data: { session } }) => {
+    if (session) {
+      supabaseClient
+        .from('blood_bridge_admins')
+        .select('role, status')
+        .eq('user_id', session.user.id)
+        .maybeSingle()
+        .then(({ data: adminData }) => {
+          if (adminData && adminData.status === 'active' && ['super_admin', 'hospital'].includes(adminData.role)) {
+            isLoggedIn = true;
+            userRole = adminData.role;
+            userEmail = session.user.email;
+            updateAuthUI();
+            // Fetch public data first, then protected will load
+            fetchPublicDonors();
+          } else {
+            updateAuthUI();
+            fetchPublicDonors();
+          }
+        });
+    } else {
+      updateAuthUI();
+      fetchPublicDonors();
+    }
+  });
 
-  // Realtime subscription — debounced refetch so bursts of changes don't
-  // trigger repeated full reloads.
-  const debouncedRefetch = debounce(fetchDonors, 600);
+  // Setup realtime subscriptions
+  const debouncedRefetch = debounce(() => {
+    fetchPublicDonors();
+  }, 600);
+  
   supabaseClient
     .channel("blood_bridge_galkot_changes")
     .on("postgres_changes",
       { event: "*", schema: "public", table: "blood_bridge_galkot" },
+      () => debouncedRefetch()
+    )
+    .on("postgres_changes",
+      { event: "*", schema: "public", table: "blood_donation_history" },
       () => debouncedRefetch()
     )
     .subscribe();
