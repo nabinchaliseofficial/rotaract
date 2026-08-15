@@ -1174,6 +1174,14 @@
         let __lastProgramTrigger = 0;
         let __currentMeetingName = '';
         let __liveBannerId = null;
+        // Prevents the "start program" curtain-opening animation from
+        // re-firing on a normal page load/refresh just because an old
+        // program_start_trigger value is still sitting in the database.
+        // It only turns true once, right after the very first banner
+        // data fetch completes — after that, any NEW trigger value
+        // (e.g. sent by the Chief Guest pressing the button in cg.html)
+        // is treated as live and opens the curtain as before.
+        let __liveTriggersEnabled = false;
         let __programStartTime = null;
         let __celebrationTimer = null;
         let __countdownEnabled = true;
@@ -1556,12 +1564,14 @@
 
             if (data.program_start_trigger && data.program_start_trigger !== __lastProgramTrigger) {
                 __lastProgramTrigger = data.program_start_trigger;
-                hideCountdown();
-                const startScreen = document.getElementById('startScreen');
-                const startBtn = document.getElementById('startProgramBtn');
-                if (startScreen && startBtn && !startBtn.disabled &&
-                    !startScreen.classList.contains('hidden') && !startScreen.classList.contains('opening')) {
-                    startBtn.click();
+                if (__liveTriggersEnabled) {
+                    hideCountdown();
+                    const startScreen = document.getElementById('startScreen');
+                    const startBtn = document.getElementById('startProgramBtn');
+                    if (startScreen && startBtn && !startBtn.disabled &&
+                        !startScreen.classList.contains('hidden') && !startScreen.classList.contains('opening')) {
+                        startBtn.click();
+                    }
                 }
             }
 
@@ -2400,6 +2410,7 @@
                 applyBannerData(cached);
             }
             await fetchBannerData();
+            __liveTriggersEnabled = true;
             setupRealtime();
             await loadChiefGuestMode();
             ClockModule.start();
