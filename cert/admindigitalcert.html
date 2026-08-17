@@ -1121,11 +1121,14 @@
                     const statusLabel = status === 'approved' ? 'Approved' : status === 'rejected' ? 'Rejected' : 'Pending';
                     const currentType = r.certificate_type || 'Participation';
 
-                    let actionButtons = `<a href="digitalcert.html?id=${r.id}" target="_blank" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i></a>`;
+                    let actionButtons = `
+                            <a href="digitalcert.html?id=${r.id}" target="_blank" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i></a>
+                            <button onclick="editRecipient(${r.id})" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></button>
+                        `;
                     if (status === 'pending') {
                         actionButtons += `
-                            <button onclick="approveRecipient(${r.id})" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Approve</button>
-                            <button onclick="rejectRecipient(${r.id})" class="btn btn-warning btn-sm"><i class="fas fa-times"></i> Reject</button>`;
+                                <button onclick="approveRecipient(${r.id})" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Approve</button>
+                                <button onclick="rejectRecipient(${r.id})" class="btn btn-warning btn-sm"><i class="fas fa-times"></i> Reject</button>`;
                     } else if (status === 'rejected') {
                         actionButtons += `<button onclick="approveRecipient(${r.id})" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Approve</button>`;
                     }
@@ -1137,8 +1140,8 @@
                     const typeCell = status === 'approved' ?
                         `<span class="badge badge-success">${currentType}</span>` :
                         `<select id="certTypeSelect_${r.id}" style="padding:6px 10px;border-radius:8px;border:1px solid #dce2eb;background:#f8fafc;font-size:0.8rem;">
-                            ${CERT_TYPES.map(t => `<option value="${t}" ${t === currentType ? 'selected' : ''}>${t}</option>`).join('')}
-                        </select>`;
+                                ${CERT_TYPES.map(t => `<option value="${t}" ${t === currentType ? 'selected' : ''}>${t}</option>`).join('')}
+                            </select>`;
 
                     return `
                             <tr>
@@ -1218,7 +1221,39 @@
                 }
             };
 
-            // ===== ADD RECIPIENT (manual, auto-approved) =====
+            // ===== EDIT RECIPIENT (populate add tab with data) =====
+            window.editRecipient = function(id) {
+                const record = allRecipientsData.find(r => r.id === id);
+                if (!record) {
+                    showToast('Recipient not found', 'error');
+                    return;
+                }
+
+                // Switch to Add tab
+                document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+                document.querySelector('.tabs button[data-tab="add"]').classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                document.getElementById('tab-add').classList.add('active');
+
+                // Populate form
+                document.getElementById('recipientName').value = record.participant_name || '';
+                document.getElementById('certificateType').value = record.certificate_type || 'Participation';
+                document.getElementById('programEvent').value = record.program_event_name || '';
+                document.getElementById('issueDate').value = record.issue_date || '';
+                document.getElementById('venue').value = record.venue || '';
+                document.getElementById('rotaryYear').value = record.rotary_year || '';
+                document.getElementById('verificationId').value = record.verification_id || '';
+
+                // Change button text to indicate update
+                const submitBtn = document.querySelector('#recipientForm button[type="submit"]');
+                submitBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Update Certificate';
+                submitBtn.dataset.editId = id;
+
+                // Scroll to form
+                document.getElementById('tab-add').scrollIntoView({ behavior: 'smooth' });
+            };
+
+            // ===== ADD / UPDATE RECIPIENT =====
             document.getElementById('recipientForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const name = document.getElementById('recipientName').value.trim();
@@ -1234,10 +1269,13 @@
                     return;
                 }
 
+                const editId = this.querySelector('button[type="submit"]').dataset.editId;
+
                 try {
-                    const { data, error } = await supabase
-                        .from(RECIPIENTS_TABLE)
-                        .insert({
+                    let result;
+                    if (editId) {
+                        // Update existing
+                        const updates = {
                             participant_name: name,
                             certificate_type: type,
                             program_event_name: program,
@@ -1245,24 +1283,50 @@
                             venue: venue || null,
                             rotary_year: year || null,
                             verification_id: vid || null,
-                            status: 'approved'
-                        })
-                        .select();
-
-                    if (error) throw error;
-
-                    if (data && data[0]) {
-                        const updates = { certificate_no: genCertificateNo(data[0].id) };
-                        if (!vid) updates.verification_id = genVerificationId(data[0].id);
-                        await supabase.from(RECIPIENTS_TABLE).update(updates).eq('id', data[0].id);
+                        };
+                        const { data, error } = await supabase
+                            .from(RECIPIENTS_TABLE)
+                            .update(updates)
+                            .eq('id', editId)
+                            .select();
+                        if (error) throw error;
+                        result = data;
+                        showToast('✅ Certificate updated successfully!');
+                    } else {
+                        // Insert new
+                        const { data, error } = await supabase
+                            .from(RECIPIENTS_TABLE)
+                            .insert({
+                                participant_name: name,
+                                certificate_type: type,
+                                program_event_name: program,
+                                issue_date: date || null,
+                                venue: venue || null,
+                                rotary_year: year || null,
+                                verification_id: vid || null,
+                                status: 'approved'
+                            })
+                            .select();
+                        if (error) throw error;
+                        result = data;
+                        if (result && result[0]) {
+                            const updates = { certificate_no: genCertificateNo(result[0].id) };
+                            if (!vid) updates.verification_id = genVerificationId(result[0].id);
+                            await supabase.from(RECIPIENTS_TABLE).update(updates).eq('id', result[0].id);
+                        }
+                        showToast('✅ Certificate generated successfully!');
                     }
 
-                    showToast('✅ Certificate generated successfully!');
+                    // Reset form and button
                     this.reset();
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    submitBtn.innerHTML = '<i class="fas fa-save"></i> Generate Certificate';
+                    delete submitBtn.dataset.editId;
+
                     loadRecipients();
 
-                    if (data && data[0]) {
-                        window.open(`digitalcert.html?id=${data[0].id}`, '_blank');
+                    if (result && result[0] && !editId) {
+                        window.open(`digitalcert.html?id=${result[0].id}`, '_blank');
                     }
                 } catch (err) {
                     showToast('Error: ' + err.message, 'error');
