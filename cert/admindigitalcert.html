@@ -846,7 +846,7 @@
                 <h2><i class="fas fa-calendar-alt"></i> Manage Running Programs</h2>
                 <p style="color:#64748b; margin-bottom:16px; font-size:0.9rem;">Create and manage active programs for attendance registration.</p>
 
-                <!-- Add Program Form -->
+                <!-- Add/Edit Program Form -->
                 <form id="programForm" style="margin-bottom:24px; padding:16px; background:#f8fafc; border-radius:16px;">
                     <div class="form-grid">
                         <div class="form-group full-width">
@@ -854,8 +854,13 @@
                             <input type="text" id="programName" placeholder="e.g. District Training Assembly 2026" required />
                         </div>
                         <div class="form-group">
-                            <label>Date *</label>
-                            <input type="date" id="programDate" required />
+                            <label>Start Date *</label>
+                            <input type="date" id="programStartDate" required />
+                        </div>
+                        <div class="form-group">
+                            <label>End Date</label>
+                            <input type="date" id="programEndDate" />
+                            <small style="color:#94a3b8; font-size:0.7rem;">Leave blank if same as start date</small>
                         </div>
                         <div class="form-group">
                             <label>Venue</label>
@@ -874,8 +879,8 @@
                             <textarea id="programDescription" rows="2" placeholder="Brief description of the program..."></textarea>
                         </div>
                         <div class="form-group full-width" style="display:flex; gap:10px; margin-top:4px;">
-                            <button type="submit" class="btn btn-success"><i class="fas fa-plus-circle"></i> Add Program</button>
-                            <button type="reset" class="btn btn-outline"><i class="fas fa-undo"></i> Reset</button>
+                            <button type="submit" class="btn btn-success" id="programSubmitBtn"><i class="fas fa-plus-circle"></i> Add Program</button>
+                            <button type="reset" class="btn btn-outline" onclick="resetProgramForm()"><i class="fas fa-undo"></i> Reset</button>
                         </div>
                     </div>
                 </form>
@@ -887,14 +892,15 @@
                             <tr>
                                 <th>#</th>
                                 <th>Program Name</th>
-                                <th>Date</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
                                 <th>Venue</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="programsTableBody">
-                            <tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:30px;">Loading...</td></tr>
+                            <tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:30px;">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -937,6 +943,7 @@
 
             let currentUser = null;
             let toastTimeout = null;
+            let editingProgramId = null;
 
             // ===== TOAST =====
             function showToast(message, type = 'success') {
@@ -1134,9 +1141,6 @@
                     }
                     actionButtons += `<button onclick="deleteRecipient(${r.id})" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>`;
 
-                    // Admin picks/assigns the certificate type at approval time — while
-                    // still pending (or rejected), show an editable dropdown; once
-                    // approved, the type is locked in and shown as a plain badge.
                     const typeCell = status === 'approved' ?
                         `<span class="badge badge-success">${currentType}</span>` :
                         `<select id="certTypeSelect_${r.id}" style="padding:6px 10px;border-radius:8px;border:1px solid #dce2eb;background:#f8fafc;font-size:0.8rem;">
@@ -1221,7 +1225,7 @@
                 }
             };
 
-            // ===== EDIT RECIPIENT (populate add tab with data) =====
+            // ===== EDIT RECIPIENT =====
             window.editRecipient = function(id) {
                 const record = allRecipientsData.find(r => r.id === id);
                 if (!record) {
@@ -1229,13 +1233,11 @@
                     return;
                 }
 
-                // Switch to Add tab
                 document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
                 document.querySelector('.tabs button[data-tab="add"]').classList.add('active');
                 document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
                 document.getElementById('tab-add').classList.add('active');
 
-                // Populate form
                 document.getElementById('recipientName').value = record.participant_name || '';
                 document.getElementById('certificateType').value = record.certificate_type || 'Participation';
                 document.getElementById('programEvent').value = record.program_event_name || '';
@@ -1244,12 +1246,10 @@
                 document.getElementById('rotaryYear').value = record.rotary_year || '';
                 document.getElementById('verificationId').value = record.verification_id || '';
 
-                // Change button text to indicate update
                 const submitBtn = document.querySelector('#recipientForm button[type="submit"]');
                 submitBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Update Certificate';
                 submitBtn.dataset.editId = id;
 
-                // Scroll to form
                 document.getElementById('tab-add').scrollIntoView({ behavior: 'smooth' });
             };
 
@@ -1274,7 +1274,6 @@
                 try {
                     let result;
                     if (editId) {
-                        // Update existing
                         const updates = {
                             participant_name: name,
                             certificate_type: type,
@@ -1293,7 +1292,6 @@
                         result = data;
                         showToast('✅ Certificate updated successfully!');
                     } else {
-                        // Insert new
                         const { data, error } = await supabase
                             .from(RECIPIENTS_TABLE)
                             .insert({
@@ -1317,7 +1315,6 @@
                         showToast('✅ Certificate generated successfully!');
                     }
 
-                    // Reset form and button
                     this.reset();
                     const submitBtn = this.querySelector('button[type="submit"]');
                     submitBtn.innerHTML = '<i class="fas fa-save"></i> Generate Certificate';
@@ -1426,25 +1423,29 @@
                     const { data, error } = await supabase
                         .from(PROGRAMS_TABLE)
                         .select('*')
-                        .order('program_date', { ascending: false });
+                        .order('program_start_date', { ascending: false });
 
                     if (error) throw error;
 
                     if (!data || data.length === 0) {
                         tbody.innerHTML =
-                            `<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:30px;">No programs yet. Add one!</td></tr>`;
+                            `<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:30px;">No programs yet. Add one!</td></tr>`;
                         return;
                     }
 
-                    tbody.innerHTML = data.map((p, i) => `
+                    tbody.innerHTML = data.map((p, i) => {
+                        const endDate = p.program_end_date ? new Date(p.program_end_date).toLocaleDateString() : '—';
+                        return `
                             <tr>
                                 <td>${i + 1}</td>
                                 <td><strong>${p.program_name}</strong></td>
-                                <td>${new Date(p.program_date).toLocaleDateString()}</td>
+                                <td>${new Date(p.program_start_date).toLocaleDateString()}</td>
+                                <td>${endDate}</td>
                                 <td>${p.venue || '—'}</td>
                                 <td><span class="badge ${p.is_active ? 'badge-success' : 'badge-danger'}">${p.is_active ? 'Active' : 'Inactive'}</span></td>
                                 <td>
                                     <div class="actions-cell">
+                                        <button onclick="editProgram(${p.id})" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></button>
                                         <button onclick="toggleProgramStatus(${p.id}, ${!p.is_active})" class="btn ${p.is_active ? 'btn-warning' : 'btn-success'} btn-sm">
                                             <i class="fas ${p.is_active ? 'fa-pause' : 'fa-play'}"></i>
                                             ${p.is_active ? 'Deactivate' : 'Activate'}
@@ -1453,46 +1454,111 @@
                                     </div>
                                 </td>
                             </tr>
-                        `).join('');
+                        `;
+                    }).join('');
                 } catch (err) {
                     console.error('Error loading programs:', err);
                     tbody.innerHTML =
-                        `<tr><td colspan="6" style="text-align:center;color:#b91c1c;padding:30px;">Error loading: ${err.message}</td></tr>`;
+                        `<tr><td colspan="7" style="text-align:center;color:#b91c1c;padding:30px;">Error loading: ${err.message}</td></tr>`;
                 }
             }
 
-            // ===== ADD PROGRAM =====
+            // ===== EDIT PROGRAM =====
+            window.editProgram = async function(id) {
+                try {
+                    const { data, error } = await supabase
+                        .from(PROGRAMS_TABLE)
+                        .select('*')
+                        .eq('id', id)
+                        .single();
+
+                    if (error) throw error;
+
+                    editingProgramId = id;
+                    document.getElementById('programName').value = data.program_name || '';
+                    document.getElementById('programStartDate').value = data.program_start_date || '';
+                    document.getElementById('programEndDate').value = data.program_end_date || '';
+                    document.getElementById('programVenue').value = data.venue || '';
+                    document.getElementById('programStartTime').value = data.start_time || '';
+                    document.getElementById('programEndTime').value = data.end_time || '';
+                    document.getElementById('programDescription').value = data.description || '';
+
+                    const submitBtn = document.getElementById('programSubmitBtn');
+                    submitBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Update Program';
+                    submitBtn.dataset.editId = id;
+
+                    document.getElementById('tab-programs').scrollIntoView({ behavior: 'smooth' });
+                    showToast('Editing: ' + data.program_name);
+                } catch (err) {
+                    showToast('Error loading program: ' + err.message, 'error');
+                }
+            };
+
+            // ===== RESET PROGRAM FORM =====
+            window.resetProgramForm = function() {
+                editingProgramId = null;
+                const submitBtn = document.getElementById('programSubmitBtn');
+                submitBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Add Program';
+                delete submitBtn.dataset.editId;
+                document.getElementById('programForm').reset();
+            };
+
+            // ===== ADD/UPDATE PROGRAM =====
             document.getElementById('programForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const name = document.getElementById('programName').value.trim();
-                const date = document.getElementById('programDate').value;
+                const startDate = document.getElementById('programStartDate').value;
+                const endDate = document.getElementById('programEndDate').value;
                 const venue = document.getElementById('programVenue').value.trim();
                 const startTime = document.getElementById('programStartTime').value;
                 const endTime = document.getElementById('programEndTime').value;
                 const description = document.getElementById('programDescription').value.trim();
 
-                if (!name || !date) {
-                    showToast('Name and Date are required', 'error');
+                if (!name || !startDate) {
+                    showToast('Program Name and Start Date are required', 'error');
                     return;
                 }
 
+                const editId = this.querySelector('#programSubmitBtn').dataset.editId;
+
                 try {
-                    const { error } = await supabase
-                        .from(PROGRAMS_TABLE)
-                        .insert({
-                            program_name: name,
-                            program_date: date,
-                            venue: venue || null,
-                            start_time: startTime || null,
-                            end_time: endTime || null,
-                            description: description || null,
-                            is_active: true
-                        });
+                    if (editId) {
+                        // Update existing
+                        const { error } = await supabase
+                            .from(PROGRAMS_TABLE)
+                            .update({
+                                program_name: name,
+                                program_start_date: startDate,
+                                program_end_date: endDate || null,
+                                venue: venue || null,
+                                start_time: startTime || null,
+                                end_time: endTime || null,
+                                description: description || null
+                            })
+                            .eq('id', editId);
 
-                    if (error) throw error;
+                        if (error) throw error;
+                        showToast('✅ Program updated successfully!');
+                    } else {
+                        // Insert new
+                        const { error } = await supabase
+                            .from(PROGRAMS_TABLE)
+                            .insert({
+                                program_name: name,
+                                program_start_date: startDate,
+                                program_end_date: endDate || null,
+                                venue: venue || null,
+                                start_time: startTime || null,
+                                end_time: endTime || null,
+                                description: description || null,
+                                is_active: true
+                            });
 
-                    showToast('✅ Program added successfully!');
-                    this.reset();
+                        if (error) throw error;
+                        showToast('✅ Program added successfully!');
+                    }
+
+                    resetProgramForm();
                     loadPrograms();
                 } catch (err) {
                     showToast('Error: ' + err.message, 'error');
@@ -1543,7 +1609,6 @@
                     document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
                     document.getElementById('tab-' + tabId).classList.add('active');
 
-                    // Refresh data when switching tabs
                     if (tabId === 'recipients') loadRecipients();
                     if (tabId === 'programs') loadPrograms();
                 });
