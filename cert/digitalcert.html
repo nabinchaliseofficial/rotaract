@@ -496,45 +496,191 @@
 
         /* Print Styles */
         @media print {
-            body {
-                background: white !important;
-                padding: 0 !important;
-                margin: 0 !important;
+            /* Page settings */
+            @page {
+                size: A4 portrait;
+                margin: 0;
             }
 
-            .search-section {
+            /* Hide everything except the certificate */
+            body * {
+                visibility: hidden;
+            }
+            .certificate-print-wrapper,
+            .certificate-print-wrapper * {
+                visibility: visible;
+            }
+            .certificate-print-wrapper {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 210mm;
+                height: 297mm;
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+                background: white;
+                overflow: hidden;
+                page-break-inside: avoid;
+                page-break-before: avoid;
+                page-break-after: avoid;
+                break-inside: avoid;
+            }
+
+            /* Hide UI elements */
+            .search-section,
+            .actions,
+            #actions,
+            #printBtn,
+            .results-list,
+            .no-results,
+            .toast {
                 display: none !important;
             }
 
+            /* Certificate container inside print */
             .certificate-wrapper {
-                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
                 border: none !important;
-                padding: 10px !important;
+                box-shadow: none !important;
                 border-radius: 0 !important;
+                max-width: 100% !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                box-sizing: border-box;
+                background: white;
+                page-break-inside: avoid;
+                break-inside: avoid;
             }
 
             .certificate {
                 border: 4px double #1e293b !important;
-                padding: 30px 35px !important;
+                padding: 12px 18px !important;
                 min-height: auto !important;
-            }
-
-            .actions {
-                display: none !important;
+                height: 100% !important;
+                box-sizing: border-box;
+                page-break-inside: avoid;
+                break-inside: avoid;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
             }
 
             .certificate .border-decoration {
                 display: none !important;
             }
 
+            /* Scale down content to fit perfectly */
             .certificate .header .line1 {
-                font-size: 1.4rem !important;
+                font-size: 1.1rem !important;
+                letter-spacing: 2px !important;
             }
-            .certificate .recipient-name {
-                font-size: 2rem !important;
+            .certificate .header .line2 {
+                font-size: 0.9rem !important;
+                letter-spacing: 1px !important;
+            }
+            .certificate .header .line3 {
+                font-size: 0.65rem !important;
             }
             .certificate .title {
+                font-size: 1.3rem !important;
+                letter-spacing: 3px !important;
+                margin: 4px 0 !important;
+                padding: 2px 0 !important;
+            }
+            .certificate .title .type {
+                padding: 0 12px !important;
+            }
+            .certificate .main-text {
+                font-size: 0.75rem !important;
+                line-height: 1.4 !important;
+                margin: 2px 0 !important;
+            }
+            .certificate .recipient-name {
                 font-size: 1.6rem !important;
+                padding: 0 10px 2px !important;
+                margin: 4px 0 !important;
+                border-bottom-width: 1px !important;
+            }
+            .certificate .program-name {
+                font-size: 0.95rem !important;
+                margin: 2px 0 !important;
+            }
+            .certificate .club-name {
+                font-size: 0.85rem !important;
+            }
+            .certificate .footer {
+                font-size: 0.55rem !important;
+                padding-top: 6px !important;
+                margin-top: 6px !important;
+                grid-template-columns: 1fr 1fr 1fr !important;
+                gap: 2px !important;
+            }
+            .certificate .footer .item strong {
+                font-weight: 700 !important;
+            }
+            .certificate .signatures {
+                font-size: 0.55rem !important;
+                padding-top: 6px !important;
+                margin-top: 6px !important;
+                grid-template-columns: 1fr 1fr 1fr 1fr !important;
+                gap: 4px !important;
+            }
+            .certificate .signatures .sig-line {
+                width: 60% !important;
+            }
+            .certificate .signatures .sig-sub {
+                font-size: 0.5rem !important;
+            }
+            .certificate .qr-section {
+                margin-top: 4px !important;
+                padding-top: 4px !important;
+                font-size: 0.55rem !important;
+            }
+            .certificate .qr-section .qr-code-img {
+                width: 60px !important;
+                height: 60px !important;
+                margin: 2px auto !important;
+                padding: 2px !important;
+            }
+            .certificate .qr-section .qr-code {
+                font-size: 0.7rem !important;
+                letter-spacing: 1px !important;
+            }
+            .certificate .qr-section .qr-caption {
+                font-size: 0.5rem !important;
+            }
+
+            /* Images */
+            .certificate .header .line1 img {
+                max-height: 32px !important;
+                width: auto !important;
+            }
+            .certificate .signatures img {
+                width: 70px !important;
+                height: auto !important;
+                margin: 0 auto -2px !important;
+            }
+            .certificate .qr-section img {
+                max-width: 60px !important;
+                max-height: 60px !important;
+            }
+            .certificate .qr-section .qr-code-img {
+                width: 60px !important;
+                height: 60px !important;
+            }
+            .certificate .qr-section > div:last-child img {
+                max-width: 100% !important;
+                height: auto !important;
+            }
+
+            /* Ensure no overflow */
+            .certificate-print-wrapper,
+            .certificate-wrapper,
+            .certificate {
+                overflow: hidden !important;
             }
         }
 
@@ -603,13 +749,15 @@
         <div class="results-list" id="resultsList"></div>
     </div>
 
-    <!-- ===== CERTIFICATE ===== -->
+    <!-- ===== CERTIFICATE WRAPPER WITH PRINT CLASS ===== -->
     <div class="certificate-wrapper" id="certWrapper">
-        <div id="certContent">
-            <div class="loading-state">
-                <i class="fas fa-certificate" style="font-size:3rem;color:#2563eb;display:block;margin-bottom:12px;"></i>
-                <p>Search for your certificate above</p>
-                <p style="font-size:0.85rem;color:#94a3b8;">Enter your name or the program name</p>
+        <div class="certificate-print-wrapper">
+            <div id="certContent">
+                <div class="loading-state">
+                    <i class="fas fa-certificate" style="font-size:3rem;color:#2563eb;display:block;margin-bottom:12px;"></i>
+                    <p>Search for your certificate above</p>
+                    <p style="font-size:0.85rem;color:#94a3b8;">Enter your name or the program name</p>
+                </div>
             </div>
         </div>
         <div class="actions" id="actions">
@@ -837,12 +985,13 @@
                                 ⏳ This certificate is pending approval
                             </div>` : ''}
 
-                            <div class="header">
-                                <div class="line1">${s.header_line1 || 'ROTARY INTERNATIONAL'}</div>
-                                <div class="line2">${s.header_line2 || 'ROTARACT CLUB OF GALKOT BAGLUNG'}</div>
-                                <div class="line3">${s.header_line3 || 'Rotary International District 3292, Nepal'}</div>
-                            </div>
-
+                           <div class="header"> 
+    <div class="line1">
+        <img src="/clubheading.jpg" alt="Club Heading" style="max-height: 60px; width: auto;">
+    </div> 
+    <div class="line2">${s.header_line2 || 'ROTARACT CLUB OF GALKOT BAGLUNG'}</div> 
+    <div class="line3">${s.header_line3 || 'Rotary International District 3292, Nepal'}</div> 
+</div>
                             <div class="title">
                                 <span class="type">CERTIFICATE OF ${certificate_type.toUpperCase()}</span>
                             </div>
@@ -873,28 +1022,24 @@
                                 <div class="item"><strong>${s.footer_certificate_no || 'Certificate No.:'}</strong> ${certificate_no || '—'}</div>
                                 <div class="item"><strong>${s.footer_date || 'Date:'}</strong> ${dateStr}</div>
                                 <div class="item"><strong>${s.footer_venue || 'Venue:'}</strong> ${venue || '—'}</div>
-                                <div class="item" style="grid-column: span 3;"><strong>${s.footer_rotary_year || 'Rotary Year:'}</strong> ${rotary_year || '—'}</div>
+                                <div class="item" style="grid-column: span 3;"><strong>${s.footer_rotary_year || 'Rotary Year:'}</strong> ${rotary_year || '2026/27'}</div>
                             </div>
 
                             <div class="signatures">
-                                <div>
-                                    <div class="sig-line"></div>
-                                    <div class="sig-label">${s.signature_program_coordinator || 'Program Coordinator'}</div>
-                                </div>
-                                <div>
-                                    <div class="sig-line"></div>
-                                    <div class="sig-label">${s.signature_club_secretary || 'Club Secretary'}</div>
-                                </div>
-                                <div>
-                                    <div class="sig-line"></div>
-                                    <div class="sig-label">${s.signature_president || 'President'}</div>
-                                    <div class="sig-sub">${s.signature_president_label || 'Rotaract Club of Galkot Baglung'}</div>
-                                </div>
-                                <div>
-                                    <div class="sig-line"></div>
-                                    <div class="sig-label">${s.signature_chief_guest || 'Rotary Club President / Chief Guest'}</div>
-                                    <div class="sig-sub">${s.signature_chief_guest_optional || '(Optional)'}</div>
-                                </div>
+                                
+                               <div style="text-align: center;">
+    <img src="/presidentsign.png" 
+         alt="President Signature" 
+         style="width: 120px; height: auto; display: block; margin: 0 auto -5px;">
+
+    <div class="sig-line" style="margin: 0 auto;"></div>
+
+    <div class="sig-label">${s.signature_president || 'President'}</div>
+
+    <div class="sig-sub">
+        ${s.signature_president_label || 'Rotaract Club of Galkot Baglung'}
+    </div>
+</div>
                             </div>
 
                             <div class="qr-section">
@@ -902,6 +1047,12 @@
                                 <img class="qr-code-img" src="${qrImgSrc}" alt="Scan to verify certificate" />
                                 <div class="qr-code">${verification_id || '—'}</div>
                                 <div class="qr-caption">Scan to verify at certificateverify.html</div>
+                                   <div style="margin-top: 10px;">
+        <img src="/footer.jpg" 
+             alt="Footer" 
+             style="width: 100%; height: auto; display: block;">
+    </div>
+                                
                             </div>
                         </div>
                     `;

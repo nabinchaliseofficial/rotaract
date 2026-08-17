@@ -273,6 +273,53 @@ table.data-table tbody tr:last-child td{border-bottom:none;}
 .toast.error{border-left-color:var(--error);}
 @keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
 
+/* ============ Notifications ============ */
+#notifBtnWrap{position:relative;}
+#notifBellBtn{position:relative;}
+#notifCountBadge{
+  position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;
+  background:var(--error);color:#fff;border-radius:999px;font-size:10px;font-weight:800;
+  display:none;align-items:center;justify-content:center;line-height:1;border:2px solid var(--card);
+}
+#notifCountBadge.show{display:flex;}
+#notifPanel{
+  position:absolute;top:calc(100% + 8px);right:0;width:380px;max-width:92vw;max-height:520px;
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow-lg);z-index:3000;display:none;flex-direction:column;overflow:hidden;
+}
+#notifPanel.open{display:flex;}
+#notifPanelHeader{
+  padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;
+  justify-content:space-between;gap:8px;flex-wrap:wrap;
+}
+#notifPanelHeader h3{margin:0;font-size:14px;}
+#notifPanelActions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 14px;border-bottom:1px solid var(--border);font-size:12px;}
+#notifPanelActions label{display:flex;align-items:center;gap:5px;cursor:pointer;color:var(--text-secondary);font-weight:600;}
+#notifPanelList{overflow-y:auto;flex:1;}
+.notif-item{
+  display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;
+  transition:background .12s;position:relative;
+}
+.notif-item:last-child{border-bottom:none;}
+.notif-item:hover{background:var(--bg);}
+.notif-item.unread{background:var(--primary-light);}
+[data-theme="dark"] .notif-item.unread{background:#132038;}
+.notif-item.unread::before{
+  content:"";position:absolute;left:4px;top:14px;width:6px;height:6px;border-radius:50%;background:var(--primary);
+}
+.notif-checkbox{margin-top:3px;flex-shrink:0;}
+.notif-body{flex:1;min-width:0;}
+.notif-top-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.notif-title{font-size:13px;font-weight:700;color:var(--text);}
+.notif-table-tag{font-size:10px;font-weight:700;color:var(--primary);background:var(--primary-light);padding:2px 7px;border-radius:999px;white-space:nowrap;}
+.notif-message{font-size:12px;color:var(--text-secondary);margin-top:2px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.notif-time{font-size:11px;color:var(--muted);margin-top:4px;}
+#notifPanelFooter{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);}
+#notifPanelFooter .btn{flex:1;}
+@media(max-width:768px){
+  #notifPanel{position:fixed;top:60px;right:8px;left:8px;width:auto;max-height:75vh;}
+}
+
 /* Modal */
 .modal-overlay{
   position:fixed;inset:0;background:rgba(15,23,42,.55);
@@ -389,6 +436,24 @@ table.data-table tbody tr:last-child td{border-bottom:none;}
       </div>
       <div id="topbarActions">
         <span id="topUserBadge"></span>
+        <div id="notifBtnWrap">
+          <button id="notifBellBtn" class="icon-btn" title="Notifications">
+            <i data-lucide="bell"></i>
+            <span id="notifCountBadge">0</span>
+          </button>
+          <div id="notifPanel">
+            <div id="notifPanelHeader">
+              <h3>Notifications</h3>
+              <button class="btn btn-sm" id="notifMarkAllReadBtn"><i data-lucide="check-check" style="width:12px;height:12px;"></i>Mark all read</button>
+            </div>
+            <div id="notifPanelActions">
+              <label><input type="checkbox" id="notifSelectAllChk"> Select All</label>
+              <button class="btn btn-sm" id="notifClearSelectedBtn"><i data-lucide="x" style="width:12px;height:12px;"></i>Clear Selected</button>
+              <button class="btn btn-sm" id="notifClearAllBtn"><i data-lucide="trash-2" style="width:12px;height:12px;"></i>Clear All</button>
+            </div>
+            <div id="notifPanelList"></div>
+          </div>
+        </div>
         <button id="darkModeToggle" class="icon-btn" title="Toggle dark mode"><i data-lucide="moon"></i></button>
         <button id="refreshBtn" class="icon-btn" title="Refresh database"><i data-lucide="refresh-cw"></i></button>
         <button id="logoutBtn" class="btn btn-sm"><i data-lucide="log-out" style="width:14px;height:14px;"></i>Logout</button>
@@ -662,7 +727,11 @@ const state = {
   hasExportHistoryTable: null, // null = unknown, true/false once probed
   hasAuditLogTable: null,
   darkMode: localStorage.getItem("adminDarkMode") === "1",
-  isExporting: false
+  isExporting: false,
+  hasAdminNotificationsTable: null, // null = unknown, true/false once probed
+  notifications: [],        // rows from admin_notifications, newest first
+  notifSelected: new Set(), // selected notification ids
+  notifChannel: null        // Supabase Realtime channel handle
 };
 
 const ROLE_PERMISSIONS = {
@@ -744,6 +813,247 @@ async function logActivity(action, details = {}) {
 }
 
 /* =====================================================================
+   DYNAMIC DATABASE NOTIFICATION SYSTEM
+   ---------------------------------------------------------------------
+   - Reads exclusively from `admin_notifications`, a table that is
+     entirely separate from application data. Nothing here ever
+     inserts, updates, or deletes rows in `members`, `transactions`,
+     or any other discovered table — only in `admin_notifications`.
+   - Table coverage comes from state.tables, which is populated by
+     discoverTables() → get_exportable_tables(). No table name is
+     ever hard-coded here; INSERT triggers are attached dynamically
+     server-side (see setup SQL) to every table that function returns,
+     including tables created after this file was written.
+   - Gracefully no-ops (like export_history / audit_logs above) if
+     admin_notifications hasn't been created yet, so the rest of the
+     dashboard is unaffected.
+   ===================================================================== */
+
+const NOTIF_PAGE_LIMIT = 100;
+
+async function probeAdminNotificationsTable() {
+  if (state.hasAdminNotificationsTable !== null) return state.hasAdminNotificationsTable;
+  try {
+    const { error } = await supabaseClient.from("admin_notifications").select("id").limit(1);
+    if (error) {
+      if (/does not exist|schema cache/i.test(error.message || "")) {
+        state.hasAdminNotificationsTable = false;
+      } else {
+        // permission or other error — treat as unavailable for this session, don't crash the app
+        state.hasAdminNotificationsTable = false;
+      }
+    } else {
+      state.hasAdminNotificationsTable = true;
+    }
+  } catch {
+    state.hasAdminNotificationsTable = false;
+  }
+  return state.hasAdminNotificationsTable;
+}
+
+/* Load notifications (newest first), tolerating the table not existing yet */
+async function loadNotifications() {
+  const ok = await probeAdminNotificationsTable();
+  if (!ok) { state.notifications = []; renderNotifPanel(); return; }
+
+  const { data, error } = await supabaseClient
+    .from("admin_notifications")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(NOTIF_PAGE_LIMIT);
+
+  if (error) {
+    // never break the dashboard over notifications
+    state.notifications = [];
+    renderNotifPanel();
+    return;
+  }
+  state.notifications = data || [];
+  // drop selections for ids no longer present
+  const liveIds = new Set(state.notifications.map(n => n.id));
+  for (const id of Array.from(state.notifSelected)) if (!liveIds.has(id)) state.notifSelected.delete(id);
+  renderNotifPanel();
+}
+
+function unreadNotifCount() {
+  return state.notifications.filter(n => !n.is_read).length;
+}
+
+/* ---- Realtime subscription: admin_notifications INSERT/UPDATE/DELETE ---- */
+function subscribeNotificationsRealtime() {
+  if (!state.hasAdminNotificationsTable) return;
+  if (state.notifChannel) return; // already subscribed
+  try {
+    state.notifChannel = supabaseClient
+      .channel("admin_notifications_changes")
+      .on("postgres_changes",
+        { event: "*", schema: "public", table: "admin_notifications" },
+        (payload) => {
+          // New notification arrived (or was updated/deleted elsewhere) — resync from server.
+          loadNotifications();
+        })
+      .subscribe();
+  } catch {
+    /* Realtime unavailable — polling fallback below still covers us */
+  }
+}
+
+/* Fallback: poll every 30s in case Realtime is temporarily unavailable */
+let notifPollHandle = null;
+function startNotifFallbackPolling() {
+  if (notifPollHandle) return;
+  notifPollHandle = setInterval(() => {
+    if (state.hasAdminNotificationsTable) loadNotifications();
+  }, 30000);
+}
+function stopNotifPolling() {
+  if (notifPollHandle) { clearInterval(notifPollHandle); notifPollHandle = null; }
+}
+function teardownNotifRealtime() {
+  if (state.notifChannel) { supabaseClient.removeChannel(state.notifChannel); state.notifChannel = null; }
+  stopNotifPolling();
+}
+
+async function initNotificationSystem() {
+  await loadNotifications();
+  if (state.hasAdminNotificationsTable) {
+    subscribeNotificationsRealtime();
+    startNotifFallbackPolling();
+  }
+}
+
+/* ---- Rendering ---- */
+function renderNotifBadge() {
+  const badge = document.getElementById("notifCountBadge");
+  const count = unreadNotifCount();
+  badge.textContent = count > 99 ? "99+" : String(count);
+  badge.classList.toggle("show", count > 0);
+}
+
+function renderNotifPanel() {
+  renderNotifBadge();
+  const list = document.getElementById("notifPanelList");
+  clearNode(list);
+
+  if (state.hasAdminNotificationsTable === false) {
+    list.appendChild(emptyState("🔔", "Notifications not enabled",
+      "Run the admin_notifications SQL (see setup instructions) to enable this feature."));
+    syncSelectAllCheckbox();
+    return;
+  }
+  if (!state.notifications.length) {
+    list.appendChild(emptyState("🔔", "No notifications", "New records inserted into any table will appear here."));
+    syncSelectAllCheckbox();
+    return;
+  }
+
+  state.notifications.forEach(n => {
+    const checkbox = el("input", { attrs: { type: "checkbox" } , class: "notif-checkbox" });
+    checkbox.checked = state.notifSelected.has(n.id);
+    checkbox.addEventListener("click", (e) => e.stopPropagation());
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) state.notifSelected.add(n.id); else state.notifSelected.delete(n.id);
+      syncSelectAllCheckbox();
+    });
+
+    const tag = el("span", { class: "notif-table-tag", text: n.table_name || "table" });
+    const title = el("div", { class: "notif-title", text: n.title || "New record" });
+    const topRow = el("div", { class: "notif-top-row", children: [title, tag] });
+    const message = el("div", { class: "notif-message", text: n.message || "" });
+    const time = el("div", { class: "notif-time", text: formatDateShort(n.created_at) });
+    const body = el("div", { class: "notif-body", children: [topRow, message, time] });
+
+    const item = el("div", {
+      class: `notif-item${n.is_read ? "" : " unread"}`,
+      children: [checkbox, body],
+      onClick: () => markNotificationRead(n.id)
+    });
+    list.appendChild(item);
+  });
+  syncSelectAllCheckbox();
+}
+
+function syncSelectAllCheckbox() {
+  const chk = document.getElementById("notifSelectAllChk");
+  if (!state.notifications.length) { chk.checked = false; chk.indeterminate = false; return; }
+  const selectedCount = state.notifications.filter(n => state.notifSelected.has(n.id)).length;
+  chk.checked = selectedCount === state.notifications.length;
+  chk.indeterminate = selectedCount > 0 && selectedCount < state.notifications.length;
+}
+
+/* ---- Actions (all scoped to admin_notifications only) ---- */
+
+/* Clicking a notification marks only that one as read — never touches source data */
+async function markNotificationRead(id) {
+  const n = state.notifications.find(x => x.id === id);
+  if (!n || n.is_read) return;
+  n.is_read = true; // optimistic
+  renderNotifPanel();
+  const { error } = await supabaseClient.from("admin_notifications").update({ is_read: true }).eq("id", id);
+  if (error) { n.is_read = false; renderNotifPanel(); toast(friendlyError(error, "Failed to update notification"), "error"); }
+}
+
+async function markAllNotificationsRead() {
+  const unread = state.notifications.filter(n => !n.is_read);
+  if (!unread.length) return;
+  unread.forEach(n => n.is_read = true); // optimistic
+  renderNotifPanel();
+  const ids = unread.map(n => n.id);
+  const { error } = await supabaseClient.from("admin_notifications").update({ is_read: true }).in("id", ids);
+  if (error) { toast(friendlyError(error, "Failed to mark all as read"), "error"); await loadNotifications(); }
+  else toast("All notifications marked as read.", "success");
+}
+
+/* Clear Selected — deletes ONLY the chosen admin_notifications rows.
+   Source table data (members, transactions, etc.) is never touched. */
+async function clearSelectedNotifications() {
+  const ids = Array.from(state.notifSelected);
+  if (!ids.length) { toast("No notifications selected.", "warning"); return; }
+  const { error } = await supabaseClient.from("admin_notifications").delete().in("id", ids);
+  if (error) { toast(friendlyError(error, "Failed to clear selected notifications"), "error"); return; }
+  state.notifSelected.clear();
+  toast(`Cleared ${ids.length} notification(s).`, "success");
+  await loadNotifications();
+}
+
+/* Clear All — deletes ONLY rows from admin_notifications belonging to
+   the currently loaded set. Source table data is never touched. */
+async function clearAllNotifications() {
+  if (!state.notifications.length) return;
+  const ids = state.notifications.map(n => n.id);
+  const { error } = await supabaseClient.from("admin_notifications").delete().in("id", ids);
+  if (error) { toast(friendlyError(error, "Failed to clear notifications"), "error"); return; }
+  state.notifSelected.clear();
+  toast("All notifications cleared.", "success");
+  await loadNotifications();
+}
+
+/* ---- Panel open/close + event bindings ---- */
+const notifPanelEl = document.getElementById("notifPanel");
+const notifBellBtnEl = document.getElementById("notifBellBtn");
+
+function toggleNotifPanel(forceOpen) {
+  const shouldOpen = forceOpen !== undefined ? forceOpen : !notifPanelEl.classList.contains("open");
+  notifPanelEl.classList.toggle("open", shouldOpen);
+  if (shouldOpen) loadNotifications();
+}
+notifBellBtnEl.addEventListener("click", (e) => { e.stopPropagation(); toggleNotifPanel(); });
+document.addEventListener("click", (e) => {
+  if (!notifPanelEl.classList.contains("open")) return;
+  if (notifPanelEl.contains(e.target) || notifBellBtnEl.contains(e.target)) return;
+  toggleNotifPanel(false);
+});
+document.getElementById("notifMarkAllReadBtn").addEventListener("click", (e) => { e.stopPropagation(); markAllNotificationsRead(); });
+document.getElementById("notifClearSelectedBtn").addEventListener("click", (e) => { e.stopPropagation(); clearSelectedNotifications(); });
+document.getElementById("notifClearAllBtn").addEventListener("click", (e) => { e.stopPropagation(); clearAllNotifications(); });
+document.getElementById("notifSelectAllChk").addEventListener("click", (e) => e.stopPropagation());
+document.getElementById("notifSelectAllChk").addEventListener("change", (e) => {
+  if (e.target.checked) state.notifications.forEach(n => state.notifSelected.add(n.id));
+  else state.notifSelected.clear();
+  renderNotifPanel();
+});
+
+/* =====================================================================
    AUTH: login popup + gating (preserved from original adminprogress.html,
    role check now allows the full active-user role set instead of only
    'admin', tiered permissions applied on top)
@@ -796,6 +1106,7 @@ async function checkAuthAndRoute() {
   showApp();
   await logActivity("login");
   await bootstrapDashboard();
+  await initNotificationSystem();
 }
 
 loginBtn.addEventListener("click", async () => {
@@ -818,6 +1129,8 @@ passwordInput.addEventListener("keydown", e => { if (e.key === "Enter") loginBtn
 
 document.getElementById("logoutBtn").addEventListener("click", async () => {
   await logActivity("logout");
+  teardownNotifRealtime();
+  document.getElementById("notifPanel").classList.remove("open");
   await supabaseClient.auth.signOut();
   emailInput.value = ""; passwordInput.value = "";
   toast("Signed out.", "info");
@@ -826,7 +1139,7 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
 
 // Handle session expiration gracefully anywhere in the app
 supabaseClient.auth.onAuthStateChange((event) => {
-  if (event === "SIGNED_OUT") showLoginPopup();
+  if (event === "SIGNED_OUT") { teardownNotifRealtime(); showLoginPopup(); }
   if (event === "TOKEN_REFRESHED") { /* session silently renewed */ }
 });
 
