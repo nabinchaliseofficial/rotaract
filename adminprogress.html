@@ -1080,10 +1080,11 @@ async function checkAuthAndRoute() {
     .select("role, status, email, full_name")
     .eq("user_id", session.user.id)
     .eq("status", "active")
+    .eq("role", "admin")
     .maybeSingle();
 
   if (error || !roleRow) {
-    showError("You are not authorized (an active role is required).");
+    showError("You are not authorized. Only active admin accounts can log in.");
     await supabaseClient.auth.signOut();
     showLoginPopup();
     return;
