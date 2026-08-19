@@ -202,10 +202,6 @@
             transform: translateY(-5px);
         }
 
-        .vm-card.mission {
-            border-top-color: var(--secondary);
-        }
-
         .vm-header {
             display: flex;
             align-items: center;
@@ -216,10 +212,6 @@
         .vm-header i {
             font-size: 1.6rem;
             color: var(--primary);
-        }
-
-        .vm-card.mission .vm-header i {
-            color: var(--secondary);
         }
 
         .vm-header h3 {
@@ -250,73 +242,6 @@
             background-color: var(--secondary);
             margin: 0.5rem auto 0 auto;
             border-radius: 2px;
-        }
-
-        /* --- Strategic Pillars (Tabs UI) --- */
-        .tabs-wrapper {
-            background: var(--card-bg);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow);
-            padding: 0.5rem;
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            max-width: 700px;
-            margin: 0 auto 2rem auto;
-        }
-
-        .tab-btn {
-            background: none;
-            border: none;
-            padding: 1rem 1.5rem;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: 1rem;
-            color: var(--text-muted);
-            cursor: pointer;
-            border-radius: var(--radius-sm);
-            transition: var(--transition);
-            flex: 1;
-            text-align: center;
-        }
-
-        .tab-btn:hover {
-            color: var(--primary);
-            background-color: #F1F5F9;
-        }
-
-        .tab-btn.active {
-            background-color: var(--primary);
-            color: var(--card-bg);
-        }
-
-        .tab-content {
-            background: var(--card-bg);
-            padding: 2.5rem;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .tab-content h3 {
-            color: var(--primary);
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
-        }
-
-        .tab-content p {
-            color: var(--dark);
-            font-size: 1.1rem;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         /* --- Club Goals Cards Grid --- */
@@ -360,124 +285,51 @@
             font-size: 0.95rem;
         }
 
-        /* --- Plan of Action Dynamic Matrix --- */
-        .matrix-intro {
-            text-align: center;
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-            font-size: 1.05rem;
+        /* --- Success Criteria (within Goal Cards) --- */
+        .goal-card .sc-heading {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-top: 1.2rem;
+            margin-bottom: 0.6rem;
         }
 
-        .poa-list {
+        .goal-card .sc-list {
             list-style: none;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
-            max-width: 900px;
-            margin: 0 auto;
+            gap: 0.5rem;
         }
 
-        .poa-item {
-            background: var(--card-bg);
-            padding: 1.2rem 1.5rem;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow);
+        .goal-card .sc-list li {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1.5rem;
-            transition: var(--transition);
-            border: 1px solid var(--border-color);
-        }
-
-        .task-left {
-            display: flex;
-            align-items: center;
-            gap: 1.2rem;
-            flex: 1;
-        }
-
-        .quarter-badge {
-            background-color: #E2E8F0;
-            color: var(--primary);
-            font-weight: 700;
-            font-size: 0.85rem;
-            padding: 0.4rem 0.8rem;
-            border-radius: 20px;
-            min-width: 50px;
-            text-align: center;
-        }
-
-        .task-text {
-            font-weight: 500;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 0.88rem;
             color: var(--dark);
-            transition: var(--transition);
         }
 
-        .btn-complete {
-            background: none;
-            border: 2px solid var(--accent);
+        .goal-card .sc-list li i {
             color: var(--accent);
-            padding: 0.5rem 1.2rem;
-            font-weight: 600;
             font-size: 0.9rem;
-            border-radius: var(--radius-sm);
-            transition: var(--transition);
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            margin-top: 3px;
+            flex-shrink: 0;
         }
 
-        .status-badge {
-            cursor: default;
-            border-color: var(--text-muted);
+        .goal-card .sc-list li.sc-completed {
             color: var(--text-muted);
         }
 
-        .poa-item.completed .status-badge {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        .btn-complete:not(.status-badge):hover {
-            background-color: var(--accent);
-            color: var(--card-bg);
-        }
-
-        /* Action Checked / Completed Visual States */
-        .poa-item.completed {
-            background-color: #F8FAFC;
-            border-color: #CBD5E1;
-            opacity: 0.85;
-        }
-
-        .poa-item.completed .task-text {
+        .goal-card .sc-list li.sc-completed span {
             text-decoration: line-through;
-            color: var(--text-muted);
         }
 
-        .poa-item.completed .btn-complete {
-            background-color: var(--accent);
-            color: var(--card-bg);
+        .goal-card .sc-list li:not(.sc-completed) i {
+            color: var(--border-color);
         }
 
-        .kpi-card {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow);
-            border-left: 4px solid var(--accent);
-        }
-        .kpi-card .kpi-area {
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 0.4rem;
-        }
-        .kpi-card .kpi-target {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
         .loading-state, .error-state {
             text-align: center;
             padding: 2rem;
@@ -500,10 +352,6 @@
         @media (max-width: 768px) {
             .hero h1 { font-size: 2.2rem; }
             .hero p { font-size: 1rem; }
-            .tabs-wrapper { flex-direction: column; padding: 0.5rem; }
-            .tab-btn { padding: 0.8rem; }
-            .poa-item { flex-direction: column; align-items: flex-start; gap: 1rem; }
-            .btn-complete { width: 100%; justify-content: center; }
             .nav-container { padding: 1rem; }
         }
     </style>
@@ -533,7 +381,7 @@
     <!-- Core Page Metrics Layout Wrapper -->
     <main class="main-container">
 
-        <!-- Vision and Mission Grid -->
+        <!-- Vision -->
         <section class="vision-mission-grid">
             <div class="vm-card">
                 <div class="vm-header">
@@ -542,40 +390,12 @@
                 </div>
                 <p id="visionText">Loading...</p>
             </div>
-            <div class="vm-card mission">
-                <div class="vm-header">
-                    <i class="fa-solid fa-bolt"></i>
-                    <h3>Our Mission</h3>
-                </div>
-                <p id="missionText">Loading...</p>
-            </div>
-        </section>
-
-        <!-- Strategic Pillars Container Section -->
-        <section>
-            <h2 class="section-title">Our Strategic Pillars</h2>
-            <div class="tabs-wrapper" id="pillarsTabs"></div>
-            <div id="pillarsContent"></div>
         </section>
 
         <!-- Club Goals Area Grid -->
         <section>
             <h2 class="section-title">Club Goals (RY 2026-27)</h2>
             <div class="goals-grid" id="goalsGrid"></div>
-        </section>
-
-        <!-- Plan of Action Interactive Matrix Segment -->
-        <section>
-            <h2 class="section-title">Plan of Action Execution Matrix</h2>
-            <p class="matrix-intro">Track the operational progress of planned projects dynamically below:</p>
-            
-            <ul class="poa-list" id="poaList"></ul>
-        </section>
-
-        <!-- KPI Section -->
-        <section>
-            <h2 class="section-title">Annual Success Indicators (KPIs)</h2>
-            <div class="goals-grid" id="kpiGrid"></div>
         </section>
 
     </main>
@@ -619,28 +439,8 @@
             // Hero subtitle
             document.getElementById('heroSubtitle').innerText = plan.hero_subtitle || '';
 
-            // Vision / Mission
+            // Vision
             document.getElementById('visionText').innerText = `"${plan.vision || ''}"`;
-            document.getElementById('missionText').innerText = `"${plan.mission || ''}"`;
-
-            // Pillars (tabs)
-            const tabsWrap = document.getElementById('pillarsTabs');
-            const contentWrap = document.getElementById('pillarsContent');
-            tabsWrap.innerHTML = '';
-            contentWrap.innerHTML = '';
-            (plan.pillars || []).forEach((p, i) => {
-                const btn = document.createElement('button');
-                btn.className = 'tab-btn' + (i === 0 ? ' active' : '');
-                btn.innerText = p.tab_label;
-                btn.onclick = (e) => openPillar(e, p.key);
-                tabsWrap.appendChild(btn);
-
-                const div = document.createElement('div');
-                div.id = p.key;
-                div.className = 'tab-content' + (i === 0 ? ' active' : '');
-                div.innerHTML = `<h3>${escapeHtml(p.title)}</h3><p>${escapeHtml(p.description)}</p>`;
-                contentWrap.appendChild(div);
-            });
 
             // Goals
             const goalsGrid = document.getElementById('goalsGrid');
@@ -648,40 +448,25 @@
             (plan.goals || []).forEach(g => {
                 const card = document.createElement('div');
                 card.className = 'goal-card';
+                const criteria = g.success_criteria || [];
+                const criteriaHtml = criteria.length ? `
+                    <div class="sc-heading">Success Criteria</div>
+                    <ul class="sc-list">
+                        ${criteria.map(c => {
+                            const item = (typeof c === 'string') ? { text: c, completed: false } : c;
+                            const isDone = !!item.completed;
+                            return `<li class="${isDone ? 'sc-completed' : ''}">
+                                <i class="fa-solid ${isDone ? 'fa-square-check' : 'fa-square'}"></i>
+                                <span>${escapeHtml(item.text)}</span>
+                            </li>`;
+                        }).join('')}
+                    </ul>` : '';
                 card.innerHTML = `
                     <div class="goal-stat"><i class="${escapeHtml(g.icon || 'fa-solid fa-bullseye')}"></i> ${escapeHtml(g.stat)}</div>
                     <h3>${escapeHtml(g.title)}</h3>
-                    <p>${escapeHtml(g.description)}</p>`;
+                    <p>${escapeHtml(g.description)}</p>
+                    ${criteriaHtml}`;
                 goalsGrid.appendChild(card);
-            });
-
-            // Plan of Action (status is admin-controlled and persisted from Supabase)
-            const poaList = document.getElementById('poaList');
-            poaList.innerHTML = '';
-            (plan.plan_of_action || []).forEach(item => {
-                const isDone = !!item.completed;
-                const li = document.createElement('li');
-                li.className = 'poa-item' + (isDone ? ' completed' : '');
-                li.innerHTML = `
-                    <div class="task-left">
-                        <span class="quarter-badge">${escapeHtml(item.quarter)}</span>
-                        <span class="task-text">${escapeHtml(item.task)}</span>
-                    </div>
-                    <span class="btn-complete status-badge">
-                        <i class="fa-solid ${isDone ? 'fa-circle-check' : 'fa-hourglass-half'}"></i>
-                        <span>${isDone ? 'Completed' : 'In Progress'}</span>
-                    </span>`;
-                poaList.appendChild(li);
-            });
-
-            // KPIs
-            const kpiGrid = document.getElementById('kpiGrid');
-            kpiGrid.innerHTML = '';
-            (plan.kpis || []).forEach(k => {
-                const card = document.createElement('div');
-                card.className = 'kpi-card';
-                card.innerHTML = `<div class="kpi-area">${escapeHtml(k.area)}</div><div class="kpi-target">${escapeHtml(k.target)}</div>`;
-                kpiGrid.appendChild(card);
             });
         }
 
@@ -706,22 +491,6 @@
                 window.location.href = targetUrl;
             }, 300);
         });
-
-        // Modular Tab Switching Controls for Strategic Pillars
-        function openPillar(evt, pillarName) {
-            const tabcontent = document.getElementsByClassName("tab-content");
-            for (let i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].classList.remove("active");
-            }
-
-            const tablinks = document.getElementsByClassName("tab-btn");
-            for (let i = 0; i < tablinks.length; i++) {
-                tablinks[i].classList.remove("active");
-            }
-
-            document.getElementById(pillarName).classList.add("active");
-            evt.currentTarget.classList.add("active");
-        }
 
         // Init
         loadStrategicPlan();

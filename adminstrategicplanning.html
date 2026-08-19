@@ -117,6 +117,13 @@
             font-weight: 600; cursor: pointer; transition: var(--transition); margin-top: 0.5rem;
         }
         .add-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .add-btn.sc-add-btn { padding: 0.55rem; font-size: 0.85rem; }
+
+        .sc-list { margin-top: 0.4rem; }
+        .sc-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .sc-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+        .sc-row input[type="text"] { flex: 1; margin: 0; }
+        .sc-row .remove-btn { flex-shrink: 0; font-size: 0.95rem; }
 
         .save-bar {
             position: sticky; bottom: 0; background: var(--card-bg); border-top: 1px solid var(--border-color);
@@ -217,37 +224,21 @@
             <p class="page-subtitle">Changes here update the public Strategic Planning page instantly after saving.</p>
 
             <div class="card">
-                <h2>Vision, Mission & Hero</h2>
+                <h2>Vision & Hero</h2>
+                <button type="button" class="btn btn-outline" style="margin-bottom:0.5rem;" onclick="loadRY2627Defaults()">
+                    <i class="fa-solid fa-file-import"></i> Load RY 2026-27 Vision &amp; Goals
+                </button>
+                <p class="page-subtitle" style="margin-bottom:0;">Fills the Vision and the 8 Club Goals below with the new RY 2026-27 content for you to review. Nothing is saved until you click "Save Changes".</p>
                 <label>Hero Subtitle</label>
                 <input type="text" id="f_hero" placeholder="Strategic Blueprint & Plan of Action | Rota Year 2026-27">
                 <label>Vision</label>
                 <textarea id="f_vision"></textarea>
-                <label>Mission</label>
-                <textarea id="f_mission"></textarea>
-            </div>
-
-            <div class="card">
-                <h2>Strategic Pillars</h2>
-                <div id="pillarsEditor"></div>
-                <button class="add-btn" onclick="addPillar()"><i class="fa-solid fa-plus"></i> Add Pillar</button>
             </div>
 
             <div class="card">
                 <h2>Club Goals</h2>
                 <div id="goalsEditor"></div>
                 <button class="add-btn" onclick="addGoal()"><i class="fa-solid fa-plus"></i> Add Goal</button>
-            </div>
-
-            <div class="card">
-                <h2>Plan of Action</h2>
-                <div id="poaEditor"></div>
-                <button class="add-btn" onclick="addPoaItem()"><i class="fa-solid fa-plus"></i> Add Task</button>
-            </div>
-
-            <div class="card">
-                <h2>Annual Success Indicators (KPIs)</h2>
-                <div id="kpiEditor"></div>
-                <button class="add-btn" onclick="addKpi()"><i class="fa-solid fa-plus"></i> Add KPI</button>
             </div>
         </main>
 
@@ -372,43 +363,8 @@
         function renderForm(plan) {
             document.getElementById('f_hero').value = plan.hero_subtitle || '';
             document.getElementById('f_vision').value = plan.vision || '';
-            document.getElementById('f_mission').value = plan.mission || '';
 
-            renderPillars(plan.pillars || []);
             renderGoals(plan.goals || []);
-            renderPoa(plan.plan_of_action || []);
-            renderKpis(plan.kpis || []);
-        }
-
-        // ---------- Pillars ----------
-        function renderPillars(pillars) {
-            const wrap = document.getElementById('pillarsEditor');
-            wrap.innerHTML = '';
-            pillars.forEach(p => wrap.appendChild(pillarItemEl(p)));
-        }
-        function pillarItemEl(p = {}) {
-            const id = uid();
-            const div = document.createElement('div');
-            div.className = 'repeat-item';
-            div.dataset.id = id;
-            div.innerHTML = `
-                <div class="repeat-item-header">
-                    <span>PILLAR</span>
-                    <button class="remove-btn" onclick="this.closest('.repeat-item').remove()"><i class="fa-solid fa-trash"></i></button>
-                </div>
-                <div class="field-row">
-                    <div><label>Key (unique id, no spaces)</label><input type="text" class="p_key" value="${escAttr(p.key)}" placeholder="growth"></div>
-                    <div><label>Tab Label</label><input type="text" class="p_tab" value="${escAttr(p.tab_label)}" placeholder="Club Growth & Retention"></div>
-                </div>
-                <label>Title</label>
-                <input type="text" class="p_title" value="${escAttr(p.title)}">
-                <label>Description</label>
-                <textarea class="p_desc">${escHtml(p.description)}</textarea>
-            `;
-            return div;
-        }
-        function addPillar() {
-            document.getElementById('pillarsEditor').appendChild(pillarItemEl());
         }
 
         // ---------- Goals ----------
@@ -433,69 +389,134 @@
                 <input type="text" class="g_title" value="${escAttr(g.title)}">
                 <label>Description</label>
                 <textarea class="g_desc">${escHtml(g.description)}</textarea>
+                <label>Success Criteria</label>
+                <div class="sc-list"></div>
+                <button type="button" class="add-btn sc-add-btn" onclick="addSuccessCriterion(this)"><i class="fa-solid fa-plus"></i> Add Success Criterion</button>
             `;
+            const scList = div.querySelector('.sc-list');
+            (g.success_criteria || []).forEach(c => scList.appendChild(successCriterionEl(c)));
             return div;
+        }
+        function successCriterionEl(c = '') {
+            const item = (typeof c === 'string') ? { text: c, completed: false } : (c || { text: '', completed: false });
+            const row = document.createElement('div');
+            row.className = 'sc-row';
+            row.innerHTML = `
+                <input type="checkbox" class="sc_done" ${item.completed ? 'checked' : ''} title="Completed">
+                <input type="text" class="sc_text" value="${escAttr(item.text)}" placeholder="e.g. Increase active membership by 20%.">
+                <button type="button" class="remove-btn" onclick="this.closest('.sc-row').remove()"><i class="fa-solid fa-xmark"></i></button>
+            `;
+            return row;
+        }
+        function addSuccessCriterion(btn) {
+            const scList = btn.closest('.repeat-item').querySelector('.sc-list');
+            scList.appendChild(successCriterionEl());
         }
         function addGoal() {
             document.getElementById('goalsEditor').appendChild(goalItemEl());
         }
 
-        // ---------- Plan of Action ----------
-        function renderPoa(items) {
-            const wrap = document.getElementById('poaEditor');
-            wrap.innerHTML = '';
-            items.forEach(i => wrap.appendChild(poaItemEl(i)));
-        }
-        function poaItemEl(i = {}) {
-            const div = document.createElement('div');
-            div.className = 'repeat-item';
-            const isDone = !!i.completed;
-            div.innerHTML = `
-                <div class="repeat-item-header">
-                    <span>TASK</span>
-                    <button class="remove-btn" onclick="this.closest('.repeat-item').remove()"><i class="fa-solid fa-trash"></i></button>
-                </div>
-                <div class="field-row">
-                    <div><label>Quarter</label><input type="text" class="t_quarter" value="${escAttr(i.quarter)}" placeholder="Q1"></div>
-                    <div><label>Related Goal</label><input type="text" class="t_goal" value="${escAttr(i.goal)}" placeholder="Strengthen Membership"></div>
-                </div>
-                <label>Task Description</label>
-                <input type="text" class="t_task" value="${escAttr(i.task)}">
-                <label class="tick-label">
-                    <input type="checkbox" class="t_done" ${isDone ? 'checked' : ''} onchange="this.closest('.repeat-item').classList.toggle('is-done', this.checked)">
-                    Mark as Completed
-                </label>
-            `;
-            if (isDone) div.classList.add('is-done');
-            return div;
-        }
-        function addPoaItem() {
-            document.getElementById('poaEditor').appendChild(poaItemEl());
-        }
-
-        // ---------- KPIs ----------
-        function renderKpis(kpis) {
-            const wrap = document.getElementById('kpiEditor');
-            wrap.innerHTML = '';
-            kpis.forEach(k => wrap.appendChild(kpiItemEl(k)));
-        }
-        function kpiItemEl(k = {}) {
-            const div = document.createElement('div');
-            div.className = 'repeat-item';
-            div.innerHTML = `
-                <div class="repeat-item-header">
-                    <span>KPI</span>
-                    <button class="remove-btn" onclick="this.closest('.repeat-item').remove()"><i class="fa-solid fa-trash"></i></button>
-                </div>
-                <div class="field-row">
-                    <div><label>Area</label><input type="text" class="k_area" value="${escAttr(k.area)}"></div>
-                    <div><label>Target</label><input type="text" class="k_target" value="${escAttr(k.target)}"></div>
-                </div>
-            `;
-            return div;
-        }
-        function addKpi() {
-            document.getElementById('kpiEditor').appendChild(kpiItemEl());
+        // ---------- RY 2026-27 Recommended Content Loader ----------
+        const RY2627_VISION = "To be a strong, community-driven Rotaract Club that empowers youth and brings sustainable development to Galkot.";
+        const RY2627_GOALS = [
+            {
+                icon: "fa-solid fa-users", stat: "20%", title: "Strengthen Membership",
+                description: "Build a stronger, more engaged and sustainable membership base.",
+                success_criteria: [
+                    "Increase active membership by 20%.",
+                    "Maintain at least 90% member retention.",
+                    "Orient 100% of new members.",
+                    "Establish an effective member mentorship system.",
+                    "Achieve consistent member participation in club activities."
+                ]
+            },
+            {
+                icon: "fa-solid fa-user-graduate", stat: "6+", title: "Build Youth Leadership",
+                description: "Develop confident, capable future leaders through hands-on opportunities.",
+                success_criteria: [
+                    "Conduct a minimum of 6 leadership and professional development sessions.",
+                    "Provide leadership opportunities to members through projects and committees.",
+                    "Encourage participation in Rotary and Rotaract district-level programs.",
+                    "Establish a clear leadership succession system.",
+                    "Develop confident and capable future club leaders."
+                ]
+            },
+            {
+                icon: "fa-solid fa-hands-helping", stat: "12+", title: "Create Sustainable Community Impact",
+                description: "Deliver measurable, lasting benefit to the Galkot community.",
+                success_criteria: [
+                    "Conduct 12+ impactful community service projects.",
+                    "Complete at least 3 sustainable signature projects.",
+                    "Conduct needs assessments before major projects.",
+                    "Work in key areas including health, education, environment, livelihood, and youth development.",
+                    "Measure and document beneficiaries and project outcomes."
+                ]
+            },
+            {
+                icon: "fa-solid fa-bullhorn", stat: "Weekly", title: "Enhance Public Image & Digital Presence",
+                description: "Grow the club's visibility and consistent branding across all channels.",
+                success_criteria: [
+                    "Maintain weekly social media updates.",
+                    "Keep Facebook, Instagram, and the official website regularly updated.",
+                    "Publish professional project photos, videos, and impact stories.",
+                    "Maintain consistent club branding across all communication materials.",
+                    "Strengthen relationships with local newspapers, radio, and digital media."
+                ]
+            },
+            {
+                icon: "fa-solid fa-gavel", stat: "100%", title: "Strengthen Club Administration & Governance",
+                description: "Run a well-organized, transparent, and accountable club.",
+                success_criteria: [
+                    "Conduct 100% of scheduled Board Meetings and Club Assemblies.",
+                    "Maintain 100% meeting minutes, attendance, reports, and financial records.",
+                    "Follow the Club Constitution, Bylaws, and Rotaract standards.",
+                    "Conduct quarterly strategic progress reviews.",
+                    "Digitize and properly archive important club records."
+                ]
+            },
+            {
+                icon: "fa-solid fa-handshake", stat: "30+", title: "Strengthen Rotaract & External Partnerships",
+                description: "Expand the club's network of collaborations and community partners.",
+                success_criteria: [
+                    "Establish 30+ active collaborations and partnerships.",
+                    "Conduct joint projects with the Parents Club/Rotary Club.",
+                    "Strengthen partnerships with Galkot Municipality, schools, colleges, NGOs, businesses, and community organizations.",
+                    "Engage local businesses for sponsorship and CSR support.",
+                    "Participate in inter-club and district-level collaboration."
+                ]
+            },
+            {
+                icon: "fa-solid fa-sack-dollar", stat: "100%", title: "Ensure Financial Sustainability",
+                description: "Maintain a healthy, transparent, and sustainable club budget.",
+                success_criteria: [
+                    "Meet the club's annual financial target.",
+                    "Achieve timely membership fee collection.",
+                    "Conduct regular fundraising activities.",
+                    "Secure ethical sponsorships and donations.",
+                    "Prepare and monitor an annual budget.",
+                    "Maintain transparent and accurate financial records.",
+                    "Publish regular financial reports."
+                ]
+            },
+            {
+                icon: "fa-solid fa-heart", stat: "100%", title: "Promote Fellowship & Member Well-being",
+                description: "Foster a welcoming, supportive, and engaged club community.",
+                success_criteria: [
+                    "Organize regular fellowship and recreational activities.",
+                    "Celebrate member achievements, birthdays, and milestones.",
+                    "Promote teamwork, diversity, inclusion, and equal participation.",
+                    "Conduct physical and mental wellness activities.",
+                    "Improve member satisfaction and sense of belonging.",
+                    "Maintain a positive, respectful, and welcoming club culture."
+                ]
+            }
+        ];
+        function loadRY2627Defaults() {
+            const ok = confirm('This will replace the Vision and all Club Goals currently in this form with the recommended RY 2026-27 content. Nothing is saved until you click "Save Changes". Continue?');
+            if (!ok) return;
+            document.getElementById('f_vision').value = RY2627_VISION;
+            renderGoals(RY2627_GOALS);
+            setStatus('RY 2026-27 Vision & Goals loaded into the form. Review, then click Save Changes.', 'success');
         }
 
         // ---------- Helpers ----------
@@ -509,40 +530,21 @@
         }
 
         function collectForm() {
-            const pillars = Array.from(document.querySelectorAll('#pillarsEditor .repeat-item')).map(el => ({
-                key: el.querySelector('.p_key').value.trim(),
-                tab_label: el.querySelector('.p_tab').value.trim(),
-                title: el.querySelector('.p_title').value.trim(),
-                description: el.querySelector('.p_desc').value.trim()
-            }));
-
             const goals = Array.from(document.querySelectorAll('#goalsEditor .repeat-item')).map(el => ({
                 icon: el.querySelector('.g_icon').value.trim() || 'fa-solid fa-bullseye',
                 stat: el.querySelector('.g_stat').value.trim(),
                 title: el.querySelector('.g_title').value.trim(),
-                description: el.querySelector('.g_desc').value.trim()
-            }));
-
-            const plan_of_action = Array.from(document.querySelectorAll('#poaEditor .repeat-item')).map(el => ({
-                quarter: el.querySelector('.t_quarter').value.trim(),
-                goal: el.querySelector('.t_goal').value.trim(),
-                task: el.querySelector('.t_task').value.trim(),
-                completed: el.querySelector('.t_done').checked
-            }));
-
-            const kpis = Array.from(document.querySelectorAll('#kpiEditor .repeat-item')).map(el => ({
-                area: el.querySelector('.k_area').value.trim(),
-                target: el.querySelector('.k_target').value.trim()
+                description: el.querySelector('.g_desc').value.trim(),
+                success_criteria: Array.from(el.querySelectorAll('.sc-row')).map(row => ({
+                    text: row.querySelector('.sc_text').value.trim(),
+                    completed: row.querySelector('.sc_done').checked
+                })).filter(c => c.text.length > 0)
             }));
 
             return {
                 hero_subtitle: document.getElementById('f_hero').value.trim(),
                 vision: document.getElementById('f_vision').value.trim(),
-                mission: document.getElementById('f_mission').value.trim(),
-                pillars,
-                goals,
-                plan_of_action,
-                kpis
+                goals
             };
         }
 
