@@ -273,6 +273,100 @@
             .rc-slider-nav { width: 34px; height: 34px; }
         }
 
+        /* Project Photo Gallery — auto-sliding, shown at the top of the page */
+        .gallery-section {
+            margin-bottom: 45px;
+        }
+        .gallery-slider {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            background: #0f172a;
+        }
+        .gallery-track {
+            display: flex;
+            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+        .gallery-slide {
+            flex: 0 0 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            position: relative;
+            height: 420px;
+        }
+        .gallery-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .gallery-slide .gallery-caption {
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            padding: 22px 5% 18px;
+            background: linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.35) 60%, transparent 100%);
+            color: #ffffff;
+        }
+        .gallery-slide .gallery-caption h3 {
+            font-size: 1.3rem;
+            margin-bottom: 4px;
+        }
+        .gallery-slide .gallery-caption span {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.85);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .gallery-slider-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--secondary-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            z-index: 2;
+        }
+        .gallery-slider-nav:hover { background: #ffffff; transform: translateY(-50%) scale(1.08); }
+        .gallery-slider-prev { left: 16px; }
+        .gallery-slider-next { right: 16px; }
+        .gallery-slider-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 14px;
+        }
+        .gallery-slider-dots button {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            border: none;
+            background: var(--border-color);
+            cursor: pointer;
+            padding: 0;
+            transition: var(--transition);
+        }
+        .gallery-slider-dots button.active {
+            background: var(--primary-color);
+            width: 22px;
+            border-radius: 6px;
+        }
+        @media (max-width: 640px) {
+            .gallery-slide { height: 260px; }
+            .gallery-slide .gallery-caption h3 { font-size: 1.05rem; }
+        }
+
         /* Cumulative Analytics Dashboard Dashboard Component */
         .stats-section {
             margin-bottom: 45px;
@@ -623,15 +717,15 @@
 
     <main class="container">
 
-        <!-- 2026-27 Projects Slider (loaded live from Supabase, no hardcoded data) -->
-        <section class="slider-section" id="ry2627-slider-section" style="display:none;">
-            <h2 class="section-title"><i class="fa-solid fa-star"></i> R.Y. 2026-27 Projects</h2>
-            <div class="rc-slider" id="ry2627-slider">
-                <div class="rc-slider-track" id="ry2627-slider-track"></div>
-                <button class="rc-slider-nav rc-slider-prev" id="ry2627-prev" aria-label="Previous project"><i class="fa-solid fa-chevron-left"></i></button>
-                <button class="rc-slider-nav rc-slider-next" id="ry2627-next" aria-label="Next project"><i class="fa-solid fa-chevron-right"></i></button>
+        <!-- Project Photo Gallery — auto-sliding, shows project photos + names -->
+        <section class="gallery-section" id="photo-gallery-section" style="display:none;">
+            <h2 class="section-title"><i class="fa-solid fa-images"></i> Project Photo Gallery</h2>
+            <div class="gallery-slider" id="photo-gallery-slider">
+                <div class="gallery-track" id="photo-gallery-track"></div>
+                <button class="gallery-slider-nav gallery-slider-prev" id="gallery-prev" aria-label="Previous photo"><i class="fa-solid fa-chevron-left"></i></button>
+                <button class="gallery-slider-nav gallery-slider-next" id="gallery-next" aria-label="Next photo"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
-            <div class="rc-slider-dots" id="ry2627-dots"></div>
+            <div class="gallery-slider-dots" id="gallery-dots"></div>
         </section>
 
         <!-- Dynamic Metrics Dashboard Component -->
@@ -866,7 +960,8 @@
                 endTime: p.end_time || null,
                 participants: p.participants_count != null ? p.participants_count : null,
                 volunteeringHours: hours,
-                certificate: p.club_certificate === true ? 'Yes' : p.club_certificate === false ? 'No' : null
+                certificate: p.club_certificate === true ? 'Yes' : p.club_certificate === false ? 'No' : null,
+                photoUrls: Array.isArray(p.photo_urls) ? p.photo_urls.filter(Boolean) : []
             };
         }
 
@@ -1033,78 +1128,85 @@
             renderTable(filteredData);
         }
 
-        // ── 2026-27 Projects Slider ── uses the same live-fetched Supabase
-        // data as the table (no extra query, no hardcoded projects).
-        let sliderProjects = [];
-        let sliderIndex = 0;
-        let sliderTimer = null;
+        // ── Project Photo Gallery ── auto-sliding carousel at the top of the
+        // page, built from every completed project's photo_urls (name shown
+        // as a caption on each photo). Uses the same merged dataset already
+        // fetched for the table — no extra query.
+        let galleryItems = [];
+        let galleryIndex = 0;
+        let galleryTimer = null;
 
-        function renderSlider(projects2627) {
-            const section = document.getElementById('ry2627-slider-section');
-            const track = document.getElementById('ry2627-slider-track');
-            const dots = document.getElementById('ry2627-dots');
+        function buildGalleryItems(projects) {
+            const items = [];
+            projects.forEach(p => {
+                const photos = Array.isArray(p.photoUrls) ? p.photoUrls : [];
+                photos.forEach(url => {
+                    items.push({ url, name: p.name, location: p.location, ry: p.ry });
+                });
+            });
+            return items;
+        }
 
-            sliderProjects = projects2627 || [];
-            if (sliderProjects.length === 0) {
+        function renderGallery(projects) {
+            const section = document.getElementById('photo-gallery-section');
+            const track = document.getElementById('photo-gallery-track');
+            const dots = document.getElementById('gallery-dots');
+
+            galleryItems = buildGalleryItems(projects);
+            if (galleryItems.length === 0) {
                 section.style.display = 'none';
                 return;
             }
             section.style.display = 'block';
 
-            track.innerHTML = sliderProjects.map(p => `
-                <div class="rc-slide">
-                    <div class="rc-slide-badges">
-                        <span><i class="fa-solid fa-star"></i> R.Y. ${escapeHTML(p.ry)}</span>
-                        <span>${escapeHTML(p.avenue)}</span>
-                    </div>
-                    <h3>${escapeHTML(p.name)}</h3>
-                    <div class="rc-slide-meta">
-                        <span><i class="fa-solid fa-location-dot"></i> ${escapeHTML(p.location)}</span>
-                        ${p.startDate ? `<span><i class="fa-solid fa-calendar"></i> ${escapeHTML(formatDateTimePart(p.startDate, p.startTime))}</span>` : ''}
-                        ${p.participants != null ? `<span><i class="fa-solid fa-people-group"></i> ${escapeHTML(p.participants)} participants</span>` : ''}
+            track.innerHTML = galleryItems.map(item => `
+                <div class="gallery-slide">
+                    <img src="${escapeHTML(item.url)}" alt="${escapeHTML(item.name)}" loading="lazy" onerror="this.closest('.gallery-slide').style.display='none';">
+                    <div class="gallery-caption">
+                        <h3>${escapeHTML(item.name)}</h3>
+                        <span><i class="fa-solid fa-location-dot"></i> ${escapeHTML(item.location || '—')} &nbsp;·&nbsp; R.Y. ${escapeHTML(item.ry)}</span>
                     </div>
                 </div>
             `).join('');
 
-            dots.innerHTML = sliderProjects.map((_, i) =>
-                `<button data-index="${i}" aria-label="Go to project ${i + 1}"></button>`
+            dots.innerHTML = galleryItems.map((_, i) =>
+                `<button data-index="${i}" aria-label="Go to photo ${i + 1}"></button>`
             ).join('');
             dots.querySelectorAll('button').forEach(btn => {
-                btn.addEventListener('click', () => goToSlide(parseInt(btn.dataset.index, 10)));
+                btn.addEventListener('click', () => goToGallerySlide(parseInt(btn.dataset.index, 10)));
             });
 
-            sliderIndex = 0;
-            updateSliderPosition();
-            startSliderAutoplay();
+            galleryIndex = 0;
+            updateGalleryPosition();
+            startGalleryAutoplay();
         }
 
-        function updateSliderPosition() {
-            const track = document.getElementById('ry2627-slider-track');
-            track.style.transform = `translateX(-${sliderIndex * 100}%)`;
-            document.querySelectorAll('#ry2627-dots button').forEach((btn, i) => {
-                btn.classList.toggle('active', i === sliderIndex);
+        function updateGalleryPosition() {
+            const track = document.getElementById('photo-gallery-track');
+            track.style.transform = `translateX(-${galleryIndex * 100}%)`;
+            document.querySelectorAll('#gallery-dots button').forEach((btn, i) => {
+                btn.classList.toggle('active', i === galleryIndex);
             });
         }
 
-        function goToSlide(index) {
-            if (sliderProjects.length === 0) return;
-            sliderIndex = (index + sliderProjects.length) % sliderProjects.length;
-            updateSliderPosition();
-            startSliderAutoplay(); // reset the timer on manual interaction
+        function goToGallerySlide(index) {
+            if (galleryItems.length === 0) return;
+            galleryIndex = (index + galleryItems.length) % galleryItems.length;
+            updateGalleryPosition();
+            startGalleryAutoplay(); // reset timer on manual interaction
         }
 
-        function startSliderAutoplay() {
-            clearInterval(sliderTimer);
-            if (sliderProjects.length <= 1) return;
-            // Continuous loop: wraps back to slide 0 after the last project.
-            sliderTimer = setInterval(() => {
-                sliderIndex = (sliderIndex + 1) % sliderProjects.length;
-                updateSliderPosition();
-            }, 4000);
+        function startGalleryAutoplay() {
+            clearInterval(galleryTimer);
+            if (galleryItems.length <= 1) return;
+            galleryTimer = setInterval(() => {
+                galleryIndex = (galleryIndex + 1) % galleryItems.length;
+                updateGalleryPosition();
+            }, 3500);
         }
 
-        document.getElementById('ry2627-prev').addEventListener('click', () => goToSlide(sliderIndex - 1));
-        document.getElementById('ry2627-next').addEventListener('click', () => goToSlide(sliderIndex + 1));
+        document.getElementById('gallery-prev').addEventListener('click', () => goToGallerySlide(galleryIndex - 1));
+        document.getElementById('gallery-next').addEventListener('click', () => goToGallerySlide(galleryIndex + 1));
 
         window.onload = async () => {
             // Render immediately with static historical data so the page
@@ -1122,9 +1224,9 @@
                 filterEngine(); // re-apply current filter/search state, not just raw render
             }
 
-            // Slider only ever shows R.Y. 2026-27 projects, pulled from the
-            // same dataset already fetched above — no separate query.
-            renderSlider(mergedPastProjects.filter(p => p.ry === '2026-27'));
+            // Photo gallery pulls photos from every project (any year) that
+            // has photoUrls set — same merged dataset, no extra query.
+            renderGallery(mergedPastProjects);
         };
 
         // Material Ripple Click Interaction Sequence on Navigation Elements

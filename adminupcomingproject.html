@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* ── Variables ── */
         :root {
@@ -492,6 +493,71 @@
         .btn-cancel-modal { border-color: rgba(239, 68, 68, 0.3) !important; }
         .btn-cancel-modal:hover { background: rgba(239, 68, 68, 0.1) !important; border-color: rgba(239, 68, 68, 0.6) !important; }
 
+        /* ── Project Photos ── */
+        .photo-upload-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        .photo-slot {
+            position: relative;
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            aspect-ratio: 4 / 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 0.4rem;
+            cursor: pointer;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.03);
+            transition: var(--transition);
+        }
+        .photo-slot:hover { border-color: var(--cls-galkot); }
+        .photo-slot input[type="file"] { display: none; }
+        .photo-slot .placeholder-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 0 0.5rem;
+        }
+        .photo-slot .placeholder-text i { font-size: 1.3rem; display: block; margin-bottom: 0.3rem; }
+        .photo-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .photo-slot .photo-remove-btn {
+            position: absolute;
+            top: 4px; right: 4px;
+            background: rgba(0,0,0,0.65);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 24px; height: 24px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2;
+        }
+        .photo-slot .photo-remove-btn:hover { background: #ef4444; }
+        .photo-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem; }
+
+        .project-photos-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.4rem;
+            margin-top: 0.25rem;
+        }
+        .project-photos-grid img {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
         /* ── Toast ── */
         .toast {
             position: fixed; bottom: 20px; right: 20px;
@@ -605,8 +671,8 @@
             <div class="panel-actions">
                 <button class="action-btn btn-add" id="addProjectBtn"><i class="fa-solid fa-plus"></i> Add Project</button>
                 <button class="action-btn btn-edit" id="editProjectBtn"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
-                <button class="action-btn btn-danger" id="clearProjectsBtn"><i class="fa-solid fa-trash-can" style="color:#ef4444;"></i> Clear All</button>
                 <button class="action-btn" id="refreshProjectsBtn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                <button class="action-btn btn-primary" id="exportCompletedBtn"><i class="fa-solid fa-file-pdf"></i> Export Completed Projects</button>
             </div>
         </div>
         <div class="print-selector-bar">
@@ -750,6 +816,28 @@
                         <input type="url" id="projectReportUrl" placeholder="https://example.com/project-report" />
                     </div>
                 </div>
+                <div class="form-group">
+                    <label>Project Photos (exactly 4 required)</label>
+                    <div class="photo-upload-grid" id="photoUploadGrid">
+                        <div class="photo-slot" data-slot="0">
+                            <input type="file" accept="image/*" data-slot="0" />
+                            <div class="placeholder-text"><i class="fa-solid fa-camera"></i>Photo 1</div>
+                        </div>
+                        <div class="photo-slot" data-slot="1">
+                            <input type="file" accept="image/*" data-slot="1" />
+                            <div class="placeholder-text"><i class="fa-solid fa-camera"></i>Photo 2</div>
+                        </div>
+                        <div class="photo-slot" data-slot="2">
+                            <input type="file" accept="image/*" data-slot="2" />
+                            <div class="placeholder-text"><i class="fa-solid fa-camera"></i>Photo 3</div>
+                        </div>
+                        <div class="photo-slot" data-slot="3">
+                            <input type="file" accept="image/*" data-slot="3" />
+                            <div class="placeholder-text"><i class="fa-solid fa-camera"></i>Photo 4</div>
+                        </div>
+                    </div>
+                    <div class="photo-hint"><i class="fa-solid fa-circle-info"></i> Click a slot to select/replace a photo. Images are auto-compressed to ~200KB before upload.</div>
+                </div>
                 <div class="form-actions">
                     <button type="button" class="action-btn btn-cancel-modal" id="modalCancelBtn">Cancel</button>
                     <button type="submit" class="action-btn btn-save"><i class="fa-solid fa-floppy-disk"></i> <span id="submitBtnText">Save Project</span></button>
@@ -787,6 +875,12 @@
             let allProjects = [];
             let editingId = null;
             let membersList = []; // for Project Coordinator dropdown
+
+            // ── Project Photos State ──
+            // photoSlots[i] = { file: Blob|null (compressed, pending upload), previewUrl: string|null (existing URL or object URL) }
+            let photoSlots = [null, null, null, null];
+            const PHOTO_BUCKET = 'project-photos';
+            const MAX_PHOTO_BYTES = 200 * 1024; // ~200KB target
 
             // ── Helpers ──
             function escapeHtml(str) {
@@ -881,6 +975,183 @@
                     toast.style.transform = 'translateX(100%)';
                     setTimeout(() => toast.remove(), 400);
                 }, 3500);
+            }
+
+            // ── Image Compression (client-side, Canvas-based) ──
+            // Compresses/resizes an image file so the resulting blob is
+            // approximately MAX_PHOTO_BYTES or less, converting to JPEG.
+            // Keeps dimensions high enough for professional PDF/report use.
+            function compressImage(file) {
+                return new Promise((resolve, reject) => {
+                    try {
+                        const reader = new FileReader();
+                        reader.onerror = () => reject(new Error('Failed to read image file.'));
+                        reader.onload = (e) => {
+                            const img = new Image();
+                            img.onerror = () => reject(new Error('Failed to load image for compression.'));
+                            img.onload = () => {
+                                try {
+                                    // Cap max dimension while keeping enough resolution for print/PDF.
+                                    const MAX_DIM = 1600;
+                                    let { width, height } = img;
+                                    if (width > MAX_DIM || height > MAX_DIM) {
+                                        if (width >= height) {
+                                            height = Math.round(height * (MAX_DIM / width));
+                                            width = MAX_DIM;
+                                        } else {
+                                            width = Math.round(width * (MAX_DIM / height));
+                                            height = MAX_DIM;
+                                        }
+                                    }
+                                    const canvas = document.createElement('canvas');
+                                    canvas.width = width;
+                                    canvas.height = height;
+                                    const ctx = canvas.getContext('2d');
+                                    ctx.drawImage(img, 0, 0, width, height);
+
+                                    // Iteratively reduce quality (and if needed, dimensions)
+                                    // until the blob is under the target size.
+                                    const tryCompress = (quality, w, h, attempt) => {
+                                        const c = (w === canvas.width && h === canvas.height) ? canvas : (() => {
+                                            const c2 = document.createElement('canvas');
+                                            c2.width = w; c2.height = h;
+                                            c2.getContext('2d').drawImage(img, 0, 0, w, h);
+                                            return c2;
+                                        })();
+                                        c.toBlob((blob) => {
+                                            if (!blob) { reject(new Error('Image compression failed.')); return; }
+                                            if (blob.size <= MAX_PHOTO_BYTES || attempt >= 8) {
+                                                resolve(blob);
+                                            } else if (quality > 0.35) {
+                                                tryCompress(quality - 0.1, w, h, attempt + 1);
+                                            } else {
+                                                // Quality floor reached; shrink dimensions further.
+                                                tryCompress(0.6, Math.round(w * 0.8), Math.round(h * 0.8), attempt + 1);
+                                            }
+                                        }, 'image/jpeg', quality);
+                                    };
+                                    tryCompress(0.82, width, height, 0);
+                                } catch (err) {
+                                    reject(err);
+                                }
+                            };
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    } catch (err) {
+                        reject(err);
+                    }
+                });
+            }
+
+            // ── Photo Slot UI ──
+            function resetPhotoSlots() {
+                photoSlots.forEach(slot => {
+                    if (slot && slot.objectUrl) URL.revokeObjectURL(slot.objectUrl);
+                });
+                photoSlots = [null, null, null, null];
+                renderPhotoSlots();
+            }
+
+            function renderPhotoSlots() {
+                for (let i = 0; i < 4; i++) {
+                    const slotEl = document.querySelector(`.photo-slot[data-slot="${i}"]`);
+                    if (!slotEl) continue;
+                    const existingImg = slotEl.querySelector('img');
+                    const existingRemove = slotEl.querySelector('.photo-remove-btn');
+                    if (existingImg) existingImg.remove();
+                    if (existingRemove) existingRemove.remove();
+
+                    const placeholder = slotEl.querySelector('.placeholder-text');
+                    const data = photoSlots[i];
+                    if (data && data.previewUrl) {
+                        if (placeholder) placeholder.style.display = 'none';
+                        const img = document.createElement('img');
+                        img.src = data.previewUrl;
+                        slotEl.appendChild(img);
+                        const removeBtn = document.createElement('button');
+                        removeBtn.type = 'button';
+                        removeBtn.className = 'photo-remove-btn';
+                        removeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                        removeBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            if (photoSlots[i] && photoSlots[i].objectUrl) URL.revokeObjectURL(photoSlots[i].objectUrl);
+                            photoSlots[i] = null;
+                            renderPhotoSlots();
+                        });
+                        slotEl.appendChild(removeBtn);
+                    } else {
+                        if (placeholder) placeholder.style.display = 'block';
+                    }
+                }
+            }
+
+            document.querySelectorAll('.photo-slot input[type="file"]').forEach(input => {
+                input.addEventListener('change', async (e) => {
+                    const idx = parseInt(input.dataset.slot, 10);
+                    const file = e.target.files && e.target.files[0];
+                    if (!file) return;
+                    if (!file.type.startsWith('image/')) {
+                        showToast('❌ Please select a valid image file.', 'error');
+                        input.value = '';
+                        return;
+                    }
+                    try {
+                        showToast('⏳ Compressing image...', 'info');
+                        const compressedBlob = await compressImage(file);
+                        if (photoSlots[idx] && photoSlots[idx].objectUrl) URL.revokeObjectURL(photoSlots[idx].objectUrl);
+                        const objectUrl = URL.createObjectURL(compressedBlob);
+                        photoSlots[idx] = { file: compressedBlob, previewUrl: objectUrl, objectUrl: objectUrl, existingUrl: null };
+                        renderPhotoSlots();
+                        showToast(`✅ Photo ${idx + 1} ready (${Math.round(compressedBlob.size / 1024)}KB).`);
+                    } catch (err) {
+                        showToast('❌ Image compression failed: ' + err.message, 'error');
+                    } finally {
+                        input.value = '';
+                    }
+                });
+            });
+
+            document.querySelectorAll('.photo-slot').forEach(slotEl => {
+                slotEl.addEventListener('click', (e) => {
+                    if (e.target.closest('.photo-remove-btn')) return;
+                    const idx = slotEl.dataset.slot;
+                    const input = slotEl.querySelector(`input[type="file"][data-slot="${idx}"]`);
+                    if (input) input.click();
+                });
+            });
+
+            // Uploads any newly-selected (compressed) photos to Supabase Storage.
+            // Keeps existing URLs for slots that weren't changed during an edit.
+            // Returns an array of exactly 4 URLs, or fewer/empty if none provided (legacy-safe).
+            async function uploadProjectPhotos(projectIdForNaming) {
+                const urls = [];
+                for (let i = 0; i < 4; i++) {
+                    const slot = photoSlots[i];
+                    if (!slot) continue;
+                    if (slot.existingUrl && !slot.file) {
+                        urls[i] = slot.existingUrl;
+                        continue;
+                    }
+                    if (slot.file) {
+                        try {
+                            const fileName = `${projectIdForNaming || 'new'}_${Date.now()}_${i}.jpg`;
+                            const { data: uploadData, error: uploadError } = await supabase
+                                .storage
+                                .from(PHOTO_BUCKET)
+                                .upload(fileName, slot.file, { contentType: 'image/jpeg', upsert: true });
+                            if (uploadError) throw uploadError;
+                            const { data: publicUrlData } = supabase
+                                .storage
+                                .from(PHOTO_BUCKET)
+                                .getPublicUrl(uploadData.path);
+                            urls[i] = publicUrlData.publicUrl;
+                        } catch (err) {
+                            throw new Error(`Photo ${i + 1} upload failed: ` + (err.message || err));
+                        }
+                    }
+                }
+                return urls.filter(Boolean);
             }
 
             // ── Access Control ──
@@ -1082,6 +1353,10 @@
                                     <span class="status-badge ${badgeClass}">${getStatusDisplay(status)}</span>
                                 </div>
                                 ${p.description ? `<div class="node-message">${escapeHtml(p.description)}</div>` : ''}
+                                ${Array.isArray(p.photo_urls) && p.photo_urls.length > 0 ? `
+                                <div class="project-photos-grid">
+                                    ${p.photo_urls.slice(0, 4).map(url => `<img src="${escapeHtml(url)}" alt="Project photo" loading="lazy" onerror="this.style.display='none';" />`).join('')}
+                                </div>` : ''}
                                 <div class="application-actions">
                                     <button class="action-btn-sm btn-edit-sm" data-id="${p.id}" data-action="edit"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
                                     <button class="action-btn-sm btn-delete-sm" data-id="${p.id}" data-action="delete"><i class="fa-solid fa-trash"></i> Delete</button>
@@ -1215,6 +1490,18 @@
                 document.getElementById('projectTotalCost').value = project.total_cost || '';
                 document.getElementById('projectReportId').value = project.report_id || '';
                 document.getElementById('projectReportUrl').value = project.report_url || '';
+
+                // Populate photo slots with existing photo_urls (handled gracefully
+                // for old records that have none / fewer than 4).
+                resetPhotoSlots();
+                const existingUrls = Array.isArray(project.photo_urls) ? project.photo_urls : [];
+                for (let i = 0; i < 4 && i < existingUrls.length; i++) {
+                    if (existingUrls[i]) {
+                        photoSlots[i] = { file: null, previewUrl: existingUrls[i], objectUrl: null, existingUrl: existingUrls[i] };
+                    }
+                }
+                renderPhotoSlots();
+
                 updateVolunteerHoursPreview();
                 modal.classList.add('active');
             }
@@ -1240,6 +1527,7 @@
                 document.getElementById('projectTotalCost').value = '';
                 document.getElementById('projectReportId').value = '';
                 document.getElementById('projectReportUrl').value = '';
+                resetPhotoSlots();
                 modal.classList.add('active');
             }
 
@@ -1293,7 +1581,32 @@
 
                 const id = document.getElementById('projectId').value;
 
+                // Require exactly 4 photos when creating a new project. When
+                // editing, allow keeping fewer/no photos if the record had none
+                // (legacy-safe), but never allow more than 4.
+                const filledSlots = photoSlots.filter(Boolean).length;
+                if (filledSlots > 4) {
+                    showToast('❌ You can only add up to 4 photos.', 'error');
+                    return;
+                }
+                if (!id && filledSlots < 4) {
+                    showToast('❌ Please select exactly 4 project photos.', 'error');
+                    return;
+                }
+
                 try {
+                    if (filledSlots > 0) {
+                        try {
+                            const uploadedUrls = await uploadProjectPhotos(id || 'new');
+                            if (uploadedUrls.length > 0) {
+                                data.photo_urls = uploadedUrls;
+                            }
+                        } catch (uploadErr) {
+                            showToast('❌ ' + uploadErr.message, 'error');
+                            return;
+                        }
+                    }
+
                     let result;
                     if (id) {
                         result = await supabase.from('upcoming_projects').update(data).eq('id', parseInt(id));
@@ -1308,6 +1621,196 @@
                     showToast('❌ Error: ' + err.message, 'error');
                 }
             });
+
+            // ── Export Completed Projects (combined PDF report) ──
+            // Loads an image URL into a data URL so it can be embedded in the PDF,
+            // returning null on failure so missing/broken photos are skipped
+            // gracefully instead of breaking the whole report.
+            function loadImageAsDataUrl(url) {
+                return new Promise((resolve) => {
+                    try {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.onload = () => {
+                            try {
+                                const canvas = document.createElement('canvas');
+                                canvas.width = img.naturalWidth;
+                                canvas.height = img.naturalHeight;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0);
+                                resolve({ dataUrl: canvas.toDataURL('image/jpeg', 0.9), width: img.naturalWidth, height: img.naturalHeight });
+                            } catch (e) {
+                                resolve(null);
+                            }
+                        };
+                        img.onerror = () => resolve(null);
+                        img.src = url;
+                    } catch (e) {
+                        resolve(null);
+                    }
+                });
+            }
+
+            async function exportCompletedProjectsPDF() {
+                try {
+                    const jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
+                    if (!jsPDFCtor) {
+                        showToast('❌ PDF library failed to load. Check your connection and try again.', 'error');
+                        return;
+                    }
+
+                    const completed = allProjects.filter(p => (p.status || '').toLowerCase() === 'completed');
+                    if (completed.length === 0) {
+                        showToast('ℹ️ No completed projects to export.', 'info');
+                        return;
+                    }
+
+                    showToast('⏳ Generating PDF report...', 'info');
+
+                    const doc = new jsPDFCtor({ unit: 'pt', format: 'a4' });
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
+                    const margin = 40;
+                    let y = margin;
+
+                    // Report title
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(20);
+                    doc.text('COMPLETED PROJECTS REPORT', pageWidth / 2, y, { align: 'center' });
+                    y += 18;
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(10);
+                    doc.setTextColor(100);
+                    doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth / 2, y, { align: 'center' });
+                    doc.setTextColor(0);
+                    y += 30;
+
+                    const ensureSpace = (needed) => {
+                        if (y + needed > pageHeight - margin) {
+                            doc.addPage();
+                            y = margin;
+                        }
+                    };
+
+                    for (let i = 0; i < completed.length; i++) {
+                        const p = completed[i];
+
+                        ensureSpace(140);
+
+                        // Separator between projects
+                        if (i > 0) {
+                            doc.setDrawColor(200);
+                            doc.line(margin, y, pageWidth - margin, y);
+                            y += 16;
+                            ensureSpace(120);
+                        }
+
+                        const hours = p.volunteering_hours != null
+                            ? p.volunteering_hours
+                            : computeVolunteeringHours(p.start_date, p.start_time, p.end_date, p.end_time, p.participants_count);
+
+                        const startDT = p.start_date ? formatDateTimePart(p.start_date, p.start_time).replace(/&amp;/g, '&') : (p.date || '—');
+                        const endDT = (p.end_date || p.end_time)
+                            ? formatDateTimePart(p.end_date || p.start_date, p.end_time).replace(/&amp;/g, '&')
+                            : '—';
+
+                        const fields = [
+                            ['Project Name:', p.name || '—'],
+                            ['Start Date & Time:', startDT || '—'],
+                            ['End Date & Time:', endDT || '—'],
+                            ['Location:', p.location || '—'],
+                            ['Volunteering Hours:', hours != null ? String(hours) : '—']
+                        ];
+
+                        doc.setFontSize(12);
+                        fields.forEach(([label, value]) => {
+                            ensureSpace(18);
+                            doc.setFont('helvetica', 'bold');
+                            doc.text(label, margin, y);
+                            doc.setFont('helvetica', 'normal');
+                            const labelWidth = doc.getTextWidth(label) + 6;
+                            const wrapped = doc.splitTextToSize(String(value), pageWidth - margin * 2 - labelWidth);
+                            doc.text(wrapped, margin + labelWidth, y);
+                            y += 16 * wrapped.length;
+                        });
+
+                        // Description
+                        ensureSpace(18);
+                        doc.setFont('helvetica', 'bold');
+                        doc.text('Description:', margin, y);
+                        y += 16;
+                        doc.setFont('helvetica', 'normal');
+                        const descText = p.description || '—';
+                        const descWrapped = doc.splitTextToSize(descText, pageWidth - margin * 2);
+                        descWrapped.forEach(line => {
+                            ensureSpace(14);
+                            doc.text(line, margin, y);
+                            y += 14;
+                        });
+                        y += 8;
+
+                        // Photos — 4-photo 2x2 grid, gracefully handling missing photos
+                        const photoUrls = Array.isArray(p.photo_urls) ? p.photo_urls.filter(Boolean).slice(0, 4) : [];
+                        if (photoUrls.length > 0) {
+                            const gridW = pageWidth - margin * 2;
+                            const cellW = (gridW - 10) / 2;
+                            const cellH = cellW * 0.75;
+                            ensureSpace(cellH * 2 + 20);
+
+                            const loaded = await Promise.all(photoUrls.map(url => loadImageAsDataUrl(url)));
+
+                            for (let idx = 0; idx < loaded.length; idx++) {
+                                const img = loaded[idx];
+                                const col = idx % 2;
+                                const row = Math.floor(idx / 2);
+                                const cellX = margin + col * (cellW + 10);
+                                const cellY = y + row * (cellH + 10);
+
+                                if (img) {
+                                    // Fit image within cell, preserving aspect ratio, no stretching.
+                                    const ratio = img.width / img.height;
+                                    let drawW = cellW, drawH = cellW / ratio;
+                                    if (drawH > cellH) { drawH = cellH; drawW = cellH * ratio; }
+                                    const offsetX = cellX + (cellW - drawW) / 2;
+                                    const offsetY = cellY + (cellH - drawH) / 2;
+                                    try {
+                                        doc.addImage(img.dataUrl, 'JPEG', offsetX, offsetY, drawW, drawH);
+                                    } catch (e) {
+                                        doc.setDrawColor(220);
+                                        doc.rect(cellX, cellY, cellW, cellH);
+                                    }
+                                } else {
+                                    doc.setDrawColor(220);
+                                    doc.rect(cellX, cellY, cellW, cellH);
+                                    doc.setFontSize(9);
+                                    doc.setTextColor(150);
+                                    doc.text('Image unavailable', cellX + cellW / 2, cellY + cellH / 2, { align: 'center' });
+                                    doc.setTextColor(0);
+                                }
+                            }
+                            y += cellH * 2 + 20;
+                        } else {
+                            ensureSpace(16);
+                            doc.setFont('helvetica', 'italic');
+                            doc.setFontSize(10);
+                            doc.setTextColor(130);
+                            doc.text('No photos available for this project.', margin, y);
+                            doc.setTextColor(0);
+                            doc.setFont('helvetica', 'normal');
+                            y += 20;
+                        }
+
+                        y += 10;
+                    }
+
+                    doc.save(`Completed_Projects_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+                    showToast('✅ PDF report generated!');
+                } catch (err) {
+                    showToast('❌ PDF generation failed: ' + (err.message || err), 'error');
+                }
+            }
+
+            document.getElementById('exportCompletedBtn').addEventListener('click', exportCompletedProjectsPDF);
 
             // ── Application Actions ──
             async function updateAppStatus(id, status) {
@@ -1374,19 +1877,7 @@
                 loadApplications();
             });
 
-            // ── Clear All ──
-            document.getElementById('clearProjectsBtn').addEventListener('click', async () => {
-                if (!confirm("⚠️ DELETE ALL projects permanently?")) return;
-                try {
-                    const { error } = await supabase.from('upcoming_projects').delete().neq('id', 0);
-                    if (error) throw error;
-                    showToast('✅ All projects cleared!');
-                    await loadProjects();
-                } catch (err) {
-                    showToast('❌ Error: ' + err.message, 'error');
-                }
-            });
-
+            // ── Clear All (Applications only) ──
             document.getElementById('clearAppsBtn').addEventListener('click', async () => {
                 if (!confirm("⚠️ DELETE ALL applications permanently?")) return;
                 try {
