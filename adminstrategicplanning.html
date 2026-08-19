@@ -225,10 +225,6 @@
 
             <div class="card">
                 <h2>Vision & Hero</h2>
-                <button type="button" class="btn btn-outline" style="margin-bottom:0.5rem;" onclick="loadRY2627Defaults()">
-                    <i class="fa-solid fa-file-import"></i> Load RY 2026-27 Vision &amp; Goals
-                </button>
-                <p class="page-subtitle" style="margin-bottom:0;">Fills the Vision and the 8 Club Goals below with the new RY 2026-27 content for you to review. Nothing is saved until you click "Save Changes".</p>
                 <label>Hero Subtitle</label>
                 <input type="text" id="f_hero" placeholder="Strategic Blueprint & Plan of Action | Rota Year 2026-27">
                 <label>Vision</label>
@@ -414,109 +410,6 @@
         }
         function addGoal() {
             document.getElementById('goalsEditor').appendChild(goalItemEl());
-        }
-
-        // ---------- RY 2026-27 Recommended Content Loader ----------
-        const RY2627_VISION = "To be a strong, community-driven Rotaract Club that empowers youth and brings sustainable development to Galkot.";
-        const RY2627_GOALS = [
-            {
-                icon: "fa-solid fa-users", stat: "20%", title: "Strengthen Membership",
-                description: "Build a stronger, more engaged and sustainable membership base.",
-                success_criteria: [
-                    "Increase active membership by 20%.",
-                    "Maintain at least 90% member retention.",
-                    "Orient 100% of new members.",
-                    "Establish an effective member mentorship system.",
-                    "Achieve consistent member participation in club activities."
-                ]
-            },
-            {
-                icon: "fa-solid fa-user-graduate", stat: "6+", title: "Build Youth Leadership",
-                description: "Develop confident, capable future leaders through hands-on opportunities.",
-                success_criteria: [
-                    "Conduct a minimum of 6 leadership and professional development sessions.",
-                    "Provide leadership opportunities to members through projects and committees.",
-                    "Encourage participation in Rotary and Rotaract district-level programs.",
-                    "Establish a clear leadership succession system.",
-                    "Develop confident and capable future club leaders."
-                ]
-            },
-            {
-                icon: "fa-solid fa-hands-helping", stat: "12+", title: "Create Sustainable Community Impact",
-                description: "Deliver measurable, lasting benefit to the Galkot community.",
-                success_criteria: [
-                    "Conduct 12+ impactful community service projects.",
-                    "Complete at least 3 sustainable signature projects.",
-                    "Conduct needs assessments before major projects.",
-                    "Work in key areas including health, education, environment, livelihood, and youth development.",
-                    "Measure and document beneficiaries and project outcomes."
-                ]
-            },
-            {
-                icon: "fa-solid fa-bullhorn", stat: "Weekly", title: "Enhance Public Image & Digital Presence",
-                description: "Grow the club's visibility and consistent branding across all channels.",
-                success_criteria: [
-                    "Maintain weekly social media updates.",
-                    "Keep Facebook, Instagram, and the official website regularly updated.",
-                    "Publish professional project photos, videos, and impact stories.",
-                    "Maintain consistent club branding across all communication materials.",
-                    "Strengthen relationships with local newspapers, radio, and digital media."
-                ]
-            },
-            {
-                icon: "fa-solid fa-gavel", stat: "100%", title: "Strengthen Club Administration & Governance",
-                description: "Run a well-organized, transparent, and accountable club.",
-                success_criteria: [
-                    "Conduct 100% of scheduled Board Meetings and Club Assemblies.",
-                    "Maintain 100% meeting minutes, attendance, reports, and financial records.",
-                    "Follow the Club Constitution, Bylaws, and Rotaract standards.",
-                    "Conduct quarterly strategic progress reviews.",
-                    "Digitize and properly archive important club records."
-                ]
-            },
-            {
-                icon: "fa-solid fa-handshake", stat: "30+", title: "Strengthen Rotaract & External Partnerships",
-                description: "Expand the club's network of collaborations and community partners.",
-                success_criteria: [
-                    "Establish 30+ active collaborations and partnerships.",
-                    "Conduct joint projects with the Parents Club/Rotary Club.",
-                    "Strengthen partnerships with Galkot Municipality, schools, colleges, NGOs, businesses, and community organizations.",
-                    "Engage local businesses for sponsorship and CSR support.",
-                    "Participate in inter-club and district-level collaboration."
-                ]
-            },
-            {
-                icon: "fa-solid fa-sack-dollar", stat: "100%", title: "Ensure Financial Sustainability",
-                description: "Maintain a healthy, transparent, and sustainable club budget.",
-                success_criteria: [
-                    "Meet the club's annual financial target.",
-                    "Achieve timely membership fee collection.",
-                    "Conduct regular fundraising activities.",
-                    "Secure ethical sponsorships and donations.",
-                    "Prepare and monitor an annual budget.",
-                    "Maintain transparent and accurate financial records.",
-                    "Publish regular financial reports."
-                ]
-            },
-            {
-                icon: "fa-solid fa-heart", stat: "100%", title: "Promote Fellowship & Member Well-being",
-                description: "Foster a welcoming, supportive, and engaged club community.",
-                success_criteria: [
-                    "Organize regular fellowship and recreational activities.",
-                    "Celebrate member achievements, birthdays, and milestones.",
-                    "Promote teamwork, diversity, inclusion, and equal participation.",
-                    "Conduct physical and mental wellness activities.",
-                    "Improve member satisfaction and sense of belonging.",
-                    "Maintain a positive, respectful, and welcoming club culture."
-                ]
-            }
-        ];
-        function loadRY2627Defaults() {
-            const ok = confirm('This will replace the Vision and all Club Goals currently in this form with the recommended RY 2026-27 content. Nothing is saved until you click "Save Changes". Continue?');
-            if (!ok) return;
-            document.getElementById('f_vision').value = RY2627_VISION;
-            renderGoals(RY2627_GOALS);
-            setStatus('RY 2026-27 Vision & Goals loaded into the form. Review, then click Save Changes.', 'success');
         }
 
         // ---------- Helpers ----------

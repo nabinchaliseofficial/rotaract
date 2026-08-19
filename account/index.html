@@ -864,6 +864,123 @@
             color: #4a5568;
         }
 
+        /* --- Receipt Preview (on-screen) --- */
+        .receipt-doc {
+            border: 2px solid #2b6cb0;
+            border-radius: 8px;
+            padding: 1rem;
+            background: #fff;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        .receipt-doc .rc-header {
+            text-align: center;
+            border-bottom: 2px solid #2b6cb0;
+            padding-bottom: 0.6rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .receipt-doc .rc-header .rc-club {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #2b6cb0;
+            letter-spacing: 0.5px;
+        }
+
+        .receipt-doc .rc-header .rc-district {
+            font-size: 0.78rem;
+            color: #4a5568;
+            margin-top: 0.15rem;
+        }
+
+        .receipt-doc .rc-header .rc-doctype {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+            letter-spacing: 1px;
+            text-decoration: underline;
+        }
+
+        .receipt-doc .rc-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            color: #2d3748;
+        }
+
+        .receipt-doc .rc-body {
+            font-size: 0.85rem;
+            line-height: 1.7;
+            text-align: justify;
+            margin-bottom: 0.9rem;
+            color: #1a202c;
+        }
+
+        .receipt-doc .rc-details {
+            font-size: 0.8rem;
+            line-height: 1.9;
+            margin-bottom: 0.9rem;
+        }
+
+        .receipt-doc .rc-details .rc-row {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .receipt-doc .rc-details .rc-row .rc-label {
+            font-weight: 700;
+            min-width: 150px;
+            color: #2b6cb0;
+        }
+
+        .receipt-doc .rc-thanks {
+            font-size: 0.8rem;
+            font-style: italic;
+            text-align: center;
+            margin-bottom: 1.4rem;
+            color: #2b6cb0;
+        }
+
+        .receipt-doc .rc-sig {
+            margin-top: 1.6rem;
+            text-align: right;
+            padding-right: 0.6rem;
+        }
+
+        .receipt-doc .rc-sig .rc-sig-space {
+            height: 36px;
+        }
+
+        .receipt-doc .rc-sig .rc-sig-line {
+            width: 170px;
+            border-top: 1px solid #333;
+            margin-left: auto;
+            margin-bottom: 0.25rem;
+        }
+
+        .receipt-doc .rc-sig .rc-sig-name {
+            font-weight: 700;
+            font-size: 0.82rem;
+        }
+
+        .receipt-doc .rc-sig .rc-sig-role {
+            font-size: 0.75rem;
+            color: #4a5568;
+        }
+
+        @media (max-width: 480px) {
+            .receipt-doc .rc-meta {
+                flex-direction: column;
+            }
+            .receipt-doc .rc-details .rc-row .rc-label {
+                min-width: 120px;
+            }
+        }
+
         /* --- Forms --- */
         .form-group {
             margin-bottom: 0.7rem;
@@ -1643,6 +1760,110 @@
                 border: 1px solid #feb2b2;
                 border-radius: 4px;
             }
+
+            /* --- Receipt print layout --- */
+            #printArea .rc-doc {
+                max-width: 7.2in;
+                margin: 0 auto;
+                padding: 10px;
+                border: 2px solid #2b6cb0;
+                font-family: 'Segoe UI', system-ui, sans-serif;
+            }
+
+            #printArea .rc-header {
+                text-align: center;
+                border-bottom: 2px solid #2b6cb0;
+                padding-bottom: 8px;
+                margin-bottom: 12px;
+            }
+
+            #printArea .rc-header .rc-club {
+                font-size: 18px;
+                font-weight: 800;
+                color: #2b6cb0;
+                letter-spacing: 0.5px;
+            }
+
+            #printArea .rc-header .rc-district {
+                font-size: 11px;
+                color: #4a5568;
+                margin-top: 2px;
+            }
+
+            #printArea .rc-header .rc-doctype {
+                font-size: 14px;
+                font-weight: 700;
+                margin-top: 8px;
+                letter-spacing: 1px;
+                text-decoration: underline;
+            }
+
+            #printArea .rc-meta {
+                display: flex;
+                justify-content: space-between;
+                font-size: 11px;
+                margin-bottom: 12px;
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+
+            #printArea .rc-body {
+                font-size: 12px;
+                line-height: 1.7;
+                text-align: justify;
+                margin-bottom: 14px;
+            }
+
+            #printArea .rc-details {
+                font-size: 11.5px;
+                line-height: 1.9;
+                margin-bottom: 14px;
+            }
+
+            #printArea .rc-details .rc-row {
+                display: flex;
+                gap: 6px;
+            }
+
+            #printArea .rc-details .rc-row .rc-label {
+                font-weight: 700;
+                min-width: 160px;
+            }
+
+            #printArea .rc-thanks {
+                font-size: 11.5px;
+                font-style: italic;
+                text-align: center;
+                margin-bottom: 24px;
+                color: #2b6cb0;
+            }
+
+            #printArea .rc-sig {
+                margin-top: 30px;
+                text-align: right;
+                padding-right: 20px;
+            }
+
+            #printArea .rc-sig .rc-sig-space {
+                height: 40px;
+            }
+
+            #printArea .rc-sig .rc-sig-line {
+                width: 180px;
+                border-top: 1px solid #333;
+                margin-left: auto;
+                margin-bottom: 4px;
+            }
+
+            #printArea .rc-sig .rc-sig-name {
+                font-weight: 700;
+                font-size: 12px;
+            }
+
+            #printArea .rc-sig .rc-sig-role {
+                font-size: 11px;
+                color: #4a5568;
+            }
         }
     </style>
 </head>
@@ -1736,6 +1957,9 @@
             </button>
             <button class="nav-item" data-tab="reports">
                 <i class="fas fa-chart-bar"></i> Reports
+            </button>
+            <button class="nav-item" data-tab="receipt" id="receiptNav">
+                <i class="fas fa-receipt"></i> Receipt
             </button>
             <div class="nav-divider"></div>
             <button class="nav-item" data-tab="settings" id="settingsNav">
@@ -1992,6 +2216,92 @@
             </div>
 
             <!-- ============================================================
+            RECEIPT
+            ============================================================ -->
+            <div class="tab-content" id="tab-receipt">
+                <div class="hero" style="margin-bottom:0.8rem;">
+                    <div>
+                        <div class="hero-title">Receipt Management</div>
+                        <div class="hero-subtitle">Generate, view, print and manage official financial receipts</div>
+                    </div>
+                    <div class="hero-actions no-print">
+                        <button class="btn btn-primary-hero" id="newReceiptBtn" onclick="showReceiptModal()">
+                            <i class="fas fa-plus"></i> New Receipt</button>
+                        <button class="btn" onclick="toggleReceiptSearch()"><i class="fas fa-search"></i> Search</button>
+                        <button class="btn" onclick="loadReceipts()"><i class="fas fa-sync"></i> Refresh</button>
+                    </div>
+                </div>
+
+                <!-- Summary Grid -->
+                <div class="summary-grid" id="receiptSummaryGrid">
+                    <div class="summary-card">
+                        <span class="icon"><i class="fas fa-receipt"></i></span>
+                        <span class="label">Total Receipts</span>
+                        <span class="value balance" id="rcTotalReceipts">0</span>
+                    </div>
+                    <div class="summary-card" style="border-left-color:#38a169;">
+                        <span class="icon"><i class="fas fa-arrow-down"></i></span>
+                        <span class="label">Total Income Receipts</span>
+                        <span class="value income" id="rcTotalIncome">0</span>
+                    </div>
+                    <div class="summary-card" style="border-left-color:#e53e3e;">
+                        <span class="icon"><i class="fas fa-arrow-up"></i></span>
+                        <span class="label">Total Expense Receipts</span>
+                        <span class="value expense" id="rcTotalExpense">0</span>
+                    </div>
+                    <div class="summary-card" style="border-left-color:#2b6cb0;">
+                        <span class="icon"><i class="fas fa-wallet"></i></span>
+                        <span class="label">Total Receipt Amount</span>
+                        <span class="value balance" id="rcTotalAmount">Rs. 0</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fas fa-receipt"></i> Receipt History</span>
+                    </div>
+
+                    <div class="filters no-print" id="receiptFilters" style="display:none;">
+                        <input type="text" id="rcSearch" placeholder="Search receipt no, name, purpose..." style="min-width:160px;" oninput="onReceiptSearchInput()" />
+                        <select id="rcFilterType" onchange="loadReceipts()">
+                            <option value="">All Types</option>
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
+                        <div class="filter-group"><label>From</label><input type="date" id="rcFilterDateFrom" onchange="loadReceipts()" /></div>
+                        <div class="filter-group"><label>To</label><input type="date" id="rcFilterDateTo" onchange="loadReceipts()" /></div>
+                        <button class="btn btn-primary btn-sm" onclick="loadReceipts()"><i class="fas fa-search"></i></button>
+                        <button class="btn btn-outline btn-sm" onclick="resetReceiptFilters()"><i class="fas fa-undo"></i></button>
+                    </div>
+
+                    <div class="table-wrapper" id="receiptTableWrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Receipt No.</th>
+                                    <th>Type</th>
+                                    <th>Txn Date</th>
+                                    <th>Print Date</th>
+                                    <th>From / To</th>
+                                    <th>Purpose</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="receiptsBody">
+                                <tr><td colspan="9"><div class="loading"><i class="fas fa-spinner"></i> Loading...</div></td></tr>
+                            </tbody>
+                        </table>
+                        <div class="transaction-cards" id="receiptCards"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.4rem; flex-wrap:wrap; gap:0.3rem;">
+                        <span id="rcCount" style="font-size:0.7rem; color:#718096;">0 records</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================
             SETTINGS
             ============================================================ -->
             <div class="tab-content" id="tab-settings">
@@ -2191,6 +2501,96 @@
         </div>
     </div>
 
+    <!-- Receipt Form Modal -->
+    <div class="modal-overlay" id="receiptModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="receiptModalTitle"><i class="fas fa-receipt"></i> New Receipt</h2>
+                <button class="modal-close" onclick="closeModal('receiptModal')">&times;</button>
+            </div>
+            <form id="receiptForm" onsubmit="saveReceipt(event)">
+                <input type="hidden" id="rcId" />
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Receipt Type *</label>
+                        <select id="rcType" required onchange="onReceiptTypeChange()">
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Transaction *</label>
+                        <select id="rcTransaction" required onchange="onReceiptTransactionChange()">
+                            <option value="">Select transaction...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Receipt Number</label>
+                        <input type="text" id="rcNumber" readonly placeholder="Auto-generated" style="background:#f7fafc;" />
+                    </div>
+                    <div class="form-group">
+                        <label>Receipt Print Date *</label>
+                        <input type="date" id="rcPrintDate" required />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Transaction Date</label>
+                        <input type="date" id="rcTxnDate" readonly style="background:#f7fafc;" />
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (Rs.)</label>
+                        <input type="text" id="rcAmountDisplay" readonly style="background:#f7fafc;" />
+                        <input type="hidden" id="rcAmountRaw" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Amount in Words</label>
+                    <input type="text" id="rcAmountWords" readonly style="background:#f7fafc;" />
+                </div>
+                <div class="form-group">
+                    <label id="rcPartyLabel">Received From *</label>
+                    <input type="text" id="rcPartyName" required placeholder="Name of person/organization" />
+                </div>
+                <div class="form-group">
+                    <label id="rcByLabel">Received By</label>
+                    <input type="text" id="rcClubName" readonly style="background:#f7fafc;" />
+                </div>
+                <div class="form-group">
+                    <label>Purpose *</label>
+                    <input type="text" id="rcPurpose" required placeholder="Purpose of this receipt" />
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="rcNotes" placeholder="Optional notes..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('receiptModal')">Cancel</button>
+                    <button type="button" class="btn btn-warning" onclick="previewReceiptFromForm()"><i class="fas fa-eye"></i> Preview</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> <span id="rcSubmitText">Save Receipt</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Receipt Preview Modal -->
+    <div class="modal-overlay" id="receiptPreviewModal">
+        <div class="modal" style="max-width:640px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-file-invoice"></i> Receipt Preview</h2>
+                <button class="modal-close" onclick="closeModal('receiptPreviewModal')">&times;</button>
+            </div>
+            <div id="receiptPreviewContent" class="receipt-doc"></div>
+            <div class="form-actions no-print">
+                <button type="button" class="btn btn-outline" onclick="closeModal('receiptPreviewModal')">Close</button>
+                <button type="button" class="btn btn-primary" id="receiptPreviewEditBtn" onclick="editReceiptFromPreview()"><i class="fas fa-edit"></i> Edit</button>
+                <button type="button" class="btn btn-warning" onclick="printReceiptPreview()"><i class="fas fa-print"></i> Print</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ============================================================
     TOAST CONTAINER
     ============================================================ -->
@@ -2250,6 +2650,7 @@
             'accounts': 'tab-accounts',
             'categories': 'tab-categories',
             'reports': 'tab-reports',
+            'receipt': 'tab-receipt',
             'settings': 'tab-settings'
         };
 
@@ -2293,6 +2694,7 @@
 
             if (tabId === 'approvals') loadPendingApprovals();
             if (tabId === 'reports') setTimeout(loadReport, 200);
+            if (tabId === 'receipt') setTimeout(loadReceipts, 200);
             if (tabId === 'settings') setTimeout(loadAuditLog, 200);
         }
 
@@ -2550,6 +2952,12 @@
                 document.getElementById('rejectionReasonGroup').style.display = 'none';
                 document.getElementById('rejectBtn').textContent = 'Reject';
                 document.getElementById('rejectBtn').onclick = confirmReject;
+            }
+            if (id === 'receiptModal') {
+                document.getElementById('receiptForm').reset();
+                document.getElementById('rcId').value = '';
+                document.getElementById('rcNumber').value = '';
+                editingReceiptLockedTxn = null;
             }
         }
 
@@ -4831,6 +5239,638 @@
                     '</div>' +
                     '</div>' +
                     '</div>';
+            }
+        }
+
+        // ============================================================
+        // RECEIPT MODULE
+        // ============================================================
+        var CLUB_NAME = 'Rotaract Club of Galkot, Baglung';
+        var CLUB_DISTRICT = 'Rotary International District 3292';
+        var TREASURER_NAME = 'Rtr. Manish Kandel';
+        var receipts = [];
+        var receiptTransactionsCache = [];
+        var editingReceiptLockedTxn = null;
+        var currentPreviewReceiptDraft = null;
+        var rcSearchDebounce = null;
+
+        var ONES = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
+            'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'
+        ];
+        var TENS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+        function twoDigitWords(n) {
+            if (n < 20) return ONES[n];
+            var t = Math.floor(n / 10), o = n % 10;
+            return TENS[t] + (o ? ' ' + ONES[o] : '');
+        }
+
+        function threeDigitWords(n) {
+            var h = Math.floor(n / 100), r = n % 100;
+            var parts = [];
+            if (h) parts.push(ONES[h] + ' Hundred');
+            if (r) parts.push(twoDigitWords(r));
+            return parts.join(' ');
+        }
+
+        // Indian numbering: crore, lakh, thousand, hundred
+        function numberToWordsIndian(num) {
+            num = Math.floor(Math.abs(num));
+            if (num === 0) return 'Zero';
+            var crore = Math.floor(num / 10000000);
+            num %= 10000000;
+            var lakh = Math.floor(num / 100000);
+            num %= 100000;
+            var thousand = Math.floor(num / 1000);
+            num %= 1000;
+            var hundred = num;
+
+            var parts = [];
+            if (crore) parts.push(threeDigitWords(crore) + ' Crore');
+            if (lakh) parts.push(threeDigitWords(lakh) + ' Lakh');
+            if (thousand) parts.push(threeDigitWords(thousand) + ' Thousand');
+            if (hundred) parts.push(threeDigitWords(hundred));
+            return parts.join(' ').replace(/\s+/g, ' ').trim();
+        }
+
+        function amountToWords(amount) {
+            amount = parseFloat(amount) || 0;
+            var rupees = Math.floor(amount);
+            var paisa = Math.round((amount - rupees) * 100);
+            var words = 'Rupees ' + numberToWordsIndian(rupees);
+            if (paisa > 0) {
+                words += ' and ' + numberToWordsIndian(paisa) + ' Paisa';
+            }
+            words += ' Only';
+            return words;
+        }
+
+        function formatRsAmount(amount) {
+            var num = parseFloat(amount) || 0;
+            return 'Rs. ' + num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function getReceiptFiscalYear(dateStr) {
+            // Nepali/club fiscal year loosely tracked by calendar year of the receipt date; adjust if club uses a different cycle.
+            var d = dateStr ? new Date(dateStr) : new Date();
+            if (isNaN(d.getTime())) d = new Date();
+            return d.getFullYear();
+        }
+
+        async function generateReceiptNumber(receiptType, dateStr) {
+            var year = getReceiptFiscalYear(dateStr);
+            // Sequence is global across income/expense per year, based on highest existing sequence number,
+            // never reused even if a receipt is deleted.
+            var result = await supabase.from('receipts')
+                .select('receipt_no')
+                .ilike('receipt_no', 'RCGB/RCT-' + year + '/%');
+
+            var maxSeq = 0;
+            if (!result.error && result.data) {
+                result.data.forEach(function(r) {
+                    var m = /\/(\d+)$/.exec(r.receipt_no || '');
+                    if (m) {
+                        var n = parseInt(m[1], 10);
+                        if (n > maxSeq) maxSeq = n;
+                    }
+                });
+            }
+            var next = maxSeq + 1;
+            var padded = String(next).padStart(3, '0');
+            return 'RCGB/RCT-' + year + '/' + padded;
+        }
+
+        async function loadReceiptTransactionOptions(preserveValue) {
+            var select = document.getElementById('rcTransaction');
+            if (!select) return;
+            var type = document.getElementById('rcType').value || 'income';
+
+            try {
+                var result = await supabase.from('financial_transactions')
+                    .select('*')
+                    .eq('transaction_type', type)
+                    .eq('approval_status', 'approved')
+                    .is('deleted_at', null)
+                    .order('transaction_date', { ascending: false })
+                    .limit(300);
+
+                if (result.error) throw result.error;
+                receiptTransactionsCache = result.data || [];
+
+                var currentVal = preserveValue || select.value;
+                select.innerHTML = '<option value="">Select transaction...</option>';
+                receiptTransactionsCache.forEach(function(t) {
+                    var opt = document.createElement('option');
+                    opt.value = t.id;
+                    opt.textContent = formatDate(t.transaction_date) + ' — ' + (t.description || t.category ||
+                        'Transaction') + ' — Rs. ' + formatNumber(t.amount);
+                    select.appendChild(opt);
+                });
+                if (currentVal) select.value = currentVal;
+            } catch (err) {
+                console.error('Error loading transactions for receipt:', err);
+                showToast('Error loading transactions: ' + err.message, 'error');
+            }
+        }
+
+        function onReceiptTypeChange() {
+            var type = document.getElementById('rcType').value;
+            document.getElementById('rcPartyLabel').textContent = (type === 'income' ? 'Received From' :
+                'Paid To') + ' *';
+            document.getElementById('rcByLabel').textContent = type === 'income' ? 'Received By' : 'Paid By';
+            document.getElementById('rcClubName').value = CLUB_NAME;
+            // clear dependent fields
+            document.getElementById('rcTransaction').value = '';
+            document.getElementById('rcTxnDate').value = '';
+            document.getElementById('rcAmountDisplay').value = '';
+            document.getElementById('rcAmountRaw').value = '';
+            document.getElementById('rcAmountWords').value = '';
+            document.getElementById('rcPartyName').value = '';
+            document.getElementById('rcPurpose').value = '';
+            document.getElementById('rcNumber').value = '';
+            loadReceiptTransactionOptions();
+        }
+
+        function onReceiptTransactionChange() {
+            var txnId = document.getElementById('rcTransaction').value;
+            if (!txnId) return;
+            var txn = null;
+            for (var i = 0; i < receiptTransactionsCache.length; i++) {
+                if (receiptTransactionsCache[i].id === txnId) { txn = receiptTransactionsCache[i]; break; }
+            }
+            if (!txn) return;
+
+            document.getElementById('rcTxnDate').value = (txn.transaction_date || '').split('T')[0];
+            document.getElementById('rcAmountRaw').value = txn.amount;
+            document.getElementById('rcAmountDisplay').value = formatRsAmount(txn.amount);
+            document.getElementById('rcAmountWords').value = amountToWords(txn.amount);
+            document.getElementById('rcPartyName').value = txn.description || txn.category || '';
+            document.getElementById('rcPurpose').value = txn.remarks || txn.description || txn.category || '';
+            document.getElementById('rcClubName').value = CLUB_NAME;
+
+            // generate receipt number only for new receipts (not while editing an existing one)
+            var rcId = document.getElementById('rcId').value;
+            if (!rcId) {
+                var type = document.getElementById('rcType').value;
+                var printDate = document.getElementById('rcPrintDate').value || new Date().toISOString().split(
+                    'T')[0];
+                generateReceiptNumber(type, printDate).then(function(no) {
+                    document.getElementById('rcNumber').value = no;
+                });
+            }
+        }
+
+        async function showReceiptModal(existingReceipt) {
+            if (!isAdmin && !isTreasurer) {
+                showToast('You do not have permission to create receipts', 'error');
+                return;
+            }
+            document.getElementById('receiptForm').reset();
+            document.getElementById('rcId').value = '';
+            editingReceiptLockedTxn = null;
+            var today = new Date().toISOString().split('T')[0];
+            document.getElementById('rcPrintDate').value = today;
+            document.getElementById('rcClubName').value = CLUB_NAME;
+
+            if (existingReceipt) {
+                document.getElementById('receiptModalTitle').innerHTML =
+                    '<i class="fas fa-edit"></i> Edit Receipt';
+                document.getElementById('rcSubmitText').textContent = 'Update Receipt';
+                document.getElementById('rcId').value = existingReceipt.id;
+                document.getElementById('rcType').value = existingReceipt.receipt_type;
+                document.getElementById('rcType').disabled = true;
+                document.getElementById('rcNumber').value = existingReceipt.receipt_no;
+                document.getElementById('rcPrintDate').value = (existingReceipt.receipt_print_date || today)
+                    .split('T')[0];
+                document.getElementById('rcPartyLabel').textContent = (existingReceipt.receipt_type ===
+                    'income' ? 'Received From' : 'Paid To') + ' *';
+                document.getElementById('rcByLabel').textContent = existingReceipt.receipt_type === 'income' ?
+                    'Received By' : 'Paid By';
+                document.getElementById('rcPartyName').value = existingReceipt.party_name || '';
+                document.getElementById('rcPurpose').value = existingReceipt.purpose || '';
+                document.getElementById('rcNotes').value = existingReceipt.notes || '';
+                document.getElementById('rcTxnDate').value = (existingReceipt.transaction_date || '').split(
+                    'T')[0];
+                document.getElementById('rcAmountRaw').value = existingReceipt.amount;
+                document.getElementById('rcAmountDisplay').value = formatRsAmount(existingReceipt.amount);
+                document.getElementById('rcAmountWords').value = existingReceipt.amount_words || amountToWords(
+                    existingReceipt.amount);
+                editingReceiptLockedTxn = existingReceipt.transaction_id;
+
+                await loadReceiptTransactionOptions(existingReceipt.transaction_id);
+                document.getElementById('rcTransaction').value = existingReceipt.transaction_id || '';
+                document.getElementById('rcTransaction').disabled = true;
+            } else {
+                document.getElementById('receiptModalTitle').innerHTML =
+                    '<i class="fas fa-plus"></i> New Receipt';
+                document.getElementById('rcSubmitText').textContent = 'Save Receipt';
+                document.getElementById('rcType').disabled = false;
+                document.getElementById('rcTransaction').disabled = false;
+                onReceiptTypeChange();
+            }
+
+            showModal('receiptModal');
+        }
+
+        function buildReceiptDraftFromForm() {
+            var rcId = document.getElementById('rcId').value;
+            var type = document.getElementById('rcType').value;
+            var txnId = document.getElementById('rcTransaction').value;
+            var receiptNo = document.getElementById('rcNumber').value;
+            var printDate = document.getElementById('rcPrintDate').value;
+            var txnDate = document.getElementById('rcTxnDate').value;
+            var amount = parseFloat(document.getElementById('rcAmountRaw').value) || 0;
+            var amountWords = document.getElementById('rcAmountWords').value;
+            var party = document.getElementById('rcPartyName').value;
+            var purpose = document.getElementById('rcPurpose').value;
+            var notes = document.getElementById('rcNotes').value;
+
+            if (!txnId) { showToast('Please select a transaction', 'error'); return null; }
+            if (!party) { showToast('Please fill the party name', 'error'); return null; }
+            if (!purpose) { showToast('Please fill the purpose', 'error'); return null; }
+            if (!receiptNo) { showToast('Receipt number not generated yet', 'error'); return null; }
+
+            return {
+                id: rcId || null,
+                receipt_no: receiptNo,
+                receipt_type: type,
+                transaction_id: txnId,
+                transaction_date: txnDate || null,
+                receipt_print_date: printDate,
+                amount: amount,
+                amount_words: amountWords,
+                party_name: party,
+                club_name: CLUB_NAME,
+                purpose: purpose,
+                notes: notes,
+                status: 'active'
+            };
+        }
+
+        function previewReceiptFromForm() {
+            var draft = buildReceiptDraftFromForm();
+            if (!draft) return;
+            currentPreviewReceiptDraft = draft;
+            renderReceiptPreview(draft, true);
+            showModal('receiptPreviewModal');
+        }
+
+        function editReceiptFromPreview() {
+            closeModal('receiptPreviewModal');
+            showModal('receiptModal');
+        }
+
+        async function saveReceipt(event) {
+            event.preventDefault();
+            var draft = buildReceiptDraftFromForm();
+            if (!draft) return;
+
+            try {
+                if (draft.id) {
+                    // Edit: only print date, party name, purpose, notes are editable.
+                    var updatePayload = {
+                        receipt_print_date: draft.receipt_print_date,
+                        party_name: draft.party_name,
+                        purpose: draft.purpose,
+                        notes: draft.notes,
+                        updated_at: new Date().toISOString()
+                    };
+                    var updResult = await supabase.from('receipts')
+                        .update(updatePayload)
+                        .eq('id', draft.id);
+                    if (updResult.error) throw updResult.error;
+                    await logAudit('UPDATE', 'receipts', draft.id, 'Updated receipt ' + draft.receipt_no);
+                    showToast('Receipt updated successfully', 'success');
+                } else {
+                    // Prevent duplicate receipt for the same transaction unless explicitly confirmed
+                    var dupCheck = await supabase.from('receipts')
+                        .select('id, receipt_no')
+                        .eq('transaction_id', draft.transaction_id)
+                        .eq('status', 'active');
+                    if (!dupCheck.error && dupCheck.data && dupCheck.data.length > 0) {
+                        var proceed = confirm('A receipt (' + dupCheck.data[0].receipt_no +
+                            ') already exists for this transaction. Create another receipt anyway?');
+                        if (!proceed) return;
+                    }
+
+                    var insertPayload = {
+                        receipt_no: draft.receipt_no,
+                        receipt_type: draft.receipt_type,
+                        transaction_id: draft.transaction_id,
+                        transaction_date: draft.transaction_date,
+                        receipt_print_date: draft.receipt_print_date,
+                        amount: draft.amount,
+                        amount_words: draft.amount_words,
+                        party_name: draft.party_name,
+                        club_name: draft.club_name,
+                        purpose: draft.purpose,
+                        notes: draft.notes,
+                        status: 'active',
+                        created_by: currentUser ? currentUser.id : null
+                    };
+                    var insResult = await supabase.from('receipts').insert(insertPayload).select();
+                    if (insResult.error) throw insResult.error;
+                    await logAudit('CREATE', 'receipts', (insResult.data && insResult.data[0] && insResult
+                        .data[0].id) || null, 'Created receipt ' + draft.receipt_no);
+                    showToast('Receipt created successfully', 'success');
+                }
+
+                closeModal('receiptModal');
+                loadReceipts();
+            } catch (err) {
+                console.error('Error saving receipt:', err);
+                showToast('Error saving receipt: ' + (err.message || 'Unknown error'), 'error');
+            }
+        }
+
+        function receiptStatementText(receipt) {
+            var amountText = formatRsAmount(receipt.amount).replace('Rs. ', 'Rs. ');
+            var wordsText = receipt.amount_words || amountToWords(receipt.amount);
+            if (receipt.receipt_type === 'income') {
+                return 'This is to certify that a sum of ' + wordsText + ' (' + amountText +
+                    '/-) has been received from ' + escapeHtml(receipt.party_name) +
+                    ' as a donation/contribution to ' + CLUB_NAME +
+                    ', with sincere gratitude for the generous support extended.';
+            }
+            return 'This is to certify that a sum of ' + wordsText + ' (' + amountText + '/-) has been paid to ' +
+                escapeHtml(receipt.party_name) + ' for ' + (escapeHtml(receipt.purpose) ||
+                    'the stated expense/purpose') + ' by ' + CLUB_NAME + '.';
+        }
+
+        function buildReceiptDocHtml(receipt) {
+            var docType = receipt.receipt_type === 'income' ? 'DONATION RECEIPT' : 'PAYMENT RECEIPT';
+            var partyLabel = receipt.receipt_type === 'income' ? 'Received From' : 'Paid To';
+            var byLabel = receipt.receipt_type === 'income' ? 'Received By' : 'Paid By';
+            var amountLabel = receipt.receipt_type === 'income' ? 'Amount Received' : 'Amount Paid';
+
+            return (
+                '<div class="rc-doc">' +
+                '<div class="rc-header">' +
+                '<div class="rc-club">' + escapeHtml(CLUB_NAME.toUpperCase()) + '</div>' +
+                '<div class="rc-district">' + escapeHtml(CLUB_DISTRICT) + '</div>' +
+                '<div class="rc-doctype">' + docType + '</div>' +
+                '</div>' +
+                '<div class="rc-meta">' +
+                '<div><strong>Receipt No.:</strong> ' + escapeHtml(receipt.receipt_no || '-') + '</div>' +
+                '<div><strong>Receipt Print Date:</strong> ' + escapeHtml(formatDate(receipt
+                    .receipt_print_date)) + '</div>' +
+                '</div>' +
+                '<div class="rc-body">' + receiptStatementText(receipt) + '</div>' +
+                '<div class="rc-details">' +
+                '<div class="rc-row"><span class="rc-label">' + amountLabel + ':</span><span>' +
+                formatRsAmount(receipt.amount) + '</span></div>' +
+                '<div class="rc-row"><span class="rc-label">Amount in Words:</span><span>' + escapeHtml(
+                    receipt.amount_words || amountToWords(receipt.amount)) + '</span></div>' +
+                '<div class="rc-row"><span class="rc-label">' + partyLabel + ':</span><span>' + escapeHtml(
+                    receipt.party_name || '-') + '</span></div>' +
+                '<div class="rc-row"><span class="rc-label">' + byLabel + ':</span><span>' + escapeHtml(CLUB_NAME) +
+                '</span></div>' +
+                '<div class="rc-row"><span class="rc-label">Purpose:</span><span>' + escapeHtml(receipt.purpose ||
+                    '-') + '</span></div>' +
+                '<div class="rc-row"><span class="rc-label">Transaction Date:</span><span>' + escapeHtml(
+                    formatDate(receipt.transaction_date)) + '</span></div>' +
+                '<div class="rc-row"><span class="rc-label">Receipt Print Date:</span><span>' + escapeHtml(
+                    formatDate(receipt.receipt_print_date)) + '</span></div>' +
+                (receipt.notes ? '<div class="rc-row"><span class="rc-label">Notes:</span><span>' + escapeHtml(
+                    receipt.notes) + '</span></div>' : '') +
+                '</div>' +
+                '<div class="rc-thanks">Thank you for your continued support and partnership in service to the community.</div>' +
+                '<div class="rc-sig">' +
+                '<div class="rc-sig-space"></div>' +
+                '<div class="rc-sig-line"></div>' +
+                '<div class="rc-sig-name">' + escapeHtml(TREASURER_NAME) + '</div>' +
+                '<div class="rc-sig-role">Treasurer</div>' +
+                '<div class="rc-sig-role">' + escapeHtml(CLUB_NAME) + '</div>' +
+                '</div>' +
+                '</div>'
+            );
+        }
+
+        function renderReceiptPreview(receipt) {
+            var container = document.getElementById('receiptPreviewContent');
+            if (!container) return;
+            container.innerHTML = buildReceiptDocHtml(receipt);
+        }
+
+        function printReceiptPreview() {
+            if (!currentPreviewReceiptDraft) { showToast('Nothing to print', 'error'); return; }
+            printHtmlDocument(buildReceiptDocHtml(currentPreviewReceiptDraft));
+        }
+
+        async function viewReceipt(id) {
+            var receipt = receipts.find(function(r) { return r.id === id; });
+            if (!receipt) { showToast('Receipt not found', 'error'); return; }
+            currentPreviewReceiptDraft = receipt;
+            renderReceiptPreview(receipt);
+            showModal('receiptPreviewModal');
+        }
+
+        function printReceiptById(id) {
+            var receipt = receipts.find(function(r) { return r.id === id; });
+            if (!receipt) { showToast('Receipt not found', 'error'); return; }
+            printHtmlDocument(buildReceiptDocHtml(receipt));
+        }
+
+        async function editReceipt(id) {
+            if (!isAdmin && !isTreasurer) {
+                showToast('You do not have permission to edit receipts', 'error');
+                return;
+            }
+            var receipt = receipts.find(function(r) { return r.id === id; });
+            if (!receipt) { showToast('Receipt not found', 'error'); return; }
+            await showReceiptModal(receipt);
+        }
+
+        async function deleteReceipt(id) {
+            if (!isAdmin) {
+                showToast('Only Admin can delete receipts', 'error');
+                return;
+            }
+            var receipt = receipts.find(function(r) { return r.id === id; });
+            if (!receipt) { showToast('Receipt not found', 'error'); return; }
+
+            if (!confirm('Are you sure you want to delete this receipt?')) return;
+
+            try {
+                // Soft-delete: mark status, matching the app's existing approval/deleted status pattern.
+                var result = await supabase.from('receipts')
+                    .update({ status: 'deleted', updated_at: new Date().toISOString() })
+                    .eq('id', id);
+                if (result.error) throw result.error;
+                await logAudit('DELETE', 'receipts', id, 'Deleted receipt ' + receipt.receipt_no);
+                showToast('Receipt deleted', 'success');
+                loadReceipts();
+            } catch (err) {
+                console.error('Error deleting receipt:', err);
+                showToast('Error deleting receipt: ' + (err.message || 'Unknown error'), 'error');
+            }
+        }
+
+        function toggleReceiptSearch() {
+            var el = document.getElementById('receiptFilters');
+            if (!el) return;
+            el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function resetReceiptFilters() {
+            document.getElementById('rcSearch').value = '';
+            document.getElementById('rcFilterType').value = '';
+            document.getElementById('rcFilterDateFrom').value = '';
+            document.getElementById('rcFilterDateTo').value = '';
+            loadReceipts();
+        }
+
+        function onReceiptSearchInput() {
+            clearTimeout(rcSearchDebounce);
+            rcSearchDebounce = setTimeout(loadReceipts, 300);
+        }
+
+        async function loadReceipts() {
+            var tbody = document.getElementById('receiptsBody');
+            var cardsContainer = document.getElementById('receiptCards');
+            if (!tbody) return;
+
+            try {
+                var search = document.getElementById('rcSearch')?.value || '';
+                var type = document.getElementById('rcFilterType')?.value || '';
+                var dateFrom = document.getElementById('rcFilterDateFrom')?.value || '';
+                var dateTo = document.getElementById('rcFilterDateTo')?.value || '';
+
+                var query = supabase.from('receipts')
+                    .select('*')
+                    .neq('status', 'deleted')
+                    .order('created_at', { ascending: false });
+
+                if (type) query = query.eq('receipt_type', type);
+                if (dateFrom) query = query.gte('transaction_date', dateFrom);
+                if (dateTo) query = query.lte('transaction_date', dateTo);
+
+                var result = await query;
+                if (result.error) throw result.error;
+
+                var data = result.data || [];
+
+                if (search) {
+                    var s = search.toLowerCase();
+                    data = data.filter(function(r) {
+                        return (r.receipt_no || '').toLowerCase().indexOf(s) !== -1 ||
+                            (r.party_name || '').toLowerCase().indexOf(s) !== -1 ||
+                            (r.purpose || '').toLowerCase().indexOf(s) !== -1 ||
+                            (r.transaction_id || '').toLowerCase().indexOf(s) !== -1;
+                    });
+                }
+
+                receipts = data;
+                renderReceipts(receipts);
+                renderReceiptSummary(receipts);
+                document.getElementById('rcCount').textContent = receipts.length + ' records';
+            } catch (err) {
+                console.error('Error loading receipts:', err);
+                showToast('Error loading receipts: ' + (err.message || 'Unknown error'), 'error');
+                tbody.innerHTML = '<tr><td colspan="9"><div class="db-error"><i class="fas fa-exclamation-triangle"></i><div><strong>Error loading receipts.</strong><div class="error-details">' +
+                    escapeHtml(err.message || 'The receipts table may not exist yet.') + '</div></div></div></td></tr>';
+                if (cardsContainer) cardsContainer.innerHTML = '';
+            }
+        }
+
+        function renderReceiptSummary(data) {
+            var totalIncome = 0,
+                totalExpense = 0,
+                totalAmount = 0;
+            data.forEach(function(r) {
+                var amt = parseFloat(r.amount) || 0;
+                totalAmount += amt;
+                if (r.receipt_type === 'income') totalIncome++;
+                else if (r.receipt_type === 'expense') totalExpense++;
+            });
+            document.getElementById('rcTotalReceipts').textContent = data.length;
+            document.getElementById('rcTotalIncome').textContent = totalIncome;
+            document.getElementById('rcTotalExpense').textContent = totalExpense;
+            document.getElementById('rcTotalAmount').textContent = formatRsAmount(totalAmount);
+        }
+
+        function renderReceipts(data) {
+            var tbody = document.getElementById('receiptsBody');
+            var cardsContainer = document.getElementById('receiptCards');
+            if (!tbody) return;
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><i class="fas fa-receipt"></i><p>No receipts yet</p></div></td></tr>';
+                if (cardsContainer) cardsContainer.innerHTML =
+                    '<div class="empty-state"><i class="fas fa-receipt"></i><p>No receipts yet</p></div>';
+                return;
+            }
+
+            var canEdit = isAdmin || isTreasurer;
+            var html = '';
+            for (var i = 0; i < data.length; i++) {
+                var r = data[i];
+                var typeBadge = r.receipt_type === 'income' ?
+                    '<span class="badge badge-approved">Income</span>' :
+                    '<span class="badge badge-rejected">Expense</span>';
+                var statusBadge = r.status === 'active' ?
+                    '<span class="badge badge-approved">Active</span>' :
+                    '<span class="badge badge-pending">' + escapeHtml(r.status || '-') + '</span>';
+
+                html += '<tr>' +
+                    '<td>' + escapeHtml(r.receipt_no || '-') + '</td>' +
+                    '<td>' + typeBadge + '</td>' +
+                    '<td>' + formatDate(r.transaction_date) + '</td>' +
+                    '<td>' + formatDate(r.receipt_print_date) + '</td>' +
+                    '<td>' + escapeHtml(r.party_name || '-') + '</td>' +
+                    '<td>' + escapeHtml(r.purpose || '-') + '</td>' +
+                    '<td style="text-align:right;">' + formatRsAmount(r.amount) + '</td>' +
+                    '<td>' + statusBadge + '</td>' +
+                    '<td><div class="action-buttons">' +
+                    '<button class="btn btn-outline btn-xs" onclick="viewReceipt(\'' + r.id +
+                    '\')"><i class="fas fa-eye"></i></button>' +
+                    '<button class="btn btn-outline btn-xs" onclick="printReceiptById(\'' + r.id +
+                    '\')"><i class="fas fa-print"></i></button>' +
+                    (canEdit ? '<button class="btn btn-primary btn-xs" onclick="editReceipt(\'' + r.id +
+                        '\')"><i class="fas fa-edit"></i></button>' : '') +
+                    (isAdmin ? '<button class="btn btn-danger btn-xs" onclick="deleteReceipt(\'' + r.id +
+                        '\')"><i class="fas fa-trash"></i></button>' : '') +
+                    '</div></td></tr>';
+            }
+            tbody.innerHTML = html;
+
+            if (cardsContainer) {
+                var cardsHtml = '';
+                for (var j = 0; j < data.length; j++) {
+                    var rc = data[j];
+                    var typeBadge2 = rc.receipt_type === 'income' ?
+                        '<span class="badge badge-approved">Income</span>' :
+                        '<span class="badge badge-rejected">Expense</span>';
+                    cardsHtml += '<div class="transaction-card">' +
+                        '<div class="txn-header">' +
+                        '<div>' +
+                        '<div style="font-weight:600;font-size:0.85rem;">' + escapeHtml(rc.receipt_no || '-') +
+                        '</div>' +
+                        '<div style="font-size:0.7rem;color:#718096;">' + escapeHtml(rc.party_name || '-') +
+                        '</div>' +
+                        '</div>' + typeBadge2 +
+                        '</div>' +
+                        '<div class="txn-amount' + (rc.receipt_type === 'income' ? ' income' : ' expense') +
+                        '">' + formatRsAmount(rc.amount) + '</div>' +
+                        '<div class="txn-detail"><span>Txn Date</span><span>' + formatDate(rc
+                            .transaction_date) + '</span></div>' +
+                        '<div class="txn-detail"><span>Print Date</span><span>' + formatDate(rc
+                            .receipt_print_date) + '</span></div>' +
+                        '<div class="txn-detail"><span>Purpose</span><span>' + escapeHtml(rc.purpose || '-') +
+                        '</span></div>' +
+                        '<div class="txn-actions">' +
+                        '<button class="btn btn-outline btn-xs" onclick="viewReceipt(\'' + rc.id +
+                        '\')"><i class="fas fa-eye"></i></button>' +
+                        '<button class="btn btn-outline btn-xs" onclick="printReceiptById(\'' + rc.id +
+                        '\')"><i class="fas fa-print"></i></button>' +
+                        (canEdit ? '<button class="btn btn-primary btn-xs" onclick="editReceipt(\'' + rc.id +
+                            '\')"><i class="fas fa-edit"></i></button>' : '') +
+                        (isAdmin ? '<button class="btn btn-danger btn-xs" onclick="deleteReceipt(\'' + rc.id +
+                            '\')"><i class="fas fa-trash"></i></button>' : '') +
+                        '</div>' +
+                        '</div>';
+                }
+                cardsContainer.innerHTML = cardsHtml;
             }
         }
 
