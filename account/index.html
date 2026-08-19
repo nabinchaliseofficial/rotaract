@@ -951,8 +951,15 @@
             padding-right: 0.6rem;
         }
 
-        .receipt-doc .rc-sig .rc-sig-space {
-            height: 36px;
+        .receipt-doc .rc-sig .rc-sig-img {
+            display: block;
+            margin-left: auto;
+            margin-right: 0;
+            max-width: 150px;
+            max-height: 60px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
         }
 
         .receipt-doc .rc-sig .rc-sig-line {
@@ -1844,8 +1851,18 @@
                 padding-right: 20px;
             }
 
-            #printArea .rc-sig .rc-sig-space {
-                height: 40px;
+            #printArea .rc-sig .rc-sig-img {
+                display: block;
+                margin-left: auto;
+                margin-right: 0;
+                max-width: 150px;
+                max-height: 60px;
+                width: auto;
+                height: auto;
+                object-fit: contain;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
             }
 
             #printArea .rc-sig .rc-sig-line {
@@ -5636,7 +5653,7 @@
                 '</div>' +
                 '<div class="rc-thanks">Thank you for your continued support and partnership in service to the community.</div>' +
                 '<div class="rc-sig">' +
-                '<div class="rc-sig-space"></div>' +
+                '<img src="treasurer.png" alt="Treasurer Signature" class="rc-sig-img" onerror="this.style.display=\'none\';" />' +
                 '<div class="rc-sig-line"></div>' +
                 '<div class="rc-sig-name">' + escapeHtml(TREASURER_NAME) + '</div>' +
                 '<div class="rc-sig-role">Treasurer</div>' +
@@ -5672,7 +5689,7 @@
         }
 
         async function editReceipt(id) {
-            if (!isAdmin && !isTreasurer) {
+            if (!isAdmin) {
                 showToast('You do not have permission to edit receipts', 'error');
                 return;
             }
@@ -5801,7 +5818,7 @@
                 return;
             }
 
-            var canEdit = isAdmin || isTreasurer;
+            var canEdit = isAdmin;
             var html = '';
             for (var i = 0; i < data.length; i++) {
                 var r = data[i];
