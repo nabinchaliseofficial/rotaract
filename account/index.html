@@ -5615,7 +5615,7 @@
         }
 
         function buildReceiptDocHtml(receipt) {
-            var docType = receipt.receipt_type === 'income' ? 'DONATION RECEIPT' : 'PAYMENT RECEIPT';
+            var docType = receipt.receipt_type === 'income' ? 'PAYMENT RECEIPT' : 'PAYMENT RECEIPT';
             var partyLabel = receipt.receipt_type === 'income' ? 'Received From' : 'Paid To';
             var byLabel = receipt.receipt_type === 'income' ? 'Received By' : 'Paid By';
             var amountLabel = receipt.receipt_type === 'income' ? 'Amount Received' : 'Amount Paid';

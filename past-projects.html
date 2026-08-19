@@ -1,24 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Past Projects Archive | Rotaract Club of Galkot Baglung</title>
     <!-- Google Fonts for Modern Typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap"
+        rel="stylesheet"
+    />
     <!-- FontAwesome for High Quality Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <!-- Supabase Client (for live completed-project data) -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+
     <style>
         /* Modern Design Framework Tokens */
         :root {
-            --primary-color: #e91e63; /* Rotaract Vibrant Pink */
+            --primary-color: #e91e63;
             --primary-hover: #c2185b;
-            --secondary-color: #005da4; /* Rotary Deep Blue */
+            --secondary-color: #005da4;
             --bg-gradient: linear-gradient(135deg, #f8fafd 0%, #edf2f9 100%);
             --card-bg: #ffffff;
             --text-dark: #1e293b;
@@ -46,7 +50,9 @@
             line-height: 1.6;
             min-height: 100vh;
         }
-        h1, h2, h3 {
+        h1,
+        h2,
+        h3 {
             font-family: 'Poppins', sans-serif;
             font-weight: 700;
         }
@@ -102,7 +108,6 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 18px rgba(233, 30, 99, 0.45);
         }
-        /* Ripple & Transition Animation Classes */
         .home-btn .ripple {
             position: absolute;
             border-radius: 50%;
@@ -112,7 +117,10 @@
             pointer-events: none;
         }
         @keyframes rippleEffect {
-            to { transform: scale(4); opacity: 0; }
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
         }
         .clicked-exit {
             transform: scale(0.9) !important;
@@ -121,8 +129,8 @@
 
         /* Modern Hero Section */
         .hero {
-            background: linear-gradient(135deg, rgba(0, 93, 164, 0.9) 0%, rgba(233, 30, 99, 0.85) 100%), 
-                        url('https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=1200') no-repeat center/cover;
+            background: linear-gradient(135deg, rgba(0, 93, 164, 0.9) 0%, rgba(233, 30, 99, 0.85) 100%),
+                url('https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=1200') no-repeat center/cover;
             color: #ffffff;
             padding: 80px 5% 70px;
             text-align: center;
@@ -243,9 +251,16 @@
             transition: var(--transition);
             z-index: 2;
         }
-        .rc-slider-nav:hover { background: #ffffff; transform: translateY(-50%) scale(1.08); }
-        .rc-slider-prev { left: 16px; }
-        .rc-slider-next { right: 16px; }
+        .rc-slider-nav:hover {
+            background: #ffffff;
+            transform: translateY(-50%) scale(1.08);
+        }
+        .rc-slider-prev {
+            left: 16px;
+        }
+        .rc-slider-next {
+            right: 16px;
+        }
         .rc-slider-dots {
             display: flex;
             justify-content: center;
@@ -268,14 +283,57 @@
             border-radius: 6px;
         }
         @media (max-width: 640px) {
-            .rc-slide { padding: 26px 6% 24px; min-height: 220px; }
-            .rc-slide h3 { font-size: 1.15rem; }
-            .rc-slider-nav { width: 34px; height: 34px; }
+            .rc-slide {
+                padding: 26px 6% 24px;
+                min-height: 220px;
+            }
+            .rc-slide h3 {
+                font-size: 1.15rem;
+            }
+            .rc-slider-nav {
+                width: 34px;
+                height: 34px;
+            }
         }
 
         /* Project Photo Gallery — auto-sliding, shown at the top of the page */
         .gallery-section {
             margin-bottom: 45px;
+        }
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .gallery-header .section-title {
+            margin-bottom: 0;
+        }
+        .gallery-fullscreen-btn {
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--card-bg);
+            box-shadow: var(--shadow-sm);
+        }
+        .gallery-fullscreen-btn i {
+            font-size: 0.9rem;
+        }
+        .gallery-fullscreen-btn:hover {
+            background: var(--secondary-color);
+            color: #fff;
+            border-color: var(--secondary-color);
+            box-shadow: 0 4px 12px rgba(0, 93, 164, 0.25);
+            transform: translateY(-1px);
         }
         .gallery-slider {
             position: relative;
@@ -304,9 +362,11 @@
         }
         .gallery-slide .gallery-caption {
             position: absolute;
-            left: 0; right: 0; bottom: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             padding: 22px 5% 18px;
-            background: linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.35) 60%, transparent 100%);
+            background: linear-gradient(0deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.35) 60%, transparent 100%);
             color: #ffffff;
         }
         .gallery-slide .gallery-caption h3 {
@@ -315,7 +375,7 @@
         }
         .gallery-slide .gallery-caption span {
             font-size: 0.85rem;
-            color: rgba(255,255,255,0.85);
+            color: rgba(255, 255, 255, 0.85);
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -338,9 +398,16 @@
             transition: var(--transition);
             z-index: 2;
         }
-        .gallery-slider-nav:hover { background: #ffffff; transform: translateY(-50%) scale(1.08); }
-        .gallery-slider-prev { left: 16px; }
-        .gallery-slider-next { right: 16px; }
+        .gallery-slider-nav:hover {
+            background: #ffffff;
+            transform: translateY(-50%) scale(1.08);
+        }
+        .gallery-slider-prev {
+            left: 16px;
+        }
+        .gallery-slider-next {
+            right: 16px;
+        }
         .gallery-slider-dots {
             display: flex;
             justify-content: center;
@@ -363,8 +430,214 @@
             border-radius: 6px;
         }
         @media (max-width: 640px) {
-            .gallery-slide { height: 260px; }
-            .gallery-slide .gallery-caption h3 { font-size: 1.05rem; }
+            .gallery-slide {
+                height: 260px;
+            }
+            .gallery-slide .gallery-caption h3 {
+                font-size: 1.05rem;
+            }
+            .gallery-fullscreen-btn span {
+                display: none;
+            }
+            .gallery-fullscreen-btn {
+                padding: 8px 12px;
+            }
+        }
+
+        /* ---- FULLSCREEN OVERLAY ---- */
+        .gallery-fullscreen-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.92);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 20px;
+            backdrop-filter: blur(6px);
+        }
+        .gallery-fullscreen-overlay.active {
+            display: flex;
+        }
+        .gallery-fullscreen-overlay .fs-slider {
+            position: relative;
+            width: 100%;
+            max-width: 1300px;
+            height: 80vh;
+            max-height: 90vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: var(--radius-md);
+        }
+        .gallery-fullscreen-overlay .fs-track {
+            display: flex;
+            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+            width: 100%;
+            height: 100%;
+        }
+        .gallery-fullscreen-overlay .fs-slide {
+            flex: 0 0 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0a0a0a;
+            position: relative;
+        }
+        .gallery-fullscreen-overlay .fs-slide img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+            border-radius: 6px;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+        .gallery-fullscreen-overlay .fs-caption {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(8px);
+            padding: 12px 28px;
+            border-radius: 40px;
+            color: #fff;
+            text-align: center;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 90%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .gallery-fullscreen-overlay .fs-caption strong {
+            font-weight: 600;
+            color: #fff;
+        }
+        .gallery-fullscreen-overlay .fs-caption .fs-meta {
+            color: rgba(255, 255, 255, 0.7);
+            margin-left: 12px;
+            font-weight: 300;
+        }
+        .gallery-fullscreen-overlay .fs-caption .fs-meta i {
+            margin-right: 4px;
+        }
+        .gallery-fullscreen-overlay .fs-close {
+            position: absolute;
+            top: 24px;
+            right: 30px;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            font-size: 1.4rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            backdrop-filter: blur(4px);
+        }
+        .gallery-fullscreen-overlay .fs-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        .gallery-fullscreen-overlay .fs-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            backdrop-filter: blur(4px);
+            z-index: 5;
+        }
+        .gallery-fullscreen-overlay .fs-nav:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-50%) scale(1.05);
+        }
+        .gallery-fullscreen-overlay .fs-prev {
+            left: 24px;
+        }
+        .gallery-fullscreen-overlay .fs-next {
+            right: 24px;
+        }
+        .gallery-fullscreen-overlay .fs-dots {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+            justify-content: center;
+        }
+        .gallery-fullscreen-overlay .fs-dots button {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.25);
+            cursor: pointer;
+            padding: 0;
+            transition: var(--transition);
+        }
+        .gallery-fullscreen-overlay .fs-dots button.active {
+            background: var(--primary-color);
+            width: 28px;
+            border-radius: 6px;
+        }
+        @media (max-width: 768px) {
+            .gallery-fullscreen-overlay .fs-slider {
+                height: 70vh;
+                max-height: 80vh;
+            }
+            .gallery-fullscreen-overlay .fs-caption {
+                font-size: 0.8rem;
+                padding: 8px 16px;
+                bottom: 16px;
+                max-width: 95%;
+                white-space: normal;
+                line-height: 1.4;
+            }
+            .gallery-fullscreen-overlay .fs-caption .fs-meta {
+                margin-left: 6px;
+                display: inline-block;
+            }
+            .gallery-fullscreen-overlay .fs-close {
+                top: 16px;
+                right: 16px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+            }
+            .gallery-fullscreen-overlay .fs-nav {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            .gallery-fullscreen-overlay .fs-prev {
+                left: 10px;
+            }
+            .gallery-fullscreen-overlay .fs-next {
+                right: 10px;
+            }
         }
 
         /* Cumulative Analytics Dashboard Dashboard Component */
@@ -377,7 +650,9 @@
             gap: 25px;
         }
         @media (max-width: 992px) {
-            .stats-grid { grid-template-columns: 1fr; }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
         .stat-card {
             background: var(--card-bg);
@@ -493,7 +768,9 @@
             align-items: center;
         }
         @media (max-width: 768px) {
-            .filter-wrapper { grid-template-columns: 1fr; }
+            .filter-wrapper {
+                grid-template-columns: 1fr;
+            }
         }
         .search-input-wrapper {
             position: relative;
@@ -554,15 +831,12 @@
             border-radius: var(--radius-md);
             box-shadow: var(--shadow-md);
             border: 1px solid var(--border-color);
-            /* Auto-fit behavior: table scrolls horizontally inside its own
-               rounded card on any width where columns can't fit naturally,
-               instead of overflowing the page or cutting data off. */
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
         }
         table {
             width: 100%;
-            min-width: 980px; /* keeps columns readable; card scrolls instead of squeezing text */
+            min-width: 980px;
             border-collapse: collapse;
             text-align: left;
             font-size: 0.95rem;
@@ -628,10 +902,10 @@
             font-weight: 600;
         }
         .cost-premium {
-            color: #10b981; /* High Quality Cost Text */
+            color: #10b981;
         }
         .cost-neutral {
-            color: #64748b; /* Collaborated / Volunteered text colors */
+            color: #64748b;
             font-style: italic;
             font-weight: 400;
         }
@@ -652,12 +926,21 @@
 
         /* Adaptive Responsive Cards alternative layout for smaller Mobile Views */
         @media (max-width: 768px) {
-            .table-responsive { overflow-x: visible; }
-            table, thead, tbody, th, td, tr { 
-                display: block; 
+            .table-responsive {
+                overflow-x: visible;
+            }
+            table,
+            thead,
+            tbody,
+            th,
+            td,
+            tr {
+                display: block;
                 min-width: 0;
             }
-            thead { display: none; }
+            thead {
+                display: none;
+            }
             tbody tr {
                 padding: 20px;
                 border-bottom: 2px solid var(--border-color);
@@ -689,8 +972,12 @@
                 text-align: left;
                 display: block;
             }
-            td:nth-child(2)::before { display: none; }
-            .location-cell { justify-content: flex-end; }
+            td:nth-child(2)::before {
+                display: none;
+            }
+            .location-cell {
+                justify-content: flex-end;
+            }
         }
     </style>
 </head>
@@ -719,7 +1006,13 @@
 
         <!-- Project Photo Gallery — auto-sliding, shows project photos + names -->
         <section class="gallery-section" id="photo-gallery-section" style="display:none;">
-            <h2 class="section-title"><i class="fa-solid fa-images"></i> Project Photo Gallery</h2>
+            <div class="gallery-header">
+                <h2 class="section-title"><i class="fa-solid fa-images"></i> Project Photo Gallery</h2>
+                <button class="gallery-fullscreen-btn" id="galleryFullscreenBtn" aria-label="View gallery in full screen">
+                    <i class="fa-solid fa-expand"></i>
+                    <span>Full Screen</span>
+                </button>
+            </div>
             <div class="gallery-slider" id="photo-gallery-slider">
                 <div class="gallery-track" id="photo-gallery-track"></div>
                 <button class="gallery-slider-nav gallery-slider-prev" id="gallery-prev" aria-label="Previous photo"><i class="fa-solid fa-chevron-left"></i></button>
@@ -742,7 +1035,7 @@
                     <div class="sub-grid" id="stat-years-grid">
                         <!-- Loaded dynamically via JavaScript -->
                     </div>
-                    
+
                     <h3 style="margin-top: 25px;"><i class="fa-solid fa-arrows-to-eye"></i> Scope of Impact (Avenues Wise)</h3>
                     <div class="sub-grid avenue-grid" id="stat-avenues-grid">
                         <!-- Loaded dynamically via JavaScript -->
@@ -758,7 +1051,7 @@
                     <label class="filter-label" for="search-box">Search Ledger</label>
                     <div class="search-input-wrapper">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" id="search-box" class="search-box" placeholder="Type project name or location..." oninput="filterEngine()">
+                        <input type="text" id="search-box" class="search-box" placeholder="Type project name or location..." oninput="filterEngine()" />
                     </div>
                 </div>
 
@@ -826,74 +1119,140 @@
         </section>
     </main>
 
+    <!-- FULLSCREEN OVERLAY -->
+    <div class="gallery-fullscreen-overlay" id="fsOverlay">
+        <button class="fs-close" id="fsCloseBtn" aria-label="Close fullscreen"><i class="fa-solid fa-xmark"></i></button>
+        <button class="fs-nav fs-prev" id="fsPrevBtn" aria-label="Previous photo"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="fs-nav fs-next" id="fsNextBtn" aria-label="Next photo"><i class="fa-solid fa-chevron-right"></i></button>
+        <div class="fs-slider" id="fsSlider">
+            <div class="fs-track" id="fsTrack"></div>
+        </div>
+        <div class="fs-dots" id="fsDots"></div>
+        <div class="fs-caption" id="fsCaption"></div>
+    </div>
+
     <script>
         // Comprehensive Dataset covering historical project history logs
-        // NOTE: R.Y. 2026-27 is no longer hard-coded here — it is fetched
-        // live from Supabase (upcoming_projects, status = 'completed') and
-        // merged in at render time. See fetchLiveCompletedProjects() below.
         const pastProjects = [
             // R.Y. 2025-26
-            { name: "FUTURE FORGE: Session on Goal Setting & Career Planning", ry: "2025-26", avenue: "Professional Development", location: "Galkot Hall", cost: "Collaborated" },
-            { name: "Healthy Lifestyles: A Healthy Outside Starts From The Inside", ry: "2025-26", avenue: "Service Project", location: "Community Venue", cost: "Collaborated" },
-            { name: "Debunking Myths & Highlighting Facts", ry: "2025-26", avenue: "International Service", location: "Online (Global)", cost: "Collaborated" },
-            { name: "Women Rise Network", ry: "2025-26", avenue: "Professional Development", location: "Virtual Session", cost: "Collaborated" },
-            
+            { name: "FUTURE FORGE: Session on Goal Setting & Career Planning", ry: "2025-26", avenue: "Professional Development",
+                location: "Galkot Hall", cost: "Collaborated" },
+            { name: "Healthy Lifestyles: A Healthy Outside Starts From The Inside", ry: "2025-26",
+                avenue: "Service Project", location: "Community Venue", cost: "Collaborated" },
+            { name: "Debunking Myths & Highlighting Facts", ry: "2025-26", avenue: "International Service",
+                location: "Online (Global)", cost: "Collaborated" },
+            { name: "Women Rise Network", ry: "2025-26", avenue: "Professional Development", location: "Virtual Session",
+                cost: "Collaborated" },
+
             // R.Y. 2024-25
-            { name: "Rewiring Perceptions: ADHD, Autism and the Future of Inclusion", ry: "2024-25", avenue: "International Service", location: "Online (Global)", cost: "Collaborated" },
-            { name: "Exclusive Webinar on Yoga For Digital Detox.", ry: "2024-25", avenue: "Professional Development", location: "Virtual Session", cost: "Collaborated" },
-            { name: "Thought Management", ry: "2024-25", avenue: "Professional Development", location: "Webinar", cost: "Internal/Gov" },
-            { name: "Participation in 14th Installation Ceremony of Rotaract Club of Baglung", ry: "2024-25", avenue: "Membership Development", location: "Baglung", cost: "Internal/Gov" },
-            { name: "Participation in PS Meet - 1st PS", ry: "2024-25", avenue: "Professional Development", location: "District Venue", cost: "Internal/Gov" },
-            { name: "Picnic Program", ry: "2024-25", avenue: "Service Project", location: "Galkot Spot", cost: "Collaborated" },
-            { name: "Participation in Rotaract 3292 Presidents' Night", ry: "2024-25", avenue: "Membership Development", location: "Kathmandu", cost: "Internal/Gov" },
-            { name: "Participation in Rotary Club of Dhorpatan Burtibang", ry: "2024-25", avenue: "Membership Development", location: "Burtibang", cost: "Internal/Gov" },
-            { name: "11th Late Sachin Memorial Blood Donation", ry: "2024-25", avenue: "Service Project", location: "Hatiya Bazaar", cost: "NPR 18,000" },
-            { name: "Participation in the 17th Rotaract District Conference", ry: "2024-25", avenue: "Membership Development", location: "Conference Hall", cost: "Internal/Gov" },
-            { name: "Proudly Listed in SEARIC MDIO Directory!", ry: "2024-25", avenue: "International Service", location: "Directory Portal", cost: "Hosted" },
-            { name: "Momo Manic", ry: "2024-25", avenue: "Membership Development", location: "Club Hall", cost: "NPR 5,500" },
-            { name: "Leveraging LinkedIn", ry: "2024-25", avenue: "Professional Development", location: "Online", cost: "Collaborated" },
-            { name: "Building World-Class Tech Talent", ry: "2024-25", avenue: "Membership Development", location: "Virtual Session", cost: "Collaborated" },
-            { name: "Decluttering the Mind: A Path to Clarity and Focus", ry: "2024-25", avenue: "Membership Development", location: "Webinar", cost: "Collaborated" },
-            { name: "Leadership and Unity in Rotaract", ry: "2024-25", avenue: "Membership Development", location: "Joint Hall", cost: "Collaborated" },
-            { name: "Debractor 5", ry: "2024-25", avenue: "Public Image", location: "Event Zone", cost: "Internal/Gov" },
-            { name: "The Magic of Ecosystem Services", ry: "2024-25", avenue: "Membership Development", location: "Online", cost: "Collaborated" },
-            { name: "The Magic of Financial Literacy", ry: "2024-25", avenue: "Membership Development", location: "Online", cost: "Collaborated" },
-            { name: "SOFT SKILLS", ry: "2024-25", avenue: "Membership Development", location: "Workshop Hall", cost: "Collaborated" },
-            { name: "Stress & Emotional Management", ry: "2024-25", avenue: "Membership Development", location: "Virtual Room", cost: "Collaborated" },
-            { name: "Digital Privacy Security!", ry: "2024-25", avenue: "Professional Development", location: "Galkot", cost: "Internal/Gov" },
-            { name: "Just 4 Things", ry: "2024-25", avenue: "Professional Development", location: "Webinar", cost: "Collaborated" },
-            { name: "Make Better Choices, Create a Brighter Future!", ry: "2024-25", avenue: "Membership Development", location: "Online Session", cost: "Collaborated" },
-            { name: "Cracking the Code: AI in Problem Solving and Debugging", ry: "2024-25", avenue: "Membership Development", location: "Tech Hall", cost: "Collaborated" },
-            { name: "Public Speaking and Stage Presence Session", ry: "2024-25", avenue: "Membership Development", location: "Galkot Tech", cost: "Collaborated" },
-            { name: "Healthy Skin, Happy You!", ry: "2024-25", avenue: "Membership Development", location: "Online", cost: "Collaborated" },
-            { name: "Thalassemia Awareness Unveiled", ry: "2024-25", avenue: "Membership Development", location: "Webinar", cost: "Collaborated" },
-            { name: "Career Growth in 2025: Build Your Future with AI & Tech", ry: "2024-25", avenue: "Professional Development", location: "Galkot Hall", cost: "Collaborated" },
-            { name: "Decode Sugar: From Knowledge to Action", ry: "2024-25", avenue: "Membership Development", location: "Virtual Session", cost: "Collaborated" },
-            { name: "Online Session on the Negative Impact of Social Media", ry: "2024-25", avenue: "Membership Development", location: "Internet", cost: "Collaborated" },
-            { name: "Webinar on Healthy Diet and Lifestyle", ry: "2024-25", avenue: "Membership Development", location: "Online", cost: "Collaborated" },
-            { name: "SEARIC SUMMIT KASHI 2024", ry: "2024-25", avenue: "International Service", location: "Kashi, India", cost: "Internal/Gov" },
-            { name: "Financial Literacy Program", ry: "2024-25", avenue: "Finance", location: "Hatiya", cost: "NPR 12,500" },
-            { name: "Teej Celebration", ry: "2024-25", avenue: "Membership Development", location: "Club Office", cost: "NPR 8,000" },
-            { name: "Webinar on Tech Project", ry: "2024-25", avenue: "Finance", location: "Online", cost: "Internal/Gov" },
-            { name: "Scholarship Program to Support Education in Memory of Late Grandfather Padma Narayan Shrestha", ry: "2024-25", avenue: "Finance", location: "Municipal School", cost: "NPR 30,000" },
-            { name: "5th Installation Program", ry: "2024-25", avenue: "Club Administration", location: "Galkot Hall", cost: "NPR 42,000" },
+            { name: "Rewiring Perceptions: ADHD, Autism and the Future of Inclusion", ry: "2024-25",
+                avenue: "International Service", location: "Online (Global)", cost: "Collaborated" },
+            { name: "Exclusive Webinar on Yoga For Digital Detox.", ry: "2024-25", avenue: "Professional Development",
+                location: "Virtual Session", cost: "Collaborated" },
+            { name: "Thought Management", ry: "2024-25", avenue: "Professional Development", location: "Webinar",
+                cost: "Internal/Gov" },
+            { name: "Participation in 14th Installation Ceremony of Rotaract Club of Baglung", ry: "2024-25",
+                avenue: "Membership Development", location: "Baglung", cost: "Internal/Gov" },
+            { name: "Participation in PS Meet - 1st PS", ry: "2024-25", avenue: "Professional Development",
+                location: "District Venue", cost: "Internal/Gov" },
+            { name: "Picnic Program", ry: "2024-25", avenue: "Service Project", location: "Galkot Spot",
+                cost: "Collaborated" },
+            { name: "Participation in Rotaract 3292 Presidents' Night", ry: "2024-25",
+                avenue: "Membership Development", location: "Kathmandu", cost: "Internal/Gov" },
+            { name: "Participation in Rotary Club of Dhorpatan Burtibang", ry: "2024-25",
+                avenue: "Membership Development", location: "Burtibang", cost: "Internal/Gov" },
+            { name: "11th Late Sachin Memorial Blood Donation", ry: "2024-25", avenue: "Service Project",
+                location: "Hatiya Bazaar", cost: "NPR 18,000" },
+            { name: "Participation in the 17th Rotaract District Conference", ry: "2024-25",
+                avenue: "Membership Development", location: "Conference Hall", cost: "Internal/Gov" },
+            { name: "Proudly Listed in SEARIC MDIO Directory!", ry: "2024-25", avenue: "International Service",
+                location: "Directory Portal", cost: "Hosted" },
+            { name: "Momo Manic", ry: "2024-25", avenue: "Membership Development", location: "Club Hall",
+                cost: "NPR 5,500" },
+            { name: "Leveraging LinkedIn", ry: "2024-25", avenue: "Professional Development", location: "Online",
+                cost: "Collaborated" },
+            { name: "Building World-Class Tech Talent", ry: "2024-25", avenue: "Membership Development",
+                location: "Virtual Session", cost: "Collaborated" },
+            { name: "Decluttering the Mind: A Path to Clarity and Focus", ry: "2024-25",
+                avenue: "Membership Development", location: "Webinar", cost: "Collaborated" },
+            { name: "Leadership and Unity in Rotaract", ry: "2024-25", avenue: "Membership Development",
+                location: "Joint Hall", cost: "Collaborated" },
+            { name: "Debractor 5", ry: "2024-25", avenue: "Public Image", location: "Event Zone",
+            cost: "Internal/Gov" },
+            { name: "The Magic of Ecosystem Services", ry: "2024-25", avenue: "Membership Development",
+                location: "Online", cost: "Collaborated" },
+            { name: "The Magic of Financial Literacy", ry: "2024-25", avenue: "Membership Development",
+                location: "Online", cost: "Collaborated" },
+            { name: "SOFT SKILLS", ry: "2024-25", avenue: "Membership Development", location: "Workshop Hall",
+                cost: "Collaborated" },
+            { name: "Stress & Emotional Management", ry: "2024-25", avenue: "Membership Development",
+                location: "Virtual Room", cost: "Collaborated" },
+            { name: "Digital Privacy Security!", ry: "2024-25", avenue: "Professional Development", location: "Galkot",
+                cost: "Internal/Gov" },
+            { name: "Just 4 Things", ry: "2024-25", avenue: "Professional Development", location: "Webinar",
+                cost: "Collaborated" },
+            { name: "Make Better Choices, Create a Brighter Future!", ry: "2024-25",
+                avenue: "Membership Development", location: "Online Session", cost: "Collaborated" },
+            { name: "Cracking the Code: AI in Problem Solving and Debugging", ry: "2024-25",
+                avenue: "Membership Development", location: "Tech Hall", cost: "Collaborated" },
+            { name: "Public Speaking and Stage Presence Session", ry: "2024-25", avenue: "Membership Development",
+                location: "Galkot Tech", cost: "Collaborated" },
+            { name: "Healthy Skin, Happy You!", ry: "2024-25", avenue: "Membership Development", location: "Online",
+                cost: "Collaborated" },
+            { name: "Thalassemia Awareness Unveiled", ry: "2024-25", avenue: "Membership Development",
+                location: "Webinar", cost: "Collaborated" },
+            { name: "Career Growth in 2025: Build Your Future with AI & Tech", ry: "2024-25",
+                avenue: "Professional Development", location: "Galkot Hall", cost: "Collaborated" },
+            { name: "Decode Sugar: From Knowledge to Action", ry: "2024-25", avenue: "Membership Development",
+                location: "Virtual Session", cost: "Collaborated" },
+            { name: "Online Session on the Negative Impact of Social Media", ry: "2024-25",
+                avenue: "Membership Development", location: "Internet", cost: "Collaborated" },
+            { name: "Webinar on Healthy Diet and Lifestyle", ry: "2024-25", avenue: "Membership Development",
+                location: "Online", cost: "Collaborated" },
+            { name: "SEARIC SUMMIT KASHI 2024", ry: "2024-25", avenue: "International Service",
+                location: "Kashi, India", cost: "Internal/Gov" },
+            { name: "Financial Literacy Program", ry: "2024-25", avenue: "Finance", location: "Hatiya",
+                cost: "NPR 12,500" },
+            { name: "Teej Celebration", ry: "2024-25", avenue: "Membership Development", location: "Club Office",
+                cost: "NPR 8,000" },
+            { name: "Webinar on Tech Project", ry: "2024-25", avenue: "Finance", location: "Online",
+                cost: "Internal/Gov" },
+            { name: "Scholarship Program to Support Education in Memory of Late Grandfather Padma Narayan Shrestha",
+                ry: "2024-25", avenue: "Finance", location: "Municipal School", cost: "NPR 30,000" },
+            { name: "5th Installation Program", ry: "2024-25", avenue: "Club Administration", location: "Galkot Hall",
+                cost: "NPR 42,000" },
 
             // R.Y. 2023-24
-            { name: "Letter Head Exchange with Chittagong South, Bangladesh", ry: "2023-24", avenue: "International Service", location: "Chittagong (Virtual)", cost: "Internal/Gov" },
-            { name: "ZONAL FELLOWSHIP", ry: "2023-24", avenue: "Membership Development", location: "Zone Venue", cost: "NPR 18,000" },
-            { name: "HOLI CELEBRATION", ry: "2023-24", avenue: "Professional Development", location: "Galkot", cost: "NPR 8,500" },
-            { name: "Hiking for \"SAHARSHA DHARA\"", ry: "2023-24", avenue: "Service Project", location: "Saharsha Dhara Trail", cost: "NPR 14,000" },
-            { name: "SHARE MARKET TRAINING", ry: "2023-24", avenue: "Finance", location: "Hatiya Hall", cost: "NPR 10,500" },
-            { name: "Cyber Awareness Program", ry: "2023-24", avenue: "Public Image", location: "Local School", cost: "NPR 11,000" },
-            { name: "Teuwa Clean UP Campaign", ry: "2023-24", avenue: "Service Project", location: "Teuwa Area", cost: "NPR 6,000" },
-            { name: "Late Nabin Bhandari Memorial Slow Bike Race", ry: "2023-24", avenue: "The Rotary Foundation", location: "Galkot Ground", cost: "NPR 25,000" },
-            { name: "DONATION & VOLUNTEERING IN DHAN DHANNANCHYAL", ry: "2023-24", avenue: "Finance", location: "Baglung", cost: "Volunteered" },
-            { name: "Participation in PS Meet", ry: "2023-24", avenue: "Professional Development", location: "District Venue", cost: "NPR 12,000" },
-            { name: "4'th Installation Ceremony", ry: "2023-24", avenue: "Club Administration", location: "Galkot City Hall", cost: "NPR 45,000" },
-            { name: "Free Health Camp 2.0", ry: "2023-24", avenue: "Service Project", location: "Galkot Community Clinic", cost: "NPR 55,000" },
-            { name: "3'rd Blood Donation Program", ry: "2023-24", avenue: "Service Project", location: "Hatiya Bazaar", cost: "NPR 16,500" },
-            { name: "Letter head exchange with Butwal Downtown", ry: "2023-24", avenue: "Public Image", location: "Butwal (Joint)", cost: "Internal/Gov" },
-            { name: "Club Officer Training Session (COTS)", ry: "2023-24", avenue: "Membership Development", location: "Club Office", cost: "NPR 9,000" }
+            { name: "Letter Head Exchange with Chittagong South, Bangladesh", ry: "2023-24",
+                avenue: "International Service", location: "Chittagong (Virtual)", cost: "Internal/Gov" },
+            { name: "ZONAL FELLOWSHIP", ry: "2023-24", avenue: "Membership Development", location: "Zone Venue",
+                cost: "NPR 18,000" },
+            { name: "HOLI CELEBRATION", ry: "2023-24", avenue: "Professional Development", location: "Galkot",
+                cost: "NPR 8,500" },
+            { name: "Hiking for \"SAHARSHA DHARA\"", ry: "2023-24", avenue: "Service Project",
+                location: "Saharsha Dhara Trail", cost: "NPR 14,000" },
+            { name: "SHARE MARKET TRAINING", ry: "2023-24", avenue: "Finance", location: "Hatiya Hall",
+                cost: "NPR 10,500" },
+            { name: "Cyber Awareness Program", ry: "2023-24", avenue: "Public Image", location: "Local School",
+                cost: "NPR 11,000" },
+            { name: "Teuwa Clean UP Campaign", ry: "2023-24", avenue: "Service Project", location: "Teuwa Area",
+                cost: "NPR 6,000" },
+            { name: "Late Nabin Bhandari Memorial Slow Bike Race", ry: "2023-24", avenue: "The Rotary Foundation",
+                location: "Galkot Ground", cost: "NPR 25,000" },
+            { name: "DONATION & VOLUNTEERING IN DHAN DHANNANCHYAL", ry: "2023-24", avenue: "Finance",
+                location: "Baglung", cost: "Volunteered" },
+            { name: "Participation in PS Meet", ry: "2023-24", avenue: "Professional Development",
+                location: "District Venue", cost: "NPR 12,000" },
+            { name: "4'th Installation Ceremony", ry: "2023-24", avenue: "Club Administration",
+                location: "Galkot City Hall", cost: "NPR 45,000" },
+            { name: "Free Health Camp 2.0", ry: "2023-24", avenue: "Service Project",
+                location: "Galkot Community Clinic", cost: "NPR 55,000" },
+            { name: "3'rd Blood Donation Program", ry: "2023-24", avenue: "Service Project",
+                location: "Hatiya Bazaar", cost: "NPR 16,500" },
+            { name: "Letter head exchange with Butwal Downtown", ry: "2023-24", avenue: "Public Image",
+                location: "Butwal (Joint)", cost: "Internal/Gov" },
+            { name: "Club Officer Training Session (COTS)", ry: "2023-24", avenue: "Membership Development",
+                location: "Club Office", cost: "NPR 9,000" }
         ];
 
         // ── Live completed-project fetch (R.Y. 2026-27, Supabase-driven) ──
@@ -910,26 +1269,22 @@
                 .replace(/'/g, '&#39;');
         }
 
-        // Maps an upcoming_projects row (status = completed) into the same
-        // shape used by the static pastProjects array, so both render
-        // through the exact same table/stat code below.
         function formatDateTimePart(dateStr, timeStr) {
             if (!dateStr) return '';
             let out = dateStr;
             try {
-                out = new Date(dateStr + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                out = new Date(dateStr + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'short',
+                    day: 'numeric' });
             } catch (e) { /* keep raw dateStr */ }
             if (timeStr) {
                 try {
-                    out += ' · ' + new Date('2000-01-01T' + timeStr).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+                    out += ' · ' + new Date('2000-01-01T' + timeStr).toLocaleTimeString(undefined, { hour: 'numeric',
+                        minute: '2-digit' });
                 } catch (e) { out += ' · ' + timeStr; }
             }
             return out;
         }
 
-        // Total Project Duration (hrs) × Participating Members — same formula
-        // used in Admin; recomputed here only as a fallback for older rows
-        // saved before `volunteering_hours` existed.
         function computeVolunteeringHours(startDate, startTime, endDate, endTime, participants) {
             const count = parseInt(participants, 10);
             if (!startDate || !count || count <= 0) return null;
@@ -942,16 +1297,16 @@
         }
 
         function mapLiveProjectToPastShape(p) {
-            const hours = p.volunteering_hours != null
-                ? p.volunteering_hours
-                : computeVolunteeringHours(p.start_date, p.start_time, p.end_date, p.end_time, p.participants_count);
+            const hours = p.volunteering_hours != null ?
+                p.volunteering_hours :
+                computeVolunteeringHours(p.start_date, p.start_time, p.end_date, p.end_time, p.participants_count);
             return {
                 name: p.name || 'Untitled Project',
                 ry: p.rotary_year || '2026-27',
                 avenue: p.avenue || p.avenue_of_service || 'Service Project',
                 location: p.location || '—',
                 cost: p.cost || p.total_cost || p.budget || 'N/A',
-                coordinatorName: p.coordinator_name || null, // populated after members lookup, optional metadata
+                coordinatorName: p.coordinator_name || null,
                 reportId: p.report_id || p.reportId || null,
                 reportUrl: p.report_url || p.reportUrl || null,
                 startDate: p.start_date || p.date || null,
@@ -977,9 +1332,6 @@
                 if (error) throw error;
                 if (!completed || completed.length === 0) return [];
 
-                // Optional: resolve coordinator names for display, without
-                // disturbing existing table columns (kept as extra metadata
-                // only; not shown unless explicitly wired into the table).
                 const coordinatorIds = [...new Set(completed.map(p => p.project_coordinator_id).filter(Boolean))];
                 let coordinatorMap = {};
                 if (coordinatorIds.length > 0) {
@@ -995,17 +1347,14 @@
                     coordinator_name: p.project_coordinator_id ? coordinatorMap[p.project_coordinator_id] : null
                 }));
             } catch (err) {
-                console.error('Live completed-project fetch failed (falling back to static historical data only):', err.message || err);
+                console.error('Live completed-project fetch failed (falling back to static historical data only):', err
+                    .message || err);
                 return [];
             }
         }
-        // Full dataset used by the page = static historical data + live
-        // completed 2026-27 projects fetched from Supabase. Populated once
-        // in window.onload; everything else below reads from this array so
-        // stats/table/filter all stay in sync automatically.
+
         let mergedPastProjects = pastProjects;
 
-        // Engine to compile metrics dynamically out of pastProjects data array
         function calculateStatistics() {
             const totalCount = mergedPastProjects.length;
             const yearMetrics = {};
@@ -1018,91 +1367,79 @@
 
             document.getElementById('stat-total-count').innerText = totalCount;
 
-            // Render Year Grid UI
             const yearsGrid = document.getElementById('stat-years-grid');
             yearsGrid.innerHTML = '';
-            Object.keys(yearMetrics).sort((a,b) => b.localeCompare(a)).forEach(year => {
+            Object.keys(yearMetrics).sort((a, b) => b.localeCompare(a)).forEach(year => {
                 yearsGrid.innerHTML += `
-                    <div class="stat-item">
-                        <span class="label">R.Y. ${year}</span>
-                        <span class="count">${yearMetrics[year]}</span>
-                    </div>
-                `;
+                        <div class="stat-item">
+                            <span class="label">R.Y. ${year}</span>
+                            <span class="count">${yearMetrics[year]}</span>
+                        </div>
+                    `;
             });
 
-            // Render Avenues Grid UI
             const avenuesGrid = document.getElementById('stat-avenues-grid');
             avenuesGrid.innerHTML = '';
-            Object.keys(avenueMetrics).sort((a,b) => avenueMetrics[b] - avenueMetrics[a]).forEach(ave => {
+            Object.keys(avenueMetrics).sort((a, b) => avenueMetrics[b] - avenueMetrics[a]).forEach(ave => {
                 avenuesGrid.innerHTML += `
-                    <div class="stat-item">
-                        <span class="label" title="${ave}">${ave}</span>
-                        <span class="count">${avenueMetrics[ave]}</span>
-                    </div>
-                `;
+                        <div class="stat-item">
+                            <span class="label" title="${ave}">${ave}</span>
+                            <span class="count">${avenueMetrics[ave]}</span>
+                        </div>
+                    `;
             });
         }
 
-        // Render data rows out to UI table elements (including data labels for responsive support)
         function renderTable(dataset) {
             const tableBody = document.getElementById('projects-table-body');
             tableBody.innerHTML = '';
 
-            if(dataset.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center; color: var(--text-muted); padding: 40px; font-weight: 500;">
-                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.5rem; margin-bottom: 8px; display:block; color: var(--primary-color);"></i>
-                    No matching structural ledger history logs match your filter criteria.
-                </td></tr>`;
+            if (dataset.length === 0) {
+                tableBody.innerHTML =
+                    `<tr><td colspan="10" style="text-align:center; color: var(--text-muted); padding: 40px; font-weight: 500;">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.5rem; margin-bottom: 8px; display:block; color: var(--primary-color);"></i>
+                        No matching structural ledger history logs match your filter criteria.
+                    </td></tr>`;
                 return;
             }
 
             dataset.forEach(project => {
                 const row = document.createElement('tr');
 
-                // Styling categorization based on cost types
                 const costValue = project.cost || 'N/A';
                 const isNprCost = costValue.startsWith('NPR');
                 const costClass = isNprCost ? 'cost-text cost-premium' : 'cost-text cost-neutral';
 
-                // Report ID: clickable link when a Report URL is set by admin,
-                // plain text (or —) otherwise — never a broken/empty link.
                 const reportId = project.reportId ? escapeHTML(project.reportId) : '—';
-                const reportCell = (project.reportId && project.reportUrl)
-                    ? `<a href="${escapeHTML(project.reportUrl)}" target="_blank" rel="noopener noreferrer">${reportId}</a>`
-                    : reportId;
+                const reportCell = (project.reportId && project.reportUrl) ?
+                    `<a href="${escapeHTML(project.reportUrl)}" target="_blank" rel="noopener noreferrer">${reportId}</a>` :
+                    reportId;
 
-                // Start–End Date/Time: falls back to '—' for legacy static rows
-                // that predate this feature (no start/end fields at all).
                 let dateRangeCell = '—';
                 if (project.startDate) {
                     const start = formatDateTimePart(project.startDate, project.startTime);
-                    const end = (project.endDate && project.endDate !== project.startDate) || project.endTime
-                        ? formatDateTimePart(project.endDate || project.startDate, project.endTime)
-                        : '';
+                    const end = (project.endDate && project.endDate !== project.startDate) || project.endTime ?
+                        formatDateTimePart(project.endDate || project.startDate, project.endTime) :
+                        '';
                     dateRangeCell = escapeHTML(end ? `${start} → ${end}` : start);
                 }
 
                 const participantsCell = project.participants != null ? escapeHTML(project.participants) : '—';
-                // Volunteering Hours & Certificate are intentionally NOT rendered on this
-                // page's UI (per request), but project.volunteeringHours / project.certificate
-                // are still computed/fetched above and remain available in mergedPastProjects
-                // for other pages/features to consume.
 
                 row.innerHTML = `
-                    <td data-label="Report ID" class="report-id-cell">${reportCell}</td>
-                    <td style="font-weight: 600; color: var(--text-dark);">${escapeHTML(project.name)}</td>
-                    <td data-label="Rotary Year"><span class="ry-badge">R.Y. ${escapeHTML(project.ry)}</span></td>
-                    <td data-label="Avenue"><span class="avenue-badge">${escapeHTML(project.avenue)}</span></td>
-                    <td data-label="Location" class="location-cell"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(project.location)}</td>
-                    <td data-label="Start–End Date/Time">${dateRangeCell}</td>
-                    <td data-label="Total Cost" class="${costClass}">${escapeHTML(costValue)}</td>
-                    <td data-label="Participants">${participantsCell}</td>
-                `;
+                        <td data-label="Report ID" class="report-id-cell">${reportCell}</td>
+                        <td style="font-weight: 600; color: var(--text-dark);">${escapeHTML(project.name)}</td>
+                        <td data-label="Rotary Year"><span class="ry-badge">R.Y. ${escapeHTML(project.ry)}</span></td>
+                        <td data-label="Avenue"><span class="avenue-badge">${escapeHTML(project.avenue)}</span></td>
+                        <td data-label="Location" class="location-cell"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(project.location)}</td>
+                        <td data-label="Start–End Date/Time">${dateRangeCell}</td>
+                        <td data-label="Total Cost" class="${costClass}">${escapeHTML(costValue)}</td>
+                        <td data-label="Participants">${participantsCell}</td>
+                    `;
                 tableBody.appendChild(row);
             });
         }
 
-        // Dual Engine to run full text searching together with drop-down value arrays
         function filterEngine() {
             const searchQuery = document.getElementById('search-box').value.toLowerCase().trim();
             const selectedYear = document.getElementById('year-select').value;
@@ -1119,8 +1456,8 @@
             }
 
             if (searchQuery !== '') {
-                filteredData = filteredData.filter(p => 
-                    p.name.toLowerCase().includes(searchQuery) || 
+                filteredData = filteredData.filter(p =>
+                    p.name.toLowerCase().includes(searchQuery) ||
                     p.location.toLowerCase().includes(searchQuery)
                 );
             }
@@ -1128,10 +1465,7 @@
             renderTable(filteredData);
         }
 
-        // ── Project Photo Gallery ── auto-sliding carousel at the top of the
-        // page, built from every completed project's photo_urls (name shown
-        // as a caption on each photo). Uses the same merged dataset already
-        // fetched for the table — no extra query.
+        // ── Project Photo Gallery ──
         let galleryItems = [];
         let galleryIndex = 0;
         let galleryTimer = null;
@@ -1160,14 +1494,14 @@
             section.style.display = 'block';
 
             track.innerHTML = galleryItems.map(item => `
-                <div class="gallery-slide">
-                    <img src="${escapeHTML(item.url)}" alt="${escapeHTML(item.name)}" loading="lazy" onerror="this.closest('.gallery-slide').style.display='none';">
-                    <div class="gallery-caption">
-                        <h3>${escapeHTML(item.name)}</h3>
-                        <span><i class="fa-solid fa-location-dot"></i> ${escapeHTML(item.location || '—')} &nbsp;·&nbsp; R.Y. ${escapeHTML(item.ry)}</span>
+                    <div class="gallery-slide">
+                        <img src="${escapeHTML(item.url)}" alt="${escapeHTML(item.name)}" loading="lazy" onerror="this.closest('.gallery-slide').style.display='none';">
+                        <div class="gallery-caption">
+                            <h3>${escapeHTML(item.name)}</h3>
+                            <span><i class="fa-solid fa-location-dot"></i> ${escapeHTML(item.location || '—')} &nbsp;·&nbsp; R.Y. ${escapeHTML(item.ry)}</span>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
 
             dots.innerHTML = galleryItems.map((_, i) =>
                 `<button data-index="${i}" aria-label="Go to photo ${i + 1}"></button>`
@@ -1179,6 +1513,9 @@
             galleryIndex = 0;
             updateGalleryPosition();
             startGalleryAutoplay();
+
+            // Also render fullscreen track (keeps in sync)
+            renderFullscreenTrack();
         }
 
         function updateGalleryPosition() {
@@ -1187,13 +1524,24 @@
             document.querySelectorAll('#gallery-dots button').forEach((btn, i) => {
                 btn.classList.toggle('active', i === galleryIndex);
             });
+            // Sync fullscreen dots
+            document.querySelectorAll('#fsDots button').forEach((btn, i) => {
+                btn.classList.toggle('active', i === galleryIndex);
+            });
+            // Update fullscreen caption
+            updateFullscreenCaption();
         }
 
         function goToGallerySlide(index) {
             if (galleryItems.length === 0) return;
             galleryIndex = (index + galleryItems.length) % galleryItems.length;
             updateGalleryPosition();
-            startGalleryAutoplay(); // reset timer on manual interaction
+            // Update fullscreen track position
+            const fsTrack = document.getElementById('fsTrack');
+            if (fsTrack) {
+                fsTrack.style.transform = `translateX(-${galleryIndex * 100}%)`;
+            }
+            startGalleryAutoplay();
         }
 
         function startGalleryAutoplay() {
@@ -1202,30 +1550,128 @@
             galleryTimer = setInterval(() => {
                 galleryIndex = (galleryIndex + 1) % galleryItems.length;
                 updateGalleryPosition();
+                const fsTrack = document.getElementById('fsTrack');
+                if (fsTrack) {
+                    fsTrack.style.transform = `translateX(-${galleryIndex * 100}%)`;
+                }
             }, 3500);
         }
 
         document.getElementById('gallery-prev').addEventListener('click', () => goToGallerySlide(galleryIndex - 1));
         document.getElementById('gallery-next').addEventListener('click', () => goToGallerySlide(galleryIndex + 1));
 
+        // ── FULLSCREEN LOGIC ──
+        const fsOverlay = document.getElementById('fsOverlay');
+        const fsTrack = document.getElementById('fsTrack');
+        const fsDots = document.getElementById('fsDots');
+        const fsCaption = document.getElementById('fsCaption');
+
+        function renderFullscreenTrack() {
+            fsTrack.innerHTML = galleryItems.map(item => `
+                    <div class="fs-slide">
+                        <img src="${escapeHTML(item.url)}" alt="${escapeHTML(item.name)}" loading="lazy" />
+                    </div>
+                `).join('');
+
+            fsDots.innerHTML = galleryItems.map((_, i) =>
+                `<button data-index="${i}" aria-label="Go to photo ${i + 1}"></button>`
+            ).join('');
+            fsDots.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    goToGallerySlide(parseInt(btn.dataset.index, 10));
+                    // sync fs track
+                    fsTrack.style.transform = `translateX(-${galleryIndex * 100}%)`;
+                });
+            });
+            updateFullscreenCaption();
+        }
+
+        function updateFullscreenCaption() {
+            if (galleryItems.length === 0) return;
+            const item = galleryItems[galleryIndex];
+            fsCaption.innerHTML = `
+                    <strong>${escapeHTML(item.name)}</strong>
+                    <span class="fs-meta"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(item.location || '—')}</span>
+                    <span class="fs-meta"><i class="fa-regular fa-calendar"></i> R.Y. ${escapeHTML(item.ry)}</span>
+                `;
+        }
+
+        function openFullscreen() {
+            if (galleryItems.length === 0) return;
+            fsOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // Sync current slide
+            fsTrack.style.transform = `translateX(-${galleryIndex * 100}%)`;
+            // Sync dots
+            document.querySelectorAll('#fsDots button').forEach((btn, i) => {
+                btn.classList.toggle('active', i === galleryIndex);
+            });
+            updateFullscreenCaption();
+
+            // Pause autoplay while fullscreen is open
+            clearInterval(galleryTimer);
+        }
+
+        function closeFullscreen() {
+            fsOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+            // Resume autoplay
+            startGalleryAutoplay();
+            // Re-sync normal gallery
+            updateGalleryPosition();
+        }
+
+        document.getElementById('galleryFullscreenBtn').addEventListener('click', openFullscreen);
+        document.getElementById('fsCloseBtn').addEventListener('click', closeFullscreen);
+
+        document.getElementById('fsPrevBtn').addEventListener('click', () => {
+            goToGallerySlide(galleryIndex - 1);
+            fsTrack.style.transform = `translateX(-${galleryIndex * 100}%)`;
+        });
+        document.getElementById('fsNextBtn').addEventListener('click', () => {
+            goToGallerySlide(galleryIndex + 1);
+            fsTrack.style.transform = `translateX(-${galleryIndex * 100}%)`;
+        });
+
+        // Keyboard: Escape to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && fsOverlay.classList.contains('active')) {
+                closeFullscreen();
+            }
+            // Arrow keys in fullscreen
+            if (fsOverlay.classList.contains('active')) {
+                if (e.key === 'ArrowLeft') {
+                    goToGallerySlide(galleryIndex - 1);
+                    fsTrack.style.transform = `translateX(-${galleryIndex * 100}%)`;
+                    e.preventDefault();
+                } else if (e.key === 'ArrowRight') {
+                    goToGallerySlide(galleryIndex + 1);
+                    fsTrack.style.transform = `translateX(-${galleryIndex * 100}%)`;
+                    e.preventDefault();
+                }
+            }
+        });
+
+        // Close fullscreen if overlay background is clicked (not on image area)
+        fsOverlay.addEventListener('click', (e) => {
+            if (e.target === fsOverlay) {
+                closeFullscreen();
+            }
+        });
+
+        // ── PAGE INIT ──
         window.onload = async () => {
-            // Render immediately with static historical data so the page
-            // never looks empty/blank while the network call is in flight.
             calculateStatistics();
             renderTable(mergedPastProjects);
 
-            // Then fetch live completed 2026-27 projects and merge in.
-            // If this fails for any reason, the static data above already
-            // rendered fine — existing historical years are unaffected.
             const liveProjects = await fetchLiveCompletedProjects();
             if (liveProjects.length > 0) {
                 mergedPastProjects = [...liveProjects, ...pastProjects];
                 calculateStatistics();
-                filterEngine(); // re-apply current filter/search state, not just raw render
+                filterEngine();
             }
 
-            // Photo gallery pulls photos from every project (any year) that
-            // has photoUrls set — same merged dataset, no extra query.
             renderGallery(mergedPastProjects);
         };
 
@@ -1237,13 +1683,13 @@
 
             const ripple = document.createElement('span');
             ripple.classList.add('ripple');
-            
+
             const rect = button.getBoundingClientRect();
             const size = Math.max(rect.width, rect.height);
             ripple.style.width = ripple.style.height = `${size}px`;
             ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
             ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
-            
+
             button.appendChild(ripple);
             button.classList.add('clicked-exit');
 

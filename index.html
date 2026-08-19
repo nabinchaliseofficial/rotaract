@@ -17,8 +17,11 @@
   <!-- Supabase Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <!-- QRCode.js for member popup -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
   <style>
-    /* ===== CSS VARIABLES (unchanged) ===== */
+    /* ===== CSS VARIABLES ===== */
     :root {
       --primary: #D91A5C;
       --primary-dark: #A61042;
@@ -47,6 +50,15 @@
       --glass-bg: rgba(255, 255, 255, 0.12);
       --glass-border: rgba(255, 255, 255, 0.15);
       --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      --overlay: rgba(0, 0, 0, 0.6);
+      --container-bg: #ffffff;
+      --container-border: #e9edf2;
+      --surface: #f8fafc;
+      --surface-hover: #eef2f6;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --btn-dark: #1e293b;
+      --btn-dark-hover: #0f172a;
     }
     /* Dark Mode */
     [data-theme="dark"] {
@@ -60,6 +72,15 @@
       --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
       --glass-bg: rgba(255, 255, 255, 0.05);
       --glass-border: rgba(255, 255, 255, 0.08);
+      --overlay: rgba(0, 0, 0, 0.7);
+      --container-bg: #151f2e;
+      --container-border: #243044;
+      --surface: #1b2636;
+      --surface-hover: #223047;
+      --accent: #3b82f6;
+      --accent-soft: rgba(59, 130, 246, 0.18);
+      --btn-dark: #334155;
+      --btn-dark-hover: #475569;
     }
 
     /* ===== RESET & BASE ===== */
@@ -74,7 +95,7 @@
       transition: background 0.6s ease, color 0.6s ease;
     }
 
-    /* ===== PRELOADER (unchanged) ===== */
+    /* ===== PRELOADER ===== */
     #preloader {
       position: fixed;
       inset: 0;
@@ -111,9 +132,9 @@
     .preloader-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--gold)); border-radius: 4px; animation: loadBar 2s ease-in-out forwards; }
     @keyframes loadBar { 0% { width: 0%; } 100% { width: 100%; } }
     .preloader-quote { color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; margin-top: 20px; font-style: italic; font-weight: 300; letter-spacing: 0.5px; animation: fadeQuote 2s ease-in-out infinite alternate; }
-    @keyframes fadeQuote { 0% { opacity: 0.4; transform: translateY(5px); } 100% { opacity: 1; transform: translateY(-5px); } }
+    @keyframes fadeQuote { 0% { opacity: 0.4; transform: translateY(5px); } 50% { opacity: 1; transform: translateY(-5px); } }
 
-    /* ===== NAVBAR (unchanged) ===== */
+    /* ===== NAVBAR ===== */
     .navbar {
       position: fixed;
       top: 0;
@@ -247,7 +268,7 @@
       .dropdown-menu li a { padding: 10px 16px; font-size: 0.8rem; }
     }
 
-    /* ===== HERO SECTION (unchanged) ===== */
+    /* ===== HERO SECTION ===== */
     .hero {
       position: relative;
       min-height: 100vh;
@@ -466,7 +487,7 @@
     .btn-outline { background: transparent; color: #fff; border: 2px solid rgba(255, 255, 255, 0.3); }
     .btn-outline:hover { background: rgba(255, 255, 255, 0.1); border-color: #fff; transform: translateY(-3px); }
 
-    /* ===== NEXT EVENT COUNTDOWN (unchanged) ===== */
+    /* ===== NEXT EVENT COUNTDOWN ===== */
     .event-countdown-widget {
       position: fixed;
       top: 50%;
@@ -616,6 +637,7 @@
       border: 1px solid rgba(226, 232, 240, 0.4);
       transition: all 0.4s ease;
       box-shadow: var(--shadow-sm);
+      cursor: pointer;
     }
     .board-card:hover { transform: scale(1.05) translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
     .board-card .avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto 12px; border: 3px solid var(--gold); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
@@ -636,6 +658,7 @@
       border: 1px solid rgba(226, 232, 240, 0.3);
       transition: all 0.4s ease;
       box-shadow: var(--shadow-sm);
+      cursor: pointer;
     }
     .member-marquee-card:hover { transform: scale(1.05) translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
     .member-marquee-card .avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin: 0 auto 8px; border: 2px solid var(--gold); }
@@ -678,7 +701,7 @@
       .message-author { justify-content: center; }
     }
 
-    /* ===== RECOGNITION SECTION (unchanged) ===== */
+    /* ===== RECOGNITION SECTION ===== */
     .recognition-section { padding: 70px 20px 80px; background: var(--bg-white); transition: background 0.6s ease; }
     .recognition-section .section-header { text-align: center; margin-bottom: 40px; }
     .recognition-section .section-header h2 {
@@ -793,7 +816,7 @@
       padding: 4px 14px; border-radius: 20px; border: 1px solid rgba(212, 175, 55, 0.3);
     }
 
-    /* ===== PARTNERSHIPS (unchanged) ===== */
+    /* ===== PARTNERSHIPS ===== */
     .partnership-section { padding: 70px 20px 80px; background: var(--bg-white); transition: background 0.6s ease; }
     .partnership-section .section-header { text-align: center; margin-bottom: 40px; }
     .partnership-section .section-header h2 { font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text-primary); }
@@ -926,7 +949,7 @@
     @keyframes popIn { 0% { transform: scale(0.5) rotate(-5deg); opacity: 0; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
 
     /* ============================================================
-       ADMIN LOGIN MODAL (NEW)
+       ADMIN LOGIN MODAL
        ============================================================ */
     .admin-login-overlay {
       position: fixed;
@@ -1061,7 +1084,215 @@
     .admin-login-card .submit-btn.loading .spinner { display: inline-block; }
     @keyframes adminSpin { to { transform: rotate(360deg); } }
 
-    /* ===== FOOTER (unchanged) ===== */
+    /* ============================================================
+       MEMBER POPUP (from verifymember.html)
+       ============================================================ */
+    .member-popup-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--overlay);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 99998;
+      padding: 20px;
+      animation: fadeIn 0.3s ease;
+    }
+    .member-popup-overlay.active { display: flex; }
+
+    .member-popup {
+      background: var(--container-bg);
+      border-radius: 32px;
+      max-width: 460px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--container-border);
+    }
+
+    .member-popup-header {
+      position: relative;
+      padding: 32px 28px 20px;
+      text-align: center;
+      background: linear-gradient(135deg, var(--surface), var(--surface-hover));
+      border-radius: 32px 32px 0 0;
+    }
+
+    .member-popup-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      background: rgba(127, 127, 127, 0.12);
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .member-popup-close:hover { background: rgba(127, 127, 127, 0.22); color: var(--text-primary); }
+
+    .member-popup-avatar-wrap { position: relative; width: 120px; margin: 0 auto 14px; }
+    .member-popup-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 2.8rem;
+      color: var(--accent);
+      overflow: hidden;
+      border: 4px solid var(--container-bg);
+      box-shadow: 0 8px 24px var(--container-shadow);
+    }
+    .member-popup-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .member-popup-avatar-wrap .verified-badge {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      width: 30px;
+      height: 30px;
+      background: var(--accent);
+      border: 3px solid var(--container-bg);
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 0.9rem;
+    }
+    .member-popup-avatar-wrap .verified-badge.show { display: flex; }
+
+    .member-popup-name { font-size: 1.6rem; font-weight: 700; color: var(--text-primary); }
+    .member-popup-designation { font-size: 0.9rem; color: var(--text-secondary); margin-top: 2px; }
+
+    .member-popup-body { padding: 20px 28px 28px; }
+
+    .member-popup-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 16px;
+      margin-bottom: 8px;
+    }
+    .member-popup-details .detail { padding: 6px 0; }
+    .member-popup-details .detail .label {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .member-popup-details .detail .value {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-top: 1px;
+      word-break: break-word;
+    }
+
+    .member-popup-qr-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 0 6px;
+      border-top: 1px dashed var(--border-color);
+      margin-top: 8px;
+    }
+    .member-popup-qr-section .qr-box {
+      background: #ffffff;
+      padding: 10px;
+      border-radius: 14px;
+      border: 1px solid var(--border-color);
+      line-height: 0;
+    }
+    .member-popup-qr-section .qr-label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .member-popup-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 18px;
+      margin-top: 16px;
+    }
+    .member-popup-actions .btn {
+      flex: 1 1 45%;
+      padding: 12px;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: 0.15s;
+      border: none;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .member-popup-actions .btn-primary { background: var(--btn-dark); color: white; }
+    .member-popup-actions .btn-primary:hover { background: var(--btn-dark-hover); transform: scale(1.02); }
+    .member-popup-actions .btn-copy { background: var(--surface); color: var(--text-primary); border: 1px solid var(--border-color); }
+    .member-popup-actions .btn-copy:hover { border-color: var(--accent); color: var(--accent); }
+
+    @media (max-width: 480px) {
+      .member-popup-header { padding: 24px 20px 16px; }
+      .member-popup-avatar-wrap, .member-popup-avatar { width: 90px; height: 90px; }
+      .member-popup-avatar { font-size: 2rem; }
+      .member-popup-name { font-size: 1.3rem; }
+      .member-popup-body { padding: 16px 20px 20px; }
+      .member-popup-details { grid-template-columns: 1fr; gap: 2px; }
+      .member-popup-actions .btn { flex: 1 1 100%; }
+    }
+
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: white;
+      padding: 14px 28px;
+      border-radius: 60px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      display: none;
+      align-items: center;
+      gap: 12px;
+      z-index: 99999;
+      animation: slideUp 0.3s ease;
+      max-width: 90vw;
+    }
+    .toast.show { display: flex; }
+    .toast.success { background: #166534; }
+    .toast.error { background: #991b1b; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    .toast i { font-size: 1.1rem; }
+
+    /* ===== FOOTER ===== */
     .footer {
       background: var(--dark);
       color: rgba(255, 255, 255, 0.7);
@@ -1202,114 +1433,6 @@
       .hero-content { animation: none; opacity: 1; }
       .reveal, .reveal-left, .reveal-right, .reveal-scale { opacity: 1; transform: none; }
     }
-
-    /* ===== GALLERY SLIDE POPUP (unchanged) ===== */
-    .gallery-popup-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(6, 9, 20, 0.82);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 10003;
-      padding: 20px;
-      animation: fadeIn 0.5s ease;
-    }
-    .gallery-popup-overlay.active { display: flex; }
-    .gallery-popup {
-      position: relative;
-      width: 100%;
-      max-width: 640px;
-      background: var(--secondary);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
-      animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .gallery-popup-close {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.45);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #fff;
-      font-size: 1.2rem;
-      line-height: 1;
-      cursor: pointer;
-      z-index: 5;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s ease;
-    }
-    .gallery-popup-close:hover { background: var(--primary); }
-    .gallery-popup-badge {
-      position: absolute;
-      top: 14px;
-      left: 14px;
-      z-index: 5;
-      background: rgba(212, 175, 55, 0.18);
-      border: 1px solid rgba(212, 175, 55, 0.35);
-      color: var(--gold-light);
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      padding: 5px 14px;
-      border-radius: 40px;
-      backdrop-filter: blur(4px);
-    }
-    .gallery-popup-track {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      background: #0B1120;
-    }
-    .gallery-popup-slide {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      transition: opacity 0.6s ease;
-    }
-    .gallery-popup-slide.active { opacity: 1; z-index: 2; }
-    .gallery-popup-slide img { width: 100%; height: 100%; object-fit: cover; }
-    .gallery-popup-caption {
-      position: absolute;
-      left: 0; right: 0; bottom: 0;
-      padding: 22px 24px 18px;
-      background: linear-gradient(to top, rgba(0,0,0,0.88), rgba(0,0,0,0));
-      color: #fff;
-    }
-    .gallery-popup-caption .p-name { font-size: 1.15rem; font-weight: 800; }
-    .gallery-popup-caption .p-desc { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-top: 3px; }
-    .gallery-popup-progress {
-      display: flex;
-      gap: 5px;
-      padding: 12px 16px;
-      background: var(--secondary);
-    }
-    .gallery-popup-progress .seg {
-      flex: 1;
-      height: 3px;
-      border-radius: 3px;
-      background: rgba(255,255,255,0.15);
-      overflow: hidden;
-    }
-    .gallery-popup-progress .seg .fill {
-      display: block;
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--gold), var(--primary));
-    }
-    .gallery-popup-progress .seg.done .fill { width: 100%; transition: none; }
-    .gallery-popup-progress .seg.filling .fill { width: 100%; transition: width linear; }
-    @media (max-width: 480px) { .gallery-popup-caption .p-name { font-size: 1rem; } }
   </style>
 </head>
 <body>
@@ -1337,7 +1460,6 @@
         <li><a href="#members">Members</a></li>
         <li><a href="#recognition">Recognition</a></li>
         <li><a href="#past-presidents">Past Presidents</a></li>
-        <li><a href="gallary.html">Gallery</a></li>
       </ul>
     </li>
     <li><a href="#partnerships">Partnerships <span class="nav-indicator"></span></a></li>
@@ -1352,7 +1474,6 @@
       <ul class="dropdown-menu">
         <li><a href="loginminutes.html">Secretary</a></li>
         <li><a href="/account/index.html">Treasurer</a></li>
-        <!-- Admin link now opens the modal -->
         <li><a href="#" id="adminModalTrigger">Admin</a></li>
         <li><a href="https://my.rotaract3292.org/software" target="_blank">Member Login</a></li>
         <li><a href="https://my.rotary.org/en/login" target="_blank">Rotary Login</a></li>
@@ -1377,7 +1498,7 @@
   </div>
 </div>
 
-<!-- ===== HERO SECTION (unchanged) ===== -->
+<!-- ===== HERO SECTION ===== -->
 <section class="hero" id="hero">
   <div class="hero-particles" id="particlesContainer"></div>
   <div class="hero-glow"></div>
@@ -1525,7 +1646,16 @@
     <p>Honoring the leaders who guided our club through the years</p>
   </div>
   <div class="pp-grid">
-    <!-- (unchanged) -->
+    <div class="pp-card">
+      <div class="avatar">
+        <img src="images/neetukhadka.jpg" alt="RTR. Neetu Khadka" loading="lazy"
+             onerror="this.src='https://ui-avatars.com/api/?name=Neetu+Khadka&background=D91A5C&color=fff&size=224'">
+      </div>
+      <div class="name">RTR. Neetu Khadka</div>
+      <div class="role-title">Charter President</div>
+      <div class="tenure">2020 – 21</div><br>
+      <span class="badge-role"><i class="fas fa-star" style="margin-right:6px;color:var(--gold);"></i>Charter President</span>
+    </div>
     <div class="pp-card">
       <div class="avatar">
         <img src="images/anilshrestha.jpg" alt="RTR. Anil Shrestha" loading="lazy"
@@ -1632,7 +1762,7 @@
 </div>
 
 <!-- ============================================================
-     ADMIN LOGIN MODAL (NEW)
+     ADMIN LOGIN MODAL
      ============================================================ -->
 <div class="admin-login-overlay" id="adminLoginModal" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle" aria-hidden="true">
   <div class="admin-login-card">
@@ -1662,16 +1792,53 @@
   </div>
 </div>
 
-<!-- ===== GALLERY SLIDE POPUP ===== -->
-<div class="gallery-popup-overlay" id="galleryPopupOverlay" role="dialog" aria-modal="true" aria-label="Gallery preview" aria-hidden="true">
-  <div class="gallery-popup" id="galleryPopupCard">
-    <button class="gallery-popup-close" id="galleryPopupClose" aria-label="Close gallery preview">&times;</button>
-    <div class="gallery-popup-badge"><i class="fas fa-images"></i> Gallery</div>
-    <div class="gallery-popup-track" id="galleryPopupTrack">
-      <!-- slides injected by JS -->
+<!-- ============================================================
+     MEMBER POPUP (from verifymember.html)
+     ============================================================ -->
+<div class="member-popup-overlay" id="memberPopup" role="dialog" aria-modal="true" aria-labelledby="memberPopupName">
+  <div class="member-popup">
+    <div class="member-popup-header">
+      <button class="member-popup-close" id="memberPopupClose" type="button" aria-label="Close">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+      <div class="member-popup-avatar-wrap">
+        <div class="member-popup-avatar" id="memberPopupAvatar">
+          <span id="memberPopupInitials">JD</span>
+        </div>
+        <span class="verified-badge" id="memberPopupVerified">✓</span>
+      </div>
+      <div class="member-popup-name" id="memberPopupName">John Doe</div>
+      <div class="member-popup-designation" id="memberPopupDesignation">President</div>
     </div>
-    <div class="gallery-popup-progress" id="galleryPopupProgress"></div>
+    <div class="member-popup-body">
+      <div class="member-popup-details" id="memberPopupDetails">
+        <div class="detail"><span class="label">Email</span><span class="value" id="mpEmail">—</span></div>
+        <div class="detail"><span class="label">Rotary ID</span><span class="value" id="mpRotary">—</span></div>
+        <div class="detail"><span class="label">Phone</span><span class="value" id="mpPhone">—</span></div>
+        <div class="detail"><span class="label">Blood Group</span><span class="value" id="mpBlood">—</span></div>
+        <div class="detail"><span class="label">Gender</span><span class="value" id="mpGender">—</span></div>
+        <div class="detail"><span class="label">DOB</span><span class="value" id="mpDob">—</span></div>
+        <div class="detail"><span class="label">Profession</span><span class="value" id="mpProfession">—</span></div>
+        <div class="detail"><span class="label">Address</span><span class="value" id="mpAddress">—</span></div>
+      </div>
+
+      <div class="member-popup-qr-section">
+        <div class="qr-box" id="memberPopupQrBox"></div>
+        <div class="qr-label">Scan to save contact</div>
+      </div>
+
+      <div class="member-popup-actions">
+        <button class="btn btn-primary" id="memberPopupCloseBtn" type="button"><i class="fas fa-check" aria-hidden="true"></i> Done</button>
+        <button class="btn btn-copy" id="memberPopupCopyBtn" type="button"><i class="fas fa-copy" aria-hidden="true"></i> Copy</button>
+      </div>
+    </div>
   </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <i class="fas fa-check-circle" id="toastIcon" aria-hidden="true"></i>
+  <span id="toastMessage">Success!</span>
 </div>
 
 <!-- ===== FOOTER ===== -->
@@ -1759,7 +1926,7 @@
 
 <script>
   // ============================================================
-  // MAIN APPLICATION (unchanged except for admin modal integration)
+  // MAIN APPLICATION
   // ============================================================
   document.addEventListener('DOMContentLoaded', () => {
 
@@ -1774,7 +1941,7 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // ---------- REAL VISITOR STATS (unchanged) ----------
+    // ---------- REAL VISITOR STATS ----------
     (async function trackVisit() {
       const els = {
         total: document.getElementById('statTotal'),
@@ -1845,7 +2012,7 @@
       });
     });
 
-    // ---------- NEXT EVENT COUNTDOWN (unchanged) ----------
+    // ---------- NEXT EVENT COUNTDOWN ----------
     const countdownWidget = document.getElementById('eventCountdownWidget');
     const countdownEventName = document.getElementById('countdownEventName');
     const countdownCloseBtn = document.getElementById('countdownCloseBtn');
@@ -1887,7 +2054,6 @@
         if (error) throw error;
 
         if (data.is_active === false) {
-          // Admin has turned the countdown off — hide it from the homepage
           nextEventData = null;
           countdownWidget.classList.add('hidden');
           if (countdownIntervalId) clearInterval(countdownIntervalId);
@@ -1922,7 +2088,7 @@
         .subscribe();
     }
 
-    // ---------- MOUSE PARALLAX (unchanged) ----------
+    // ---------- MOUSE PARALLAX ----------
     const heroSection = document.getElementById('hero');
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const supportsFineHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
@@ -1956,7 +2122,7 @@
       });
     }
 
-    // ---------- DROPDOWN TOGGLES (unchanged) ----------
+    // ---------- DROPDOWN TOGGLES ----------
     document.querySelectorAll('.nav-links .dropdown-toggle').forEach(toggle => {
       toggle.addEventListener('click', (e) => {
         e.preventDefault();
@@ -1976,7 +2142,7 @@
       }
     });
 
-    // ---------- PARTICLES (unchanged) ----------
+    // ---------- PARTICLES ----------
     function createParticles() {
       const container = document.getElementById('particlesContainer');
       const colors = ['#D4AF37', '#D91A5C', '#FFD700', '#FDE8F0', '#FFFFFF'];
@@ -1995,7 +2161,7 @@
     }
     createParticles();
 
-    // ---------- STATISTICS (data source now 100% dynamic from Supabase) ----------
+    // ---------- STATISTICS ----------
     const statsData = [
       { icon: 'fa-users', label: 'Total Members', value: 0, suffix: '', decimals: 0 },
       { icon: 'fa-user-check', label: 'Active Members', value: 0, suffix: '', decimals: 0 },
@@ -2007,10 +2173,6 @@
     ];
 
     async function updateStatsFromSupabase() {
-      // Each stat is fetched independently so one failing query never
-      // blocks the others or breaks the page.
-
-      // 1 & 2. Total Members (active + inactive) and Active Members
       try {
         const { count: totalCount, error: totalErr } = await supabase
           .from('members')
@@ -2030,9 +2192,6 @@
         console.warn('Could not fetch active member count:', e);
       }
 
-      // 3, 4, 5, 7. Pull all upcoming_projects rows once and derive
-      // Projects Completed, Volunteer Hours, Awards Won, and
-      // Communities Served from them.
       let allProjects = [];
       try {
         const { data, error } = await supabase
@@ -2045,22 +2204,15 @@
 
       try {
         const completed = allProjects.filter(p => p.status === 'completed');
-
-        // 3. Projects Completed
         statsData[2].value = completed.length;
-
-        // 4. Volunteer Hours — sum of already-stored per-project values, null = 0
         const totalHours = completed.reduce((sum, p) => sum + (Number(p.volunteering_hours) || 0), 0);
         statsData[3].value = totalHours;
-
-        // 5. Awards Won — club_certificate = TRUE (boolean column)
         const awards = completed.filter(p => p.club_certificate === true);
         statsData[4].value = awards.length;
       } catch (e) {
         console.warn('Could not derive project-based stats:', e);
       }
 
-      // 6. Funds Raised — existing Net Balance source (financial_accounts.current_balance)
       try {
         const { data: accounts, error: fundsErr } = await supabase
           .from('financial_accounts')
@@ -2074,7 +2226,6 @@
         console.warn('Could not fetch funds raised / net balance:', e);
       }
 
-      // 7. Communities Served — unique normalized locations across all projects
       try {
         const seen = new Set();
         allProjects.forEach(p => {
@@ -2147,7 +2298,9 @@
 
     updateStatsFromSupabase();
 
-    // ---------- BOARD MARQUEE (unchanged) ----------
+    // ============================================================
+    // BOARD MEMBERS DATA (with photos)
+    // ============================================================
     const boardMembers = [
       { name: 'Rtr. Nabin Chalise', position: 'President', photo: 'images/nabinchalise.jpg' },
       { name: 'Rtr. Madan Sharma', position: 'Secretary', photo: 'images/madansharma.jpg' },
@@ -2159,29 +2312,56 @@
       { name: 'Rtr. Bipin Chalise', position: 'Membership Chair', photo: 'images/bipinchalise.jpg' },
       { name: 'Rtr. Manish Gurung', position: 'Public Image Chair', photo: 'images/manishgurung.jpg' },
       { name: 'Rtr. Smriti Budhathoki', position: 'Service Projects Chair', photo: 'images/smritibudhathoki.jpg' },
+      { name: 'Rtr. Anil Shrestha', position: 'PP / ISD / Advisor', photo: 'images/anilshrestha.jpg' },
+      { name: 'Rtr. Kamal Kharel', position: 'Club Advisor', photo: 'images/kamalkharel.jpg' },
+      { name: 'Rtr. Laxmi Pun', position: 'Rotaract Learning Facilitator', photo: 'images/laxmipun.jpg' },
     ];
 
     function renderBoard() {
       const marquee = document.getElementById('boardMarquee');
       const doubled = [...boardMembers, ...boardMembers];
       marquee.innerHTML = doubled.map(m => `
-        <div class="board-card">
+        <div class="board-card" data-name="${encodeURIComponent(m.name)}" data-position="${encodeURIComponent(m.position)}" data-photo="${encodeURIComponent(m.photo)}">
           <img src="${m.photo}" alt="${m.name}" class="avatar" 
                onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}&background=D91A5C&color=fff&size=80'">
           <div class="name">${m.name}</div>
           <div class="position">${m.position}</div>
         </div>
       `).join('');
+
+      // Add click events for board cards
+      document.querySelectorAll('.board-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const name = decodeURIComponent(this.dataset.name);
+          const position = decodeURIComponent(this.dataset.position);
+          const photo = decodeURIComponent(this.dataset.photo);
+          openMemberPopup(name, position, photo);
+        });
+      });
     }
     renderBoard();
 
-    // ---------- MEMBERS MARQUEE (unchanged) ----------
+    // ============================================================
+    // MEMBERS MARQUEE (from Supabase) - EXCLUDING SPECIFIC ROLES
+    // ============================================================
+    // These roles should appear ONLY in Board, NOT in Active Members marquee
+    const BOARD_ONLY_DESIGNATIONS = [
+      'President', 'President Elect', 'Secretary', 'Joint Secretary', 'Treasurer',
+      'Vice President', 'IPP / Mentor', 'Membership Chair', 'Public Image Chair',
+      'Service Projects Chair', 'Health Program Chair', 'Rotary Foundation Chair',
+      'Sergeant At Arms', 'IT Officer', 'Young Leaders Contact',
+      'Learning Facilitator', 'Club Advisor', 'ISD Advisor',
+      'PP / ISD / Advisor', 'Rotaract Foundation Chair'
+    ];
+
+    let allMembers = []; // store for popup lookups
+
     async function renderMembersMarquee() {
       const marquee = document.getElementById('membersMarquee');
       try {
         const { data, error } = await supabase
           .from('members')
-          .select('name, designation, photo_url, photo, profile_image')
+          .select('*')
           .eq('status', 'active')
           .limit(30);
 
@@ -2192,13 +2372,28 @@
           return;
         }
 
-        const doubled = [...data, ...data];
+        allMembers = data;
+
+        // Filter out board-only members (they appear only in Board section)
+        const filteredData = data.filter(m => {
+          const designation = (m.designation || '').toString().trim();
+          return !BOARD_ONLY_DESIGNATIONS.some(boardTitle => 
+            designation.toLowerCase().includes(boardTitle.toLowerCase())
+          );
+        });
+
+        if (filteredData.length === 0) {
+          marquee.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);width:100%;">No regular active members found</div>`;
+          return;
+        }
+
+        const doubled = [...filteredData, ...filteredData];
         marquee.innerHTML = doubled.map(m => {
           const photo = m.photo_url || m.photo || m.profile_image || '';
           const name = m.name || 'Member';
           const designation = m.designation || 'Member';
           return `
-            <div class="member-marquee-card">
+            <div class="member-marquee-card" data-id="${m.id}">
               <img src="${photo || 'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=D91A5C&color=fff&size=64'}" 
                    alt="${name}" class="avatar" loading="lazy"
                    onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=D91A5C&color=fff&size=64'">
@@ -2207,6 +2402,17 @@
             </div>
           `;
         }).join('');
+
+        // Add click events for member cards
+        document.querySelectorAll('.member-marquee-card').forEach(card => {
+          card.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const member = allMembers.find(m => String(m.id) === String(id));
+            if (member) {
+              openMemberPopupFromSupabase(member);
+            }
+          });
+        });
       } catch (err) {
         console.error('Failed to load members:', err);
         marquee.innerHTML = `<div style="padding:20px;text-align:center;color:#EF4444;width:100%;">Failed to load members</div>`;
@@ -2215,6 +2421,242 @@
 
     renderMembersMarquee();
 
+    // ============================================================
+    // MEMBER POPUP (like verifymember.html)
+    // ============================================================
+    const memberPopup = document.getElementById('memberPopup');
+    const memberPopupClose = document.getElementById('memberPopupClose');
+    const memberPopupCloseBtn = document.getElementById('memberPopupCloseBtn');
+    const memberPopupAvatar = document.getElementById('memberPopupAvatar');
+    const memberPopupInitials = document.getElementById('memberPopupInitials');
+    const memberPopupName = document.getElementById('memberPopupName');
+    const memberPopupDesignation = document.getElementById('memberPopupDesignation');
+    const memberPopupVerified = document.getElementById('memberPopupVerified');
+    const memberPopupQrBox = document.getElementById('memberPopupQrBox');
+    const memberPopupCopyBtn = document.getElementById('memberPopupCopyBtn');
+
+    let currentPopupMember = null;
+    let popupLastFocusedEl = null;
+
+    function getFullNameForPopup(name) {
+      const raw = (name || '').toString().trim();
+      if (!raw) return 'Member';
+      const withoutRtr = raw.replace(/^rtr(?:\.\s*|\s+)/i, '').trim();
+      if (withoutRtr !== raw) return `RTR. ${withoutRtr}`;
+      if (/^(dr|mr|ms|mrs|rit)(?:\.\s*|\s+)/i.test(raw)) return raw;
+      return `RTR. ${raw}`;
+    }
+
+    function getInitialsForPopup(name) {
+      if (!name) return '?';
+      const clean = name.replace(/^(RTR|DR|MR|MS|MRS|RIT)(\.\s*|\s+)/i, '').trim();
+      const parts = clean.split(' ').filter(p => p.length > 0);
+      if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+      if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+      return clean.substring(0, 2).toUpperCase();
+    }
+
+    function getPhotoForPopup(photo) {
+      if (photo && photo.trim()) return photo.trim();
+      return null;
+    }
+
+    function isVerifiedForPopup(member) {
+      if (member.verified === true || member.is_verified === true) return true;
+      const s = String(member.status || '').toLowerCase();
+      return s === 'verified' || s === 'active';
+    }
+
+    function buildVCardForPopup(member) {
+      const name = getFullNameForPopup(member.name || member.full_name || '').replace(/^RTR\.\s*/, '');
+      const lines = ['BEGIN:VCARD', 'VERSION:3.0', `FN:${name}`];
+      const role = member.designation || member.role || member.position || 'Member';
+      if (role) lines.push(`TITLE:${role}`);
+      if (member.email) lines.push(`EMAIL:${member.email}`);
+      const phone = member.phone || member.phone_number;
+      if (phone) lines.push(`TEL:${phone}`);
+      lines.push('ORG:Rotaract Club of Galkot Baglung');
+      if (member.rotary_id) lines.push(`NOTE:Rotary ID ${member.rotary_id}`);
+      lines.push('END:VCARD');
+      return lines.join('\n');
+    }
+
+    function renderQRForPopup(el, member, size) {
+      el.innerHTML = '';
+      if (typeof QRCode === 'undefined') return;
+      new QRCode(el, {
+        text: buildVCardForPopup(member),
+        width: size,
+        height: size,
+        colorDark: '#0f172a',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+
+    function openMemberPopup(name, position, photo) {
+      const displayName = getFullNameForPopup(name);
+      const initials = getInitialsForPopup(displayName);
+      const photoSrc = getPhotoForPopup(photo);
+
+      memberPopupAvatar.innerHTML = '';
+      if (photoSrc) {
+        const img = document.createElement('img');
+        img.src = photoSrc;
+        img.alt = displayName;
+        img.onerror = function() {
+          this.style.display = 'none';
+          memberPopupAvatar.innerHTML = `<span style="font-size:2.8rem;font-weight:700;color:var(--accent);">${initials}</span>`;
+        };
+        memberPopupAvatar.appendChild(img);
+      } else {
+        memberPopupAvatar.innerHTML = `<span style="font-size:2.8rem;font-weight:700;color:var(--accent);">${initials}</span>`;
+      }
+
+      memberPopupName.textContent = displayName;
+      memberPopupDesignation.textContent = position || 'Member';
+      memberPopupVerified.classList.remove('show');
+      memberPopupVerified.style.display = 'none';
+
+      // For board members, show simple QR with basic info
+      const memberObj = {
+        name: name,
+        designation: position,
+        email: '',
+        phone: '',
+        rotary_id: '',
+        status: 'active'
+      };
+      currentPopupMember = memberObj;
+      renderQRForPopup(memberPopupQrBox, memberObj, 128);
+
+      // Show popup
+      popupLastFocusedEl = document.activeElement;
+      memberPopup.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      memberPopupClose.focus();
+    }
+
+    function openMemberPopupFromSupabase(member) {
+      const displayName = getFullNameForPopup(member.name || member.full_name || '');
+      const initials = getInitialsForPopup(displayName);
+      const photoSrc = getPhotoForPopup(member.photo_url || member.photo || member.profile_image || '');
+
+      memberPopupAvatar.innerHTML = '';
+      if (photoSrc) {
+        const img = document.createElement('img');
+        img.src = photoSrc;
+        img.alt = displayName;
+        img.onerror = function() {
+          this.style.display = 'none';
+          memberPopupAvatar.innerHTML = `<span style="font-size:2.8rem;font-weight:700;color:var(--accent);">${initials}</span>`;
+        };
+        memberPopupAvatar.appendChild(img);
+      } else {
+        memberPopupAvatar.innerHTML = `<span style="font-size:2.8rem;font-weight:700;color:var(--accent);">${initials}</span>`;
+      }
+
+      memberPopupName.textContent = displayName;
+      memberPopupDesignation.textContent = member.designation || member.role || member.position || 'Member';
+      
+      if (isVerifiedForPopup(member)) {
+        memberPopupVerified.classList.add('show');
+        memberPopupVerified.style.display = 'flex';
+      } else {
+        memberPopupVerified.classList.remove('show');
+        memberPopupVerified.style.display = 'none';
+      }
+
+      currentPopupMember = member;
+      renderQRForPopup(memberPopupQrBox, member, 128);
+
+      // Update detail fields
+      document.getElementById('mpEmail').textContent = member.email || '—';
+      document.getElementById('mpRotary').textContent = member.rotary_id || '—';
+      document.getElementById('mpPhone').textContent = member.phone || member.phone_number || '—';
+      document.getElementById('mpBlood').textContent = member.blood_group || '—';
+      document.getElementById('mpGender').textContent = member.gender || '—';
+      document.getElementById('mpDob').textContent = member.dob || member.date_of_birth || member.birthday || '—';
+      document.getElementById('mpProfession').textContent = member.profession || '—';
+      document.getElementById('mpAddress').textContent = member.address || '—';
+
+      // Show popup
+      popupLastFocusedEl = document.activeElement;
+      memberPopup.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      memberPopupClose.focus();
+    }
+
+    function closeMemberPopup() {
+      memberPopup.classList.remove('active');
+      document.body.style.overflow = '';
+      if (popupLastFocusedEl && document.body.contains(popupLastFocusedEl)) {
+        popupLastFocusedEl.focus();
+      }
+    }
+
+    memberPopupClose.addEventListener('click', closeMemberPopup);
+    memberPopupCloseBtn.addEventListener('click', closeMemberPopup);
+    memberPopup.addEventListener('click', function(e) {
+      if (e.target === this) closeMemberPopup();
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && memberPopup.classList.contains('active')) {
+        closeMemberPopup();
+      }
+    });
+
+    // Copy button for popup
+    memberPopupCopyBtn.addEventListener('click', async function() {
+      if (!currentPopupMember) return;
+      const m = currentPopupMember;
+      const text = [
+        getFullNameForPopup(m.name || m.full_name || ''),
+        m.designation || m.role || m.position || 'Member',
+        m.email ? `Email: ${m.email}` : null,
+        m.rotary_id ? `Rotary ID: ${m.rotary_id}` : null,
+        m.phone || m.phone_number ? `Phone: ${m.phone || m.phone_number}` : null,
+        m.profession ? `Profession: ${m.profession}` : null,
+        m.address ? `Address: ${m.address}` : null
+      ].filter(Boolean).join('\n');
+
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        showToast('Member details copied');
+      } catch (e) {
+        showToast('Could not copy details', 'error');
+      }
+    });
+
+    // ============================================================
+    // TOAST
+    // ============================================================
+    const toast = document.getElementById('toast');
+    const toastIcon = document.getElementById('toastIcon');
+    const toastMessage = document.getElementById('toastMessage');
+    let toastTimeout = null;
+
+    function showToast(message, type = 'success') {
+      toast.className = 'toast ' + type;
+      toastIcon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+      toastMessage.textContent = message;
+      toast.classList.add('show');
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
     // ---------- helper: escape text ----------
     function escapeHtml(str) {
       return String(str ?? '').replace(/[&<>"']/g, c => ({
@@ -2222,7 +2664,7 @@
       }[c]));
     }
 
-    // ---------- NATIONAL / INTERNATIONAL PARTNERSHIPS (unchanged) ----------
+    // ---------- NATIONAL / INTERNATIONAL PARTNERSHIPS ----------
     async function renderPartnerships() {
       const grid = document.getElementById('partnershipGrid');
       if (!grid) return;
@@ -2266,7 +2708,7 @@
     }
     renderPartnerships();
 
-    // ---------- OUR PARTNERS & SPONSORS (unchanged) ----------
+    // ---------- OUR PARTNERS & SPONSORS ----------
     async function renderPartnersSponsors() {
       const grid = document.getElementById('partnersGrid');
       if (!grid) return;
@@ -2306,13 +2748,10 @@
     }
     renderPartnersSponsors();
 
-    // ---------- RECOGNITION (mirrors recognition.html scoring engine) ----------
+    // ---------- RECOGNITION ----------
     const leaderContainer = document.getElementById('leaderWinners');
     const risingContainer = document.getElementById('risingWinners');
 
-    // Case-insensitively strip any existing Rtr/RTR/rtr prefix before
-    // re-adding one canonical "RTR. " prefix, so names never render
-    // inconsistently or double-prefixed. Matches recognition.html exactly.
     function getFullNameWithPrefix(name) {
       const raw = (name || '').toString().trim();
       if (!raw) return 'Member';
@@ -2361,11 +2800,6 @@
 
         if (memError) throw new Error('Members fetch failed: ' + memError.message);
 
-        // Blood donor entry bonus: +1 per 10 rows entered into
-        // blood_bridge_galkot (data_entry_by). No date cutoff - always
-        // counts every row currently in the table, recalculated fresh from
-        // the database on every page load. Soft-fails so a problem here
-        // never breaks the rest of the scoring.
         const bloodEntryCountMap = {};
         try {
           const { data: bloodRows, error: bloodError } = await supabase
@@ -2382,10 +2816,6 @@
           console.warn('Blood donor entry bonus skipped:', bloodErr.message || bloodErr);
         }
 
-        // Completed-project coordinator bonus: +1 per project where the
-        // member is project_coordinator_id AND status is 'completed'.
-        // Matched by member id, calculated fresh on every load. Soft-fails
-        // like the blood donor bonus above.
         const coordinatorPointsMap = {};
         try {
           const { data: coordProjects, error: coordError } = await supabase
@@ -2401,14 +2831,6 @@
         } catch (coordErr) {
           console.warn('Completed project coordinator bonus skipped:', coordErr.message || coordErr);
         }
-
-        const BOARD_DESIGNATIONS = [
-          'President', 'President Elect', 'Secretary', 'Joint Secretary', 'Treasurer',
-          'Vice President', 'IPP / Mentor', 'Membership Chair', 'Public Image Chair',
-          'Service Projects Chair', 'Health Program Chair', 'Rotary Foundation Chair',
-          'Sergeant At Arms', 'IT Officer', 'Young Leaders Contact',
-          'Learning Facilitator', 'Club Advisor', 'ISD Advisor'
-        ];
 
         function normalizeKey(str) {
           return (str || '').toString().trim().toLowerCase()
@@ -2427,14 +2849,14 @@
             .trim();
         }
 
-        const NORMALIZED_BOARD_DESIGNATIONS = BOARD_DESIGNATIONS.map(normalizeDesignationText);
+        const NORMALIZED_BOARD_DESIGNATIONS = BOARD_ONLY_DESIGNATIONS.map(normalizeDesignationText);
 
         function classifyMember(m) {
           const rawDesignation = (m.designation || m.position || '').toString().trim();
           const normalized = normalizeDesignationText(rawDesignation);
           const matchIndex = NORMALIZED_BOARD_DESIGNATIONS.indexOf(normalized);
           const isBoard = matchIndex !== -1;
-          const displayDesignation = isBoard ? BOARD_DESIGNATIONS[matchIndex] : (rawDesignation || 'Club Member');
+          const displayDesignation = isBoard ? BOARD_ONLY_DESIGNATIONS[matchIndex] : (rawDesignation || 'Club Member');
           return { designation: displayDesignation, isPresident: isBoard && displayDesignation === 'President', isBoard };
         }
 
@@ -2523,7 +2945,7 @@
 
     fetchRecognitionData();
 
-    // ---------- TICKER (unchanged) ----------
+    // ---------- TICKER ----------
     async function updateTicker() {
       const container = document.getElementById('tickerContainer');
       const today = new Date().toISOString().split('T')[0];
@@ -2613,7 +3035,7 @@
       }
     }
 
-    // ---------- BIRTHDAY POPUP (unchanged) ----------
+    // ---------- BIRTHDAY POPUP ----------
     const birthdayPopup = document.getElementById('birthdayPopup');
     const popupName = document.getElementById('popupName');
     let popupTimeout = null;
@@ -2649,7 +3071,7 @@
       if (e.key === 'Escape' && birthdayPopup.classList.contains('active')) closeBirthdayPopup();
     });
 
-    // ---------- REVEAL ANIMATIONS (unchanged) ----------
+    // ---------- REVEAL ANIMATIONS ----------
     function initReveals() {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -2664,7 +3086,7 @@
       });
     }
 
-    // ---------- SMOOTH SCROLLING (unchanged) ----------
+    // ---------- SMOOTH SCROLLING ----------
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function(e) {
         const href = this.getAttribute('href');
@@ -2681,7 +3103,7 @@
       });
     });
 
-    // ---------- ACTIVE NAV LINK (unchanged) ----------
+    // ---------- ACTIVE NAV LINK ----------
     const sections = document.querySelectorAll('section[id]');
     const navLinksAll = document.querySelectorAll('.nav-links a:not([href*="://"])');
 
@@ -2702,7 +3124,7 @@
     });
 
     // ============================================================
-    // HERO SLIDER (unchanged)
+    // HERO SLIDER
     // ============================================================
     const slidesData = [
       {
@@ -2870,125 +3292,7 @@
     startAutoSlide();
 
     // ============================================================
-    // GALLERY SLIDE POPUP (unchanged)
-    // ============================================================
-    const galleryPopupOverlay = document.getElementById('galleryPopupOverlay');
-    const galleryPopupTrack = document.getElementById('galleryPopupTrack');
-    const galleryPopupProgress = document.getElementById('galleryPopupProgress');
-    const galleryPopupClose = document.getElementById('galleryPopupClose');
-    const GALLERY_SLIDE_MS = 4000;
-    let galleryPhotos = [];
-    let galleryCurrentIndex = 0;
-    let galleryAutoTimer = null;
-    let galleryLastFocusedEl = null;
-
-    function buildGallerySlides() {
-      galleryPopupTrack.innerHTML = galleryPhotos.map((p, i) => `
-        <div class="gallery-popup-slide${i === 0 ? ' active' : ''}" data-index="${i}">
-          <img src="${p.photo_url}" alt="${escapeHtml(p.project_name)}" loading="${i === 0 ? 'eager' : 'lazy'}">
-          <div class="gallery-popup-caption">
-            <div class="p-name">${escapeHtml(p.project_name)}</div>
-            ${p.description ? `<div class="p-desc">${escapeHtml(p.description)}</div>` : ''}
-          </div>
-        </div>
-      `).join('');
-
-      galleryPopupProgress.innerHTML = galleryPhotos.map(() =>
-        `<div class="seg"><span class="fill"></span></div>`
-      ).join('');
-    }
-
-    function updateGallerySlide() {
-      galleryPopupTrack.querySelectorAll('.gallery-popup-slide').forEach((el, i) => {
-        el.classList.toggle('active', i === galleryCurrentIndex);
-      });
-      const segs = galleryPopupProgress.querySelectorAll('.seg');
-      segs.forEach((seg, i) => {
-        seg.classList.remove('done', 'filling');
-        const fill = seg.querySelector('.fill');
-        fill.style.transition = 'none';
-        fill.style.width = '0%';
-        if (i < galleryCurrentIndex) {
-          seg.classList.add('done');
-        } else if (i === galleryCurrentIndex) {
-          void fill.offsetWidth;
-          seg.classList.add('filling');
-          fill.style.transition = `width ${GALLERY_SLIDE_MS}ms linear`;
-          requestAnimationFrame(() => { fill.style.width = '100%'; });
-        }
-      });
-    }
-
-    function advanceGallerySlide() {
-      galleryCurrentIndex += 1;
-      if (galleryCurrentIndex >= galleryPhotos.length) {
-        closeGalleryPopup();
-        return;
-      }
-      updateGallerySlide();
-      galleryAutoTimer = setTimeout(advanceGallerySlide, GALLERY_SLIDE_MS);
-    }
-
-    function openGalleryPopup() {
-      if (!galleryPhotos.length) return;
-      galleryCurrentIndex = 0;
-      galleryLastFocusedEl = document.activeElement;
-      buildGallerySlides();
-      updateGallerySlide();
-      galleryPopupOverlay.classList.add('active');
-      galleryPopupOverlay.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden';
-      if (galleryAutoTimer) clearTimeout(galleryAutoTimer);
-      galleryAutoTimer = setTimeout(advanceGallerySlide, GALLERY_SLIDE_MS);
-      sessionStorage.setItem('galleryPopupShown', '1');
-    }
-
-    function closeGalleryPopup() {
-      if (galleryAutoTimer) { clearTimeout(galleryAutoTimer); galleryAutoTimer = null; }
-      galleryPopupOverlay.classList.remove('active');
-      galleryPopupOverlay.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
-      if (galleryLastFocusedEl) galleryLastFocusedEl.focus();
-    }
-
-    galleryPopupClose?.addEventListener('click', closeGalleryPopup);
-    galleryPopupOverlay?.addEventListener('click', (e) => {
-      if (e.target === galleryPopupOverlay) closeGalleryPopup();
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && galleryPopupOverlay?.classList.contains('active')) closeGalleryPopup();
-    });
-    galleryPopupOverlay?.addEventListener('mouseenter', () => {
-      if (galleryAutoTimer) { clearTimeout(galleryAutoTimer); galleryAutoTimer = null; }
-    });
-    galleryPopupOverlay?.addEventListener('mouseleave', () => {
-      if (galleryPopupOverlay.classList.contains('active') && !galleryAutoTimer) {
-        galleryAutoTimer = setTimeout(advanceGallerySlide, GALLERY_SLIDE_MS);
-      }
-    });
-
-    async function initGalleryPopup() {
-      if (!galleryPopupOverlay) return;
-      if (sessionStorage.getItem('galleryPopupShown')) return;
-      try {
-        const { data, error } = await supabase
-          .from('gallery_photos')
-          .select('project_name, description, photo_url')
-          .eq('status', 'active')
-          .order('display_order', { ascending: true })
-          .order('created_at', { ascending: false });
-        if (error) throw error;
-
-        galleryPhotos = data || [];
-        if (galleryPhotos.length === 0) return;
-        setTimeout(openGalleryPopup, 2000);
-      } catch (err) {
-        console.error('Gallery popup load error:', err);
-      }
-    }
-
-    // ============================================================
-    // ADMIN LOGIN MODAL (NEW)
+    // ADMIN LOGIN MODAL
     // ============================================================
     const adminModal = document.getElementById('adminLoginModal');
     const adminClose = document.getElementById('adminLoginClose');
@@ -3008,7 +3312,6 @@
       adminModal.setAttribute('aria-hidden', 'false');
       document.body.style.overflow = 'hidden';
       adminEmail?.focus();
-      // Clear any previous error
       adminError.textContent = '';
     }
 
@@ -3017,44 +3320,36 @@
       adminModal.setAttribute('aria-hidden', 'true');
       document.body.style.overflow = '';
       if (adminLastFocusedEl) adminLastFocusedEl.focus();
-      // Reset form state
       adminSubmitBtn.classList.remove('loading');
       adminSubmitBtn.disabled = false;
       adminError.textContent = '';
     }
 
-    // Open modal when clicking "Admin" in the dropdown
     adminTrigger?.addEventListener('click', (e) => {
       e.preventDefault();
       openAdminModal();
     });
 
-    // Close on × button
     adminClose?.addEventListener('click', closeAdminModal);
 
-    // Close on backdrop click
     adminModal?.addEventListener('click', (e) => {
       if (e.target === adminModal) closeAdminModal();
     });
 
-    // Close on Escape key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && adminModal?.classList.contains('active')) closeAdminModal();
     });
 
-    // Toggle password visibility
     toggleAdminPass?.addEventListener('click', () => {
       const isPass = adminPassword.type === 'password';
       adminPassword.type = isPass ? 'text' : 'password';
       toggleAdminPass.textContent = isPass ? '🙈' : '👁';
     });
 
-    // Clear error on input
     [adminEmail, adminPassword].forEach(el => {
       el?.addEventListener('input', () => { if (adminError) adminError.textContent = ''; });
     });
 
-    // Helper: map auth errors to user-friendly messages
     function mapAuthError(err) {
       const msg = (err?.message || '').toLowerCase();
       if (msg.includes('invalid login credentials')) return 'Incorrect email or password.';
@@ -3065,7 +3360,6 @@
       return err?.message || "Couldn't sign in right now — please try again.";
     }
 
-    // Submit handler
     adminForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -3089,21 +3383,18 @@
       adminSubmitBtn.disabled = true;
 
       try {
-        // Authenticate with Supabase
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
         const user = data.user;
         if (!user) throw new Error('No user data returned.');
 
-        // Check admin role
         let { data: roleData, error: roleError } = await supabase
           .from('user_roles')
           .select('role, status')
           .eq('user_id', user.id)
           .maybeSingle();
 
-        // Fallback: try by email if not found by user_id
         if (!roleData && user.email) {
           const { data: emailData } = await supabase
             .from('user_roles')
@@ -3116,7 +3407,6 @@
         if (!roleData) throw new Error('No role assigned. Contact admin.');
         if (roleData.status !== 'active') throw new Error(`Account is ${roleData.status}.`);
 
-        // Store session in sessionStorage (matching auth.js style)
         sessionStorage.setItem('auth_user_id', user.id);
         sessionStorage.setItem('auth_email', user.email);
         sessionStorage.setItem('auth_role', roleData.role);
@@ -3124,7 +3414,6 @@
         sessionStorage.setItem('auth_verified', 'true');
         sessionStorage.setItem('auth_timestamp', Date.now().toString());
 
-        // Log the activity (optional)
         try {
           await supabase.from('admin_activity_log').insert([{
             admin_id: user.id,
@@ -3134,7 +3423,6 @@
           }]);
         } catch (_) { /* ignore */ }
 
-        // Close modal and redirect
         closeAdminModal();
         window.location.href = 'admin.html';
 
@@ -3151,11 +3439,12 @@
     // ---------- INIT ALL ----------  
     updateTicker();
     initReveals();
-    initGalleryPopup();
     setInterval(updateTicker, 60000);
 
     console.log('🚀 Rotaract Club of Galkot Baglung — Premium International Dashboard Loaded (Hero Slider Active)');
     console.log('💡 Admin login modal integrated.');
+    console.log('👥 Board and Member cards clickable with popup like verifymember.html');
+    console.log('🔒 "PP/ISD/Advisor" and "Rotaract Foundation Chair" now appear ONLY in Board section, not in Active Members marquee.');
   });
 </script>
 
