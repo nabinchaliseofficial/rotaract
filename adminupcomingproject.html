@@ -367,6 +367,9 @@
         .btn-reject-sm { background: #ef4444; color: #fff; }
         .btn-reject-sm:hover { background: #dc2626; }
 
+        .btn-print-sm { background: #3b82f6; color: #fff; }
+        .btn-print-sm:hover { background: #2563eb; }
+
         .application-actions {
             display: flex;
             gap: 0.5rem;
@@ -894,11 +897,15 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Participants Count (auto-calculated)</label>
-                        <input type="text" id="projectParticipants" readonly placeholder="0" style="opacity:0.75;" />
+                        <label>Participants Count</label>
+                        <input type="number" id="projectParticipants" min="0" step="1" placeholder="Enter project participants" />
                     </div>
                     <div class="form-group">
-                        <label>Legacy Volunteering Hours (auto-calculated)</label>
+                        <label>Planning Participants Count</label>
+                        <input type="number" id="planningParticipants" min="0" step="1" placeholder="Enter planning participants" />
+                    </div>
+                    <div class="form-group">
+                        <label>Planning Volunteer Hours - Legacy Volunteering Hours (auto-calculated)</label>
                         <input type="text" id="projectVolunteerHours" readonly placeholder="Fill in dates/time + participants" style="opacity:0.75;" />
                     </div>
                 </div>
@@ -936,7 +943,7 @@
                     <div class="readout-line">Project Volunteer Hours: <b id="projectHoursReadout">0 hrs</b></div>
                 </div>
 
-                <!-- ===== Total Volunteer Hours ===== -->
+                <!-- ===== Total Volunteer Hours: Project Volunteer Hours + Planning Volunteer Hours ===== -->
                 <div class="volunteer-hours-box">
                     <h4><i class="fa-solid fa-hourglass-half"></i> Total Volunteer Hours</h4>
                     <div class="readout-line" style="margin-top:0;">Total Volunteer Hours: <b id="totalHoursReadout">0 hrs</b></div>
@@ -995,6 +1002,21 @@
                         <label>Total Cost</label>
                         <input type="text" id="projectTotalCost" placeholder="e.g. NPR 25,500" />
                     </div>
+                </div>
+                <div class="form-group">
+                    <label>* SDG (Sustainable Development Goals)</label>
+                    <select id="projectSDG" required>
+                        <option value="">— Select Strategic Goal —</option>
+                    </select>
+                    <small style="display:block;margin-top:0.35rem;color:var(--text-muted);">Goals are loaded automatically from <code>strategic_planning.data.goals</code>.</small>
+                </div>
+                <div class="form-group">
+                    <label>* Project Objectives (Why did you do this project? Why did you think that this project is important?)</label>
+                    <textarea id="projectObjectives" placeholder="Explain why this project was conducted and why it is important..." rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>* Benefit Note</label>
+                    <textarea id="projectBenefitNote" placeholder="Describe the key benefits / expected impact of this project..." rows="4" required></textarea>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -1065,6 +1087,7 @@
             let allProjects = [];
             let editingId = null;
             let membersList = []; // for Project Coordinator dropdown
+            let strategicGoals = []; // loaded from strategic_planning.data.goals
 
             // ── Participation State (members + guests) ──
             // selectedMemberIds: Set of members.id selected as participants.
@@ -1402,6 +1425,27 @@
                 }
             }
 
+            // ── Load Strategic Goals from strategic_planning ──
+            async function loadStrategicGoals() {
+                try {
+                    const { data, error } = await supabase
+                        .from('strategic_planning')
+                        .select('data')
+                        .eq('id', 1)
+                        .maybeSingle();
+                    if (error) throw error;
+                    strategicGoals = Array.isArray(data?.data?.goals) ? data.data.goals : [];
+                    const select = document.getElementById('projectSDG');
+                    if (!select) return;
+                    select.innerHTML = '<option value="">— Select Strategic Goal —</option>' + strategicGoals.map((goal, index) => {
+                        const title = goal?.title || `Goal ${index + 1}`;
+                        return `<option value="${escapeHtml(title)}">${escapeHtml(title)}</option>`;
+                    }).join('');
+                } catch (err) {
+                    console.warn('Failed to load strategic goals:', err.message || err);
+                }
+            }
+
             // ── Load Members (for Project Coordinator dropdown + contact lookup) ──
             // Selects '*' so this keeps working regardless of what the phone/email
             // columns are actually named in the `members` table (phone, phone_number,
@@ -1576,7 +1620,15 @@
 
             // ── Participants Count = selected members + guests (never manual) ──
             function getParticipantCount() {
-                return selectedMemberIds.size + guests.length;
+                const input = document.getElementById('projectParticipants');
+                const value = parseInt(input?.value, 10);
+                return Number.isFinite(value) && value >= 0 ? value : 0;
+            }
+
+            function getPlanningParticipantCount() {
+                const input = document.getElementById('planningParticipants');
+                const value = parseInt(input?.value, 10);
+                return Number.isFinite(value) && value >= 0 ? value : 0;
             }
 
             // Recomputes Participants Count, Planning/Project/Total Volunteer
@@ -1585,12 +1637,11 @@
             // so nothing needs manual entry or a save to refresh.
             function updateParticipationDerived() {
                 const count = getParticipantCount();
-
-                document.getElementById('projectParticipants').value = count;
+                const planningParticipantCount = getPlanningParticipantCount();
 
                 const summaryEl = document.getElementById('participationSummary');
                 if (summaryEl) {
-                    summaryEl.textContent = `Selected Members: ${selectedMemberIds.size} · Guests: ${guests.length} · Participations: ${count} members/guests`;
+                    summaryEl.textContent = `Selected Members: ${selectedMemberIds.size} · Guests: ${guests.length} · Project Participants: ${count} · Planning Participants: ${planningParticipantCount}`;
                 }
 
                 // Planning duration/hours
@@ -1600,8 +1651,8 @@
                     document.getElementById('planningEndDate').value,
                     document.getElementById('planningEndTime').value
                 );
-                const planningHours = round2(planningDuration * count);
-                document.getElementById('planningHoursReadout').textContent = `${count > 0 ? planningHours : 0} hrs`;
+                const planningHours = round2(planningDuration * planningParticipantCount);
+                document.getElementById('planningHoursReadout').textContent = `${planningParticipantCount > 0 ? planningHours : 0} hrs`;
 
                 // Project duration/hours (reuses existing Start/End Date/Time fields)
                 const projectDuration = computeDurationHours(
@@ -1614,7 +1665,7 @@
                 document.getElementById('projectHoursReadout').textContent = `${count > 0 ? projectHours : 0} hrs`;
 
                 const totalHours = round2((count > 0 ? planningHours : 0) + (count > 0 ? projectHours : 0));
-                document.getElementById('totalHoursReadout').textContent = `${totalHours} hrs`;
+                document.getElementById('totalHoursReadout').textContent = `Project Volunteer Hours + Planning Volunteer Hours = ${totalHours} hrs`;
 
                 // Keep legacy single-duration Volunteering Hours field (existing
                 // reports/pages depend on it) in sync using the Project dates.
@@ -1633,7 +1684,7 @@
             }
             ['projectStartDate', 'projectStartTime', 'projectEndDate', 'projectEndTime']
                 .forEach(id => document.getElementById(id).addEventListener('input', updateParticipationDerived));
-            ['planningStartDate', 'planningStartTime', 'planningEndDate', 'planningEndTime']
+            ['planningStartDate', 'planningStartTime', 'planningEndDate', 'planningEndTime', 'planningParticipants', 'projectParticipants']
                 .forEach(id => document.getElementById(id).addEventListener('input', updateParticipationDerived));
 
             // ── Load Participation Records (for display + edit-form reload) ──
@@ -1774,6 +1825,7 @@
                                 <div class="application-actions">
                                     <button class="action-btn-sm btn-edit-sm" data-id="${p.id}" data-action="edit"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
                                     <button class="action-btn-sm btn-delete-sm" data-id="${p.id}" data-action="delete"><i class="fa-solid fa-trash"></i> Delete</button>
+                                    <button class="action-btn-sm btn-print-sm" data-id="${p.id}" data-action="print"><i class="fa-solid fa-file-pdf"></i> Print</button>
                                 </div>
                             </article>
                         `;
@@ -1786,6 +1838,7 @@
                             const id = parseInt(btn.dataset.id);
                             if (btn.dataset.action === 'delete') deleteProject(id);
                             else if (btn.dataset.action === 'edit') openEditModal(id);
+                            else if (btn.dataset.action === 'print') printSingleProjectPDF(id);
                         });
                     });
 
@@ -1914,6 +1967,9 @@
                 document.getElementById('projectCertificate').value = project.club_certificate === true ? 'yes' : project.club_certificate === false ? 'no' : '';
                 document.getElementById('projectStatus').value = project.status || 'upcoming';
                 document.getElementById('projectDescription').value = project.description || '';
+                document.getElementById('projectSDG').value = project.sdg || '';
+                document.getElementById('projectObjectives').value = project.project_objectives || '';
+                document.getElementById('projectBenefitNote').value = project.benefit_note || '';
                 document.getElementById('projectCoordinator').value = project.project_coordinator_id || '';
                 renderCoordinatorContact(project.project_coordinator_id || '');
                 document.getElementById('projectAvenue').value = project.avenue || '';
@@ -1963,8 +2019,12 @@
                 document.getElementById('projectEndDate').value = '';
                 document.getElementById('projectEndTime').value = '';
                 document.getElementById('projectParticipants').value = '';
+                document.getElementById('planningParticipants').value = '';
                 document.getElementById('projectVolunteerHours').value = '';
                 document.getElementById('projectCertificate').value = '';
+                document.getElementById('projectSDG').value = '';
+                document.getElementById('projectObjectives').value = '';
+                document.getElementById('projectBenefitNote').value = '';
                 document.getElementById('projectStatus').value = 'upcoming';
                 document.getElementById('projectCoordinator').value = '';
                 document.getElementById('coordinatorContactBox').style.display = 'none';
@@ -2005,7 +2065,8 @@
 
                 const planningDuration = computeDurationHours(planningStartDate, planningStartTime, planningEndDate, planningEndTime);
                 const projectDuration = computeDurationHours(startDate, startTime, endDate, endTime);
-                const planningVolunteerHours = round2(planningDuration * participants);
+                const planningParticipants = getPlanningParticipantCount();
+                const planningVolunteerHours = round2(planningDuration * planningParticipants);
                 const projectVolunteerHours = round2(projectDuration * participants);
                 const totalVolunteerHours = round2(planningVolunteerHours + projectVolunteerHours);
 
@@ -2024,6 +2085,9 @@
                     location: document.getElementById('projectLocation').value.trim(),
                     status: document.getElementById('projectStatus').value,
                     description: document.getElementById('projectDescription').value.trim(),
+                    sdg: document.getElementById('projectSDG').value || null,
+                    project_objectives: document.getElementById('projectObjectives').value.trim() || null,
+                    benefit_note: document.getElementById('projectBenefitNote').value.trim() || null,
                     project_coordinator_id: document.getElementById('projectCoordinator').value || null,
                     // Participants Count = selected members + guests (auto-calculated).
                     participants_count: participants,
@@ -2050,7 +2114,7 @@
                     total_volunteer_hours: totalVolunteerHours
                 };
 
-                if (!data.name || !data.date || !data.target_audience || !data.location) {
+                if (!data.name || !data.date || !data.target_audience || !data.location || !data.sdg || !data.project_objectives || !data.benefit_note) {
                     showToast('Please fill all required fields (*).', 'error');
                     return;
                 }
@@ -2155,6 +2219,223 @@
                 }
             }
 
+
+            // ── Print one project's complete details as a PDF ──
+            async function printSingleProjectPDF(projectId) {
+                try {
+                    const jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
+                    if (!jsPDFCtor) {
+                        showToast('❌ PDF library failed to load. Check your connection and try again.', 'error');
+                        return;
+                    }
+
+                    const p = allProjects.find(item => Number(item.id) === Number(projectId));
+                    if (!p) {
+                        showToast('❌ Project details not found.', 'error');
+                        return;
+                    }
+
+                    showToast('⏳ Generating project PDF...', 'info');
+
+                    const doc = new jsPDFCtor({ unit: 'pt', format: 'a4' });
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
+                    const margin = 40;
+                    const contentWidth = pageWidth - margin * 2;
+                    const bottom = pageHeight - 42;
+                    let y = 0;
+
+                    const clean = (value) => {
+                        if (value === null || value === undefined || value === '') return '—';
+                        return String(value).replace(/\s+/g, ' ').trim() || '—';
+                    };
+
+                    const coordinator = p.project_coordinator_id ? getMemberContact(p.project_coordinator_id) : null;
+                    const partInfo = projectParticipantsMap[p.id] || null;
+                    const memberNames = partInfo ? partInfo.members : [];
+                    const guestNames = partInfo ? partInfo.guests : [];
+
+                    let totalHours = p.total_volunteer_hours;
+                    if (totalHours == null || totalHours === '') {
+                        const planningHours = p.planning_volunteer_hours != null ? Number(p.planning_volunteer_hours) : 0;
+                        const projectHours = p.project_volunteer_hours != null ? Number(p.project_volunteer_hours) : 0;
+                        totalHours = planningHours + projectHours;
+                        if ((!planningHours && !projectHours) && p.volunteering_hours != null) totalHours = Number(p.volunteering_hours);
+                    }
+
+                    const startDT = p.start_date ? formatDateTimePart(p.start_date, p.start_time) : (p.date || '—');
+                    const endDT = (p.end_date || p.end_time) ? formatDateTimePart(p.end_date || p.start_date, p.end_time) : '—';
+                    const planningStartDT = p.planning_start_date ? formatDateTimePart(p.planning_start_date, p.planning_start_time) : '—';
+                    const planningEndDT = (p.planning_end_date || p.planning_end_time) ? formatDateTimePart(p.planning_end_date || p.planning_start_date, p.planning_end_time) : '—';
+                    const status = isProjectExpired(p) && p.status !== 'completed' && p.status !== 'cancelled' ? 'expired' : (p.status || 'upcoming');
+
+                    function footer() {
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(7.5);
+                        doc.setTextColor(120);
+                        doc.text(`Project Details PDF · Rotaract Club of Galkot, Baglung · Page ${doc.internal.getNumberOfPages()}`, pageWidth / 2, pageHeight - 18, { align: 'center' });
+                        doc.setTextColor(0);
+                    }
+
+                    function newPage() {
+                        footer();
+                        doc.addPage();
+                        y = margin;
+                        drawHeader(false);
+                    }
+
+                    function ensureSpace(h) {
+                        if (y + h > bottom) newPage();
+                    }
+
+                    function drawHeader(first = false) {
+                        doc.setTextColor(0);
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(first ? 9 : 8);
+                        doc.text('ROTARACT CLUB OF GALKOT, BAGLUNG', margin, y);
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(7.5);
+                        doc.setTextColor(110);
+                        doc.text(`Project ID: ${p.id} · Printed: ${new Date().toLocaleString()}`, pageWidth - margin, y, { align: 'right' });
+                        doc.setTextColor(0);
+                        y += first ? 18 : 14;
+                    }
+
+                    function addLabelValue(label, value) {
+                        const labelW = 145;
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(9.2);
+                        const labelLines = doc.splitTextToSize(clean(label), labelW - 8);
+                        doc.setFont('helvetica', 'normal');
+                        const valueLines = doc.splitTextToSize(clean(value), contentWidth - labelW - 8);
+                        const lines = Math.max(labelLines.length, valueLines.length);
+                        const h = Math.max(24, lines * 12 + 9);
+                        ensureSpace(h);
+                        doc.setDrawColor(220);
+                        doc.rect(margin, y, contentWidth, h);
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(9.2);
+                        doc.text(labelLines, margin + 5, y + 14);
+                        doc.setFont('helvetica', 'normal');
+                        doc.text(valueLines, margin + labelW, y + 14);
+                        y += h;
+                    }
+
+                    function addSection(label, value) {
+                        const text = clean(value);
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(9.4);
+                        const lines = doc.splitTextToSize(text, contentWidth);
+                        let offset = 0;
+                        while (offset < lines.length) {
+                            const capacity = Math.max(1, Math.floor((bottom - y - 28) / 12.5));
+                            if (capacity <= 0) { newPage(); continue; }
+                            const chunk = lines.slice(offset, offset + capacity);
+                            ensureSpace(34);
+                            doc.setFont('helvetica', 'bold');
+                            doc.setFontSize(10);
+                            if (offset === 0) doc.text(label, margin, y);
+                            y += 13;
+                            doc.setFont('helvetica', 'normal');
+                            doc.setFontSize(9.4);
+                            doc.text(chunk, margin, y);
+                            y += chunk.length * 12.5 + 8;
+                            offset += chunk.length;
+                            if (offset < lines.length) newPage();
+                        }
+                    }
+
+                    // Start page with a clearly readable title.
+                    y = margin;
+                    drawHeader(true);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(18);
+                    const titleLines = doc.splitTextToSize(clean(p.name), contentWidth);
+                    ensureSpace(titleLines.length * 21 + 14);
+                    doc.text(titleLines, margin, y + 2);
+                    y += titleLines.length * 21 + 12;
+
+                    // Every field is printed as wrapped text; nothing is clipped or hidden.
+                    const fields = [
+                        ['Project ID', p.id],
+                        ['Start Date & Time', startDT],
+                        ['End Date & Time', endDT],
+                        ['Target Audience', p.target_audience],
+                        ['Location', p.location],
+                        ['Avenue of Service', p.avenue],
+                        ['Project Coordinator', coordinator ? [coordinator.name, coordinator.phone, coordinator.email].filter(Boolean).join(' · ') : (p.project_coordinator || p.coordinator_name)],
+                        ['Total Cost', p.total_cost],
+                        ['Participants Count', p.participants_count],
+                        ['Participations', partInfo ? `${memberNames.length} members + ${guestNames.length} guests` : (p.participations ?? p.participants_count)],
+                        ['Planning Start', planningStartDT],
+                        ['Planning End', planningEndDT],
+                        ['Planning Volunteer Hours', p.planning_volunteer_hours != null ? `${p.planning_volunteer_hours} hrs` : '—'],
+                        ['Project Volunteer Hours', p.project_volunteer_hours != null ? `${p.project_volunteer_hours} hrs` : '—'],
+                        ['Total Volunteer Hours', totalHours != null && Number.isFinite(Number(totalHours)) ? `${Number(totalHours).toFixed(2).replace(/\.00$/, '')} hrs` : '—'],
+                        ['Club Got Certificate', p.club_certificate === true || p.club_certificate === 'true' || p.club_certificate === 'yes' ? 'Yes' : p.club_certificate === false || p.club_certificate === 'false' || p.club_certificate === 'no' ? 'No' : '—'],
+                        ['SDG', p.sdg],
+                        ['Status', getStatusDisplay(status)],
+                        ['Report ID', p.report_id],
+                        ['Report URL', p.report_url]
+                    ];
+                    fields.forEach(([label, value]) => addLabelValue(label, value));
+
+                    addSection('Description:', p.description);
+                    addSection('Project Objectives:', p.project_objectives);
+                    addSection('Benefit Note:', p.benefit_note);
+
+                    const participantDetails = [];
+                    if (memberNames.length) participantDetails.push(`Members: ${memberNames.join(', ')}`);
+                    if (guestNames.length) participantDetails.push(`Guests: ${guestNames.join(', ')}`);
+                    addSection('Participant Details:', participantDetails.length ? participantDetails.join(' | ') : 'No detailed participant records available.');
+
+                    // Photos are placed after the text, with page breaks if necessary so they never cover data.
+                    const photoUrls = Array.isArray(p.photo_urls) ? p.photo_urls.filter(Boolean).slice(0, 4) : [];
+                    if (photoUrls.length) {
+                        const loaded = await Promise.all(photoUrls.map(url => loadImageAsDataUrl(url)));
+                        newPage();
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(11);
+                        doc.text('Project Photos', margin, y);
+                        y += 16;
+                        const gap = 8;
+                        const cellW = (contentWidth - gap) / 2;
+                        const cellH = 220;
+                        for (let idx = 0; idx < loaded.length; idx++) {
+                            const col = idx % 2;
+                            const row = Math.floor(idx / 2);
+                            if (row > 0 && col === 0 && y + cellH > bottom) newPage();
+                            const x = margin + col * (cellW + gap);
+                            const yy = y + row * (cellH + gap);
+                            doc.setDrawColor(210);
+                            doc.rect(x, yy, cellW, cellH);
+                            const img = loaded[idx];
+                            if (img) {
+                                const ratio = img.width / img.height;
+                                let w = cellW - 8, h = w / ratio;
+                                if (h > cellH - 8) { h = cellH - 8; w = h * ratio; }
+                                doc.addImage(img.dataUrl, 'JPEG', x + (cellW - w) / 2, yy + (cellH - h) / 2, w, h);
+                            } else {
+                                doc.setFont('helvetica', 'italic');
+                                doc.setFontSize(8);
+                                doc.setTextColor(130);
+                                doc.text('Image unavailable', x + cellW / 2, yy + cellH / 2, { align: 'center' });
+                                doc.setTextColor(0);
+                            }
+                            if (idx % 2 === 1 || idx === loaded.length - 1) y = yy + cellH + gap;
+                        }
+                    }
+
+                    footer();
+                    const safeName = clean(p.name).replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 80) || `Project_${p.id}`;
+                    doc.save(`Project_${p.id}_${safeName}.pdf`);
+                    showToast(`✅ PDF downloaded for project #${p.id}.`);
+                } catch (err) {
+                    console.error('Single project PDF error:', err);
+                    showToast('❌ PDF generation failed: ' + (err.message || err), 'error');
+                }
+            }
+
             // ── Export Completed Projects (combined PDF report) ──
             // Loads an image URL into a data URL so it can be embedded in the PDF,
             // returning null on failure so missing/broken photos are skipped
@@ -2203,141 +2484,324 @@
                     const doc = new jsPDFCtor({ unit: 'pt', format: 'a4' });
                     const pageWidth = doc.internal.pageSize.getWidth();
                     const pageHeight = doc.internal.pageSize.getHeight();
-                    const margin = 40;
-                    let y = margin;
+                    const margin = 36;
+                    const contentWidth = pageWidth - (margin * 2);
 
-                    // Report title
-                    doc.setFont('helvetica', 'bold');
-                    doc.setFontSize(20);
-                    doc.text('COMPLETED PROJECTS REPORT', pageWidth / 2, y, { align: 'center' });
-                    y += 18;
-                    doc.setFont('helvetica', 'normal');
-                    doc.setFontSize(10);
-                    doc.setTextColor(100);
-                    doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth / 2, y, { align: 'center' });
-                    doc.setTextColor(0);
-                    y += 30;
+                    // Draw justified text. The last line of a paragraph is left aligned.
+                    const drawJustifiedParagraph = (text, x, y, maxWidth, lineHeight, fontSize) => {
+                        const clean = String(text || '—').replace(/\s+/g, ' ').trim() || '—';
+                        doc.setFontSize(fontSize);
+                        const words = clean.split(' ');
+                        const lines = [];
+                        let line = '';
 
-                    const ensureSpace = (needed) => {
-                        if (y + needed > pageHeight - margin) {
-                            doc.addPage();
-                            y = margin;
+                        words.forEach(word => {
+                            const test = line ? `${line} ${word}` : word;
+                            if (doc.getTextWidth(test) <= maxWidth) {
+                                line = test;
+                            } else {
+                                if (line) lines.push(line);
+                                line = word;
+                            }
+                        });
+                        if (line) lines.push(line);
+
+                        lines.forEach((lineText, index) => {
+                            const isLastLine = index === lines.length - 1;
+                            if (isLastLine || !lineText.includes(' ')) {
+                                doc.text(lineText, x, y);
+                            } else {
+                                const lineWords = lineText.split(' ');
+                                const wordsWidth = lineWords.reduce((sum, word) => sum + doc.getTextWidth(word), 0);
+                                const gap = (maxWidth - wordsWidth) / (lineWords.length - 1);
+                                let cursorX = x;
+                                lineWords.forEach((word, wordIndex) => {
+                                    doc.text(word, cursorX, y);
+                                    if (wordIndex < lineWords.length - 1) cursorX += doc.getTextWidth(word) + gap;
+                                });
+                            }
+                            y += lineHeight;
+                        });
+
+                        return y;
+                    };
+
+                    const loadPhoto = async (url) => {
+                        try {
+                            const img = await loadImageAsDataUrl(url);
+                            return img;
+                        } catch (e) {
+                            return null;
                         }
                     };
 
+                    // One completed project = exactly one A4 page.
                     for (let i = 0; i < completed.length; i++) {
+                        if (i > 0) doc.addPage();
+
                         const p = completed[i];
 
-                        ensureSpace(140);
+                        // Use the database's total_volunteer_hours first.
+                        // Fall back only for older rows where the total is not present.
+                        let totalHours = p.total_volunteer_hours;
+                        if (totalHours == null || totalHours === '') {
+                            const planningHours = p.planning_volunteer_hours != null
+                                ? Number(p.planning_volunteer_hours) : 0;
+                            const projectHours = p.project_volunteer_hours != null
+                                ? Number(p.project_volunteer_hours) : 0;
+                            totalHours = planningHours + projectHours;
 
-                        // Separator between projects
-                        if (i > 0) {
-                            doc.setDrawColor(200);
-                            doc.line(margin, y, pageWidth - margin, y);
-                            y += 16;
-                            ensureSpace(120);
+                            if ((!planningHours && !projectHours) && p.volunteering_hours != null) {
+                                totalHours = Number(p.volunteering_hours);
+                            }
                         }
 
-                        const hours = p.volunteering_hours != null
-                            ? p.volunteering_hours
-                            : computeVolunteeringHours(p.start_date, p.start_time, p.end_date, p.end_time, p.participants_count);
+                        const startDT = p.start_date
+                            ? formatDateTimePart(p.start_date, p.start_time).replace(/&amp;/g, '&')
+                            : (p.date || '—');
 
-                        const startDT = p.start_date ? formatDateTimePart(p.start_date, p.start_time).replace(/&amp;/g, '&') : (p.date || '—');
                         const endDT = (p.end_date || p.end_time)
                             ? formatDateTimePart(p.end_date || p.start_date, p.end_time).replace(/&amp;/g, '&')
                             : '—';
 
-                        const fields = [
-                            ['Project Name:', p.name || '—'],
-                            ['Start Date & Time:', startDT || '—'],
-                            ['End Date & Time:', endDT || '—'],
+                        // Fit-to-page values. They are reduced only if the content is unusually long.
+                        let titleSize = 18;
+                        let bodySize = 10.5;
+                        let lineHeight = 14;
+                        let photoHeight = 205;
+                        let descriptionHeightEstimate = 90;
+
+                        const description = String(p.description || '—').replace(/\s+/g, ' ').trim() || '—';
+                        const objectives = String(p.project_objectives || '—').replace(/\s+/g, ' ').trim() || '—';
+                        const benefitNote = String(p.benefit_note || '—').replace(/\s+/g, ' ').trim() || '—';
+                        const descWords = `${description} ${objectives} ${benefitNote}`.split(' ');
+
+                        // Estimate description lines and reduce visual scale for very long descriptions.
+                        const estimateDescriptionLines = (fontSize) => {
+                            doc.setFontSize(fontSize);
+                            let lines = 1;
+                            let line = '';
+                            descWords.forEach(word => {
+                                const test = line ? `${line} ${word}` : word;
+                                if (doc.getTextWidth(test) <= contentWidth) line = test;
+                                else { lines++; line = word; }
+                            });
+                            return lines;
+                        };
+
+                        const estimatedLines = estimateDescriptionLines(bodySize);
+                        if (estimatedLines > 9) {
+                            bodySize = 9.5;
+                            lineHeight = 12.5;
+                            photoHeight = 185;
+                        }
+                        if (estimatedLines > 14) {
+                            bodySize = 8.8;
+                            lineHeight = 11.5;
+                            photoHeight = 165;
+                        }
+                        if (estimatedLines > 22) {
+                            bodySize = 8.1;
+                            lineHeight = 10.5;
+                            photoHeight = 135;
+                        }
+                        if (estimatedLines > 30) {
+                            bodySize = 7.5;
+                            lineHeight = 9.5;
+                            photoHeight = 110;
+                        }
+
+                        // Header
+                        doc.setTextColor(0);
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(titleSize);
+                        doc.text('COMPLETED PROJECT REPORT', pageWidth / 2, margin + 8, { align: 'center' });
+
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(8.5);
+                        doc.setTextColor(110);
+                        doc.text(
+                            `Generated: ${new Date().toLocaleString()}`,
+                            pageWidth / 2,
+                            margin + 22,
+                            { align: 'center' }
+                        );
+                        doc.setTextColor(0);
+
+                        let y = margin + 48;
+
+                        // Project title
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(titleSize);
+                        const titleLines = doc.splitTextToSize(String(p.name || 'Unnamed Project'), contentWidth);
+                        doc.text(titleLines, margin, y);
+                        y += titleLines.length * (titleSize + 3) + 8;
+
+                        // Additional project information for the printable PDF.
+                        const coordinator = p.project_coordinator_id
+                            ? getMemberContact(p.project_coordinator_id)
+                            : null;
+                        const coordinatorText = coordinator
+                            ? [coordinator.name, coordinator.phone, coordinator.email].filter(Boolean).join(' · ')
+                            : (p.project_coordinator || p.coordinator_name || '—');
+
+                        const partInfo = projectParticipantsMap[p.id] || null;
+                        const participationsText = partInfo
+                            ? `${partInfo.members.length} members + ${partInfo.guests.length} guests`
+                            : (p.participations != null
+                                ? String(p.participations)
+                                : (p.participants_count != null ? String(p.participants_count) : '—'));
+
+                        const infoRows = [
+                            ['Start Date & Time:', startDT],
+                            ['End Date & Time:', endDT],
                             ['Location:', p.location || '—'],
-                            ['Volunteering Hours:', hours != null ? String(hours) : '—']
+                            ['Avenue of Service:', p.avenue || '—'],
+                            ['Project Coordinator:', coordinatorText],
+                            ['Participations:', participationsText],
+                            ['Total Volunteering Hours:', totalHours != null && Number.isFinite(Number(totalHours))
+                                ? `${Number(totalHours).toFixed(2).replace(/\.00$/, '')} hrs`
+                                : '—'],
+                            ['Report ID:', p.report_id || '—'],
+                            ['Report URL:', p.report_url || '—'],
+                            ['Participants Count:', p.participants_count != null ? String(p.participants_count) : '—'],
+                            ['Status:', getStatusDisplay(p.status)],
+                            ['SDG:', p.sdg || '—']
                         ];
 
-                        doc.setFontSize(12);
-                        fields.forEach(([label, value]) => {
-                            ensureSpace(18);
+                        doc.setFontSize(bodySize);
+                        const labelWidth = 145;
+                        const rowLineHeight = lineHeight + 1;
+
+                        infoRows.forEach(([label, value]) => {
+                            const valueLines = doc.splitTextToSize(String(value), contentWidth - labelWidth);
+                            const rowHeight = Math.max(rowLineHeight, valueLines.length * rowLineHeight) + 3;
+
                             doc.setFont('helvetica', 'bold');
                             doc.text(label, margin, y);
+
                             doc.setFont('helvetica', 'normal');
-                            const labelWidth = doc.getTextWidth(label) + 6;
-                            const wrapped = doc.splitTextToSize(String(value), pageWidth - margin * 2 - labelWidth);
-                            doc.text(wrapped, margin + labelWidth, y);
-                            y += 16 * wrapped.length;
+                            doc.text(valueLines, margin + labelWidth, y);
+
+                            doc.setDrawColor(225);
+                            doc.line(margin, y + rowHeight - 3, pageWidth - margin, y + rowHeight - 3);
+                            y += rowHeight;
                         });
 
-                        // Description
-                        ensureSpace(18);
+                        y += 9;
+
+                        // Description — justified.
                         doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(bodySize + 0.5);
                         doc.text('Description:', margin, y);
-                        y += 16;
+                        y += lineHeight + 2;
+
                         doc.setFont('helvetica', 'normal');
-                        const descText = p.description || '—';
-                        const descWrapped = doc.splitTextToSize(descText, pageWidth - margin * 2);
-                        descWrapped.forEach(line => {
-                            ensureSpace(14);
-                            doc.text(line, margin, y);
-                            y += 14;
-                        });
+                        y = drawJustifiedParagraph(
+                            description,
+                            margin,
+                            y,
+                            contentWidth,
+                            lineHeight,
+                            bodySize
+                        );
                         y += 8;
 
-                        // Photos — 4-photo 2x2 grid, gracefully handling missing photos
-                        const photoUrls = Array.isArray(p.photo_urls) ? p.photo_urls.filter(Boolean).slice(0, 4) : [];
-                        if (photoUrls.length > 0) {
-                            const gridW = pageWidth - margin * 2;
-                            const cellW = (gridW - 10) / 2;
-                            const cellH = cellW * 0.75;
-                            ensureSpace(cellH * 2 + 20);
+                        const drawSectionParagraph = (label, text) => {
+                            doc.setFont('helvetica', 'bold');
+                            doc.setFontSize(bodySize + 0.5);
+                            doc.text(label, margin, y);
+                            y += lineHeight + 2;
+                            doc.setFont('helvetica', 'normal');
+                            y = drawJustifiedParagraph(
+                                String(text || '—').replace(/\s+/g, ' ').trim() || '—',
+                                margin, y, contentWidth, lineHeight, bodySize
+                            );
+                            y += 8;
+                        };
 
-                            const loaded = await Promise.all(photoUrls.map(url => loadImageAsDataUrl(url)));
+                        drawSectionParagraph('Project Objectives:', p.project_objectives || '—');
+                        drawSectionParagraph('Benefit Note:', p.benefit_note || '—');
 
-                            for (let idx = 0; idx < loaded.length; idx++) {
-                                const img = loaded[idx];
+                        // Photos — fit all four into the remaining space on this page.
+                        const photoUrls = Array.isArray(p.photo_urls)
+                            ? p.photo_urls.filter(Boolean).slice(0, 4)
+                            : [];
+
+                        const footerReserve = 24;
+                        const availablePhotoHeight = pageHeight - margin - footerReserve - y;
+                        const gridGap = 8;
+                        const cellW = (contentWidth - gridGap) / 2;
+                        const maxCellH = Math.max(70, Math.min(photoHeight, (availablePhotoHeight - gridGap) / 2));
+                        const cellH = maxCellH;
+
+                        if (photoUrls.length > 0 && availablePhotoHeight >= (cellH * 2 + gridGap)) {
+                            const loaded = await Promise.all(photoUrls.map(loadPhoto));
+
+                            for (let idx = 0; idx < 4; idx++) {
                                 const col = idx % 2;
                                 const row = Math.floor(idx / 2);
-                                const cellX = margin + col * (cellW + 10);
-                                const cellY = y + row * (cellH + 10);
+                                const cellX = margin + col * (cellW + gridGap);
+                                const cellY = y + row * (cellH + gridGap);
+
+                                const img = loaded[idx];
+
+                                doc.setDrawColor(210);
+                                doc.rect(cellX, cellY, cellW, cellH);
 
                                 if (img) {
-                                    // Fit image within cell, preserving aspect ratio, no stretching.
                                     const ratio = img.width / img.height;
-                                    let drawW = cellW, drawH = cellW / ratio;
-                                    if (drawH > cellH) { drawH = cellH; drawW = cellH * ratio; }
+                                    let drawW = cellW - 4;
+                                    let drawH = drawW / ratio;
+
+                                    if (drawH > cellH - 4) {
+                                        drawH = cellH - 4;
+                                        drawW = drawH * ratio;
+                                    }
+
                                     const offsetX = cellX + (cellW - drawW) / 2;
                                     const offsetY = cellY + (cellH - drawH) / 2;
+
                                     try {
                                         doc.addImage(img.dataUrl, 'JPEG', offsetX, offsetY, drawW, drawH);
                                     } catch (e) {
-                                        doc.setDrawColor(220);
-                                        doc.rect(cellX, cellY, cellW, cellH);
+                                        doc.setFont('helvetica', 'italic');
+                                        doc.setFontSize(8);
+                                        doc.setTextColor(130);
+                                        doc.text('Image unavailable', cellX + cellW / 2, cellY + cellH / 2, { align: 'center' });
+                                        doc.setTextColor(0);
                                     }
                                 } else {
-                                    doc.setDrawColor(220);
-                                    doc.rect(cellX, cellY, cellW, cellH);
-                                    doc.setFontSize(9);
-                                    doc.setTextColor(150);
+                                    doc.setFont('helvetica', 'italic');
+                                    doc.setFontSize(8);
+                                    doc.setTextColor(130);
                                     doc.text('Image unavailable', cellX + cellW / 2, cellY + cellH / 2, { align: 'center' });
                                     doc.setTextColor(0);
                                 }
                             }
-                            y += cellH * 2 + 20;
                         } else {
-                            ensureSpace(16);
                             doc.setFont('helvetica', 'italic');
-                            doc.setFontSize(10);
+                            doc.setFontSize(9);
                             doc.setTextColor(130);
                             doc.text('No photos available for this project.', margin, y);
                             doc.setTextColor(0);
-                            doc.setFont('helvetica', 'normal');
-                            y += 20;
                         }
 
-                        y += 10;
+                        // Small page footer.
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(7.5);
+                        doc.setTextColor(120);
+                        doc.text(
+                            `Project ${i + 1} of ${completed.length}`,
+                            pageWidth / 2,
+                            pageHeight - 18,
+                            { align: 'center' }
+                        );
+                        doc.setTextColor(0);
                     }
 
                     doc.save(`Completed_Projects_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
-                    showToast('✅ PDF report generated!');
+                    showToast('✅ PDF report generated — one project per page.');
                 } catch (err) {
                     showToast('❌ PDF generation failed: ' + (err.message || err), 'error');
                 }
@@ -2477,7 +2941,7 @@
                     // Members must load first so participant names can be
                     // resolved from IDs when loadProjects() builds the
                     // participation map and renders project cards.
-                    await loadMembersList();
+                    await Promise.all([loadMembersList(), loadStrategicGoals()]);
                     await Promise.all([loadProjects(), loadApplications()]);
                     setupSubscriptions();
                 }

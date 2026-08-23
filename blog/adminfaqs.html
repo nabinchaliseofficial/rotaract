@@ -511,6 +511,16 @@ textarea{
         width:100%;
     }
 }
+
+/* ===== FAQ LEARNING CENTER ADMIN ADDITIONS ===== */
+.stats-grid{display:grid;grid-template-columns:repeat(8,minmax(100px,1fr));gap:10px;margin-bottom:20px}
+.stat-card{background:#fff;border-radius:12px;padding:14px;box-shadow:0 3px 18px rgba(0,0,0,.05)}.stat-card strong{display:block;font-size:20px}.stat-card span{font-size:11px;color:#667085}
+.admin-preview-modal{position:fixed;inset:0;background:rgba(15,23,42,.72);display:none;z-index:9999;align-items:center;justify-content:center;padding:20px}.admin-preview-modal.show{display:flex}
+.admin-preview{width:min(850px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:18px;padding:25px;position:relative}.admin-preview h2{margin-bottom:6px}.admin-preview .preview-answer{line-height:1.8;margin-top:18px}.admin-preview .preview-answer ul,.admin-preview .preview-answer ol{margin-left:25px}.preview-close{position:absolute;right:15px;top:12px;border:0;background:#f1f5f9;border-radius:50%;width:36px;height:36px;font-size:22px;cursor:pointer}
+@media(max-width:1100px){.stats-grid{grid-template-columns:repeat(4,1fr)}}@media(max-width:700px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+
+.faq-answer p{margin:0 0 8px}.faq-answer ul,.faq-answer ol{margin:6px 0 10px 22px}
+
 </style>
 </head>
 
@@ -686,6 +696,9 @@ textarea{
     </div>
 
 
+
+<section class="stats-grid" id="faqStats" aria-label="FAQ Statistics"></section>
+
     <!-- FORM -->
 
     <section class="card">
@@ -771,6 +784,14 @@ textarea{
                 </div>
 
 
+
+                <div class="form-group full">
+                    <label class="inline">
+                        <input id="isFeatured" class="checkbox" type="checkbox">
+                        <span>⭐ Featured FAQ</span>
+                    </label>
+                </div>
+
                 <div class="form-group full">
 
                     <label class="inline">
@@ -844,7 +865,15 @@ textarea{
                 <option value="unpublished">
                     Unpublished
                 </option>
+                <option value="featured">Featured</option>
 
+            </select>
+
+            <select id="adminSortFilter">
+                <option value="default">Default Order</option>
+                <option value="views">Most Viewed</option>
+                <option value="helpful">Most Helpful</option>
+                <option value="updated">Recently Updated</option>
             </select>
 
         </div>
@@ -864,6 +893,16 @@ textarea{
 
 </div>
 
+
+
+<div id="adminPreviewModal" class="admin-preview-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="previewTitle">
+  <div class="admin-preview">
+    <button id="previewClose" class="preview-close" type="button" aria-label="Close preview">×</button>
+    <h2 id="previewTitle"></h2>
+    <span id="previewCategory" class="tag"></span>
+    <div id="previewAnswer" class="preview-answer"></div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -1758,6 +1797,8 @@ faqForm.addEventListener(
 
         const isPublished =
             isPublishedInput.checked;
+        const isFeatured =
+            document.getElementById("isFeatured")?.checked === true;
 
         if(!question || !answer){
 
@@ -1791,6 +1832,7 @@ faqForm.addEventListener(
                             category,
                             display_order:displayOrder,
                             is_published:isPublished,
+                            is_featured:isFeatured,
                             updated_at:new Date().toISOString()
                         })
                         .eq("id", editingId);
@@ -1806,6 +1848,7 @@ faqForm.addEventListener(
                             category,
                             display_order:displayOrder,
                             is_published:isPublished,
+                            is_featured:isFeatured,
                             created_by:currentUser
                                 ? currentUser.id
                                 : null
@@ -1890,6 +1933,7 @@ function editFAQ(faq){
 
     isPublishedInput.checked =
         faq.is_published === true;
+    if(document.getElementById("isFeatured")) document.getElementById("isFeatured").checked = faq.is_featured === true;
 
     saveButton.textContent =
         "Update FAQ";
@@ -1927,6 +1971,7 @@ function resetForm(){
     displayOrderInput.value = 0;
 
     isPublishedInput.checked = true;
+    if(document.getElementById("isFeatured")) document.getElementById("isFeatured").checked = false;
 
     saveButton.textContent =
         "Add FAQ";
@@ -1947,33 +1992,46 @@ function resetForm(){
 
 async function togglePublished(faq){
 
-    const newValue =
-        !faq.is_published;
+    const newValue = faq.is_published !== true;
+    const updatedAt = new Date().toISOString();
 
-    const { error } =
-        await supabaseClient
+    try{
+        const { data, error } = await supabaseClient
             .from("faqs")
             .update({
-                is_published:newValue,
-                updated_at:new Date().toISOString()
+                is_published: newValue,
+                updated_at: updatedAt
             })
-            .eq("id", faq.id);
+            .eq("id", faq.id)
+            .select("*")
+            .single();
 
-    if(error){
+        if(error){
+            console.error("Publish/Unpublish update error:", error);
+            alert("Unable to update publish status.\n\n" + (error.message || "Database update failed."));
+            return;
+        }
 
-        console.error(
-            "Publish update error:",
-            error
-        );
+        // Immediately update the local record so the button/status changes
+        // without depending on a second database reload.
+        const index = allFAQs.findIndex(item => String(item.id) === String(faq.id));
 
-        alert(
-            "Unable to update publish status."
-        );
+        if(index !== -1){
+            allFAQs[index] = {
+                ...allFAQs[index],
+                ...(data || {}),
+                is_published: newValue,
+                updated_at: updatedAt
+            };
+        }
 
-        return;
+        renderAdminFAQs();
+        renderStats();
+
+    }catch(error){
+        console.error("Unexpected publish/unpublish error:", error);
+        alert("Unable to update publish status.\n\n" + (error.message || "Unexpected error."));
     }
-
-    await loadFAQs();
 }
 
 
@@ -2029,6 +2087,85 @@ statusFilter.addEventListener(
     "change",
     renderAdminFAQs
 );
+
+
+
+/* ===== FAQ LEARNING CENTER ADMIN JAVASCRIPT ===== */
+let faqAnalytics={views:{},helpful:{},notHelpful:{}};
+async function loadAnalytics(){
+  const ids=allFAQs.map(f=>f.id).filter(Boolean);faqAnalytics={views:{},helpful:{},notHelpful:{}};
+  if(!ids.length){renderStats();return}
+  try{
+    const [v,h]=await Promise.all([
+      supabaseClient.from("faq_views").select("faq_id").in("faq_id",ids),
+      supabaseClient.from("faq_feedback").select("faq_id,is_helpful").in("faq_id",ids)
+    ]);
+    (v.data||[]).forEach(x=>faqAnalytics.views[x.faq_id]=(faqAnalytics.views[x.faq_id]||0)+1);
+    (h.data||[]).forEach(x=>{const k=x.is_helpful===true?"helpful":"notHelpful";faqAnalytics[k][x.faq_id]=(faqAnalytics[k][x.faq_id]||0)+1});
+  }catch(e){console.warn("Analytics tables unavailable:",e)}
+  renderStats();
+}
+function renderStats(){
+  const el=document.getElementById("faqStats");if(!el)return;
+  const totalViews=Object.values(faqAnalytics.views).reduce((a,b)=>a+b,0), helpful=Object.values(faqAnalytics.helpful).reduce((a,b)=>a+b,0), notHelpful=Object.values(faqAnalytics.notHelpful).reduce((a,b)=>a+b,0);
+  const cats=new Set(allFAQs.map(f=>String(f.category||"").trim()).filter(Boolean)).size;
+  const stats=[["Total FAQs",allFAQs.length],["Published",allFAQs.filter(f=>f.is_published).length],["Unpublished",allFAQs.filter(f=>!f.is_published).length],["Featured",allFAQs.filter(f=>f.is_featured===true).length],["Categories",cats],["Total Views",totalViews],["Helpful Votes",helpful],["Not Helpful",notHelpful]];
+  el.innerHTML=stats.map(s=>`<div class="stat-card"><strong>${s[1]}</strong><span>${s[0]}</span></div>`).join("");
+}
+function previewFAQ(faq){
+  const m=document.getElementById("adminPreviewModal"),title=document.getElementById("previewTitle"),cat=document.getElementById("previewCategory"),ans=document.getElementById("previewAnswer");
+  title.textContent=faq.question||"";cat.textContent=faq.category||"Uncategorized";ans.innerHTML=faq.answer||"";
+  m.classList.add("show");m.setAttribute("aria-hidden","false");
+}
+function closePreview(){const m=document.getElementById("adminPreviewModal");m.classList.remove("show");m.setAttribute("aria-hidden","true")}
+document.getElementById("previewClose").onclick=closePreview;document.getElementById("adminPreviewModal").addEventListener("click",e=>{if(e.target.id==="adminPreviewModal")closePreview()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closePreview()});
+
+const originalAdminLoad=loadFAQs;
+loadFAQs=async function(){await originalAdminLoad();await loadAnalytics()};
+const originalRenderAdmin=renderAdminFAQs;
+renderAdminFAQs=function(){
+  const query=adminSearch.value.trim().toLowerCase(), status=statusFilter.value, sort=document.getElementById("adminSortFilter")?.value||"default";
+  let filtered=[...allFAQs];
+  if(query)filtered=filtered.filter(f=>`${f.question||""} ${f.answer||""} ${f.category||""}`.replace(/<[^>]*>/g," ").toLowerCase().includes(query));
+  if(status==="published")filtered=filtered.filter(f=>f.is_published===true);
+  if(status==="unpublished")filtered=filtered.filter(f=>f.is_published!==true);
+  if(status==="featured")filtered=filtered.filter(f=>f.is_featured===true);
+  if(sort==="views")filtered.sort((a,b)=>(faqAnalytics.views[b.id]||0)-(faqAnalytics.views[a.id]||0));
+  if(sort==="helpful")filtered.sort((a,b)=>(faqAnalytics.helpful[b.id]||0)-(faqAnalytics.helpful[a.id]||0));
+  if(sort==="updated")filtered.sort((a,b)=>new Date(b.updated_at||0)-new Date(a.updated_at||0));
+  if(!filtered.length){faqList.innerHTML='<div class="empty">No FAQs found.</div>';return}
+  faqList.innerHTML="";
+  filtered.forEach(faq=>{
+    const row=document.createElement("div");row.className="faq-row";
+    row.innerHTML=`<div class="faq-top"><div class="faq-question">${escAdmin(faq.question||"")}</div></div><div class="faq-answer">${faq.answer||""}</div>`;
+    const meta=document.createElement("div");meta.className="meta";
+    meta.innerHTML=`<span class="tag">${escAdmin(faq.category||"Uncategorized")}</span><span class="tag">Order: ${faq.display_order??0}</span><span class="tag ${faq.is_published?"published":"unpublished"}">${faq.is_published?"Published":"Unpublished"}</span><span class="tag">${faq.is_featured?"⭐ Featured":"Not Featured"}</span><span class="tag">👁 ${faqAnalytics.views[faq.id]||0} Views</span><span class="tag">👍 ${faqAnalytics.helpful[faq.id]||0}</span><span class="tag">👎 ${faqAnalytics.notHelpful[faq.id]||0}</span><span class="tag">📅 Updated ${new Date(faq.updated_at||faq.created_at||Date.now()).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}</span>`;
+    row.appendChild(meta);const actions=document.createElement("div");actions.className="actions";
+    const btn=(txt,cls,fn)=>{const b=document.createElement("button");b.className="btn "+cls;b.textContent=txt;b.onclick=fn;return b};
+    actions.append(btn("👁 Preview","btn-secondary",()=>previewFAQ(faq)));
+    actions.append(btn("Edit","btn-secondary",()=>editFAQ(faq)));
+    actions.append(btn("📋 Duplicate","btn-secondary",()=>duplicateFAQ(faq)));
+    actions.append(btn(faq.is_featured?"★ Unfeature":"⭐ Featured","btn-secondary",()=>toggleFeatured(faq)));
+    actions.append(btn(faq.is_published?"Unpublish":"Publish",faq.is_published?"btn-secondary":"btn-success",()=>togglePublished(faq)));
+    actions.append(btn("Delete","btn-danger",()=>deleteFAQ(faq)));row.appendChild(actions);faqList.appendChild(row);
+  });
+  renderStats();
+};
+function escAdmin(v){return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+async function toggleFeatured(faq){
+  try{const {error}=await supabaseClient.from("faqs").update({is_featured:!faq.is_featured,updated_at:new Date().toISOString()}).eq("id",faq.id);if(error)throw error;await loadFAQs()}catch(e){console.error(e);alert("Featured option needs the is_featured column. Run the supplied SQL if it is not present.")}
+}
+async function duplicateFAQ(faq){
+  try{
+    const payload={question:`${faq.question||""} (Copy)`,answer:faq.answer||"",category:faq.category||null,display_order:Number(faq.display_order||0)+1,is_published:false,created_by:currentUser?currentUser.id:null};
+    if("is_featured" in faq)payload.is_featured=false;
+    const {data,error}=await supabaseClient.from("faqs").insert(payload).select("*").single();if(error)throw error;
+    await loadFAQs();if(data)editFAQ(data);
+  }catch(e){console.error(e);alert("Unable to duplicate FAQ.")}
+}
+document.getElementById("adminSearch").addEventListener("input",renderAdminFAQs);
+document.getElementById("statusFilter").addEventListener("change",renderAdminFAQs);
 
 
 /* =========================================

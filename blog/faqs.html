@@ -297,6 +297,50 @@ body{
         padding:7px 12px;
     }
 }
+
+/* ===== FAQ LEARNING CENTER ADDITIONS ===== */
+.learning-sections{display:grid;gap:18px;margin:20px 0}
+.learning-section{background:#fff;border-radius:16px;padding:18px;box-shadow:0 4px 20px rgba(0,0,0,.05)}
+.learning-section h2{font-size:19px;margin-bottom:12px}
+.category-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.category-card{border:1px solid #e5e7eb;background:#fff;border-radius:12px;padding:14px;text-align:left;cursor:pointer;transition:.2s}
+.category-card:hover{border-color:#e11d48;transform:translateY(-1px)}
+.category-card strong{display:block;font-size:14px}.category-card small{color:#667085}
+.featured-grid,.popular-grid,.recent-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.mini-card{border:1px solid #e5e7eb;border-radius:12px;padding:14px;cursor:pointer;background:#fff}
+.mini-card:hover{border-color:#e11d48}.mini-card h3{font-size:14px;margin-bottom:6px}.mini-card p{font-size:12px;color:#667085}
+.featured-ribbon{display:inline-block;background:#fff7ed;color:#c2410c;padding:4px 8px;border-radius:999px;font-size:11px;margin-bottom:7px}
+.studied-tag{display:inline-block;background:#dcfce7;color:#166534;padding:3px 7px;border-radius:999px;font-size:10px;margin-left:5px}
+.no-results-actions{margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.clear-search-btn{border:0;background:#e11d48;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer}
+.faq-modal{position:fixed;inset:0;background:rgba(15,23,42,.72);display:none;z-index:9999;align-items:center;justify-content:center;padding:20px}
+.faq-modal.show{display:flex;animation:faqFade .18s ease}
+@keyframes faqFade{from{opacity:0}to{opacity:1}}
+.study-dialog{width:min(900px,100%);max-height:92vh;background:#fff;border-radius:20px;box-shadow:0 30px 90px rgba(0,0,0,.3);display:flex;flex-direction:column;overflow:hidden;transform:translateY(10px);animation:faqUp .2s ease}
+@keyframes faqUp{to{transform:translateY(0)}}
+.study-header{position:sticky;top:0;background:#fff;border-bottom:1px solid #e5e7eb;padding:18px 22px;z-index:2}
+.study-header-row{display:flex;gap:12px;align-items:flex-start}.study-header h2{font-size:22px;line-height:1.35;flex:1}.study-close{border:0;background:#f1f5f9;width:38px;height:38px;border-radius:50%;font-size:24px;cursor:pointer}
+.study-badge{display:inline-block;margin-top:8px;background:#fce7f3;color:#be123c;padding:4px 9px;border-radius:999px;font-size:11px}
+.study-progress-wrap{height:5px;background:#e5e7eb}.study-progress{height:100%;width:0;background:#e11d48;transition:width .1s}
+.study-content{overflow:auto;padding:24px 28px;outline:none;flex:1}
+.study-content.study-wide{max-width:none;font-size:18px;line-height:1.85}
+.study-content p{margin:0 0 14px}.study-content ul,.study-content ol{margin:8px 0 16px 25px}.study-content h1,.study-content h2,.study-content h3{margin:18px 0 10px}.study-content a{color:#e11d48}
+.study-tools{padding:10px 18px;border-top:1px solid #e5e7eb;display:flex;gap:7px;flex-wrap:wrap;align-items:center;background:#f8fafc}
+.study-tools button{border:1px solid #d5dbe5;background:#fff;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:12px}
+.study-tools button:hover{border-color:#e11d48}.study-tools .active{background:#111827;color:#fff;border-color:#111827}
+.study-footer{border-top:1px solid #e5e7eb;padding:12px 18px;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#fff}
+.study-nav{display:flex;gap:8px}.study-nav button,.close-study{border:0;padding:10px 13px;border-radius:8px;cursor:pointer;font-weight:600}.study-nav button{background:#111827;color:#fff}.close-study{background:#e5e7eb;color:#111827}
+.study-theme-normal{background:#fff;color:#172033}.study-theme-sepia{background:#f7f0df;color:#4b4030}.study-theme-dark{background:#111827;color:#e5e7eb}.study-theme-dark .study-header,.study-theme-dark .study-footer,.study-theme-dark .study-tools{background:#1f2937;color:#fff;border-color:#374151}.study-theme-dark .study-tools button{background:#111827;color:#fff;border-color:#4b5563}.study-theme-sepia .study-header,.study-theme-sepia .study-footer,.study-theme-sepia .study-tools{background:#f1e8d2}
+body.modal-open{overflow:hidden}
+@media(max-width:700px){
+ .faq-modal{padding:0}.study-dialog{width:100%;height:100%;max-height:100vh;border-radius:0}
+ .study-header{padding:14px 15px}.study-header h2{font-size:19px}.study-content{padding:20px 17px;font-size:16px}.study-content.study-wide{font-size:18px}
+ .study-footer{position:sticky;bottom:0}.study-nav{width:100%}.study-nav button{flex:1}.study-tools{overflow:auto;flex-wrap:nowrap}
+}
+@media print{
+ body>*:not(#faqStudyModal){display:none!important}.faq-modal{position:static!important;display:block!important;background:#fff!important;padding:0}.study-dialog{max-height:none!important;box-shadow:none!important;border:0}.study-tools,.study-footer,.study-close,.study-progress-wrap{display:none!important}.study-content{overflow:visible!important}
+}
+
 </style>
 </head>
 
@@ -365,6 +409,47 @@ body{
 
     </section>
 
+
+
+<div id="learningSections" class="learning-sections" aria-label="FAQ learning center"></div>
+
+<div id="faqStudyModal" class="faq-modal" role="dialog" aria-modal="true" aria-labelledby="studyQuestion" aria-describedby="studyContent" aria-hidden="true">
+  <div class="study-dialog">
+    <div class="study-header">
+      <div class="study-header-row">
+        <div style="flex:1">
+          <h2 id="studyQuestion"></h2>
+          <span id="studyCategory" class="study-badge"></span>
+        </div>
+        <button id="studyClose" class="study-close" type="button" aria-label="Close study modal">×</button>
+      </div>
+    </div>
+    <div class="study-progress-wrap" aria-label="Reading progress"><div id="studyProgress" class="study-progress"></div></div>
+    <div id="studyContent" class="study-content" tabindex="-1"></div>
+    <div class="study-tools">
+      <button type="button" id="studyModeBtn">📖 Study Mode</button>
+      <button type="button" data-font="-1" aria-label="Decrease font size">A−</button>
+      <button type="button" data-font="0" aria-label="Normal font size">A</button>
+      <button type="button" data-font="1" aria-label="Increase font size">A+</button>
+      <button type="button" data-theme="normal">Normal</button>
+      <button type="button" data-theme="sepia">Sepia</button>
+      <button type="button" data-theme="dark">Dark</button>
+      <button type="button" id="copyAnswerBtn">📋 Copy</button>
+      <button type="button" id="shareFaqBtn">🔗 Share</button>
+      <button type="button" id="printFaqBtn">🖨 Print</button>
+      <button type="button" id="helpfulBtn">👍 Helpful</button>
+      <button type="button" id="notHelpfulBtn">👎 Not Helpful</button>
+      <button type="button" id="studiedBtn">✓ Studied</button>
+    </div>
+    <div class="study-footer">
+      <div class="study-nav">
+        <button type="button" id="prevFaqBtn">← Previous FAQ</button>
+        <button type="button" id="nextFaqBtn">Next FAQ →</button>
+      </div>
+      <button type="button" id="closeStudyFooter" class="close-study">Close</button>
+    </div>
+  </div>
+</div>
 
     <!-- FAQ CONTAINER -->
 
@@ -1044,6 +1129,128 @@ searchInput.addEventListener(
 
     }
 );
+
+
+
+/* ===== FAQ LEARNING CENTER JAVASCRIPT ===== */
+let currentStudyIndex = -1;
+let studyMode = false;
+let studyFontSize = Number(localStorage.getItem("faqStudyFontSize") || 16);
+let studyTheme = localStorage.getItem("faqStudyTheme") || "normal";
+let sessionId = localStorage.getItem("faqLearningSessionId");
+if(!sessionId){ sessionId = (crypto.randomUUID ? crypto.randomUUID() : "s-"+Date.now()+"-"+Math.random().toString(36).slice(2)); localStorage.setItem("faqLearningSessionId",sessionId); }
+const studiedKey="faqStudiedIds";
+function studiedIds(){ try{return JSON.parse(localStorage.getItem(studiedKey)||"[]")}catch{return[]}}
+function isStudied(id){return studiedIds().map(String).includes(String(id))}
+function markStudied(id){const a=studiedIds().map(String);if(!a.includes(String(id))){a.push(String(id));localStorage.setItem(studiedKey,JSON.stringify(a))}}
+
+const learningSections=document.getElementById("learningSections");
+const modal=document.getElementById("faqStudyModal");
+const dialog=document.querySelector(".study-dialog");
+const studyQuestion=document.getElementById("studyQuestion");
+const studyCategory=document.getElementById("studyCategory");
+const studyContent=document.getElementById("studyContent");
+const studyProgress=document.getElementById("studyProgress");
+
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function formatDate(v){if(!v)return "—";const d=new Date(v);return isNaN(d)?"—":d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}
+function categoryCounts(){const m={};allFAQs.forEach(f=>{const c=String(f.category||"Uncategorized").trim()||"Uncategorized";m[c]=(m[c]||0)+1});return m}
+
+async function analyticsFor(ids){
+  const result={views:{},helpful:{},notHelpful:{}};
+  if(!ids.length)return result;
+  try{
+    const [v,h,n]=await Promise.all([
+      supabaseClient.from("faq_views").select("faq_id").in("faq_id",ids),
+      supabaseClient.from("faq_feedback").select("faq_id,is_helpful").in("faq_id",ids),
+      supabaseClient.from("faq_feedback").select("faq_id,is_helpful").in("faq_id",ids)
+    ]);
+    (v.data||[]).forEach(x=>result.views[x.faq_id]=(result.views[x.faq_id]||0)+1);
+    (h.data||[]).forEach(x=>{if(x.is_helpful===true)result.helpful[x.faq_id]=(result.helpful[x.faq_id]||0)+1});
+    (n.data||[]).forEach(x=>{if(x.is_helpful===false)result.notHelpful[x.faq_id]=(result.notHelpful[x.faq_id]||0)+1});
+  }catch(e){console.warn("FAQ analytics unavailable:",e)}
+  return result;
+}
+
+async function renderLearningSections(){
+  if(!learningSections)return;
+  const counts=categoryCounts();
+  const ids=allFAQs.map(f=>f.id).filter(Boolean);
+  const a=await analyticsFor(ids);
+  const popular=[...allFAQs].sort((x,y)=>(a.helpful[y.id]||0)+(a.views[y.id]||0)*.15-(a.helpful[x.id]||0)-(a.views[x.id]||0)*.15).slice(0,4);
+  const featured=allFAQs.filter(f=>f.is_featured===true).slice(0,4);
+  const recent=[...allFAQs].filter(f=>f.updated_at).sort((x,y)=>new Date(y.updated_at)-new Date(x.updated_at)).slice(0,4);
+  let html=`<section class="learning-section"><h2>📚 Browse by Category</h2><div class="category-cards"><button class="category-card" onclick="selectLearningCategory('all')"><strong>All FAQs</strong><small>${allFAQs.length} FAQs</small></button>`;
+  Object.entries(counts).sort().forEach(([c,n])=>html+=`<button class="category-card" onclick="selectLearningCategory(${JSON.stringify(c)})"><strong>${esc(c)}</strong><small>${n} FAQs</small></button>`);
+  html+=`</div></section>`;
+  if(featured.length) html+=`<section class="learning-section"><h2>⭐ Featured FAQs</h2><div class="featured-grid">${featured.map(f=>miniCard(f,"⭐ Featured")).join("")}</div></section>`;
+  if(popular.length) html+=`<section class="learning-section"><h2>⭐ Popular Questions</h2><div class="popular-grid">${popular.map(f=>miniCard(f,`${a.views[f.id]||0} views · ${a.helpful[f.id]||0} helpful`)).join("")}</div></section>`;
+  if(recent.length) html+=`<section class="learning-section"><h2>🆕 Recently Updated</h2><div class="recent-grid">${recent.map(f=>miniCard(f,`Updated ${formatDate(f.updated_at)}`)).join("")}</div></section>`;
+  learningSections.innerHTML=html;
+}
+function miniCard(f,meta){return `<button class="mini-card" type="button" onclick="openStudyById(${JSON.stringify(f.id)})">${f.is_featured?'<span class="featured-ribbon">⭐ Featured</span>':''}<h3>${esc(f.question)} ${isStudied(f.id)?'<span class="studied-tag">✓ Studied</span>':''}</h3><p>${esc(meta)}</p></button>`}
+window.selectLearningCategory=function(c){selectedCategory=c;renderCategories();renderFAQs();window.scrollTo({top:document.querySelector(".controls")?.offsetTop||0,behavior:"smooth"})}
+
+function filteredStudyFAQs(){let a=[...allFAQs];if(selectedCategory!=="all")a=a.filter(f=>String(f.category||"").trim()===selectedCategory);const q=searchText.trim().toLowerCase();if(q)a=a.filter(f=>(String(f.question||"")+" "+String(f.answer||"").replace(/<[^>]*>/g," ")+" "+String(f.category||"")).toLowerCase().includes(q));return a}
+function updateProgress(){const max=studyContent.scrollHeight-studyContent.clientHeight;const pct=max>0?Math.min(100,(studyContent.scrollTop/max)*100):100;studyProgress.style.width=pct+"%";studyProgress.setAttribute("aria-valuenow",Math.round(pct))}
+function applyStudySettings(){
+  dialog.classList.remove("study-theme-normal","study-theme-sepia","study-theme-dark");
+  dialog.classList.add("study-theme-"+studyTheme);
+  studyContent.style.fontSize=studyFontSize+"px";
+  studyContent.classList.toggle("study-wide",studyMode);
+  document.querySelectorAll("[data-theme]").forEach(b=>b.classList.toggle("active",b.dataset.theme===studyTheme));
+  document.getElementById("studyModeBtn").classList.toggle("active",studyMode);
+  localStorage.setItem("faqStudyFontSize",studyFontSize);localStorage.setItem("faqStudyTheme",studyTheme);
+}
+async function trackView(id){
+  const key="faqView:"+id; const last=Number(localStorage.getItem(key)||0);
+  if(Date.now()-last<30*60*1000)return;
+  localStorage.setItem(key,String(Date.now()));
+  try{await supabaseClient.from("faq_views").insert({faq_id:id,session_id:sessionId})}catch(e){console.warn("View tracking unavailable:",e)}
+}
+async function sendFeedback(id,val){
+  const key="faqFeedback:"+id; if(localStorage.getItem(key))return alert("You have already submitted feedback for this FAQ.");
+  try{
+    const {error}=await supabaseClient.from("faq_feedback").insert({faq_id:id,is_helpful:val,session_id:sessionId});
+    if(error)throw error; localStorage.setItem(key,String(val)); alert(val?"Thanks! Your feedback was recorded.":"Thanks for the feedback.");
+  }catch(e){console.warn(e);alert("Feedback could not be saved right now.")}
+}
+function openStudyById(id){const a=filteredStudyFAQs();let i=a.findIndex(f=>String(f.id)===String(id));if(i<0){i=allFAQs.findIndex(f=>String(f.id)===String(id));if(i<0)return; currentStudyIndex=allFAQs.length?i:0; openStudy(currentStudyIndex,allFAQs)}else openStudy(i,a)}
+function openStudy(index,list=filteredStudyFAQs()){
+  if(!list.length)return;
+  currentStudyIndex=Math.max(0,Math.min(index,list.length-1));const f=list[currentStudyIndex];
+  studyQuestion.textContent=f.question||"";studyCategory.textContent=f.category||"Uncategorized";studyCategory.style.display=f.category?"inline-block":"none";
+  studyContent.innerHTML=f.answer||"<p>No answer available.</p>";studyContent.scrollTop=0;updateProgress();applyStudySettings();
+  modal.classList.add("show");modal.setAttribute("aria-hidden","false");document.body.classList.add("modal-open");dialog.setAttribute("data-faq-id",f.id);
+  trackView(f.id);document.getElementById("prevFaqBtn").disabled=currentStudyIndex<=0;document.getElementById("nextFaqBtn").disabled=currentStudyIndex>=list.length-1;
+  document.getElementById("studiedBtn").textContent=isStudied(f.id)?"✓ Studied":"✓ Studied";setTimeout(()=>studyContent.focus(),80);
+  history.replaceState(null,"",`faqs.html?faq=${encodeURIComponent(f.id)}`);
+}
+function closeStudy(){modal.classList.remove("show");modal.setAttribute("aria-hidden","true");document.body.classList.remove("modal-open");history.replaceState(null,"",location.pathname+location.hash)}
+function navigateStudy(delta){const list=filteredStudyFAQs();const ni=currentStudyIndex+delta;if(ni>=0&&ni<list.length)openStudy(ni,list)}
+document.getElementById("studyClose").onclick=closeStudy;document.getElementById("closeStudyFooter").onclick=closeStudy;
+modal.addEventListener("click",e=>{if(e.target===modal)closeStudy()});studyContent.addEventListener("scroll",updateProgress);
+document.getElementById("prevFaqBtn").onclick=()=>navigateStudy(-1);document.getElementById("nextFaqBtn").onclick=()=>navigateStudy(1);
+document.getElementById("studyModeBtn").onclick=()=>{studyMode=!studyMode;applyStudySettings()};
+document.querySelectorAll("[data-font]").forEach(b=>b.onclick=()=>{const d=Number(b.dataset.font);studyFontSize=d===0?16:Math.max(13,Math.min(25,studyFontSize+d*2));applyStudySettings()});
+document.querySelectorAll("[data-theme]").forEach(b=>b.onclick=()=>{studyTheme=b.dataset.theme;applyStudySettings()});
+document.getElementById("copyAnswerBtn").onclick=async()=>{try{await navigator.clipboard.writeText(studyContent.innerText);alert("Copied successfully!")}catch{alert("Copy failed. Please try again.")}};
+document.getElementById("shareFaqBtn").onclick=async()=>{const id=dialog.dataset.faqId;const url=new URL(`faqs.html?faq=${encodeURIComponent(id)}`,location.href).href;try{if(navigator.share)await navigator.share({title:studyQuestion.textContent,url});else{await navigator.clipboard.writeText(url);alert("Share URL copied!");}}catch(e){}};
+document.getElementById("printFaqBtn").onclick=()=>window.print();
+document.getElementById("helpfulBtn").onclick=()=>sendFeedback(dialog.dataset.faqId,true);
+document.getElementById("notHelpfulBtn").onclick=()=>sendFeedback(dialog.dataset.faqId,false);
+document.getElementById("studiedBtn").onclick=()=>{markStudied(dialog.dataset.faqId);alert("Marked as studied ✓");renderFAQs();renderLearningSections()};
+document.addEventListener("keydown",e=>{if(!modal.classList.contains("show"))return;if(e.key==="Escape")closeStudy();if(e.key==="ArrowLeft")navigateStudy(-1);if(e.key==="ArrowRight")navigateStudy(1)});
+const originalRenderFAQs=renderFAQs;
+renderFAQs=function(){
+  originalRenderFAQs();
+  setTimeout(()=>{document.querySelectorAll(".question").forEach((q,i)=>{q.onclick=function(){const list=filteredStudyFAQs();const f=list.find(x=>String(x.id)===String(q.closest(".faq")?.dataset.id))||list[i];if(f)openStudy(list.indexOf(f)>=0?list.indexOf(f):i,list)}})},0);
+  setTimeout(()=>{document.querySelectorAll(".faq").forEach((el,i)=>{const f=filteredStudyFAQs()[i];if(f)el.dataset.id=f.id;const q=el.querySelector(".question");if(q)q.setAttribute("role","button")})},0);
+  const state=document.querySelector("#faqContainer .state");if(state&&searchText.trim()){state.innerHTML=`<h3>No matching FAQ found</h3><p>Try another keyword or browse the categories below.</p><div class="no-results-actions"><button class="clear-search-btn" onclick="document.getElementById('searchInput').value='';searchText='';renderFAQs()">Clear Search</button></div>`}
+  renderLearningSections();
+}
+const oldLoadFAQs=loadFAQs;
+loadFAQs=async function(){await oldLoadFAQs();await renderLearningSections();const p=new URLSearchParams(location.search).get("faq");if(p){const f=allFAQs.find(x=>String(x.id)===String(p));if(f)openStudyById(f.id)}}
 
 
 /* ==========================================
