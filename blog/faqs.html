@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>FAQs - Rotaract Club</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f6f8fb;
+    color:#172033;
+    line-height:1.6;
+}
+
+/* =========================
+   TOP HOME BAR
+========================= */
+
+.header{
+    background:#111827;
+    padding:14px 20px;
+}
+
+.header-inner{
+    max-width:1000px;
+    margin:auto;
+}
+
+.home-button{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    color:#fff;
+    text-decoration:none;
+    background:#e11d48;
+    padding:9px 16px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:600;
+    transition:.2s;
+}
+
+.home-button:hover{
+    background:#be123c;
+}
+
+/* =========================
+   MAIN CONTAINER
+========================= */
+
+.container{
+    max-width:1000px;
+    margin:auto;
+    padding:30px 18px 60px;
+}
+
+/* =========================
+   HERO
+========================= */
+
+.hero{
+    background:linear-gradient(
+        135deg,
+        #111827,
+        #263a63
+    );
+    color:#fff;
+    padding:55px 25px;
+    border-radius:20px;
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.hero h1{
+    font-size:40px;
+    margin-bottom:10px;
+}
+
+.hero h1 span{
+    color:#fb7185;
+}
+
+.hero p{
+    max-width:680px;
+    margin:auto;
+    opacity:.9;
+}
+
+/* =========================
+   CONTROLS
+========================= */
+
+.controls{
+    background:#fff;
+    padding:16px;
+    border-radius:14px;
+    margin-bottom:20px;
+    box-shadow:0 4px 20px rgba(0,0,0,.05);
+}
+
+.search{
+    width:100%;
+    padding:13px 15px;
+    border:1px solid #d8dee9;
+    border-radius:10px;
+    font-size:15px;
+    outline:none;
+}
+
+.search:focus{
+    border-color:#e11d48;
+}
+
+/* =========================
+   CATEGORIES
+========================= */
+
+.categories{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:13px;
+}
+
+.category{
+    border:1px solid #d8dee9;
+    background:#fff;
+    padding:8px 14px;
+    border-radius:30px;
+    cursor:pointer;
+    font-size:13px;
+    transition:.2s;
+}
+
+.category:hover{
+    border-color:#e11d48;
+    color:#e11d48;
+}
+
+.category.active{
+    background:#e11d48;
+    color:#fff;
+    border-color:#e11d48;
+}
+
+/* =========================
+   FAQ LIST
+========================= */
+
+.faq-list{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.faq{
+    background:#fff;
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 3px 15px rgba(0,0,0,.05);
+}
+
+.question{
+    padding:18px 20px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    transition:.2s;
+}
+
+.question:hover{
+    background:#fafafa;
+}
+
+.question-text{
+    font-weight:700;
+    flex:1;
+}
+
+.badge{
+    display:inline-block;
+    background:#fce7f3;
+    color:#be123c;
+    padding:4px 9px;
+    border-radius:20px;
+    font-size:11px;
+    margin-top:7px;
+}
+
+.arrow{
+    font-size:18px;
+    transition:.25s;
+    flex-shrink:0;
+}
+
+.faq.open .arrow{
+    transform:rotate(180deg);
+}
+
+.answer{
+    display:none;
+    padding:0 20px 20px;
+    color:#4b5563;
+    white-space:pre-wrap;
+}
+
+.faq.open .answer{
+    display:block;
+}
+
+/* =========================
+   LOADING / EMPTY STATE
+========================= */
+
+.state{
+    background:#fff;
+    border-radius:14px;
+    padding:50px 20px;
+    text-align:center;
+    color:#667085;
+}
+
+.spinner{
+    width:35px;
+    height:35px;
+    border:4px solid #e5e7eb;
+    border-top-color:#e11d48;
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+    margin:0 auto 12px;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+.footer{
+    background:#111827;
+    color:#9ca3af;
+    text-align:center;
+    padding:25px 15px;
+    margin-top:30px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:700px){
+
+    .header{
+        padding:12px 15px;
+    }
+
+    .container{
+        padding:20px 12px 45px;
+    }
+
+    .hero{
+        padding:40px 18px;
+        border-radius:16px;
+    }
+
+    .hero h1{
+        font-size:30px;
+    }
+
+    .hero p{
+        font-size:14px;
+    }
+
+    .question{
+        padding:15px;
+    }
+
+    .answer{
+        padding:0 15px 17px;
+    }
+
+    .category{
+        padding:7px 12px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+     HOME BUTTON
+========================= -->
+
+<header class="header">
+
+    <div class="header-inner">
+
+        <a
+            href="/index.html"
+            class="home-button"
+        >
+            ← Home
+        </a>
+
+    </div>
+
+</header>
+
+
+<!-- =========================
+     MAIN CONTENT
+========================= -->
+
+<main class="container">
+
+    <!-- HERO -->
+
+    <section class="hero">
+
+        <h1>
+            Frequently Asked
+            <span>Questions</span>
+        </h1>
+
+        <p>
+            Find answers to common questions about our
+            Rotaract Club, membership, projects, events
+            and activities.
+        </p>
+
+    </section>
+
+
+    <!-- SEARCH + CATEGORY -->
+
+    <section class="controls">
+
+        <input
+            id="searchInput"
+            class="search"
+            type="search"
+            placeholder="Search frequently asked questions..."
+            autocomplete="off"
+        >
+
+        <div
+            id="categories"
+            class="categories"
+        ></div>
+
+    </section>
+
+
+    <!-- FAQ CONTAINER -->
+
+    <div id="faqContainer">
+
+        <div class="state">
+
+            <div class="spinner"></div>
+
+            <p>
+                Loading FAQs...
+            </p>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer class="footer">
+
+    <p>
+        © 2026 Rotaract Club. All rights reserved.
+    </p>
+
+</footer>
+
+
+<!-- =========================
+     SUPABASE
+========================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+/* ==========================================
+   SUPABASE CONFIGURATION
+========================================== */
+
+const SUPABASE_URL =
+    "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+
+
+/* ==========================================
+   CREATE SUPABASE CLIENT
+========================================== */
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+/* ==========================================
+   VARIABLES
+========================================== */
+
+let allFAQs = [];
+
+let selectedCategory = "all";
+
+let searchText = "";
+
+
+/* ==========================================
+   DOM ELEMENTS
+========================================== */
+
+const faqContainer =
+    document.getElementById(
+        "faqContainer"
+    );
+
+const searchInput =
+    document.getElementById(
+        "searchInput"
+    );
+
+const categories =
+    document.getElementById(
+        "categories"
+    );
+
+
+/* ==========================================
+   LOAD FAQS
+========================================== */
+
+async function loadFAQs(){
+
+    faqContainer.innerHTML = `
+        <div class="state">
+
+            <div class="spinner"></div>
+
+            <p>
+                Loading FAQs...
+            </p>
+
+        </div>
+    `;
+
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+
+        .from("faqs")
+
+        .select("*")
+
+        .eq(
+            "is_published",
+            true
+        )
+
+        .order(
+            "display_order",
+            {
+                ascending:true
+            }
+        )
+
+        .order(
+            "created_at",
+            {
+                ascending:true
+            }
+        );
+
+
+    /* =========================
+       ERROR
+    ========================= */
+
+    if(error){
+
+        console.error(
+            "FAQ loading error:",
+            error
+        );
+
+        faqContainer.innerHTML = `
+            <div class="state">
+
+                <p>
+                    Unable to load FAQs.
+                    Please try again later.
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* =========================
+       STORE DATA
+    ========================= */
+
+    allFAQs = data || [];
+
+
+    /* =========================
+       RENDER
+    ========================= */
+
+    renderCategories();
+
+    renderFAQs();
+}
+
+
+/* ==========================================
+   RENDER CATEGORY BUTTONS
+========================================== */
+
+function renderCategories(){
+
+    const uniqueCategories =
+        new Set();
+
+
+    allFAQs.forEach(
+        function(faq){
+
+            const category =
+                String(
+                    faq.category || ""
+                ).trim();
+
+
+            if(category){
+
+                uniqueCategories.add(
+                    category
+                );
+
+            }
+
+        }
+    );
+
+
+    categories.innerHTML = "";
+
+
+    /* =========================
+       ALL BUTTON
+    ========================= */
+
+    const allButton =
+        document.createElement(
+            "button"
+        );
+
+
+    allButton.className =
+        "category " +
+        (
+            selectedCategory === "all"
+            ? "active"
+            : ""
+        );
+
+
+    allButton.textContent =
+        "All";
+
+
+    allButton.type =
+        "button";
+
+
+    allButton.onclick =
+        function(){
+
+            selectedCategory =
+                "all";
+
+            renderCategories();
+
+            renderFAQs();
+
+        };
+
+
+    categories.appendChild(
+        allButton
+    );
+
+
+    /* =========================
+       CATEGORY BUTTONS
+    ========================= */
+
+    [...uniqueCategories]
+        .sort()
+        .forEach(
+            function(category){
+
+                const button =
+                    document.createElement(
+                        "button"
+                    );
+
+
+                button.className =
+                    "category " +
+                    (
+                        selectedCategory ===
+                        category
+                        ? "active"
+                        : ""
+                    );
+
+
+                button.textContent =
+                    category;
+
+
+                button.type =
+                    "button";
+
+
+                button.onclick =
+                    function(){
+
+                        selectedCategory =
+                            category;
+
+                        renderCategories();
+
+                        renderFAQs();
+
+                    };
+
+
+                categories.appendChild(
+                    button
+                );
+
+            }
+        );
+}
+
+
+/* ==========================================
+   RENDER FAQS
+========================================== */
+
+function renderFAQs(){
+
+    let filteredFAQs =
+        [...allFAQs];
+
+
+    /* =========================
+       CATEGORY FILTER
+    ========================= */
+
+    if(
+        selectedCategory !==
+        "all"
+    ){
+
+        filteredFAQs =
+            filteredFAQs.filter(
+                function(faq){
+
+                    return String(
+                        faq.category || ""
+                    ).trim() ===
+                    selectedCategory;
+
+                }
+            );
+
+    }
+
+
+    /* =========================
+       SEARCH FILTER
+    ========================= */
+
+    const query =
+        searchText
+            .trim()
+            .toLowerCase();
+
+
+    if(query){
+
+        filteredFAQs =
+            filteredFAQs.filter(
+                function(faq){
+
+                    const question =
+                        String(
+                            faq.question || ""
+                        ).toLowerCase();
+
+
+                    const answer =
+                        String(
+                            faq.answer || ""
+                        ).replace(/<[^>]*>/g, " ").toLowerCase();
+
+
+                    const category =
+                        String(
+                            faq.category || ""
+                        ).toLowerCase();
+
+
+                    return (
+
+                        question.includes(
+                            query
+                        )
+
+                        ||
+
+                        answer.includes(
+                            query
+                        )
+
+                        ||
+
+                        category.includes(
+                            query
+                        )
+
+                    );
+
+                }
+            );
+
+    }
+
+
+    /* =========================
+       NO RESULTS
+    ========================= */
+
+    if(
+        filteredFAQs.length === 0
+    ){
+
+        faqContainer.innerHTML = `
+            <div class="state">
+
+                <p>
+                    ${
+                        query ||
+                        selectedCategory !== "all"
+                        ? "No FAQs match your search."
+                        : "No FAQs available at the moment."
+                    }
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* =========================
+       CREATE LIST
+    ========================= */
+
+    const list =
+        document.createElement(
+            "div"
+        );
+
+
+    list.className =
+        "faq-list";
+
+
+    filteredFAQs.forEach(
+        function(faq){
+
+            /* =====================
+               FAQ ITEM
+            ===================== */
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+
+            item.className =
+                "faq";
+
+
+            /* =====================
+               QUESTION
+            ===================== */
+
+            const question =
+                document.createElement(
+                    "div"
+                );
+
+
+            question.className =
+                "question";
+
+
+            /* =====================
+               QUESTION TEXT
+            ===================== */
+
+            const questionText =
+                document.createElement(
+                    "div"
+                );
+
+
+            questionText.className =
+                "question-text";
+
+
+            const heading =
+                document.createElement(
+                    "div"
+                );
+
+
+            heading.textContent =
+                faq.question || "";
+
+
+            questionText.appendChild(
+                heading
+            );
+
+
+            /* =====================
+               CATEGORY BADGE
+            ===================== */
+
+            if(faq.category){
+
+                const badge =
+                    document.createElement(
+                        "span"
+                    );
+
+
+                badge.className =
+                    "badge";
+
+
+                badge.textContent =
+                    faq.category;
+
+
+                questionText.appendChild(
+                    badge
+                );
+
+            }
+
+
+            /* =====================
+               ARROW
+            ===================== */
+
+            const arrow =
+                document.createElement(
+                    "span"
+                );
+
+
+            arrow.className =
+                "arrow";
+
+
+            arrow.textContent =
+                "▼";
+
+
+            /* =====================
+               APPEND QUESTION
+            ===================== */
+
+            question.appendChild(
+                questionText
+            );
+
+            question.appendChild(
+                arrow
+            );
+
+
+            /* =====================
+               ANSWER
+            ===================== */
+
+            const answer =
+                document.createElement(
+                    "div"
+                );
+
+
+            answer.className =
+                "answer";
+
+
+            answer.innerHTML =
+                faq.answer || "";
+
+
+            /* =====================
+               CLICK
+            ===================== */
+
+            question.onclick =
+                function(){
+
+                    /*
+                     * Close all other FAQs
+                     */
+
+                    document
+                        .querySelectorAll(
+                            ".faq.open"
+                        )
+                        .forEach(
+                            function(openFAQ){
+
+                                if(
+                                    openFAQ !==
+                                    item
+                                ){
+
+                                    openFAQ.classList
+                                        .remove(
+                                            "open"
+                                        );
+
+                                }
+
+                            }
+                        );
+
+
+                    /*
+                     * Toggle current FAQ
+                     */
+
+                    item.classList.toggle(
+                        "open"
+                    );
+
+                };
+
+
+            /* =====================
+               FINAL APPEND
+            ===================== */
+
+            item.appendChild(
+                question
+            );
+
+            item.appendChild(
+                answer
+            );
+
+            list.appendChild(
+                item
+            );
+
+        }
+    );
+
+
+    faqContainer.innerHTML = "";
+
+    faqContainer.appendChild(
+        list
+    );
+}
+
+
+/* ==========================================
+   SEARCH EVENT
+========================================== */
+
+searchInput.addEventListener(
+    "input",
+    function(){
+
+        searchText =
+            searchInput.value;
+
+        renderFAQs();
+
+    }
+);
+
+
+/* ==========================================
+   INITIAL LOAD
+========================================== */
+
+loadFAQs();
+
+</script>
+
+</body>
+</html>

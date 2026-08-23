@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>FAQ Management - Admin</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f3f5f9;
+    color:#172033;
+}
+
+/* =========================
+   AUTH SCREENS
+========================= */
+
+.auth-wrapper{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:
+        linear-gradient(
+            135deg,
+            #111827,
+            #263a63
+        );
+}
+
+.auth-card{
+    width:100%;
+    max-width:420px;
+    background:#fff;
+    border-radius:20px;
+    padding:35px;
+    box-shadow:0 25px 70px rgba(0,0,0,.25);
+}
+
+.auth-logo{
+    text-align:center;
+    font-size:28px;
+    font-weight:800;
+    margin-bottom:8px;
+}
+
+.auth-logo span{
+    color:#e11d48;
+}
+
+.auth-title{
+    text-align:center;
+    margin-bottom:25px;
+    color:#667085;
+}
+
+.form-group{
+    margin-bottom:17px;
+}
+
+.form-group label{
+    display:block;
+    margin-bottom:7px;
+    font-weight:600;
+    font-size:14px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select{
+    width:100%;
+    padding:12px 13px;
+    border:1px solid #d5dbe5;
+    border-radius:9px;
+    font-size:15px;
+    outline:none;
+    font-family:inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus{
+    border-color:#e11d48;
+}
+
+.password-wrap{
+    position:relative;
+}
+
+.password-wrap input{
+    padding-right:75px;
+}
+
+.show-password{
+    position:absolute;
+    right:10px;
+    top:50%;
+    transform:translateY(-50%);
+    border:0;
+    background:none;
+    cursor:pointer;
+    color:#e11d48;
+    font-size:12px;
+}
+
+.primary-btn{
+    width:100%;
+    border:0;
+    border-radius:9px;
+    padding:13px;
+    background:#e11d48;
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    font-size:15px;
+}
+
+.primary-btn:hover{
+    background:#be123c;
+}
+
+.primary-btn:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+}
+
+.auth-message{
+    display:none;
+    margin-bottom:15px;
+    padding:11px;
+    border-radius:8px;
+    font-size:13px;
+}
+
+.auth-message.error{
+    display:block;
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.auth-message.success{
+    display:block;
+    background:#dcfce7;
+    color:#166534;
+}
+
+.center-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:20px;
+}
+
+.loading-box{
+    background:#fff;
+    padding:35px;
+    border-radius:15px;
+    box-shadow:0 10px 40px rgba(0,0,0,.08);
+}
+
+.spinner{
+    width:40px;
+    height:40px;
+    margin:0 auto 15px;
+    border:4px solid #e5e7eb;
+    border-top-color:#e11d48;
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+    to{transform:rotate(360deg)}
+}
+
+.access-box{
+    max-width:450px;
+    background:#fff;
+    border-radius:18px;
+    padding:35px;
+    box-shadow:0 15px 50px rgba(0,0,0,.1);
+}
+
+.access-box h2{
+    color:#dc2626;
+    margin-bottom:10px;
+}
+
+.access-box p{
+    color:#667085;
+    margin-bottom:20px;
+}
+
+.back-btn{
+    display:inline-block;
+    text-decoration:none;
+    background:#111827;
+    color:#fff;
+    padding:11px 18px;
+    border-radius:8px;
+}
+
+/* =========================
+   ADMIN
+========================= */
+
+#adminPanel{
+    display:none;
+}
+
+.header{
+    background:#111827;
+    color:#fff;
+    padding:15px 20px;
+}
+
+.header-inner{
+    max-width:1200px;
+    margin:auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+}
+
+.logo{
+    font-size:20px;
+    font-weight:800;
+}
+
+.logo span{
+    color:#fb7185;
+}
+
+.admin-user{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.user-name{
+    font-size:13px;
+    color:#d1d5db;
+}
+
+.logout{
+    border:1px solid #64748b;
+    background:transparent;
+    color:#fff;
+    padding:7px 13px;
+    border-radius:7px;
+    cursor:pointer;
+}
+
+.logout:hover{
+    background:#dc2626;
+    border-color:#dc2626;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:25px 18px 60px;
+}
+
+.page-title{
+    margin-bottom:20px;
+}
+
+.page-title h1{
+    font-size:30px;
+    margin-bottom:5px;
+}
+
+.page-title p{
+    color:#667085;
+}
+
+.card{
+    background:#fff;
+    border-radius:15px;
+    padding:22px;
+    box-shadow:0 3px 18px rgba(0,0,0,.05);
+    margin-bottom:20px;
+}
+
+.card h2{
+    font-size:19px;
+    margin-bottom:18px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+
+.full{
+    grid-column:1/-1;
+}
+
+textarea{
+    min-height:130px;
+    resize:vertical;
+}
+
+.rich-editor{border:1px solid #d5dbe5;border-radius:9px;overflow:hidden;background:#fff;}
+.rich-toolbar{display:flex;gap:5px;flex-wrap:wrap;padding:7px;border-bottom:1px solid #e5e7eb;background:#f8fafc;}
+.format-btn{border:1px solid #d5dbe5;background:#fff;color:#172033;min-width:34px;padding:6px 9px;border-radius:6px;cursor:pointer;font-size:13px;}
+.format-btn:hover{background:#e5e7eb;}
+.rich-input{min-height:180px;padding:12px 13px;outline:none;font-size:15px;line-height:1.6;overflow:auto;}
+.rich-input:empty:before{content:attr(data-placeholder);color:#98a2b3;pointer-events:none;}
+.rich-input:focus{box-shadow:inset 0 0 0 1px #e11d48;}
+.faq-answer{color:#667085;margin-top:8px;white-space:normal;line-height:1.6;}
+.faq-answer p{margin:0 0 8px;}
+.faq-answer ul,.faq-answer ol{margin:6px 0 10px 22px;}
+
+.inline{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.checkbox{
+    width:18px;
+    height:18px;
+}
+
+.form-actions{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+
+.btn{
+    border:0;
+    padding:10px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.btn-primary{
+    background:#e11d48;
+    color:#fff;
+}
+
+.btn-secondary{
+    background:#e5e7eb;
+    color:#111827;
+}
+
+.btn-danger{
+    background:#dc2626;
+    color:#fff;
+}
+
+.btn-success{
+    background:#16a34a;
+    color:#fff;
+}
+
+.btn:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+}
+
+.toolbar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:15px;
+}
+
+.toolbar input,
+.toolbar select{
+    padding:10px;
+    border:1px solid #d5dbe5;
+    border-radius:8px;
+    outline:none;
+}
+
+.faq-list{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.faq-row{
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+    padding:17px;
+}
+
+.faq-top{
+    display:flex;
+    justify-content:space-between;
+    gap:15px;
+}
+
+.faq-question{
+    font-weight:700;
+    font-size:16px;
+}
+
+.faq-answer{
+    color:#667085;
+    margin-top:8px;
+    white-space:pre-wrap;
+}
+
+.meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+    margin-top:12px;
+}
+
+.tag{
+    background:#f1f5f9;
+    color:#475569;
+    padding:4px 9px;
+    border-radius:15px;
+    font-size:11px;
+}
+
+.tag.published{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.tag.unpublished{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.actions{
+    display:flex;
+    gap:7px;
+    flex-wrap:wrap;
+    margin-top:13px;
+}
+
+.status{
+    display:none;
+    padding:11px;
+    border-radius:8px;
+    margin-bottom:15px;
+    font-size:13px;
+}
+
+.status.show{
+    display:block;
+}
+
+.status.success{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.status.error{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.empty{
+    text-align:center;
+    padding:35px;
+    color:#667085;
+}
+
+@media(max-width:700px){
+
+    .header-inner{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .admin-user{
+        width:100%;
+        justify-content:space-between;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .full{
+        grid-column:auto;
+    }
+
+    .faq-top{
+        flex-direction:column;
+    }
+
+    .form-actions{
+        flex-direction:column;
+    }
+
+    .form-actions .btn{
+        width:100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =========================================
+     CHECKING SCREEN
+========================================= -->
+
+<div id="checkingScreen" class="center-screen">
+    <div class="loading-box">
+        <div class="spinner"></div>
+        <h3>Checking authentication...</h3>
+        <p>Please wait.</p>
+    </div>
+</div>
+
+
+<!-- =========================================
+     LOGIN SCREEN
+========================================= -->
+
+<div id="loginScreen" class="auth-wrapper" style="display:none;">
+
+    <div class="auth-card">
+
+        <div class="auth-logo">
+            Rotaract <span>Admin</span>
+        </div>
+
+        <div class="auth-title">
+            FAQ Management Login
+        </div>
+
+        <div id="loginMessage"
+             class="auth-message">
+        </div>
+
+        <form id="loginForm">
+
+            <div class="form-group">
+                <label for="email">
+                    Email Address
+                </label>
+
+                <input
+                    id="email"
+                    type="email"
+                    autocomplete="email"
+                    placeholder="Enter admin email"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+
+                <label for="password">
+                    Password
+                </label>
+
+                <div class="password-wrap">
+
+                    <input
+                        id="password"
+                        type="password"
+                        autocomplete="current-password"
+                        placeholder="Enter password"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        class="show-password"
+                        id="showPassword">
+                        Show
+                    </button>
+
+                </div>
+
+            </div>
+
+            <button
+                type="submit"
+                id="loginButton"
+                class="primary-btn">
+
+                Login
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================
+     ACCESS DENIED
+========================================= -->
+
+<div id="accessDeniedScreen"
+     class="center-screen"
+     style="display:none;">
+
+    <div class="access-box">
+
+        <h2>Access Denied</h2>
+
+        <p>
+            You are authenticated, but you do not have
+            active administrator permission to access
+            the FAQ management panel.
+        </p>
+
+        <a href="index.html" class="back-btn">
+            Back to Website
+        </a>
+
+        <button
+            id="deniedLogout"
+            class="btn btn-danger"
+            style="margin-left:7px;">
+            Logout
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================
+     ADMIN PANEL
+========================================= -->
+
+<div id="adminPanel">
+
+<header class="header">
+
+    <div class="header-inner">
+
+        <div class="logo">
+            Rotaract <span>FAQ Admin</span>
+        </div>
+
+        <div class="admin-user">
+
+            <span id="adminUserName"
+                  class="user-name">
+                Admin
+            </span>
+
+            <button
+                id="logoutButton"
+                class="logout">
+                Logout
+            </button>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <div class="page-title">
+        <h1>FAQ Management</h1>
+        <p>
+            Add, edit, publish and manage public FAQs.
+        </p>
+    </div>
+
+
+    <!-- FORM -->
+
+    <section class="card">
+
+        <h2 id="formTitle">
+            Add New FAQ
+        </h2>
+
+        <div id="formStatus"
+             class="status">
+        </div>
+
+        <form id="faqForm">
+
+            <div class="grid">
+
+                <div class="form-group full">
+
+                    <label for="question">
+                        Question *
+                    </label>
+
+                    <input
+                        id="question"
+                        type="text"
+                        placeholder="Enter FAQ question"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group full">
+
+                    <label for="answer">
+                        Answer *
+                    </label>
+
+                    <div class="rich-editor">
+                            <div class="rich-toolbar" role="toolbar" aria-label="Text formatting">
+                                <button type="button" class="format-btn" data-cmd="bold" title="Bold"><strong>B</strong></button>
+                                <button type="button" class="format-btn" data-cmd="italic" title="Italic"><em>I</em></button>
+                                <button type="button" class="format-btn" data-cmd="underline" title="Underline"><u>U</u></button>
+                                <button type="button" class="format-btn" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
+                                <button type="button" class="format-btn" data-cmd="insertUnorderedList" title="Bulleted list">• List</button>
+                                <button type="button" class="format-btn" data-cmd="insertOrderedList" title="Numbered list">1. List</button>
+                                <button type="button" class="format-btn" data-cmd="removeFormat" title="Clear formatting">Clear</button>
+                            </div>
+                            <div id="answer" class="rich-input" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Enter FAQ answer"></div>
+                        </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="category">
+                        Category
+                    </label>
+
+                    <input
+                        id="category"
+                        type="text"
+                        placeholder="Membership, Projects, Events..."
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="displayOrder">
+                        Display Order
+                    </label>
+
+                    <input
+                        id="displayOrder"
+                        type="number"
+                        value="0"
+                        min="0"
+                    >
+
+                </div>
+
+
+                <div class="form-group full">
+
+                    <label class="inline">
+
+                        <input
+                            id="isPublished"
+                            class="checkbox"
+                            type="checkbox"
+                            checked
+                        >
+
+                        <span>
+                            Publish this FAQ publicly
+                        </span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="submit"
+                    id="saveButton"
+                    class="btn btn-primary">
+                    Add FAQ
+                </button>
+
+                <button
+                    type="button"
+                    id="cancelEdit"
+                    class="btn btn-secondary"
+                    style="display:none;">
+                    Cancel Edit
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- LIST -->
+
+    <section class="card">
+
+        <h2>Existing FAQs</h2>
+
+        <div class="toolbar">
+
+            <input
+                id="adminSearch"
+                type="search"
+                placeholder="Search FAQs..."
+            >
+
+            <select id="statusFilter">
+
+                <option value="all">
+                    All Status
+                </option>
+
+                <option value="published">
+                    Published
+                </option>
+
+                <option value="unpublished">
+                    Unpublished
+                </option>
+
+            </select>
+
+        </div>
+
+        <div id="faqList"
+             class="faq-list">
+
+            <div class="empty">
+                Loading FAQs...
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+"use strict";
+
+/* =========================================
+   SUPABASE
+========================================= */
+
+const SUPABASE_URL =
+    "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY,
+        {
+            auth:{
+                persistSession:true,
+                autoRefreshToken:true,
+                detectSessionInUrl:true
+            }
+        }
+    );
+
+
+/* =========================================
+   DOM
+========================================= */
+
+const checkingScreen =
+    document.getElementById("checkingScreen");
+
+const loginScreen =
+    document.getElementById("loginScreen");
+
+const accessDeniedScreen =
+    document.getElementById("accessDeniedScreen");
+
+const adminPanel =
+    document.getElementById("adminPanel");
+
+const loginForm =
+    document.getElementById("loginForm");
+
+const loginMessage =
+    document.getElementById("loginMessage");
+
+const loginButton =
+    document.getElementById("loginButton");
+
+const emailInput =
+    document.getElementById("email");
+
+const passwordInput =
+    document.getElementById("password");
+
+const showPassword =
+    document.getElementById("showPassword");
+
+const logoutButton =
+    document.getElementById("logoutButton");
+
+const deniedLogout =
+    document.getElementById("deniedLogout");
+
+const adminUserName =
+    document.getElementById("adminUserName");
+
+const faqForm =
+    document.getElementById("faqForm");
+
+const formTitle =
+    document.getElementById("formTitle");
+
+const questionInput =
+    document.getElementById("question");
+
+const answerInput =
+    document.getElementById("answer");
+
+const categoryInput =
+    document.getElementById("category");
+
+const displayOrderInput =
+    document.getElementById("displayOrder");
+
+const isPublishedInput =
+    document.getElementById("isPublished");
+
+const saveButton =
+    document.getElementById("saveButton");
+
+const cancelEdit =
+    document.getElementById("cancelEdit");
+
+const formStatus =
+    document.getElementById("formStatus");
+
+const faqList =
+    document.getElementById("faqList");
+
+const adminSearch =
+    document.getElementById("adminSearch");
+
+const statusFilter =
+    document.getElementById("statusFilter");
+
+const formatButtons = document.querySelectorAll(".format-btn");
+
+formatButtons.forEach(button => {
+    button.addEventListener("mousedown", event => event.preventDefault());
+    button.addEventListener("click", () => {
+        answerInput.focus();
+        document.execCommand(button.dataset.cmd, false, null);
+    });
+});
+
+answerInput.addEventListener("paste", event => {
+    const html = event.clipboardData.getData("text/html");
+    if(html){
+        event.preventDefault();
+        document.execCommand("insertHTML", false, html);
+    }
+});
+
+
+/* =========================================
+   STATE
+========================================= */
+
+let currentUser = null;
+let editingId = null;
+let allFAQs = [];
+
+
+/* =========================================
+   SCREEN HELPERS
+========================================= */
+
+function showOnly(screen){
+
+    checkingScreen.style.display = "none";
+    loginScreen.style.display = "none";
+    accessDeniedScreen.style.display = "none";
+    adminPanel.style.display = "none";
+
+    if(screen){
+        screen.style.display =
+            screen === adminPanel
+            ? "block"
+            : "flex";
+    }
+}
+
+
+function showLogin(){
+
+    showOnly(loginScreen);
+
+    loginMessage.className =
+        "auth-message";
+
+    loginMessage.textContent = "";
+}
+
+
+function showChecking(){
+
+    showOnly(checkingScreen);
+}
+
+
+function showDenied(){
+
+    showOnly(accessDeniedScreen);
+}
+
+
+function showAdmin(){
+
+    showOnly(adminPanel);
+}
+
+
+/* =========================================
+   LOGIN MESSAGE
+========================================= */
+
+function setLoginMessage(message,type="error"){
+
+    loginMessage.textContent = message;
+
+    loginMessage.className =
+        "auth-message " + type;
+}
+
+
+/* =========================================
+   ADMIN ROLE CHECK
+========================================= */
+
+async function checkAdmin(user){
+
+    if(!user || !user.id){
+        return {
+            authorized:false,
+            reason:"No authenticated user."
+        };
+    }
+
+    const { data, error } =
+        await supabaseClient
+            .from("user_roles")
+            .select(
+                "user_id, role, status, full_name, email"
+            )
+            .eq("user_id", user.id)
+            .maybeSingle();
+
+    if(error){
+
+        console.error(
+            "Admin role check error:",
+            error
+        );
+
+        return {
+            authorized:false,
+            reason:"Unable to verify administrator permission."
+        };
+    }
+
+    if(!data){
+
+        return {
+            authorized:false,
+            reason:"No user role was found."
+        };
+    }
+
+    const isAdmin =
+        String(data.role || "").toLowerCase() ===
+        "admin";
+
+    const isActive =
+        String(data.status || "").toLowerCase() ===
+        "active";
+
+    if(!isAdmin || !isActive){
+
+        return {
+            authorized:false,
+            reason:"User is not an active administrator."
+        };
+    }
+
+    return {
+        authorized:true,
+        roleData:data
+    };
+}
+
+
+/* =========================================
+   INITIAL AUTH CHECK
+========================================= */
+
+async function initializeAuth(){
+
+    showChecking();
+
+    try{
+
+        const {
+            data,
+            error
+        } =
+        await supabaseClient.auth.getSession();
+
+        if(error){
+
+            console.error(
+                "Session error:",
+                error
+            );
+
+            showLogin();
+            return;
+        }
+
+        const session = data.session;
+
+        if(!session){
+
+            showLogin();
+            return;
+        }
+
+        const user =
+            session.user;
+
+        currentUser = user;
+
+        const result =
+            await checkAdmin(user);
+
+        if(!result.authorized){
+
+            console.warn(
+                "Admin authorization failed:",
+                result.reason
+            );
+
+            showDenied();
+            return;
+        }
+
+        adminUserName.textContent =
+            result.roleData.full_name ||
+            result.roleData.email ||
+            user.email ||
+            "Admin";
+
+        showAdmin();
+
+        await loadFAQs();
+
+    }catch(error){
+
+        console.error(
+            "Authentication initialization error:",
+            error
+        );
+
+        showLogin();
+    }
+}
+
+
+/* =========================================
+   LOGIN
+========================================= */
+
+loginForm.addEventListener(
+    "submit",
+    async function(event){
+
+        event.preventDefault();
+
+        const email =
+            emailInput.value.trim();
+
+        const password =
+            passwordInput.value;
+
+        if(!email || !password){
+
+            setLoginMessage(
+                "Please enter your email and password."
+            );
+
+            return;
+        }
+
+        loginButton.disabled = true;
+        loginButton.textContent = "Logging in...";
+
+        setLoginMessage(
+            "",
+            "success"
+        );
+
+        try{
+
+            const {
+                data,
+                error
+            } =
+            await supabaseClient.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if(error){
+
+                console.error(
+                    "Login error:",
+                    error
+                );
+
+                setLoginMessage(
+                    "Invalid email or password."
+                );
+
+                return;
+            }
+
+            if(!data.user){
+
+                setLoginMessage(
+                    "Login failed. Please try again."
+                );
+
+                return;
+            }
+
+            currentUser =
+                data.user;
+
+            setLoginMessage(
+                "Login successful. Checking admin permission...",
+                "success"
+            );
+
+            const result =
+                await checkAdmin(
+                    data.user
+                );
+
+            if(!result.authorized){
+
+                await supabaseClient.auth.signOut();
+
+                setLoginMessage(
+                    "Login successful, but this account does not have active admin permission."
+                );
+
+                return;
+            }
+
+            adminUserName.textContent =
+                result.roleData.full_name ||
+                result.roleData.email ||
+                data.user.email ||
+                "Admin";
+
+            showAdmin();
+
+            await loadFAQs();
+
+        }catch(error){
+
+            console.error(
+                "Unexpected login error:",
+                error
+            );
+
+            setLoginMessage(
+                "Unable to login. Please try again."
+            );
+
+        }finally{
+
+            loginButton.disabled = false;
+            loginButton.textContent = "Login";
+        }
+    }
+);
+
+
+/* =========================================
+   SHOW PASSWORD
+========================================= */
+
+showPassword.addEventListener(
+    "click",
+    function(){
+
+        if(passwordInput.type === "password"){
+
+            passwordInput.type = "text";
+            showPassword.textContent = "Hide";
+
+        }else{
+
+            passwordInput.type = "password";
+            showPassword.textContent = "Show";
+        }
+    }
+);
+
+
+/* =========================================
+   AUTH STATE CHANGE
+========================================= */
+
+supabaseClient.auth.onAuthStateChange(
+    async function(event, session){
+
+        console.log(
+            "Auth event:",
+            event
+        );
+
+        if(event === "SIGNED_OUT"){
+
+            currentUser = null;
+            allFAQs = [];
+
+            showLogin();
+
+            return;
+        }
+
+        if(
+            event === "SIGNED_IN" ||
+            event === "TOKEN_REFRESHED"
+        ){
+
+            if(!session || !session.user){
+                showLogin();
+                return;
+            }
+
+            const result =
+                await checkAdmin(
+                    session.user
+                );
+
+            if(!result.authorized){
+
+                await supabaseClient.auth.signOut();
+                showDenied();
+                return;
+            }
+
+            currentUser =
+                session.user;
+
+            adminUserName.textContent =
+                result.roleData.full_name ||
+                result.roleData.email ||
+                session.user.email ||
+                "Admin";
+
+            showAdmin();
+
+            await loadFAQs();
+        }
+    }
+);
+
+
+/* =========================================
+   LOGOUT
+========================================= */
+
+async function logout(){
+
+    const { error } =
+        await supabaseClient.auth.signOut();
+
+    if(error){
+
+        console.error(
+            "Logout error:",
+            error
+        );
+
+        alert(
+            "Unable to logout. Please try again."
+        );
+
+        return;
+    }
+
+    showLogin();
+}
+
+logoutButton.addEventListener(
+    "click",
+    logout
+);
+
+deniedLogout.addEventListener(
+    "click",
+    logout
+);
+
+
+/* =========================================
+   FAQ FORM STATUS
+========================================= */
+
+function setFormStatus(message,type){
+
+    formStatus.textContent = message;
+
+    formStatus.className =
+        "status show " + type;
+}
+
+
+/* =========================================
+   LOAD FAQS
+========================================= */
+
+async function loadFAQs(){
+
+    faqList.innerHTML = `
+        <div class="empty">
+            Loading FAQs...
+        </div>
+    `;
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+        .from("faqs")
+        .select("*")
+        .order(
+            "display_order",
+            { ascending:true }
+        )
+        .order(
+            "created_at",
+            { ascending:true }
+        );
+
+    if(error){
+
+        console.error(
+            "FAQ load error:",
+            error
+        );
+
+        faqList.innerHTML = `
+            <div class="empty">
+                Unable to load FAQs.
+            </div>
+        `;
+
+        return;
+    }
+
+    allFAQs = data || [];
+
+    renderAdminFAQs();
+}
+
+
+/* =========================================
+   RENDER FAQ LIST
+========================================= */
+
+function renderAdminFAQs(){
+
+    const query =
+        adminSearch.value.trim().toLowerCase();
+
+    const status =
+        statusFilter.value;
+
+    let filtered =
+        [...allFAQs];
+
+    if(query){
+
+        filtered =
+            filtered.filter(faq=>{
+
+                const question =
+                    String(
+                        faq.question || ""
+                    ).toLowerCase();
+
+                const answer =
+                    String(
+                        faq.answer || ""
+                    ).replace(/<[^>]*>/g, " ").toLowerCase();
+
+                const category =
+                    String(
+                        faq.category || ""
+                    ).toLowerCase();
+
+                return (
+                    question.includes(query) ||
+                    answer.includes(query) ||
+                    category.includes(query)
+                );
+            });
+    }
+
+    if(status === "published"){
+
+        filtered =
+            filtered.filter(
+                faq => faq.is_published === true
+            );
+    }
+
+    if(status === "unpublished"){
+
+        filtered =
+            filtered.filter(
+                faq => faq.is_published !== true
+            );
+    }
+
+    if(filtered.length === 0){
+
+        faqList.innerHTML = `
+            <div class="empty">
+                No FAQs found.
+            </div>
+        `;
+
+        return;
+    }
+
+    faqList.innerHTML = "";
+
+    filtered.forEach(faq=>{
+
+        const row =
+            document.createElement("div");
+
+        row.className = "faq-row";
+
+        const top =
+            document.createElement("div");
+
+        top.className = "faq-top";
+
+        const question =
+            document.createElement("div");
+
+        question.className =
+            "faq-question";
+
+        question.textContent =
+            faq.question || "";
+
+        top.appendChild(question);
+
+        row.appendChild(top);
+
+        const answer =
+            document.createElement("div");
+
+        answer.className =
+            "faq-answer";
+
+        answer.innerHTML =
+            faq.answer || "";
+
+        row.appendChild(answer);
+
+        const meta =
+            document.createElement("div");
+
+        meta.className = "meta";
+
+        const category =
+            document.createElement("span");
+
+        category.className = "tag";
+
+        category.textContent =
+            faq.category ||
+            "Uncategorized";
+
+        meta.appendChild(category);
+
+
+        const order =
+            document.createElement("span");
+
+        order.className = "tag";
+
+        order.textContent =
+            "Order: " +
+            (faq.display_order ?? 0);
+
+        meta.appendChild(order);
+
+
+        const published =
+            document.createElement("span");
+
+        published.className =
+            "tag " +
+            (
+                faq.is_published
+                ? "published"
+                : "unpublished"
+            );
+
+        published.textContent =
+            faq.is_published
+            ? "Published"
+            : "Unpublished";
+
+        meta.appendChild(published);
+
+        row.appendChild(meta);
+
+
+        const actions =
+            document.createElement("div");
+
+        actions.className = "actions";
+
+
+        const edit =
+            document.createElement("button");
+
+        edit.className =
+            "btn btn-secondary";
+
+        edit.textContent = "Edit";
+
+        edit.onclick = ()=>{
+            editFAQ(faq);
+        };
+
+
+        const toggle =
+            document.createElement("button");
+
+        toggle.className =
+            faq.is_published
+            ? "btn btn-secondary"
+            : "btn btn-success";
+
+        toggle.textContent =
+            faq.is_published
+            ? "Unpublish"
+            : "Publish";
+
+        toggle.onclick = ()=>{
+            togglePublished(faq);
+        };
+
+
+        const remove =
+            document.createElement("button");
+
+        remove.className =
+            "btn btn-danger";
+
+        remove.textContent = "Delete";
+
+        remove.onclick = ()=>{
+            deleteFAQ(faq);
+        };
+
+
+        actions.appendChild(edit);
+        actions.appendChild(toggle);
+        actions.appendChild(remove);
+
+        row.appendChild(actions);
+
+        faqList.appendChild(row);
+    });
+}
+
+
+/* =========================================
+   ADD / UPDATE FAQ
+========================================= */
+
+faqForm.addEventListener(
+    "submit",
+    async function(event){
+
+        event.preventDefault();
+
+        const question =
+            questionInput.value.trim();
+
+        const answer =
+            answerInput.innerHTML.trim();
+
+        const category =
+            categoryInput.value.trim() || null;
+
+        const displayOrder =
+            Number(
+                displayOrderInput.value || 0
+            );
+
+        const isPublished =
+            isPublishedInput.checked;
+
+        if(!question || !answer){
+
+            setFormStatus(
+                "Question and answer are required.",
+                "error"
+            );
+
+            return;
+        }
+
+        saveButton.disabled = true;
+
+        saveButton.textContent =
+            editingId
+            ? "Updating..."
+            : "Saving...";
+
+        try{
+
+            let result;
+
+            if(editingId){
+
+                result =
+                    await supabaseClient
+                        .from("faqs")
+                        .update({
+                            question,
+                            answer,
+                            category,
+                            display_order:displayOrder,
+                            is_published:isPublished,
+                            updated_at:new Date().toISOString()
+                        })
+                        .eq("id", editingId);
+
+            }else{
+
+                result =
+                    await supabaseClient
+                        .from("faqs")
+                        .insert({
+                            question,
+                            answer,
+                            category,
+                            display_order:displayOrder,
+                            is_published:isPublished,
+                            created_by:currentUser
+                                ? currentUser.id
+                                : null
+                        });
+            }
+
+            if(result.error){
+
+                console.error(
+                    "FAQ save error:",
+                    result.error
+                );
+
+                setFormStatus(
+                    result.error.message ||
+                    "Unable to save FAQ.",
+                    "error"
+                );
+
+                return;
+            }
+
+            setFormStatus(
+                editingId
+                ? "FAQ updated successfully."
+                : "FAQ added successfully.",
+                "success"
+            );
+
+            resetForm();
+
+            await loadFAQs();
+
+        }catch(error){
+
+            console.error(
+                "Unexpected FAQ save error:",
+                error
+            );
+
+            setFormStatus(
+                "Unable to save FAQ.",
+                "error"
+            );
+
+        }finally{
+
+            saveButton.disabled = false;
+
+            saveButton.textContent =
+                editingId
+                ? "Update FAQ"
+                : "Add FAQ";
+        }
+    }
+);
+
+
+/* =========================================
+   EDIT
+========================================= */
+
+function editFAQ(faq){
+
+    editingId =
+        faq.id;
+
+    formTitle.textContent =
+        "Edit FAQ";
+
+    questionInput.value =
+        faq.question || "";
+
+    answerInput.innerHTML =
+        faq.answer || "";
+
+    categoryInput.value =
+        faq.category || "";
+
+    displayOrderInput.value =
+        faq.display_order ?? 0;
+
+    isPublishedInput.checked =
+        faq.is_published === true;
+
+    saveButton.textContent =
+        "Update FAQ";
+
+    cancelEdit.style.display =
+        "inline-block";
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+}
+
+
+/* =========================================
+   CANCEL EDIT
+========================================= */
+
+cancelEdit.addEventListener(
+    "click",
+    resetForm
+);
+
+
+function resetForm(){
+
+    editingId = null;
+
+    formTitle.textContent =
+        "Add New FAQ";
+
+    faqForm.reset();
+    answerInput.innerHTML = "";
+
+    displayOrderInput.value = 0;
+
+    isPublishedInput.checked = true;
+
+    saveButton.textContent =
+        "Add FAQ";
+
+    cancelEdit.style.display =
+        "none";
+
+    formStatus.className =
+        "status";
+
+    formStatus.textContent = "";
+}
+
+
+/* =========================================
+   PUBLISH / UNPUBLISH
+========================================= */
+
+async function togglePublished(faq){
+
+    const newValue =
+        !faq.is_published;
+
+    const { error } =
+        await supabaseClient
+            .from("faqs")
+            .update({
+                is_published:newValue,
+                updated_at:new Date().toISOString()
+            })
+            .eq("id", faq.id);
+
+    if(error){
+
+        console.error(
+            "Publish update error:",
+            error
+        );
+
+        alert(
+            "Unable to update publish status."
+        );
+
+        return;
+    }
+
+    await loadFAQs();
+}
+
+
+/* =========================================
+   DELETE
+========================================= */
+
+async function deleteFAQ(faq){
+
+    const confirmed =
+        confirm(
+            "Are you sure you want to delete this FAQ?"
+        );
+
+    if(!confirmed){
+        return;
+    }
+
+    const { error } =
+        await supabaseClient
+            .from("faqs")
+            .delete()
+            .eq("id", faq.id);
+
+    if(error){
+
+        console.error(
+            "FAQ delete error:",
+            error
+        );
+
+        alert(
+            "Unable to delete FAQ."
+        );
+
+        return;
+    }
+
+    await loadFAQs();
+}
+
+
+/* =========================================
+   SEARCH / FILTER
+========================================= */
+
+adminSearch.addEventListener(
+    "input",
+    renderAdminFAQs
+);
+
+statusFilter.addEventListener(
+    "change",
+    renderAdminFAQs
+);
+
+
+/* =========================================
+   START
+========================================= */
+
+initializeAuth();
+
+</script>
+
+</body>
+</html>

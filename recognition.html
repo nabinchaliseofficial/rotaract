@@ -334,6 +334,9 @@
       const coordinatorBadge = member.coordinatorPoints > 0
         ? `<span class="bonus-badge"><i class="fas fa-clipboard-check"></i> Project Coordinator +${member.coordinatorPoints}</span>`
         : '';
+      const participationBadge = member.projectParticipationCount > 0
+        ? `<span><i class="fas fa-people-group"></i> ${member.projectParticipationCount} projects · ${member.projectVolunteerHours} hrs</span>`
+        : '';
       return `
         <div class="winner-item">
           <div class="avatar">${getAvatarHtml(name, photo)}</div>
@@ -345,6 +348,7 @@
               <span class="bonus-badge"><i class="fas fa-plus-circle"></i> +${bonus}</span>
               ${bloodBadge}
               ${coordinatorBadge}
+              ${participationBadge}
               <span class="final-score"><i class="fas fa-star"></i> ${score.toFixed(1)}</span>
             </div>
           </div>
@@ -511,6 +515,61 @@
           console.warn('Completed project coordinator bonus skipped:', coordErr.message || coordErr);
         }
 
+        // Project participation data: from project_participants, matched by
+        // member_id -> members.id. Adds, per member, how many projects they
+        // participated in and their total project volunteer hours (pulled
+        // from upcoming_projects.project_volunteer_hours for each project
+        // they're linked to, divided evenly is NOT done here - each
+        // participant record on a project just reflects that project's
+        // per-participant hours, i.e. the project's project_volunteer_hours
+        // is already the whole-project total across all participants, so we
+        // credit each participating member with that project's per-person
+        // share: project_volunteer_hours / participants_count when available,
+        // otherwise fall back to the legacy volunteering_hours field divided
+        // the same way, else 0). Soft-fails like the bonuses above: a
+        // problem here never breaks attendance/blood/coordinator scoring.
+        // This does NOT alter the existing Final Score formula - see the
+        // scoring documentation block below - it is presented as separate,
+        // additional recognition data alongside the existing score.
+        const projectParticipationCountMap = {}; // member id -> project count
+        const projectVolunteerHoursMap = {}; // member id -> total project volunteer hours
+        try {
+          const { data: participantRows, error: partError } = await supabase
+            .from('project_participants')
+            .select('member_id, project_id, participant_type')
+            .eq('participant_type', 'member');
+          if (partError) throw partError;
+
+          const relevantProjectIds = Array.from(new Set((participantRows || [])
+            .map(r => r.project_id).filter(id => id != null)));
+
+          let projectHoursById = {};
+          if (relevantProjectIds.length > 0) {
+            const { data: projectRows, error: projError } = await supabase
+              .from('upcoming_projects')
+              .select('id, participants_count, project_volunteer_hours, volunteering_hours')
+              .in('id', relevantProjectIds);
+            if (projError) throw projError;
+            (projectRows || []).forEach(p => {
+              const count = p.participants_count && p.participants_count > 0 ? p.participants_count : null;
+              const totalHours = p.project_volunteer_hours != null ? p.project_volunteer_hours
+                : (p.volunteering_hours != null ? p.volunteering_hours : null);
+              const perPerson = (totalHours != null && count) ? (totalHours / count) : 0;
+              projectHoursById[p.id] = perPerson;
+            });
+          }
+
+          (participantRows || []).forEach(row => {
+            const memberId = row.member_id;
+            if (memberId == null) return;
+            projectParticipationCountMap[memberId] = (projectParticipationCountMap[memberId] || 0) + 1;
+            const perPerson = projectHoursById[row.project_id] || 0;
+            projectVolunteerHoursMap[memberId] = (projectVolunteerHoursMap[memberId] || 0) + perPerson;
+          });
+        } catch (partErr) {
+          console.warn('Project participation data skipped:', partErr.message || partErr);
+        }
+
         // Only count meetings whose minutes are finalized. Draft minutes are
         // excluded from attendance % and bonus points since they aren't
         // official yet - remove the .filter() below if drafts should count too.
@@ -614,6 +673,11 @@
           const photoUrl = m.photo_url || m.photo || m.profile_image || null;
           const finalScore = attendancePct + bonus;
 
+          // Project participation data (additive display data only - does
+          // NOT change the existing Final Score formula above).
+          const projectParticipationCount = projectParticipationCountMap[m.id] || 0;
+          const projectVolunteerHours = Math.round((projectVolunteerHoursMap[m.id] || 0) * 100) / 100;
+
           return {
             id: m.id,
             fullName: m.name,
@@ -628,7 +692,9 @@
             isBoard: classification.isBoard,
             isPresident: classification.isPresident,
             totalMeetings,
-            attended
+            attended,
+            projectParticipationCount,
+            projectVolunteerHours
           };
         });
 
@@ -708,6 +774,8 @@
         'Blood Donor Entries': m.bloodEntryCount,
         'Blood Entry Bonus': m.bloodBonus,
         'Completed Project Coordinator Points': m.coordinatorPoints || 0,
+        'Project Participation Count': m.projectParticipationCount || 0,
+        'Project Volunteer Hours': m.projectVolunteerHours || 0,
         'Total Bonus': m.bonus,
         'Final Score': Number(m.finalScore.toFixed(1)),
         'Award': m.award
@@ -717,7 +785,7 @@
       worksheet['!cols'] = [
         { wch: 26 }, { wch: 20 }, { wch: 22 }, { wch: 16 },
         { wch: 16 }, { wch: 13 }, { wch: 18 },
-        { wch: 16 }, { wch: 26 }, { wch: 13 }, { wch: 12 }, { wch: 24 }
+        { wch: 16 }, { wch: 26 }, { wch: 20 }, { wch: 20 }, { wch: 13 }, { wch: 12 }, { wch: 24 }
       ];
 
       const workbook = XLSX.utils.book_new();

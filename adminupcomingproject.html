@@ -544,6 +544,140 @@
         .photo-slot .photo-remove-btn:hover { background: #ef4444; }
         .photo-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem; }
 
+        /* ── Participation Section ── */
+        .participation-box {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1rem;
+        }
+        .member-checklist {
+            max-height: 220px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            padding-right: 0.4rem;
+        }
+        .member-check-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            padding: 0.3rem 0.4rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .member-check-item:hover { background: rgba(255, 255, 255, 0.05); }
+        .member-check-item input[type="checkbox"] {
+            width: 16px; height: 16px;
+            accent-color: var(--cls-professional);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .member-search-input {
+            width: 100%;
+            padding: 0.5rem 0.8rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            margin-bottom: 0.6rem;
+        }
+        .guest-list { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.75rem; }
+        .guest-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+        .guest-row input {
+            flex: 1;
+            padding: 0.5rem 0.7rem;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+        }
+        .guest-remove-btn {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            border-radius: 6px;
+            padding: 0.4rem 0.6rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            min-height: 36px;
+        }
+        .guest-remove-btn:hover { background: rgba(239, 68, 68, 0.25); }
+        .btn-add-guest {
+            margin-top: 0.75rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px dashed var(--border-color);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .btn-add-guest:hover { background: rgba(255, 255, 255, 0.1); }
+        .participation-summary {
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .volunteer-hours-box {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .volunteer-hours-box h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-main);
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .volunteer-hours-box h4 i { color: var(--cls-galkot); }
+        .readout-line {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+        .readout-line b { color: var(--text-main); }
+        .participants-detail-toggle {
+            font-size: 0.8rem;
+            color: var(--cls-personal);
+            cursor: pointer;
+            text-decoration: underline;
+            display: inline-block;
+            margin-top: 0.25rem;
+        }
+        .participants-detail-list {
+            display: none;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.4rem;
+            padding-left: 1rem;
+        }
+        .participants-detail-list.open { display: block; }
+
         .project-photos-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -741,15 +875,71 @@
                     <label>Location *</label>
                     <input type="text" id="projectLocation" placeholder="e.g. Ward No. 3, Galkot, Baglung" required />
                 </div>
+
+                <!-- ===== Participations (members + guests) ===== -->
+                <div class="form-group">
+                    <label>Participations:</label>
+                    <div class="participation-box">
+                        <input type="text" class="member-search-input" id="memberSearchInput" placeholder="Search members..." />
+                        <div class="member-checklist" id="memberChecklist">
+                            <div style="font-size:0.85rem; color:var(--text-muted);">Loading members...</div>
+                        </div>
+
+                        <div class="guest-list" id="guestList"></div>
+                        <button type="button" class="btn-add-guest" id="addGuestBtn"><i class="fa-solid fa-user-plus"></i> Add Guest</button>
+
+                        <div class="participation-summary" id="participationSummary">Selected Members: 0 · Guests: 0</div>
+                    </div>
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Participants Count</label>
-                        <input type="number" id="projectParticipants" min="0" placeholder="e.g. 10" />
+                        <label>Participants Count (auto-calculated)</label>
+                        <input type="text" id="projectParticipants" readonly placeholder="0" style="opacity:0.75;" />
                     </div>
                     <div class="form-group">
-                        <label>Volunteering Hours (auto-calculated)</label>
+                        <label>Legacy Volunteering Hours (auto-calculated)</label>
                         <input type="text" id="projectVolunteerHours" readonly placeholder="Fill in dates/time + participants" style="opacity:0.75;" />
                     </div>
+                </div>
+
+                <!-- ===== Planning Volunteer Hours ===== -->
+                <div class="volunteer-hours-box">
+                    <h4><i class="fa-solid fa-clipboard-list"></i> Planning Volunteer Hours</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Planning Start Date</label>
+                            <input type="date" id="planningStartDate" />
+                        </div>
+                        <div class="form-group">
+                            <label>Planning Start Time</label>
+                            <input type="time" id="planningStartTime" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Planning End Date</label>
+                            <input type="date" id="planningEndDate" />
+                        </div>
+                        <div class="form-group">
+                            <label>Planning End Time</label>
+                            <input type="time" id="planningEndTime" />
+                        </div>
+                    </div>
+                    <div class="readout-line">Planning Volunteer Hours: <b id="planningHoursReadout">0 hrs</b></div>
+                </div>
+
+                <!-- ===== Project Volunteer Hours ===== -->
+                <div class="volunteer-hours-box">
+                    <h4><i class="fa-solid fa-people-carry-box"></i> Project Volunteer Hours</h4>
+                    <div class="readout-line" style="margin-top:0; margin-bottom:0.5rem;">Uses the Start/End Date &amp; Time fields above (Project Start/End).</div>
+                    <div class="readout-line">Project Volunteer Hours: <b id="projectHoursReadout">0 hrs</b></div>
+                </div>
+
+                <!-- ===== Total Volunteer Hours ===== -->
+                <div class="volunteer-hours-box">
+                    <h4><i class="fa-solid fa-hourglass-half"></i> Total Volunteer Hours</h4>
+                    <div class="readout-line" style="margin-top:0;">Total Volunteer Hours: <b id="totalHoursReadout">0 hrs</b></div>
                 </div>
                 <div class="form-group">
                     <label>Club Got Certificate?</label>
@@ -875,6 +1065,21 @@
             let allProjects = [];
             let editingId = null;
             let membersList = []; // for Project Coordinator dropdown
+
+            // ── Participation State (members + guests) ──
+            // selectedMemberIds: Set of members.id selected as participants.
+            // guests: [{ name, contact }] guest entries.
+            // existingParticipantRowIds: participant row ids loaded for the project
+            // being edited, used only for reference/debugging (delete+reinsert is
+            // the save strategy, see saveParticipants()).
+            let selectedMemberIds = new Set();
+            let guests = [];
+            const PARTICIPANTS_TABLE = 'project_participants';
+            // projectParticipantsMap: { [project_id]: { members: [names], guests: [names], memberIds: [ids] } }
+            // Populated by loadProjectParticipantsMap(); used only for display
+            // and for re-populating the edit form — never overwrites legacy
+            // participants_count on old projects that have no rows here.
+            let projectParticipantsMap = {};
 
             // ── Project Photos State ──
             // photoSlots[i] = { file: Blob|null (compressed, pending upload), previewUrl: string|null (existing URL or object URL) }
@@ -1214,9 +1419,95 @@
                         coordSelect.innerHTML = '<option value="">— None —</option>' +
                             membersList.map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('');
                     }
+                    renderMemberChecklist();
                 } catch (err) {
                     console.error('Failed to load members for coordinator dropdown:', err.message || err);
                 }
+            }
+
+            // ── Participation UI: Member Checklist ──
+            function renderMemberChecklist(filterText) {
+                const container = document.getElementById('memberChecklist');
+                if (!container) return;
+                if (!membersList.length) {
+                    container.innerHTML = '<div style="font-size:0.85rem; color:var(--text-muted);">No members found.</div>';
+                    return;
+                }
+                const filter = (filterText || '').trim().toLowerCase();
+                const filtered = filter
+                    ? membersList.filter(m => (m.name || '').toLowerCase().includes(filter))
+                    : membersList;
+                if (!filtered.length) {
+                    container.innerHTML = '<div style="font-size:0.85rem; color:var(--text-muted);">No matching members.</div>';
+                    return;
+                }
+                container.innerHTML = filtered.map(m => `
+                    <label class="member-check-item">
+                        <input type="checkbox" class="member-check-box" value="${m.id}" ${selectedMemberIds.has(String(m.id)) ? 'checked' : ''} />
+                        <span>${escapeHtml(m.name)}</span>
+                    </label>
+                `).join('');
+                container.querySelectorAll('.member-check-box').forEach(cb => {
+                    cb.addEventListener('change', (e) => {
+                        const id = e.target.value;
+                        if (e.target.checked) selectedMemberIds.add(String(id));
+                        else selectedMemberIds.delete(String(id));
+                        updateParticipationDerived();
+                    });
+                });
+            }
+
+            const memberSearchInputEl = document.getElementById('memberSearchInput');
+            if (memberSearchInputEl) {
+                memberSearchInputEl.addEventListener('input', (e) => {
+                    renderMemberChecklist(e.target.value);
+                });
+            }
+
+            // ── Participation UI: Guests ──
+            function renderGuestList() {
+                const container = document.getElementById('guestList');
+                if (!container) return;
+                container.innerHTML = guests.map((g, idx) => `
+                    <div class="guest-row" data-idx="${idx}">
+                        <input type="text" class="guest-name-input" placeholder="Guest ${idx + 1} name" value="${escapeHtml(g.name || '')}" />
+                        <input type="text" class="guest-contact-input" placeholder="Contact / Organization (optional)" value="${escapeHtml(g.contact || '')}" />
+                        <button type="button" class="guest-remove-btn" data-idx="${idx}"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                `).join('');
+
+                container.querySelectorAll('.guest-name-input').forEach((input, idx) => {
+                    input.addEventListener('input', (e) => {
+                        guests[idx].name = e.target.value;
+                    });
+                });
+                container.querySelectorAll('.guest-contact-input').forEach((input, idx) => {
+                    input.addEventListener('input', (e) => {
+                        guests[idx].contact = e.target.value;
+                    });
+                });
+                container.querySelectorAll('.guest-remove-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const idx = parseInt(btn.dataset.idx, 10);
+                        guests.splice(idx, 1);
+                        renderGuestList();
+                        updateParticipationDerived();
+                    });
+                });
+            }
+
+            document.getElementById('addGuestBtn').addEventListener('click', () => {
+                guests.push({ name: '', contact: '' });
+                renderGuestList();
+                updateParticipationDerived();
+            });
+
+            function resetParticipationState() {
+                selectedMemberIds = new Set();
+                guests = [];
+                renderMemberChecklist();
+                renderGuestList();
+                updateParticipationDerived();
             }
 
             // Reads a member's phone/email regardless of the exact column name used
@@ -1264,6 +1555,72 @@
                 return Math.round(hours * 100) / 100;
             }
 
+            // Generic duration-hours helper (no participant multiplier) — used
+            // for planning/project duration before multiplying by headcount.
+            // Returns 0 (never NaN) when dates/times are incomplete/invalid.
+            function computeDurationHours(startDate, startTime, endDate, endTime) {
+                if (!startDate) return 0;
+                const startISO = `${startDate}T${startTime || '00:00'}`;
+                const endISO = `${endDate || startDate}T${endTime || startTime || '00:00'}`;
+                const start = new Date(startISO);
+                const end = new Date(endISO);
+                if (isNaN(start.getTime()) || isNaN(end.getTime())) return 0;
+                let durationHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+                if (durationHours < 0) durationHours = 0;
+                return durationHours;
+            }
+
+            function round2(n) {
+                return Math.round((n + Number.EPSILON) * 100) / 100;
+            }
+
+            // ── Participants Count = selected members + guests (never manual) ──
+            function getParticipantCount() {
+                return selectedMemberIds.size + guests.length;
+            }
+
+            // Recomputes Participants Count, Planning/Project/Total Volunteer
+            // Hours, and the legacy single-duration Volunteering Hours field,
+            // all from current UI state. Called on every relevant input change
+            // so nothing needs manual entry or a save to refresh.
+            function updateParticipationDerived() {
+                const count = getParticipantCount();
+
+                document.getElementById('projectParticipants').value = count;
+
+                const summaryEl = document.getElementById('participationSummary');
+                if (summaryEl) {
+                    summaryEl.textContent = `Selected Members: ${selectedMemberIds.size} · Guests: ${guests.length} · Participations: ${count} members/guests`;
+                }
+
+                // Planning duration/hours
+                const planningDuration = computeDurationHours(
+                    document.getElementById('planningStartDate').value,
+                    document.getElementById('planningStartTime').value,
+                    document.getElementById('planningEndDate').value,
+                    document.getElementById('planningEndTime').value
+                );
+                const planningHours = round2(planningDuration * count);
+                document.getElementById('planningHoursReadout').textContent = `${count > 0 ? planningHours : 0} hrs`;
+
+                // Project duration/hours (reuses existing Start/End Date/Time fields)
+                const projectDuration = computeDurationHours(
+                    document.getElementById('projectStartDate').value,
+                    document.getElementById('projectStartTime').value,
+                    document.getElementById('projectEndDate').value,
+                    document.getElementById('projectEndTime').value
+                );
+                const projectHours = round2(projectDuration * count);
+                document.getElementById('projectHoursReadout').textContent = `${count > 0 ? projectHours : 0} hrs`;
+
+                const totalHours = round2((count > 0 ? planningHours : 0) + (count > 0 ? projectHours : 0));
+                document.getElementById('totalHoursReadout').textContent = `${totalHours} hrs`;
+
+                // Keep legacy single-duration Volunteering Hours field (existing
+                // reports/pages depend on it) in sync using the Project dates.
+                updateVolunteerHoursPreview();
+            }
+
             function updateVolunteerHoursPreview() {
                 const hours = computeVolunteeringHours(
                     document.getElementById('projectStartDate').value,
@@ -1274,8 +1631,39 @@
                 );
                 document.getElementById('projectVolunteerHours').value = hours !== null ? `${hours} hrs` : '';
             }
-            ['projectStartDate', 'projectStartTime', 'projectEndDate', 'projectEndTime', 'projectParticipants']
-                .forEach(id => document.getElementById(id).addEventListener('input', updateVolunteerHoursPreview));
+            ['projectStartDate', 'projectStartTime', 'projectEndDate', 'projectEndTime']
+                .forEach(id => document.getElementById(id).addEventListener('input', updateParticipationDerived));
+            ['planningStartDate', 'planningStartTime', 'planningEndDate', 'planningEndTime']
+                .forEach(id => document.getElementById(id).addEventListener('input', updateParticipationDerived));
+
+            // ── Load Participation Records (for display + edit-form reload) ──
+            // Builds projectParticipantsMap keyed by project_id. Soft-fails (logs
+            // a warning, leaves the map empty) so old databases without this
+            // table yet — or any query hiccup — never break the projects list;
+            // existing participants_count/volunteering_hours still display.
+            async function loadProjectParticipantsMap() {
+                try {
+                    const { data, error } = await supabase
+                        .from(PARTICIPANTS_TABLE)
+                        .select('*');
+                    if (error) throw error;
+                    const map = {};
+                    (data || []).forEach(row => {
+                        if (!map[row.project_id]) map[row.project_id] = { members: [], guests: [], memberIds: [], guestRows: [] };
+                        if (row.participant_type === 'guest') {
+                            map[row.project_id].guests.push(row.guest_name || 'Guest');
+                            map[row.project_id].guestRows.push({ name: row.guest_name || '', contact: row.guest_contact || '' });
+                        } else {
+                            const m = membersList.find(mm => String(mm.id) === String(row.member_id));
+                            map[row.project_id].members.push(m ? m.name : `Member #${row.member_id}`);
+                            map[row.project_id].memberIds.push(row.member_id);
+                        }
+                    });
+                    projectParticipantsMap = map;
+                } catch (err) {
+                    console.warn('Failed to load project participation records:', err.message || err);
+                }
+            }
 
             // ── Load Projects ──
             async function loadProjects() {
@@ -1293,6 +1681,10 @@
                     if (error) throw error;
 
                     allProjects = data || [];
+
+                    // Load participation records for display (safe no-op if
+                    // the table doesn't exist yet or membersList isn't loaded).
+                    await loadProjectParticipantsMap();
 
                     // Update stats
                     document.getElementById('statTotal').textContent = allProjects.length;
@@ -1333,6 +1725,25 @@
                             ? p.volunteering_hours
                             : computeVolunteeringHours(p.start_date, p.start_time, p.end_date, p.end_time, p.participants_count);
 
+                        // Participation breakdown (backward-compatible: falls back
+                        // to legacy participants_count if no records were loaded yet).
+                        const partInfo = projectParticipantsMap[p.id] || null;
+                        const memberCount = partInfo ? partInfo.members.length : null;
+                        const guestCount = partInfo ? partInfo.guests.length : null;
+                        const participationsLine = partInfo
+                            ? `<div class="node-detail"><i class="fa-solid fa-people-group"></i> Participations: ${memberCount} members + ${guestCount} guests</div>
+                               ${(partInfo.members.length || partInfo.guests.length) ? `
+                               <span class="participants-detail-toggle" data-toggle-id="partDetail${p.id}">View participant names</span>
+                               <div class="participants-detail-list" id="partDetail${p.id}">
+                                   ${partInfo.members.map(mm => `<div>• ${escapeHtml(mm)}</div>`).join('')}
+                                   ${partInfo.guests.map(gg => `<div>• ${escapeHtml(gg)} (Guest)</div>`).join('')}
+                               </div>` : ''}`
+                            : '';
+
+                        const planningHours = p.planning_volunteer_hours != null ? p.planning_volunteer_hours : null;
+                        const projectHours = p.project_volunteer_hours != null ? p.project_volunteer_hours : null;
+                        const totalHours = p.total_volunteer_hours != null ? p.total_volunteer_hours : null;
+
                         return `
                             <article class="project-node" style="border-left: 4px solid ${borderColor};">
                                 <div class="node-meta">
@@ -1344,8 +1755,11 @@
                                 <div class="node-detail"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(p.location || '—')}</div>
                                 <div class="node-detail"><i class="fa-solid fa-tag"></i> ${escapeHtml(p.avenue || '—')}</div>
                                 <div class="node-detail"><i class="fa-solid fa-money-bill-wave"></i> ${escapeHtml(p.total_cost || '—')}</div>
-                                ${p.participants_count != null ? `<div class="node-detail"><i class="fa-solid fa-people-group"></i> ${escapeHtml(p.participants_count)} participants</div>` : ''}
-                                ${hours != null ? `<div class="node-detail"><i class="fa-solid fa-hourglass-half"></i> ${escapeHtml(hours)} volunteering hrs</div>` : ''}
+                                ${participationsLine}
+                                ${p.participants_count != null ? `<div class="node-detail"><i class="fa-solid fa-user-check"></i> Participants Count: ${escapeHtml(p.participants_count)}</div>` : ''}
+                                ${planningHours != null ? `<div class="node-detail"><i class="fa-solid fa-clipboard-list"></i> Planning Volunteer Hours: ${escapeHtml(planningHours)} hrs</div>` : ''}
+                                ${projectHours != null ? `<div class="node-detail"><i class="fa-solid fa-people-carry-box"></i> Project Volunteer Hours: ${escapeHtml(projectHours)} hrs</div>` : ''}
+                                ${totalHours != null ? `<div class="node-detail"><i class="fa-solid fa-hourglass-half"></i> Total Volunteer Hours: ${escapeHtml(totalHours)} hrs</div>` : (hours != null ? `<div class="node-detail"><i class="fa-solid fa-hourglass-half"></i> ${escapeHtml(hours)} volunteering hrs</div>` : '')}
                                 ${coordContact ? `<div class="node-detail"><i class="fa-solid fa-address-card"></i> Contact Project Coordinator: ${escapeHtml([coordContact.phone, coordContact.email].filter(Boolean).join('  ·  ') || '—')}</div>` : ''}
                                 <div class="node-detail"><i class="fa-solid fa-certificate"></i> Club Certificate: ${p.club_certificate === true ? 'Yes' : p.club_certificate === false ? 'No' : '—'}</div>
                                 ${p.report_id ? `<div class="node-detail"><i class="fa-solid fa-file-lines"></i> ${escapeHtml(p.report_id)}</div>` : ''}
@@ -1372,6 +1786,14 @@
                             const id = parseInt(btn.dataset.id);
                             if (btn.dataset.action === 'delete') deleteProject(id);
                             else if (btn.dataset.action === 'edit') openEditModal(id);
+                        });
+                    });
+
+                    // Collapsible "view participant names" toggle per project card
+                    document.querySelectorAll('#projects-feed .participants-detail-toggle').forEach(toggle => {
+                        toggle.addEventListener('click', () => {
+                            const target = document.getElementById(toggle.dataset.toggleId);
+                            if (target) target.classList.toggle('open');
                         });
                     });
 
@@ -1454,6 +1876,15 @@
             async function deleteProject(id) {
                 if (!confirm(`⚠️ Delete project #${id} permanently?`)) return;
                 try {
+                    // Explicitly clean up this project's participation rows first.
+                    // Safe even if the DB already has ON DELETE CASCADE set up —
+                    // this simply becomes a no-op delete of 0 rows in that case.
+                    try {
+                        await supabase.from(PARTICIPANTS_TABLE).delete().eq('project_id', id);
+                    } catch (partErr) {
+                        console.warn('Failed to clean up participation records for project', id, partErr.message || partErr);
+                    }
+
                     const { error } = await supabase.from('upcoming_projects').delete().eq('id', id);
                     if (error) throw error;
                     showToast(`✅ Project #${id} deleted!`);
@@ -1480,7 +1911,6 @@
                 document.getElementById('projectEndTime').value = project.end_time || '';
                 document.getElementById('projectAudience').value = project.target_audience || '';
                 document.getElementById('projectLocation').value = project.location || '';
-                document.getElementById('projectParticipants').value = project.participants_count != null ? project.participants_count : '';
                 document.getElementById('projectCertificate').value = project.club_certificate === true ? 'yes' : project.club_certificate === false ? 'no' : '';
                 document.getElementById('projectStatus').value = project.status || 'upcoming';
                 document.getElementById('projectDescription').value = project.description || '';
@@ -1502,7 +1932,22 @@
                 }
                 renderPhotoSlots();
 
-                updateVolunteerHoursPreview();
+                // Restore Planning date/time fields (new columns; blank for
+                // legacy projects that predate this feature).
+                document.getElementById('planningStartDate').value = project.planning_start_date || '';
+                document.getElementById('planningStartTime').value = project.planning_start_time || '';
+                document.getElementById('planningEndDate').value = project.planning_end_date || '';
+                document.getElementById('planningEndTime').value = project.planning_end_time || '';
+
+                // Restore previously selected members and guests from
+                // project_participants so editing never loses participation data.
+                const existingPart = projectParticipantsMap[id];
+                selectedMemberIds = new Set((existingPart ? existingPart.memberIds : []).map(String));
+                guests = existingPart ? existingPart.guestRows.map(g => ({ name: g.name, contact: g.contact })) : [];
+                renderMemberChecklist();
+                renderGuestList();
+
+                updateParticipationDerived();
                 modal.classList.add('active');
             }
 
@@ -1527,7 +1972,12 @@
                 document.getElementById('projectTotalCost').value = '';
                 document.getElementById('projectReportId').value = '';
                 document.getElementById('projectReportUrl').value = '';
+                document.getElementById('planningStartDate').value = '';
+                document.getElementById('planningStartTime').value = '';
+                document.getElementById('planningEndDate').value = '';
+                document.getElementById('planningEndTime').value = '';
                 resetPhotoSlots();
+                resetParticipationState();
                 modal.classList.add('active');
             }
 
@@ -1544,8 +1994,21 @@
                 const startTime = document.getElementById('projectStartTime').value;
                 const endDate = document.getElementById('projectEndDate').value;
                 const endTime = document.getElementById('projectEndTime').value;
-                const participantsRaw = document.getElementById('projectParticipants').value;
-                const participants = participantsRaw !== '' ? parseInt(participantsRaw, 10) : null;
+
+                // Participants Count is derived, never typed by the admin.
+                const participants = getParticipantCount();
+
+                const planningStartDate = document.getElementById('planningStartDate').value;
+                const planningStartTime = document.getElementById('planningStartTime').value;
+                const planningEndDate = document.getElementById('planningEndDate').value;
+                const planningEndTime = document.getElementById('planningEndTime').value;
+
+                const planningDuration = computeDurationHours(planningStartDate, planningStartTime, planningEndDate, planningEndTime);
+                const projectDuration = computeDurationHours(startDate, startTime, endDate, endTime);
+                const planningVolunteerHours = round2(planningDuration * participants);
+                const projectVolunteerHours = round2(projectDuration * participants);
+                const totalVolunteerHours = round2(planningVolunteerHours + projectVolunteerHours);
+
                 const certValue = document.getElementById('projectCertificate').value;
 
                 const data = {
@@ -1562,8 +2025,9 @@
                     status: document.getElementById('projectStatus').value,
                     description: document.getElementById('projectDescription').value.trim(),
                     project_coordinator_id: document.getElementById('projectCoordinator').value || null,
-                    participants_count: (participants != null && !isNaN(participants)) ? participants : null,
-                    // Auto-calculated: Total Project Duration (hrs) × Participants — never entered manually.
+                    // Participants Count = selected members + guests (auto-calculated).
+                    participants_count: participants,
+                    // Legacy single-duration field kept in sync (existing reports depend on it).
                     volunteering_hours: computeVolunteeringHours(startDate, startTime, endDate, endTime, participants),
                     club_certificate: certValue === 'yes' ? true : certValue === 'no' ? false : null,
                     // ── New fields (require existing `upcoming_projects` columns:
@@ -1571,7 +2035,19 @@
                     avenue: document.getElementById('projectAvenue').value || null,
                     total_cost: document.getElementById('projectTotalCost').value.trim() || null,
                     report_id: document.getElementById('projectReportId').value.trim() || null,
-                    report_url: document.getElementById('projectReportUrl').value.trim() || null
+                    report_url: document.getElementById('projectReportUrl').value.trim() || null,
+                    // ── Planning vs Project volunteer-hour columns (new) ──
+                    planning_start_date: planningStartDate || null,
+                    planning_start_time: planningStartTime || null,
+                    planning_end_date: planningEndDate || null,
+                    planning_end_time: planningEndTime || null,
+                    project_start_date: startDate || null,
+                    project_start_time: startTime || null,
+                    project_end_date: endDate || null,
+                    project_end_time: endTime || null,
+                    planning_volunteer_hours: planningVolunteerHours,
+                    project_volunteer_hours: projectVolunteerHours,
+                    total_volunteer_hours: totalVolunteerHours
                 };
 
                 if (!data.name || !data.date || !data.target_audience || !data.location) {
@@ -1608,12 +2084,28 @@
                     }
 
                     let result;
+                    let savedProjectId = id ? parseInt(id) : null;
                     if (id) {
                         result = await supabase.from('upcoming_projects').update(data).eq('id', parseInt(id));
                     } else {
-                        result = await supabase.from('upcoming_projects').insert([data]);
+                        result = await supabase.from('upcoming_projects').insert([data]).select('id');
+                        if (!result.error && result.data && result.data[0]) {
+                            savedProjectId = result.data[0].id;
+                        }
                     }
                     if (result.error) throw result.error;
+
+                    // Save participation records (delete-and-reinsert for this
+                    // project only — never touches another project's rows).
+                    if (savedProjectId != null) {
+                        try {
+                            await saveProjectParticipants(savedProjectId);
+                        } catch (partErr) {
+                            console.warn('Failed to save participation records:', partErr.message || partErr);
+                            showToast('⚠️ Project saved, but participation records failed: ' + (partErr.message || partErr), 'error');
+                        }
+                    }
+
                     showToast(id ? '✅ Project updated!' : '✅ Project added!');
                     closeModal();
                     await loadProjects();
@@ -1621,6 +2113,47 @@
                     showToast('❌ Error: ' + err.message, 'error');
                 }
             });
+
+            // ── Save Participation Records (delete-and-reinsert, safely scoped) ──
+            // Deletes only rows belonging to THIS project, then reinserts the
+            // current selection. Never touches project_participants rows for
+            // any other project. No-op (0 rows) is valid when neither members
+            // nor guests are selected.
+            async function saveProjectParticipants(projectId) {
+                const { error: delError } = await supabase
+                    .from(PARTICIPANTS_TABLE)
+                    .delete()
+                    .eq('project_id', projectId);
+                if (delError) throw delError;
+
+                const rows = [];
+                selectedMemberIds.forEach(memberId => {
+                    rows.push({
+                        project_id: projectId,
+                        member_id: parseInt(memberId, 10),
+                        participant_type: 'member',
+                        guest_name: null,
+                        guest_contact: null,
+                        participation_status: 'selected'
+                    });
+                });
+                guests.forEach(g => {
+                    if (!g.name || !g.name.trim()) return; // skip blank guest rows
+                    rows.push({
+                        project_id: projectId,
+                        member_id: null,
+                        participant_type: 'guest',
+                        guest_name: g.name.trim(),
+                        guest_contact: (g.contact || '').trim() || null,
+                        participation_status: 'selected'
+                    });
+                });
+
+                if (rows.length > 0) {
+                    const { error: insError } = await supabase.from(PARTICIPANTS_TABLE).insert(rows);
+                    if (insError) throw insError;
+                }
+            }
 
             // ── Export Completed Projects (combined PDF report) ──
             // Loads an image URL into a data URL so it can be embedded in the PDF,
@@ -1941,7 +2474,11 @@
             document.addEventListener('DOMContentLoaded', async () => {
                 const authorized = await checkAdminRole();
                 if (authorized) {
-                    await Promise.all([loadProjects(), loadApplications(), loadMembersList()]);
+                    // Members must load first so participant names can be
+                    // resolved from IDs when loadProjects() builds the
+                    // participation map and renders project cards.
+                    await loadMembersList();
+                    await Promise.all([loadProjects(), loadApplications()]);
                     setupSubscriptions();
                 }
             });

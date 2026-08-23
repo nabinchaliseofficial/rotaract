@@ -2168,7 +2168,6 @@
       { icon: 'fa-tasks', label: 'Projects Completed', value: 0, suffix: '', decimals: 0 },
       { icon: 'fa-clock', label: 'Volunteer Hours', value: 0, suffix: '', decimals: 0 },
       { icon: 'fa-trophy', label: 'Awards Won', value: 0, suffix: '', decimals: 0 },
-      { icon: 'fa-hand-holding-usd', label: 'Funds Raised', value: 0, suffix: '', prefix: 'Rs ', decimals: 0 },
       { icon: 'fa-globe-asia', label: 'Communities Served', value: 0, suffix: '', decimals: 0 }
     ];
 
@@ -2214,25 +2213,12 @@
       }
 
       try {
-        const { data: accounts, error: fundsErr } = await supabase
-          .from('financial_accounts')
-          .select('current_balance');
-        if (!fundsErr && accounts) {
-          const netBalance = accounts.reduce((sum, a) => sum + (Number(a.current_balance) || 0), 0);
-          statsData[5].value = netBalance;
-          statsData[5].decimals = (netBalance % 1 !== 0) ? 2 : 0;
-        }
-      } catch (e) {
-        console.warn('Could not fetch funds raised / net balance:', e);
-      }
-
-      try {
         const seen = new Set();
         allProjects.forEach(p => {
           const loc = (p.location || '').trim().toLowerCase().replace(/\s+/g, ' ');
           if (loc) seen.add(loc);
         });
-        statsData[6].value = seen.size;
+        statsData[5].value = seen.size;
       } catch (e) {
         console.warn('Could not derive communities served:', e);
       }
@@ -2832,6 +2818,50 @@
           console.warn('Completed project coordinator bonus skipped:', coordErr.message || coordErr);
         }
 
+        // Project participation data (additive display info only - does NOT
+        // change the existing Final Score formula). Matched by
+        // project_participants.member_id -> members.id. Soft-fails like the
+        // bonuses above: if the table doesn't exist yet or the query fails,
+        // recognition still loads normally with 0 for every member.
+        const projectParticipationCountMap = {};
+        const projectVolunteerHoursMap = {};
+        try {
+          const { data: participantRows, error: partError } = await supabase
+            .from('project_participants')
+            .select('member_id, project_id, participant_type')
+            .eq('participant_type', 'member');
+          if (partError) throw partError;
+
+          const relevantProjectIds = Array.from(new Set((participantRows || [])
+            .map(r => r.project_id).filter(id => id != null)));
+
+          let projectHoursById = {};
+          if (relevantProjectIds.length > 0) {
+            const { data: projectRows, error: projError } = await supabase
+              .from('upcoming_projects')
+              .select('id, participants_count, project_volunteer_hours, volunteering_hours')
+              .in('id', relevantProjectIds);
+            if (projError) throw projError;
+            (projectRows || []).forEach(p => {
+              const count = p.participants_count && p.participants_count > 0 ? p.participants_count : null;
+              const totalHours = p.project_volunteer_hours != null ? p.project_volunteer_hours
+                : (p.volunteering_hours != null ? p.volunteering_hours : null);
+              const perPerson = (totalHours != null && count) ? (totalHours / count) : 0;
+              projectHoursById[p.id] = perPerson;
+            });
+          }
+
+          (participantRows || []).forEach(row => {
+            const memberId = row.member_id;
+            if (memberId == null) return;
+            projectParticipationCountMap[memberId] = (projectParticipationCountMap[memberId] || 0) + 1;
+            const perPerson = projectHoursById[row.project_id] || 0;
+            projectVolunteerHoursMap[memberId] = (projectVolunteerHoursMap[memberId] || 0) + perPerson;
+          });
+        } catch (partErr) {
+          console.warn('Project participation data skipped:', partErr.message || partErr);
+        }
+
         function normalizeKey(str) {
           return (str || '').toString().trim().toLowerCase()
             .replace(/^rtr(?:\.\s*|\s+)/, '')
@@ -2891,10 +2921,15 @@
           const bonus = bloodBonus + coordinatorPoints;
           const photoUrl = m.photo_url || m.photo || m.profile_image || null;
           const finalScore = attendancePct + bonus;
+          // Project participation - additive display data only, 0 when the
+          // member has no records (never undefined/null/NaN).
+          const projectParticipationCount = projectParticipationCountMap[m.id] || 0;
+          const projectVolunteerHours = Math.round((projectVolunteerHoursMap[m.id] || 0) * 100) / 100;
           return {
             id: m.id, fullName: m.name, designation: classification.designation,
             photoUrl, attendancePct, bonus, bloodEntryCount, bloodBonus,
-            coordinatorPoints, finalScore, isBoard: classification.isBoard, isPresident: classification.isPresident
+            coordinatorPoints, finalScore, isBoard: classification.isBoard, isPresident: classification.isPresident,
+            projectParticipationCount, projectVolunteerHours
           };
         });
 
@@ -2926,6 +2961,7 @@
                 <span class="bonus-badge"><i class="fas fa-plus-circle"></i> +${w.bonus}</span>
                 ${w.bloodEntryCount > 0 ? `<span class="blood-badge"><i class="fas fa-droplet"></i> ${w.bloodEntryCount} (+${w.bloodBonus})</span>` : ''}
                 ${w.coordinatorPoints > 0 ? `<span class="coordinator-badge"><i class="fas fa-clipboard-check"></i> +${w.coordinatorPoints}</span>` : ''}
+                ${w.projectParticipationCount > 0 ? `<span class="coordinator-badge"><i class="fas fa-people-group"></i> ${w.projectParticipationCount} projects · ${w.projectVolunteerHours} hrs</span>` : ''}
                 <span class="winner-score"><i class="fas fa-star"></i> ${w.finalScore.toFixed(1)}</span>
               </div>
             </div>
@@ -3019,7 +3055,7 @@
 
         if (allItems.length === 0) {
           allItems = [
-            `<span class="ticker-item"><span class="badge badge-update">📢</span> Welcome to Rotaract Club of Galkot Baglung — Service Above Self</span>`,
+            `<span class="ticker-item"><span class="badge badge-update">📢</span> Welcome to Rotaract Club of Galkot Baglung: Service Above Self</span>`,
             `<span class="ticker-item"><span class="badge badge-new">✨</span> R.Y. 2026-27 is here! Join us in making a difference</span>`,
           ];
         }
