@@ -283,7 +283,7 @@
     const leaderList = document.getElementById('leaderList');
     const risingList = document.getElementById('risingList');
     const errorDisplay = document.getElementById('errorDisplay');
-    let latestExportData = []; // full member list, populated after each successful load
+    let latestExportData = []; // full member list with status, populated after each successful load
 
     function showError(message, details = '') {
       errorDisplay.style.display = 'block';
@@ -421,7 +421,7 @@
     const NORMALIZED_BOARD_DESIGNATIONS = BOARD_DESIGNATIONS.map(normalizeDesignationText);
 
     function classifyMember(m) {
-      const rawDesignation = (m.designation || m.position || '').toString().trim();
+      const rawDesignation = (m.designation || m.position || m.role || '').toString().trim();
       const normalized = normalizeDesignationText(rawDesignation);
       const matchIndex = NORMALIZED_BOARD_DESIGNATIONS.indexOf(normalized);
       const isBoard = matchIndex !== -1;
@@ -459,11 +459,14 @@
           return;
         }
 
-        // Fetch club members - this is the full official roster; every
-        // person here gets a score, even 0%, so nobody is silently dropped
+        // Fetch club members - active roster only; every active member gets
+        // a score, even 0%, so nobody active is silently dropped. Inactive
+        // members are excluded from ranking/display at the query level
+        // (member.id remains the identity used for all matching below).
         const { data: members, error: memError } = await supabase
           .from('members')
-          .select('id, name, designation, position, status, mentor, photo_url, photo, profile_image');
+          .select('id, name, full_name, designation, role, position, status, mentor, photo_url, photo, profile_image')
+          .eq('status', 'active');
 
         if (memError) throw new Error('Members fetch failed: ' + memError.message);
 
@@ -693,7 +696,7 @@
 
           return {
             id: m.id,
-            fullName: m.name,
+            fullName: m.name || m.full_name || 'Unknown Member',
             designation: classification.designation,
             photoUrl,
             attendancePct,
@@ -708,7 +711,8 @@
             attended,
             projectParticipationCount,
             projectParticipationPoints,
-            projectVolunteerHours
+            projectVolunteerHours,
+            memberStatus: (m.status || '').toString().trim()
           };
         });
 
@@ -717,8 +721,10 @@
           .filter(m => m.isBoard === true && !m.isPresident)
           .sort((a, b) => b.finalScore - a.finalScore);
 
-        const topLeaderScore = leaders.length > 0 ? leaders[0].finalScore : -Infinity;
-        const leaderWinners = leaders.filter(m => m.finalScore === topLeaderScore);
+        // Show the top 2 members for each award system.
+        // If scores are tied, the normal sort order is preserved and only two
+        // members are displayed, as requested.
+        const leaderWinners = leaders.slice(0, 2);
 
         // Rising Star pool = every club member NOT on the fixed board roster
         // (President included in that exclusion since isBoard covers them too)
@@ -726,10 +732,9 @@
           .filter(m => m.isBoard === false)
           .sort((a, b) => b.finalScore - a.finalScore);
 
-        const topRisingScore = rising.length > 0 ? rising[0].finalScore : -Infinity;
-        const risingWinners = rising.filter(m => m.finalScore === topRisingScore);
+        const risingWinners = rising.slice(0, 2);
 
-        // Render winners only - no aggregate/all-member stats shown
+        // Render top 2 only - no aggregate/all-member stats shown
         renderList(leaderList, leaderWinners);
         renderList(risingList, risingWinners);
 
@@ -765,8 +770,8 @@
     }
 
     // ------------------------------------------------------------------
-    // EXCEL EXPORT (client-side, via SheetJS) - exports the full member
-    // roster with attendance/bonus/score, not just the two award winners.
+    // EXCEL EXPORT (client-side, via SheetJS) - exports ACTIVE members
+    // only, with attendance/bonus/score, not just the award winners.
     // ------------------------------------------------------------------
     window.exportToExcel = function() {
       if (!latestExportData.length) {
@@ -778,7 +783,17 @@
         return;
       }
 
-      const rows = latestExportData.map(m => ({
+      // Export only members whose status is Active.
+      const activeExportData = latestExportData.filter(m =>
+        (m.memberStatus || '').toString().trim().toLowerCase() === 'active'
+      );
+
+      if (!activeExportData.length) {
+        alert('No active members found to export.');
+        return;
+      }
+
+      const rows = activeExportData.map(m => ({
         'Name': getFullNameWithPrefix(m.fullName),
         'Category': m.isPresident ? 'President (excluded)' : (m.isBoard ? 'Board Roster' : 'Club Member'),
         'Designation': m.designation,

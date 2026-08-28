@@ -413,8 +413,6 @@ table.data-table tbody tr:last-child td{border-bottom:none;}
     <nav>
       <div class="nav-item active" data-page="dashboard"><i data-lucide="layout-dashboard" class="nav-icon"></i><span>Dashboard</span></div>
       <div class="nav-item" data-page="database"><i data-lucide="database" class="nav-icon"></i><span>Database</span></div>
-      <div class="nav-item" data-page="explorer"><i data-lucide="table" class="nav-icon"></i><span>Table Explorer</span></div>
-      <div class="nav-item" data-page="search"><i data-lucide="search" class="nav-icon"></i><span>Global Search</span></div>
       <div class="nav-item" data-page="export"><i data-lucide="download" class="nav-icon"></i><span>Export</span></div>
       <div class="nav-item" data-page="analytics"><i data-lucide="bar-chart-3" class="nav-icon"></i><span>Analytics</span></div>
       <div class="nav-item" data-page="activity"><i data-lucide="clock" class="nav-icon"></i><span>Activity Log</span></div>
@@ -494,55 +492,12 @@ table.data-table tbody tr:last-child td{border-bottom:none;}
             <div><h2>Accessible Tables</h2><div class="sub">Discovered dynamically via <code>get_exportable_tables()</code></div></div>
             <button class="btn btn-sm" id="dbRefreshBtn"><i data-lucide="refresh-cw" style="width:13px;height:13px;"></i>Refresh</button>
           </div>
-          <div id="databaseTableList"></div>
-        </div>
-      </section>
-
-      <!-- ============ TABLE EXPLORER ============ -->
-      <section class="page-section" id="page-explorer">
-        <div class="card">
-          <div class="card-header">
-            <div><h2>Table Explorer</h2><div class="sub">Select a table to browse its data</div></div>
-            <select id="explorerTableSelect"><option value="">Select a table…</option></select>
-          </div>
-          <div id="explorerEmpty" class="empty-state">
-            <div class="icon">🗂️</div>
-            <div class="title">No table selected</div>
-            <div>Choose a table above to explore its records.</div>
-          </div>
-          <div id="explorerContent" style="display:none;">
-            <div class="toolbar">
-              <div class="search-wrap">
-                <i data-lucide="search" class="search-icon"></i>
-                <input type="text" id="explorerSearch" placeholder="Search visible columns…">
-              </div>
-              <select id="explorerFilterColumn"></select>
-              <select id="explorerFilterOp">
-                <option value="eq">Equals</option>
-                <option value="ilike">Contains</option>
-                <option value="starts">Starts with</option>
-                <option value="gt">Greater than</option>
-                <option value="lt">Less than</option>
-                <option value="isnull">Is empty</option>
-                <option value="notnull">Is not empty</option>
-              </select>
-              <input type="text" id="explorerFilterValue" placeholder="Value" style="max-width:140px;">
-              <button class="btn btn-sm" id="explorerApplyFilter">Apply</button>
-              <button class="btn btn-sm" id="explorerClearFilter">Clear</button>
-              <select id="explorerPageSize">
-                <option value="25">25 / page</option>
-                <option value="50" selected>50 / page</option>
-                <option value="100">100 / page</option>
-              </select>
-              <button class="btn btn-icon" id="explorerRefresh" title="Refresh"><i data-lucide="refresh-cw" style="width:15px;height:15px;"></i></button>
+          <div class="toolbar" style="margin-bottom:14px;">
+              <div class="search-wrap"><i data-lucide="search" class="search-icon"></i><input type="text" id="databaseDataSearch" placeholder="Search database data across all tables…"></div>
+              <button class="btn btn-primary btn-sm" id="databaseDataSearchBtn">Search</button>
             </div>
-            <div id="explorerTableWrap"></div>
-            <div class="pagination">
-              <span class="pg-info" id="explorerPgInfo"></span>
-              <button class="btn btn-sm" id="explorerPrev">‹ Prev</button>
-              <button class="btn btn-sm" id="explorerNext">Next ›</button>
-            </div>
-          </div>
+            <div id="databaseSearchResults"></div>
+            <div id="databaseTableList"></div>
         </div>
       </section>
 
@@ -573,13 +528,9 @@ table.data-table tbody tr:last-child td{border-bottom:none;}
           <div class="opt-row"><input type="checkbox" id="optAllTables" checked><label for="optAllTables">All accessible tables</label></div>
 
           <div style="margin-top:12px;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.03em;">Format</div>
-          <div class="opt-row"><input type="radio" name="exportFormat" id="fmtExcel" value="excel" checked><label for="fmtExcel">Excel (.xlsx) — all tables, one workbook</label></div>
-          <div class="opt-row"><input type="radio" name="exportFormat" id="fmtCsv" value="csv"><label for="fmtCsv">CSV — currently selected table only</label></div>
-          <div class="opt-row"><input type="radio" name="exportFormat" id="fmtJson" value="json"><label for="fmtJson">JSON — selected table or all tables</label></div>
-
-          <div id="csvJsonTableSelectWrap" style="display:none;margin-top:8px;">
-            <select id="csvJsonTableSelect"></select>
-          </div>
+          <div class="opt-row"><input type="radio" name="exportFormat" id="fmtExcel" value="excel" checked><label for="fmtExcel">Excel (.xlsx) — all database tables, one workbook</label></div>
+          <div class="opt-row"><input type="radio" name="exportFormat" id="fmtJson" value="json"><label for="fmtJson">JSON — all database tables and all accessible data</label></div>
+          <div id="csvJsonTableSelectWrap" style="display:none;"><select id="csvJsonTableSelect"></select></div>
 
           <div style="margin-top:12px;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.03em;">Options</div>
           <div class="opt-row"><input type="checkbox" id="optHeaders" checked><label for="optHeaders">Include headers</label></div>
@@ -594,7 +545,7 @@ table.data-table tbody tr:last-child td{border-bottom:none;}
 
         <div class="card">
           <div class="card-header">
-            <div><h2>Export History</h2><div class="sub">Requires the <code>export_history</code> table — see setup SQL</div></div>
+            <div><h2>Export History</h2><div class="sub">Last database exports</div></div>
           </div>
           <div id="exportHistoryList"></div>
         </div>
@@ -614,7 +565,7 @@ table.data-table tbody tr:last-child td{border-bottom:none;}
         </div>
         <div class="card">
           <div class="card-header">
-            <div><h2>Export Statistics</h2><div class="sub">Requires <code>export_history</code> table</div></div>
+            <div><h2>Export Statistics</h2><div class="sub">Export activity summary</div></div>
           </div>
           <div id="exportStatsBlock"></div>
         </div>
@@ -691,6 +642,12 @@ table.data-table tbody tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
+<div class="modal-overlay" id="dataActionOverlay">
+  <div class="modal-box modal-lg">
+    <div class="modal-header"><h3 id="dataActionTitle">Edit Data</h3><button class="modal-close" id="dataActionClose">✕</button></div>
+    <div id="dataActionBody"></div>
+  </div>
+</div>
 <div id="toastContainer"></div>
 
 <script>
@@ -1174,8 +1131,8 @@ function applyRolePermissionsToUI() {
    NAVIGATION
    ===================================================================== */
 const PAGE_TITLES = {
-  dashboard: "Dashboard", database: "Database", explorer: "Table Explorer",
-  search: "Global Search", export: "Export", analytics: "Analytics",
+  dashboard: "Dashboard", database: "Database",
+  export: "Export", analytics: "Analytics",
   activity: "Activity Log", settings: "Settings"
 };
 
@@ -1190,7 +1147,6 @@ function navigateTo(page) {
   closeMobileSidebar();
 
   if (page === "database") renderDatabasePage();
-  if (page === "explorer") renderExplorerTableOptions();
   if (page === "analytics") renderAnalyticsPage();
   if (page === "activity") renderActivityLog();
   if (page === "export") renderExportHistory();
@@ -1595,6 +1551,7 @@ function renderDatabasePage() {
    ===================================================================== */
 function renderExplorerTableOptions() {
   const sel = document.getElementById("explorerTableSelect");
+  if (!sel) return;
   const current = sel.value;
   clearNode(sel);
   sel.appendChild(el("option", { text: "Select a table…", attrs: { value: "" } }));
@@ -1604,49 +1561,14 @@ function renderExplorerTableOptions() {
   if (current && state.tables.some(t => t.table_name === current)) sel.value = current;
 }
 
-document.getElementById("explorerTableSelect").addEventListener("change", (e) => {
-  if (e.target.value) setExplorerTable(e.target.value); else showExplorerEmpty();
-});
-document.getElementById("explorerRefresh").addEventListener("click", () => loadExplorerData());
-document.getElementById("explorerPrev").addEventListener("click", () => {
-  if (state.explorer.page > 0) { state.explorer.page--; loadExplorerData(); }
-});
-document.getElementById("explorerNext").addEventListener("click", () => {
-  state.explorer.page++; loadExplorerData();
-});
-document.getElementById("explorerPageSize").addEventListener("change", (e) => {
-  state.explorer.pageSize = parseInt(e.target.value, 10);
-  state.explorer.page = 0;
-  loadExplorerData();
-});
-document.getElementById("explorerApplyFilter").addEventListener("click", () => {
-  const col = document.getElementById("explorerFilterColumn").value;
-  const op = document.getElementById("explorerFilterOp").value;
-  const val = document.getElementById("explorerFilterValue").value;
-  if (!col) { toast("Choose a column to filter on.", "warning"); return; }
-  state.explorer.filter = { col, op, val };
-  state.explorer.page = 0;
-  loadExplorerData();
-});
-document.getElementById("explorerClearFilter").addEventListener("click", () => {
-  state.explorer.filter = null;
-  document.getElementById("explorerFilterValue").value = "";
-  state.explorer.page = 0;
-  loadExplorerData();
-});
-let explorerSearchDebounce;
-document.getElementById("explorerSearch").addEventListener("input", (e) => {
-  clearTimeout(explorerSearchDebounce);
-  explorerSearchDebounce = setTimeout(() => {
-    state.explorer.search = e.target.value.trim();
-    state.explorer.page = 0;
-    loadExplorerData();
-  }, 350);
-});
+/* Table Explorer removed: explorer event handlers disabled. */
 
 function showExplorerEmpty() {
-  document.getElementById("explorerEmpty").style.display = "flex";
-  document.getElementById("explorerContent").style.display = "none";
+  const emptyEl = document.getElementById("explorerEmpty");
+  const contentEl = document.getElementById("explorerContent");
+  if (!emptyEl || !contentEl) return;
+  emptyEl.style.display = "flex";
+  contentEl.style.display = "none";
 }
 
 async function setExplorerTable(tableName) {
@@ -2140,37 +2062,32 @@ async function exportCsv() {
 
 /* JSON export — selected table or all tables */
 async function exportJson() {
-  const allTables = document.getElementById("optAllTables").checked;
   try {
-    if (allTables) {
-      const tables = await discoverTables();
-      const out = {};
-      for (const t of tables) {
-        try { out[t.table_name] = await fetchAllRows(t.table_name); }
-        catch (err) { out[t.table_name] = { error: friendlyError(err) }; }
-      }
-      const blob = new Blob([JSON.stringify(out, null, 2)], { type: "application/json" });
-      downloadBlob(blob, `Supabase_All_Data_${dateStamp()}.json`);
-      await logActivity("export", { type: "json", tables: tables.length });
-    } else {
-      const tableName = document.getElementById("csvJsonTableSelect").value || state.explorer.tableName;
-      if (!tableName) { toast("Select a table to export as JSON.", "warning"); return; }
-      const rows = await fetchAllRows(tableName);
-      const blob = new Blob([JSON.stringify(rows, null, 2)], { type: "application/json" });
-      downloadBlob(blob, `${tableName}_${dateStamp()}.json`);
-      await logActivity("export", { type: "json", table: tableName, records: rows.length });
+    const tables = await discoverTables();
+    const out = {};
+    for (const t of tables) {
+      try { out[t.table_name] = await fetchAllRows(t.table_name); }
+      catch (err) { out[t.table_name] = { error: friendlyError(err) }; }
     }
-    toast("✓ JSON export completed", "success");
-  } catch (err) {
-    toast(friendlyError(err, "JSON export failed"), "error");
-  }
+    const blob = new Blob([JSON.stringify(out, null, 2)], { type: "application/json" });
+    const filename = `Supabase_All_Data_${dateStamp()}.json`;
+    const recordsCount = Object.values(out).reduce((sum, value) => sum + (Array.isArray(value) ? value.length : 0), 0);
+    downloadBlob(blob, filename);
+    await recordExportHistory({ user_email: state.email, export_type: "json", tables_count: tables.length, records_count: recordsCount, success: true, filename });
+    await logActivity("export", { type: "json", tables: tables.length, records: recordsCount });
+    renderExportHistory();
+    toast("✓ Complete JSON database export completed", "success");
+  } catch (err) { toast(friendlyError(err, "JSON export failed"), "error"); }
 }
 
 async function exportSingleTableJson(tableName) {
   try {
     const rows = await fetchAllRows(tableName);
     const blob = new Blob([JSON.stringify(rows, null, 2)], { type: "application/json" });
-    downloadBlob(blob, `${tableName}_${dateStamp()}.json`);
+    const filename = `${tableName}_${dateStamp()}.json`;
+    downloadBlob(blob, filename);
+    await recordExportHistory({ user_email: state.email, export_type: "json", tables_count: 1, records_count: rows.length, success: true, filename });
+    renderExportHistory();
     toast("✓ JSON export completed", "success");
     await logActivity("export", { type: "json", table: tableName, records: rows.length });
   } catch (err) {
@@ -2194,7 +2111,7 @@ function dateStamp() {
 document.querySelectorAll('input[name="exportFormat"]').forEach(r => {
   r.addEventListener("change", () => {
     const fmt = document.querySelector('input[name="exportFormat"]:checked').value;
-    document.getElementById("csvJsonTableSelectWrap").style.display = fmt === "csv" || fmt === "json" ? "block" : "none";
+    document.getElementById("csvJsonTableSelectWrap").style.display = "none";
     exportBtn.style.display = fmt === "excel" ? "inline-flex" : "none";
     let extraBtn = document.getElementById("csvJsonExportBtn");
     if (fmt !== "excel") {
@@ -2210,9 +2127,8 @@ document.querySelectorAll('input[name="exportFormat"]').forEach(r => {
     }
   });
 });
-document.getElementById("optAllTables").addEventListener("change", (e) => {
-  document.getElementById("csvJsonTableSelectWrap").style.display =
-    (!e.target.checked && document.querySelector('input[name="exportFormat"]:checked').value !== "excel") ? "block" : document.getElementById("csvJsonTableSelectWrap").style.display;
+document.getElementById("optAllTables").addEventListener("change", () => {
+  document.getElementById("csvJsonTableSelectWrap").style.display = "none";
 });
 
 function populateCsvJsonTableSelect() {
@@ -2409,6 +2325,110 @@ async function renderActivityStatsBlock() {
   }
 }
 
+
+/* =====================================================================
+   DATABASE DATA SEARCH + SECURE EXPLORER / EDIT / DELETE
+   ===================================================================== */
+let explorerAccessGranted = false;
+let currentActionRow = null, currentActionColumns = [], currentActionTable = null;
+
+function openDataAction(title, content) {
+  document.getElementById("dataActionTitle").textContent = title;
+  const body = document.getElementById("dataActionBody"); clearNode(body);
+  body.appendChild(content); document.getElementById("dataActionOverlay").classList.add("active");
+}
+function closeDataAction(){ document.getElementById("dataActionOverlay").classList.remove("active"); }
+document.getElementById("dataActionClose").addEventListener("click", closeDataAction);
+document.getElementById("dataActionOverlay").addEventListener("click",e=>{if(e.target===e.currentTarget)closeDataAction();});
+
+async function verifyAdminCredentials(email,password) {
+  if (!email || !password) throw new Error("Enter admin email and password.");
+  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error) throw error;
+  const uid=data.user?.id;
+  const {data:roleRow,error:roleErr}=await supabaseClient.from("user_roles").select("role,status").eq("user_id",uid).eq("status","active").eq("role","admin").maybeSingle();
+  if(roleErr || !roleRow) throw new Error("Only an active admin account is authorized.");
+  state.session=data.session; state.email=data.user.email; state.role="admin"; state.status="active";
+  return true;
+}
+
+function requestExplorerAccess() {
+  if (explorerAccessGranted) { navigateTo("explorer"); return; }
+  const box=el("div");
+  box.appendChild(el("p",{class:"muted",text:"For database security, confirm an active admin account before opening Table Explorer."}));
+  const ef=el("input",{attrs:{type:"email",placeholder:"Admin email"},class:"action-input"});
+  const pf=el("input",{attrs:{type:"password",placeholder:"Admin password"},class:"action-input"});
+  ef.style.cssText=pf.style.cssText="width:100%;padding:10px;margin:6px 0;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);";
+  const btn=el("button",{class:"btn btn-primary",text:"Verify & Open Table Explorer"});
+  btn.addEventListener("click",async()=>{btn.disabled=true; try{await verifyAdminCredentials(ef.value.trim(),pf.value); explorerAccessGranted=true; closeDataAction(); navigateTo("explorer"); toast("Admin verification successful.","success");}catch(err){toast(friendlyError(err,"Verification failed"),"error");}finally{btn.disabled=false;}});
+  box.append(ef,pf,btn); openDataAction("Admin Verification Required",box);
+}
+
+function getRowKey(row, columns) {
+  const preferred=["id","uuid","user_id","member_id","transaction_id"];
+  const key=preferred.find(k=>Object.prototype.hasOwnProperty.call(row,k)) || (columns||Object.keys(row)).find(c=>row[c]!==null && row[c]!==undefined);
+  return key;
+}
+
+function openEditRecord(row, columns) {
+  currentActionRow=row; currentActionColumns=columns||Object.keys(row); currentActionTable=state.explorer.tableName;
+  const box=el("div");
+  const key=getRowKey(row,currentActionColumns);
+  box.appendChild(el("div",{class:"muted",text:`Table: ${currentActionTable} • Update key: ${key||"not available"}`}));
+  const inputs={};
+  currentActionColumns.forEach(c=>{
+    const label=el("label",{text:c,attrs:{style:"display:block;font-size:12px;margin-top:10px;font-weight:700;"}});
+    const inp=document.createElement("textarea"); inp.value=row[c]===null||row[c]===undefined?"":(typeof row[c]==="object"?JSON.stringify(row[c]):String(row[c]));
+    inp.style.cssText="width:100%;min-height:42px;padding:8px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);";
+    if(c===key) { inp.readOnly=true; inp.style.opacity=".7"; }
+    inputs[c]=inp; box.append(label,inp);
+  });
+  const save=el("button",{class:"btn btn-primary",text:"Save Changes"}); save.style.marginTop="14px";
+  save.addEventListener("click",async()=>{
+    if(!currentActionTable||!key){toast("Unable to determine a record key.","error");return;}
+    const payload={};
+    currentActionColumns.forEach(c=>{if(c!==key){let v=inputs[c].value; if(v==="") v=null; else {try{if(typeof row[c]==="object")v=JSON.parse(v);}catch{}} payload[c]=v;}});
+    save.disabled=true;
+    const {error}=await supabaseClient.from(currentActionTable).update(payload).eq(key,row[key]);
+    save.disabled=false;
+    if(error){toast(friendlyError(error,"Supabase update failed"),"error");return;}
+    toast("Data updated successfully in Supabase.","success"); closeDataAction(); closeRecordModal(); await loadExplorerData();
+  });
+  box.appendChild(save); openDataAction("Edit Data",box);
+}
+
+function requestDeleteRecord(row,columns){
+  const table=state.explorer.tableName, key=getRowKey(row,columns);
+  const box=el("div");
+  box.appendChild(el("p",{text:`You are about to permanently delete this record from "${table}". Admin email and password are required.`}));
+  const ef=el("input",{attrs:{type:"email",placeholder:"Admin email"}});
+  const pf=el("input",{attrs:{type:"password",placeholder:"Admin password"}});
+  [ef,pf].forEach(x=>x.style.cssText="width:100%;padding:10px;margin:6px 0;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);");
+  const del=el("button",{class:"btn",text:"Verify & Delete"}); del.style.cssText="margin-top:12px;border-color:var(--error);color:var(--error);";
+  del.addEventListener("click",async()=>{if(!key){toast("Unable to determine a record key.","error");return;} del.disabled=true;try{await verifyAdminCredentials(ef.value.trim(),pf.value); const {error}=await supabaseClient.from(table).delete().eq(key,row[key]); if(error)throw error; toast("Record deleted from Supabase.","success"); closeDataAction(); closeRecordModal(); await loadExplorerData();}catch(err){toast(friendlyError(err,"Delete failed"),"error");}finally{del.disabled=false;}});
+  box.append(ef,pf,del); openDataAction("Confirm Delete",box);
+}
+
+/* Search actual database rows and show the table containing each match. */
+async function runDatabaseDataSearch(){
+  const term=document.getElementById("databaseDataSearch").value.trim(), box=document.getElementById("databaseSearchResults"); clearNode(box);
+  if(!term){toast("Enter data to search.","warning");return;}
+  box.appendChild(loadingStateBox(`Searching ${state.tables.length} table(s)…`));
+  const found=[];
+  for(const t of state.tables){
+    try{
+      const cols=await discoverColumns(t.table_name); if(!cols?.length)continue;
+      const expr=cols.map(c=>`${c}.ilike.%${term}%`).join(",");
+      const {data,error}=await supabaseClient.from(t.table_name).select("*").or(expr).limit(10);
+      if(!error && data?.length)found.push({t,data});
+    }catch{}
+  }
+  clearNode(box);
+  if(!found.length){box.appendChild(emptyState("🔍","No matching database data","Try another search."));return;}
+  found.forEach(g=>{const card=el("div",{class:"search-group"}); const b=el("button",{class:"btn btn-sm",text:`${g.t.display_name||g.t.table_name} — ${g.data.length} match(es)`}); b.addEventListener("click",async()=>{navigateTo("explorer"); await setExplorerTable(g.t.table_name); document.getElementById("explorerSearch").value=term; state.explorer.search=term; state.explorer.page=0; loadExplorerData();}); card.appendChild(b); box.appendChild(card);});
+}
+document.getElementById("databaseDataSearchBtn").addEventListener("click",runDatabaseDataSearch);
+document.getElementById("databaseDataSearch").addEventListener("keydown",e=>{if(e.key==="Enter")runDatabaseDataSearch();});
 /* =====================================================================
    INIT
    ===================================================================== */

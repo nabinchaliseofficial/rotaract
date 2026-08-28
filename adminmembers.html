@@ -2174,12 +2174,33 @@
                     memberData.profile_image = finalImageUrl || null;
 
                     let result;
+                    const memberId = isEdit ? Number.parseInt(id, 10) : null;
+
                     if (isEdit) {
-                        result = await supabase.from(MEMBERS_TABLE).update(memberData).eq('id', parseInt(id));
+                        if (!Number.isInteger(memberId) || memberId <= 0) {
+                            throw new Error('Invalid member ID for update: ' + id);
+                        }
+
+                        // .select() confirms that a real row was updated.
+                        result = await supabase
+                            .from('members')
+                            .update(memberData)
+                            .eq('id', memberId)
+                            .select();
+
+                        if (result.error) throw result.error;
+
+                        if (!result.data || result.data.length === 0) {
+                            throw new Error('No member was updated. Member ID ' + memberId + ' was not found or update access was denied.');
+                        }
                     } else {
-                        result = await supabase.from(MEMBERS_TABLE).insert([memberData]);
+                        result = await supabase
+                            .from('members')
+                            .insert([memberData])
+                            .select();
+
+                        if (result.error) throw result.error;
                     }
-                    if (result.error) throw result.error;
 
                     showToast(isEdit ? '✅ Member updated!' : '✅ Member added!', 'success');
                     closeModal();

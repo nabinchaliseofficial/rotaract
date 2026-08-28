@@ -816,6 +816,15 @@
       padding: 4px 14px; border-radius: 20px; border: 1px solid rgba(212, 175, 55, 0.3);
     }
 
+
+    /* ===== PAST PRESIDENTS & ADVISORS SLIDER ===== */
+    .pp-slider-wrap { max-width: 1200px; margin: 0 auto; overflow: hidden; padding: 8px 0 18px; }
+    .pp-slider { display: flex; gap: 28px; width: max-content; animation: ppScroll 45s linear infinite; }
+    .pp-slider:hover { animation-play-state: paused; }
+    .pp-slider .pp-card { flex: 0 0 260px; }
+    @keyframes ppScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    @media (max-width: 768px) { .pp-slider .pp-card { flex-basis: 220px; } }
+
     /* ===== PARTNERSHIPS ===== */
     .partnership-section { padding: 70px 20px 80px; background: var(--bg-white); transition: background 0.6s ease; }
     .partnership-section .section-header { text-align: center; margin-bottom: 40px; }
@@ -1568,6 +1577,17 @@
   </div>
 </section>
 
+<!-- ===== ACTIVE MEMBERS MARQUEE ===== -->
+<section class="members-marquee-section" id="members">
+  <div style="max-width:1200px;margin:0 auto;text-align:center;margin-bottom:30px;">
+    <h2 style="font-size:2rem;font-weight:800;letter-spacing:-0.5px;">👥 Active Members</h2>
+    <p style="color:var(--text-secondary);">Our dedicated team of Rotaractors making a difference</p>
+  </div>
+  <div class="members-marquee" id="membersMarquee">
+    <!-- Member cards injected by JS -->
+  </div>
+</section>
+
 <!-- ===== PRESIDENT'S MESSAGE ===== -->
 <section class="message-section" id="about">
   <div class="message-container">
@@ -1600,22 +1620,11 @@
   </div>
 </section>
 
-<!-- ===== ACTIVE MEMBERS MARQUEE ===== -->
-<section class="members-marquee-section" id="members">
-  <div style="max-width:1200px;margin:0 auto;text-align:center;margin-bottom:30px;">
-    <h2 style="font-size:2rem;font-weight:800;letter-spacing:-0.5px;">👥 Active Members</h2>
-    <p style="color:var(--text-secondary);">Our dedicated team of Rotaractors making a difference</p>
-  </div>
-  <div class="members-marquee" id="membersMarquee">
-    <!-- Member cards injected by JS -->
-  </div>
-</section>
-
 <!-- ===== RECOGNITION SECTION ===== -->
 <section class="recognition-section" id="recognition">
   <div class="section-header">
     <h2><i class="fas fa-trophy" style="color:var(--gold);margin-right:12px;"></i> Recognition · R.Y. 2026-27</h2>
-    <p>Outstanding Club Leader &amp; Rising Star based on attendance and bonus points</p>
+    <p>Recognition based on earned points</p>
   </div>
   <div class="recognition-grid" id="recognitionGrid">
     <div class="recognition-card">
@@ -1637,12 +1646,6 @@
       </div>
     </div>
   </div>
-  <div class="recognition-footer-note" style="max-width:1000px;margin:28px auto 0;display:flex;flex-wrap:wrap;justify-content:center;gap:10px 28px;color:var(--text-muted);font-size:0.82rem;border-top:1px solid rgba(226,232,240,0.4);padding-top:20px;">
-    <span><i class="fas fa-calendar-check" style="color:var(--gold);margin-right:4px;"></i> Attendance computed from Published meeting minutes</span>
-    <span><i class="fas fa-droplet" style="color:var(--gold);margin-right:4px;"></i> Bonus: +1 per 10 blood donor entries</span>
-    <span><i class="fas fa-users" style="color:var(--gold);margin-right:4px;"></i> Leader: Fixed board roster (all meeting types), President excluded</span>
-    <span><i class="fas fa-star" style="color:var(--gold);margin-right:4px;"></i> Rising Star: Club Members (General/Assembly/Special General/AGM meetings only)</span>
-  </div>
 </section>
 
 <!-- ===== PAST PRESIDENTS & ADVISORS ===== -->
@@ -1651,7 +1654,7 @@
     <h2><i class="fas fa-crown" style="color:var(--gold);margin-right:12px;"></i>Past Presidents &amp; Advisors</h2>
     <p>Honoring the leaders who guided our club through the years</p>
   </div>
-  <div class="pp-grid">
+  <div class="pp-slider-wrap"><div class="pp-slider" id="ppSlider">
     <div class="pp-card">
       <div class="avatar">
         <img src="images/neetukhadka.jpg" alt="RTR. Neetu Khadka" loading="lazy"
@@ -1712,7 +1715,7 @@
       <div class="tenure">2025 – 26</div><br>
       <span class="badge-role"><i class="fas fa-arrow-right" style="margin-right:6px;color:var(--gold);"></i>President Elect</span>
     </div>
-  </div>
+  </div></div>
 </section>
 
 <!-- ===== NATIONAL / INTERNATIONAL PARTNERSHIPS ===== -->
@@ -2291,127 +2294,105 @@
     updateStatsFromSupabase();
 
     // ============================================================
-    // BOARD MEMBERS DATA (with photos)
+    // BOARD OF DIRECTORS + ACTIVE CLUB MEMBERS (from Supabase)
     // ============================================================
-    const boardMembers = [
-      { name: 'Rtr. Nabin Chalise', position: 'President', photo: 'images/nabinchalise.jpg' },
-      { name: 'Rtr. Madan Sharma', position: 'Secretary', photo: 'images/madansharma.jpg' },
-      { name: 'Rtr. Manish Kandel', position: 'Treasurer', photo: 'images/manishkandel.jpg' },
-      { name: 'Rtr. Nabin Subedi', position: 'IPP / Mentor', photo: 'images/nabinsubedi.jpg' },
-      { name: 'Rtr. Tika Ram Gautam', position: 'President Elect', photo: 'images/tikaramgautam.jpg' },
-      { name: 'Rtr. Vikash Subedi', position: 'Vice President', photo: 'images/vikashsubedi.jpg' },
-      { name: 'Rtr. Sagar Chalise', position: 'Joint Secretary', photo: 'images/sagarchalise.jpg' },
-      { name: 'Rtr. Bipin Chalise', position: 'Membership Chair', photo: 'images/bipinchalise.jpg' },
-      { name: 'Rtr. Manish Gurung', position: 'Public Image Chair', photo: 'images/manishgurung.jpg' },
-      { name: 'Rtr. Smriti Budhathoki', position: 'Service Projects Chair', photo: 'images/smritibudhathoki.jpg' },
-      { name: 'Rtr. Anil Shrestha', position: 'PP / ISD / Advisor', photo: 'images/anilshrestha.jpg' },
-      { name: 'Rtr. Kamal Kharel', position: 'Club Advisor', photo: 'images/kamalkharel.jpg' },
-      { name: 'Rtr. Laxmi Pun', position: 'Rotaract Learning Facilitator', photo: 'images/laxmipun.jpg' },
-    ];
+    let allMembers = [];
 
-    function renderBoard() {
-      const marquee = document.getElementById('boardMarquee');
-      const doubled = [...boardMembers, ...boardMembers];
-      marquee.innerHTML = doubled.map(m => `
-        <div class="board-card" data-name="${encodeURIComponent(m.name)}" data-position="${encodeURIComponent(m.position)}" data-photo="${encodeURIComponent(m.photo)}">
-          <img src="${m.photo}" alt="${m.name}" class="avatar" 
-               onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}&background=D91A5C&color=fff&size=80'">
-          <div class="name">${m.name}</div>
-          <div class="position">${m.position}</div>
-        </div>
-      `).join('');
+    function getMemberPhoto(m) { return m.photo_url || m.photo || m.profile_image || ''; }
 
-      // Add click events for board cards
-      document.querySelectorAll('.board-card').forEach(card => {
-        card.addEventListener('click', function() {
-          const name = decodeURIComponent(this.dataset.name);
-          const position = decodeURIComponent(this.dataset.position);
-          const photo = decodeURIComponent(this.dataset.photo);
-          openMemberPopup(name, position, photo);
-        });
-      });
+    // Only these active designations are shown in Board of Directors.
+    // Every other active member is shown in Active Members.
+    const BOARD_DESIGNATIONS = new Set([
+      'chartered president',
+      'president',
+      'secretary',
+      'treasurer',
+      'pp/isd/advisor',
+      'ipp/mentor',
+      'past president/advisor',
+      'joint secretary',
+      'president elect',
+      'Health Program Chair',
+      'pp/rotaract learning facilitator',
+      'rotaract vice president',
+      'rotaract membership chair',
+      'it officer',
+      'sergeant at arms',
+      'rotaract foundation chair',
+      'rotaract service projects chair',
+      'young leaders contact'
+    ]);
+
+    function normalizeDesignation(value) {
+      return (value || '')
+        .toString()
+        .replace(/\u00a0/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
     }
-    renderBoard();
 
-    // ============================================================
-    // MEMBERS MARQUEE (from Supabase) - EXCLUDING SPECIFIC ROLES
-    // ============================================================
-    // These roles should appear ONLY in Board, NOT in Active Members marquee
-    const BOARD_ONLY_DESIGNATIONS = [
-      'President', 'President Elect', 'Secretary', 'Joint Secretary', 'Treasurer',
-      'Vice President', 'IPP / Mentor', 'Membership Chair', 'Public Image Chair',
-      'Service Projects Chair', 'Health Program Chair', 'Rotary Foundation Chair',
-      'Sergeant At Arms', 'IT Officer', 'Young Leaders Contact',
-      'Learning Facilitator', 'Club Advisor', 'ISD Advisor',
-      'PP / ISD / Advisor', 'Rotaract Foundation Chair'
-    ];
+    function renderBoardMembers(data) {
+      const marquee = document.getElementById('boardMarquee');
+      const boardData = data.filter(m =>
+        (m.status || '').toString().trim().toLowerCase() === 'active' &&
+        BOARD_DESIGNATIONS.has(normalizeDesignation(m.designation || m.position || m.role))
+      );
+      if (!boardData.length) { marquee.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);width:100%;">No active board members found</div>`; return; }
+      const doubled = [...boardData, ...boardData];
+      marquee.innerHTML = doubled.map(m => {
+        const name=m.name||'Member', position=m.designation||'Board Member', photo=getMemberPhoto(m);
+        return `<div class="board-card" data-id="${m.id}"><img src="${photo || 'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=D91A5C&color=fff&size=80'}" alt="${name}" class="avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=D91A5C&color=fff&size=80'"><div class="name">${name}</div><div class="position">${position}</div></div>`;
+      }).join('');
+      marquee.querySelectorAll('.board-card').forEach(card => card.addEventListener('click', () => {
+        const member=allMembers.find(m=>String(m.id)===String(card.dataset.id));
+        if(member) openMemberPopupFromSupabase(member);
+      }));
+    }
 
-    let allMembers = []; // store for popup lookups
+    function renderMembersMarquee(data) {
+      const marquee=document.getElementById('membersMarquee');
+      const clubMembers=data.filter(m =>
+        (m.status||'').toString().trim().toLowerCase()==='active' &&
+        !BOARD_DESIGNATIONS.has(normalizeDesignation(m.designation || m.position || m.role))
+      );
+      if(!clubMembers.length){ marquee.innerHTML=`<div style="padding:20px;text-align:center;color:var(--text-muted);width:100%;">No active Club Members found</div>`; return; }
+      const doubled=[...clubMembers,...clubMembers];
+      marquee.innerHTML=doubled.map(m=>{
+        const name=m.name||'Member', photo=getMemberPhoto(m);
+        return `<div class="member-marquee-card" data-id="${m.id}"><img src="${photo || 'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=D91A5C&color=fff&size=64'}" alt="${name}" class="avatar" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=D91A5C&color=fff&size=64'"><div class="name">${name}</div><div class="designation">${m.designation || m.position || m.role || 'Club Member'}</div></div>`;
+      }).join('');
+      marquee.querySelectorAll('.member-marquee-card').forEach(card => card.addEventListener('click', () => {
+        const member=allMembers.find(m=>String(m.id)===String(card.dataset.id));
+        if(member) openMemberPopupFromSupabase(member);
+      }));
+    }
 
-    async function renderMembersMarquee() {
-      const marquee = document.getElementById('membersMarquee');
+    async function loadBoardAndActiveMembers() {
       try {
-        const { data, error } = await supabase
-          .from('members')
-          .select('*')
-          .eq('status', 'active')
-          .limit(30);
-
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-          marquee.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);width:100%;">No active members found</div>`;
-          return;
-        }
-
-        allMembers = data;
-
-        // Filter out board-only members (they appear only in Board section)
-        const filteredData = data.filter(m => {
-          const designation = (m.designation || '').toString().trim();
-          return !BOARD_ONLY_DESIGNATIONS.some(boardTitle => 
-            designation.toLowerCase().includes(boardTitle.toLowerCase())
-          );
-        });
-
-        if (filteredData.length === 0) {
-          marquee.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);width:100%;">No regular active members found</div>`;
-          return;
-        }
-
-        const doubled = [...filteredData, ...filteredData];
-        marquee.innerHTML = doubled.map(m => {
-          const photo = m.photo_url || m.photo || m.profile_image || '';
-          const name = m.name || 'Member';
-          const designation = m.designation || 'Member';
-          return `
-            <div class="member-marquee-card" data-id="${m.id}">
-              <img src="${photo || 'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=D91A5C&color=fff&size=64'}" 
-                   alt="${name}" class="avatar" loading="lazy"
-                   onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=D91A5C&color=fff&size=64'">
-              <div class="name">${name}</div>
-              <div class="designation">${designation}</div>
-            </div>
-          `;
-        }).join('');
-
-        // Add click events for member cards
-        document.querySelectorAll('.member-marquee-card').forEach(card => {
-          card.addEventListener('click', function() {
-            const id = this.dataset.id;
-            const member = allMembers.find(m => String(m.id) === String(id));
-            if (member) {
-              openMemberPopupFromSupabase(member);
-            }
-          });
-        });
-      } catch (err) {
-        console.error('Failed to load members:', err);
-        marquee.innerHTML = `<div style="padding:20px;text-align:center;color:#EF4444;width:100%;">Failed to load members</div>`;
+        const {data,error}=await supabase.from('members').select('*').eq('status','active').order('name',{ascending:true});
+        if(error) throw error;
+        allMembers=data||[];
+        renderBoardMembers(allMembers);
+        renderMembersMarquee(allMembers);
+      } catch(err) {
+        console.error('Failed to load active members:',err);
+        document.getElementById('boardMarquee').innerHTML=`<div style="padding:20px;text-align:center;color:#EF4444;width:100%;">Failed to load Board of Directors</div>`;
+        document.getElementById('membersMarquee').innerHTML=`<div style="padding:20px;text-align:center;color:#EF4444;width:100%;">Failed to load Active Members</div>`;
       }
     }
+    loadBoardAndActiveMembers();
 
-    renderMembersMarquee();
+    // ============================================================
+    // PAST PRESIDENTS & ADVISORS SLIDER
+    // ============================================================
+    function initPastPresidentsSlider() {
+      const slider=document.getElementById('ppSlider');
+      if(!slider || slider.dataset.ready==='true') return;
+      const cards=Array.from(slider.querySelectorAll('.pp-card'));
+      if(cards.length>1){ cards.forEach(card=>slider.appendChild(card.cloneNode(true))); slider.dataset.ready='true'; }
+    }
+    initPastPresidentsSlider();
 
     // ============================================================
     // MEMBER POPUP (like verifymember.html)
@@ -2788,7 +2769,8 @@
 
         const { data: members, error: memError } = await supabase
           .from('members')
-          .select('id, name, designation, position, status, mentor, photo_url, photo, profile_image');
+          .select('id, name, full_name, designation, role, position, status, mentor, photo_url, photo, profile_image')
+          .eq('status', 'active');
 
         if (memError) throw new Error('Members fetch failed: ' + memError.message);
 
@@ -2885,15 +2867,15 @@
             .trim();
         }
 
-        const NORMALIZED_BOARD_DESIGNATIONS = BOARD_ONLY_DESIGNATIONS.map(normalizeDesignationText);
-
+        // Reuse the board roster already defined for the Board of Directors section.
+        // BOARD_DESIGNATIONS is a Set, so BOARD_ONLY_DESIGNATIONS is not needed.
         function classifyMember(m) {
-          const rawDesignation = (m.designation || m.position || '').toString().trim();
-          const normalized = normalizeDesignationText(rawDesignation);
-          const matchIndex = NORMALIZED_BOARD_DESIGNATIONS.indexOf(normalized);
-          const isBoard = matchIndex !== -1;
-          const displayDesignation = isBoard ? BOARD_ONLY_DESIGNATIONS[matchIndex] : (rawDesignation || 'Club Member');
-          return { designation: displayDesignation, isPresident: isBoard && displayDesignation === 'President', isBoard };
+          const rawDesignation = (m.designation || m.position || m.role || '').toString().trim();
+          const normalized = normalizeDesignation(rawDesignation);
+          const isBoard = BOARD_DESIGNATIONS.has(normalized);
+          const isPresident = normalized === 'president';
+          const displayDesignation = rawDesignation || 'Club Member';
+          return { designation: displayDesignation, isPresident, isBoard };
         }
 
         function isBoardOnlyMeetingType(meeting) {
@@ -2933,20 +2915,26 @@
           const finalScore = attendancePct + bonus;
           const projectVolunteerHours = Math.round((projectVolunteerHoursMap[m.id] || 0) * 100) / 100;
           return {
-            id: m.id, fullName: m.name, designation: classification.designation,
+            id: m.id, fullName: m.name || m.full_name || 'Unknown Member', designation: classification.designation,
             photoUrl, attendancePct, bonus, bloodEntryCount, bloodBonus,
             coordinatorPoints, finalScore, isBoard: classification.isBoard, isPresident: classification.isPresident,
             projectParticipationCount, projectParticipationPoints, projectVolunteerHours
           };
         });
 
-        const leaders = memberScores.filter(m => m.isBoard === true && !m.isPresident).sort((a, b) => b.finalScore - a.finalScore);
-        const topLeaderScore = leaders.length > 0 ? leaders[0].finalScore : -Infinity;
-        const leaderWinners = leaders.filter(m => m.finalScore === topLeaderScore);
+        // Show the TOP 2 members for each award, using the exact same
+        // recognition scoring rules as recognition.html.
+        // Outstanding Club Leader: Board members, President excluded.
+        const leaders = memberScores
+          .filter(m => m.isBoard === true && !m.isPresident)
+          .sort((a, b) => b.finalScore - a.finalScore);
+        const leaderWinners = leaders.slice(0, 2);
 
-        const rising = memberScores.filter(m => m.isBoard === false).sort((a, b) => b.finalScore - a.finalScore);
-        const topRisingScore = rising.length > 0 ? rising[0].finalScore : -Infinity;
-        const risingWinners = rising.filter(m => m.finalScore === topRisingScore);
+        // Rising Star: non-board Club Members only.
+        const rising = memberScores
+          .filter(m => m.isBoard === false)
+          .sort((a, b) => b.finalScore - a.finalScore);
+        const risingWinners = rising.slice(0, 2);
 
         function renderWinnerList(winners, container) {
           if (!winners || winners.length === 0) {
@@ -2964,12 +2952,11 @@
                 <span class="winner-designation">${designation}</span>
               </div>
               <div class="winner-stats">
-                <span class="attendance-badge"><i class="fas fa-user-check"></i> ${w.attendancePct}%</span>
-                <span class="bonus-badge"><i class="fas fa-plus-circle"></i> +${w.bonus}</span>
-                ${w.bloodEntryCount > 0 ? `<span class="blood-badge"><i class="fas fa-droplet"></i> ${w.bloodEntryCount} (+${w.bloodBonus})</span>` : ''}
-                ${w.coordinatorPoints > 0 ? `<span class="coordinator-badge"><i class="fas fa-clipboard-check"></i> Project Coordinator +${w.coordinatorPoints}</span>` : ''}
-                ${w.projectParticipationCount > 0 ? `<span class="coordinator-badge"><i class="fas fa-people-group"></i> ${w.projectParticipationCount} projects · ${w.projectVolunteerHours} hrs</span><span class="bonus-badge"><i class="fas fa-plus-circle"></i> Project Participation +${w.projectParticipationPoints}</span>` : ''}
-                <span class="winner-score"><i class="fas fa-star"></i> ${w.finalScore.toFixed(1)}</span>
+                <span class="attendance-badge"><i class="fas fa-user-check"></i> Attendance: ${w.attendancePct} pts</span>
+                ${w.bloodBonus > 0 ? `<span class="blood-badge"><i class="fas fa-droplet"></i> Blood Entry +${w.bloodBonus}</span>` : ''}
+                ${w.coordinatorPoints > 0 ? `<span class="coordinator-badge"><i class="fas fa-clipboard-check"></i> Coordinator +${w.coordinatorPoints}</span>` : ''}
+                ${w.projectParticipationPoints > 0 ? `<span class="bonus-badge"><i class="fas fa-people-group"></i> Participation +${w.projectParticipationPoints}</span>` : ''}
+                <span class="winner-score"><i class="fas fa-star"></i> Total: ${w.finalScore.toFixed(1)} pts</span>
               </div>
             </div>
           `;
