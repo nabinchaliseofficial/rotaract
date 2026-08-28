@@ -1323,7 +1323,8 @@
             <div class="logo-wrap">
                 <img src="rotaract.jpg" alt="Rotaract Logo" class="logo-img" onerror="this.style.display='none'" />
                 <div class="club-info">
-                    <h1>ROTARACT CLUB OF GALKOT BAGLUNG</h1>
+                    <h1>ROTARACT CLUB, GALKOT BAGLUNG
+</h1>
                     <div class="sub">RI District 3292 • Nepal • Admin Panel</div>
                 </div>
             </div>
@@ -1362,6 +1363,7 @@
         <div class="admin-tabs no-print">
             <button class="active" data-tab="all">📋 सबै</button>
             <button data-tab="letters">📝 पत्रहरू</button>
+            <button data-tab="suchana">📢 सूचना</button>
             <button data-tab="lhe">📨 LHE</button>
         </div>
 
@@ -1546,7 +1548,7 @@
 
                     <div class="field">
                         <label>क्लब</label>
-                        <input type="text" id="docClub" value="रोटर्याक्ट क्लब अफ गलकोट बागलुङ" readonly />
+                        <input type="text" id="docClub" value="रोटर्याक्ट क्लब, गलकोट बागलुङ" readonly />
                     </div>
                     <div class="field">
                         <label>जारीकर्ता</label>
@@ -2087,7 +2089,7 @@
                 docToAddress.value = data.to_address || '';
                 docSubject.value = data.subject || '';
                 docBody.value = data.body || '';
-                docClub.value = data.club || 'रोटर्याक्ट क्लब अफ गलकोट बागलुङ';
+                docClub.value = data.club || 'रोटर्याक्ट क्लब, गलकोट बागलुङ';
                 docIssuedBy.value = data.issued_by || 'Rotaract Club of Galkot Baglung';
                 docSignedBy.value = data.signed_by || 'रो. नविन चालिसे';
                 docDesignation.value = data.designation || 'अध्यक्ष, वर्ष २०२६/२७';
@@ -2142,7 +2144,7 @@
                     to_address: '',
                     subject: '',
                     body: '',
-                    club: 'रोटर्याक्ट क्लब अफ गलकोट बागलुङ',
+                    club: 'रोटर्याक्ट क्लब, गलकोट बागलुङ',
                     issued_by: 'Rotaract Club of Galkot Baglung',
                     signed_by: 'रो. नविन चालिसे',
                     designation: 'अध्यक्ष, वर्ष २०२६/२७',
@@ -2276,7 +2278,7 @@
                     if (error) throw error;
                     setDocFormData(data);
                     docFormTitle.textContent = '✏️ कागजात सम्पादन गर्नुहोस्';
-                    docDeleteBtn.style.display = 'inline-flex';
+                    docDeleteBtn.style.display = data.doc_type === 'lhe' ? 'inline-flex' : 'none';
                     docFormContainer.style.display = 'block';
                     docFormContainer.scrollIntoView({ behavior: 'smooth' });
                 } catch (err) {
@@ -2321,18 +2323,34 @@
 
             async function deleteDoc(id) {
                 try {
+                    // केवल LHE कागजातलाई मात्र delete गर्न अनुमति
+                    const { data: doc, error: fetchError } = await supabaseClient
+                        .from('rotaract_verify')
+                        .select('doc_type')
+                        .eq('id', id)
+                        .single();
+
+                    if (fetchError) throw fetchError;
+
+                    if (!doc || doc.doc_type !== 'lhe') {
+                        showToast('⛔ Letter र 📢 सूचना delete गर्न मिल्दैन। LHE मात्र delete गर्न मिल्छ।', 'error');
+                        return;
+                    }
+
                     const { error } = await supabaseClient
                         .from('rotaract_verify')
                         .delete()
-                        .eq('id', id);
+                        .eq('id', id)
+                        .eq('doc_type', 'lhe');
+
                     if (error) throw error;
-                    showToast('🗑️ कागजात मेटियो।', 'info');
+                    showToast('🗑️ LHE कागजात मेटियो।', 'info');
                     if (docEditId.value === id) resetDocForm();
                     loadDocuments();
                     loadStats();
                 } catch (err) {
                     console.error('Delete error:', err);
-                    showToast('⚠️ कागजात मेट्न असफल', 'error');
+                    showToast('⚠️ LHE कागजात मेट्न असफल', 'error');
                 }
             }
 
@@ -2414,7 +2432,7 @@ Thank you!`;
                 return `
                     <div class="print-header">
                         <img src="/clubheading.jpg" alt="Club Header" style="max-width:100%;max-height:110px;object-fit:contain;" />
-                        <div style="font-size:1.2rem;font-weight:700;color:var(--blue-dark);" class="club-name">${escapeHtml(data.club || 'रोटर्याक्ट क्लब अफ गलकोट बागलुङ')}</div>
+                        <div style="font-size:1.2rem;font-weight:700;color:var(--blue-dark);" class="club-name">${escapeHtml(data.club || 'रोटर्याक्ट क्लब, गलकोट बागलुङ')}</div>
                         <div style="font-size:0.8rem;color:var(--gray-600);" class="club-address">Galkot, Baglung</div>
                     </div>
                     <div class="print-meta" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;color:var(--gray-700);">
@@ -2431,7 +2449,7 @@ Thank you!`;
                             ${data.president_name ? `<div class="sign-name" style="font-weight:600;letter-spacing:1px;">${escapeHtml(data.president_name)}</div>` : ''}
                             ${data.signed_by ? `<div class="sign-name" style="font-weight:600;letter-spacing:1px;">${escapeHtml(data.signed_by)}</div>` : ''}
                             ${data.designation ? `<div class="sign-designation" style="font-size:0.8rem;color:var(--gray-500);">${escapeHtml(data.designation)}</div>` : ''}
-                            <div class="sign-club" style="font-size:0.8rem;color:var(--gray-500);">${escapeHtml(data.club || 'रोटर्याक्ट क्लब अफ गलकोट बागलुङ')}</div>
+                            <div class="sign-club" style="font-size:0.8rem;color:var(--gray-500);">${escapeHtml(data.club || 'रोटर्याक्ट क्लब, गलकोट बागलुङ')}</div>
                         </div>
                     </div>
                     <div class="print-verification" style="display:flex;flex-direction:column;align-items:center;gap:0.05rem;">
@@ -2533,7 +2551,7 @@ Thank you!`;
                                     <button class="btn-icon edit" data-id="${doc.id}" title="सम्पादन">✏️</button>
                                     <button class="btn-icon clone" data-id="${doc.id}" title="प्रतिलिपि बनाउनुहोस् (Clone)">📄</button>
                                     <button class="btn-icon print" data-id="${doc.id}" title="प्रिन्ट">🖨️</button>
-                                    <button class="btn-icon delete" data-id="${doc.id}" title="मेट्नुहोस्">🗑️</button>
+                                    ${docType === 'lhe' ? `<button class="btn-icon delete" data-id="${doc.id}" title="LHE मेट्नुहोस्">🗑️</button>` : ''}
                                 </div>
                             </td>
                         </tr>`;
@@ -2651,6 +2669,11 @@ Thank you!`;
                         currentDocTypeFilter = 'letter';
                         filterBtns.forEach(b => {
                             b.classList.toggle('active', b.dataset.filter === 'letter');
+                        });
+                    } else if (tabName === 'suchana') {
+                        currentDocTypeFilter = 'suchana';
+                        filterBtns.forEach(b => {
+                            b.classList.toggle('active', b.dataset.filter === 'suchana');
                         });
                     } else if (tabName === 'lhe') {
                         currentDocTypeFilter = 'lhe';

@@ -237,9 +237,17 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            width: calc(100% - 2.8rem);
+            font-family: inherit;
             font-size: 0.72rem;
             font-weight: 600;
             color: var(--success);
+            cursor: pointer;
+            text-align: left;
+        }
+        .status-strip:hover {
+            background: rgba(67, 201, 138, 0.2);
+            border-color: rgba(67, 201, 138, 0.4);
         }
         .status-strip.degraded {
             background: var(--danger-dim);
@@ -430,6 +438,166 @@
         .notif-bell:hover {
             background: var(--surface-hover);
             border-color: var(--border-strong);
+        }
+
+        /* ============================================================
+           OVERVIEW NOTIFICATIONS — copied from Progress Report
+           ============================================================ */
+        .overview-notifications {
+            margin: 1.2rem 2.2rem 0;
+            position: relative;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .overview-notif-wrap { position: relative; }
+        .overview-notif-bell {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.05rem;
+            transition: background .2s var(--ease), border-color .2s var(--ease);
+            position: relative;
+        }
+        .overview-notif-bell:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-strong);
+        }
+        .overview-notif-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            min-width: 17px;
+            height: 17px;
+            padding: 0 4px;
+            background: var(--danger);
+            color: #fff;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 800;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            border: 2px solid var(--bg);
+        }
+        .overview-notif-count.show { display: flex; }
+        .overview-notif-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: 380px;
+            max-width: 92vw;
+            max-height: 520px;
+            background: var(--surface);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius);
+            box-shadow: 0 30px 60px rgba(0,0,0,.42);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .overview-notif-panel.open { display: flex; }
+        .overview-notif-header {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .overview-notif-header h3 { margin: 0; font-size: 14px; }
+        .overview-notif-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding: 8px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+        }
+        .overview-notif-actions label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .overview-notif-actions button {
+            background: var(--surface-2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 5px 9px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .overview-notif-actions button:hover { background: var(--surface-hover); }
+        .overview-notif-list { overflow-y: auto; flex: 1; }
+        .overview-notif-item {
+            display: flex;
+            gap: 8px;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background .12s;
+            position: relative;
+        }
+        .overview-notif-item:last-child { border-bottom: none; }
+        .overview-notif-item:hover { background: var(--surface-hover); }
+        .overview-notif-item.unread { background: var(--accent-dim); }
+        .overview-notif-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 4px;
+            top: 14px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+        .overview-notif-checkbox { margin-top: 3px; flex-shrink: 0; }
+        .overview-notif-body { flex: 1; min-width: 0; }
+        .overview-notif-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .overview-notif-title { font-size: 13px; font-weight: 700; color: var(--text); }
+        .overview-notif-tag {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--accent);
+            background: var(--accent-dim);
+            padding: 2px 7px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+        .overview-notif-message {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        .overview-notif-time { font-size: 11px; color: var(--text-faint); margin-top: 4px; }
+        @media (max-width: 720px) {
+            .overview-notifications { margin-left: 1rem; margin-right: 1rem; }
+            .overview-notif-panel { position: fixed; top: 70px; right: 8px; left: 8px; width: auto; max-width: none; max-height: 75vh; }
         }
 
         /* ============================================================
@@ -823,7 +991,7 @@
             background: rgba(99, 102, 241, 0.14);
             color: #6366f1;
         }
-        /* new: Index Gallery */
+        /* new: Account */
         .module-card.c-gallery .icon-wrap {
             background: rgba(244, 114, 182, 0.14);
             color: #f472b6;
@@ -1128,38 +1296,124 @@
             font-size: 0.78rem;
             text-align: center;
         }
-
-        /* ---- more pages (grouped) ---- */
-        .page-group {
-            margin-bottom: 1.6rem;
+/* ---- full-screen module workspace ---- */
+        #view-module.module-fullscreen {
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            width: 100vw;
+            height: 100vh;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+            background: var(--bg);
         }
-        .page-group-title {
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--text-faint);
-            font-weight: 700;
-            margin-bottom: 0.6rem;
+        #view-module.module-fullscreen .module-workspace-heading {
+            flex: 0 0 auto;
+            margin: 0;
+            min-height: 58px;
+            padding: 0.55rem 0.8rem 0.55rem 1rem;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+        }
+        #view-module.module-fullscreen .module-frame-wrap {
+            flex: 1 1 auto;
+            width: 100%;
+            height: auto;
+            min-height: 0;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+        }
+        #view-module.module-fullscreen .module-frame {
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+        }
+        .module-close-btn {
+            width: 40px;
+            height: 40px;
+            flex: 0 0 40px;
+            border: 1px solid rgba(240,85,95,.3);
+            border-radius: 10px;
+            background: var(--danger-dim);
+            color: var(--danger);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background .2s var(--ease), transform .2s var(--ease);
+        }
+        .module-close-btn:hover {
+            background: rgba(240,85,95,.24);
+            transform: scale(1.04);
+        }
+
+        /* ---- inline module frame / clean workspace ---- */
+        .module-workspace-toolbar {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.55rem;
+            flex-wrap: wrap;
         }
-        .page-group-title i {
-            color: var(--accent-2);
-        }
-        .page-item {
+        .module-back-btn,
+        .module-open-new-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            min-height: 38px;
+            padding: 0.5rem 0.8rem;
+            border-radius: 9px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.76rem;
+            font-weight: 600;
             cursor: pointer;
+            transition: background .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease);
         }
-
-        /* ---- inline module frame ---- */
+        .module-back-btn:hover,
+        .module-open-new-btn:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+            border-color: var(--border-strong);
+        }
+        .module-back-btn i { color: var(--accent); }
+        .module-home-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            min-height: 38px;
+            padding: 0.5rem 0.8rem;
+            border-radius: 9px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.76rem;
+            font-weight: 600;
+        }
+        .module-home-btn:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+            border-color: var(--border-strong);
+        }
+        .module-home-btn i { color: var(--accent); }
         .module-frame-wrap {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: var(--radius);
+            border-radius: 12px;
             overflow: hidden;
-            height: calc(100vh - 260px);
-            min-height: 480px;
+            height: calc(100vh - 150px);
+            min-height: 560px;
             position: relative;
+            box-shadow: 0 10px 35px rgba(0,0,0,.16);
         }
         .module-frame {
             width: 100%;
@@ -1199,6 +1453,15 @@
         }
 
         @media (max-width:900px) {
+            .module-frame-wrap {
+                height: calc(100vh - 125px);
+                min-height: 500px;
+                border-radius: 10px;
+            }
+            .module-workspace-heading { gap: 0.65rem; }
+            .module-workspace-toolbar { width: 100%; }
+            .module-back-btn,
+            .module-open-new-btn { flex: 1; }
             .sidebar {
                 transform: translateX(-100%);
             }
@@ -1227,6 +1490,53 @@
                 padding-right: 1.2rem;
             }
         }
+    
+        .overview-notif-popup {
+            position: fixed;
+            top: 78px;
+            right: 24px;
+            width: 360px;
+            max-width: calc(100vw - 32px);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 38px 14px 14px;
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border-strong);
+            border-radius: 12px;
+            box-shadow: 0 18px 45px rgba(0,0,0,.28);
+            z-index: 5000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-14px) scale(.98);
+            pointer-events: none;
+            transition: opacity .22s ease, transform .22s ease, visibility .22s ease;
+        }
+        .overview-notif-popup.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        .overview-notif-popup-icon {
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: var(--accent, #2563eb);
+            color: #fff;
+        }
+        .overview-notif-popup-body { min-width: 0; flex: 1; }
+        .overview-notif-popup-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; opacity: .65; margin-bottom: 3px; }
+        .overview-notif-popup-title { font-size: 14px; font-weight: 800; line-height: 1.3; }
+        .overview-notif-popup-message { margin-top: 3px; font-size: 12px; line-height: 1.4; opacity: .78; overflow-wrap: anywhere; }
+        .overview-notif-popup-time { margin-top: 6px; font-size: 10px; opacity: .55; }
+        .overview-notif-popup-close { position: absolute; top: 7px; right: 8px; border: 0; background: transparent; color: inherit; font-size: 20px; line-height: 1; cursor: pointer; opacity: .55; }
+        .overview-notif-popup-close:hover { opacity: 1; }
+        @media (max-width: 600px) { .overview-notif-popup { top: 64px; right: 12px; left: 12px; width: auto; max-width: none; } }
     </style>
 </head>
 <body>
@@ -1247,6 +1557,17 @@
     </button>
     <div class="sidebar-scrim" id="sidebarScrim"></div>
 
+    <div class="overview-notif-popup" id="overviewNotifPopup" role="status" aria-live="polite" aria-atomic="true">
+        <div class="overview-notif-popup-icon"><i class="fa-solid fa-bell"></i></div>
+        <div class="overview-notif-popup-body">
+            <div class="overview-notif-popup-label">New Notification</div>
+            <div class="overview-notif-popup-title" id="overviewNotifPopupTitle"></div>
+            <div class="overview-notif-popup-message" id="overviewNotifPopupMessage"></div>
+            <div class="overview-notif-popup-time" id="overviewNotifPopupTime"></div>
+        </div>
+        <button type="button" class="overview-notif-popup-close" aria-label="Close notification" onclick="document.getElementById('overviewNotifPopup').classList.remove('show')">×</button>
+    </div>
+
     <div class="app-shell">
         <!-- ===== SIDEBAR ===== -->
         <aside class="sidebar" id="sidebar">
@@ -1258,17 +1579,17 @@
                 </div>
             </div>
 
-            <div class="status-strip" id="statusStrip">
+            <button class="status-strip" id="statusStrip" type="button"
+                    data-module="adminprogress.html" title="Open Progress Report">
                 <span class="status-dot"></span>
-                <span id="statusStripText">Connecting…</span>
-            </div>
+                <i class="fa-solid fa-chart-simple"></i>
+                <span id="statusStripText">Progress Report</span>
+            </button>
 
             <nav class="sidebar-nav" aria-label="Console sections">
                 <div class="nav-group-label">Console</div>
                 <button class="nav-item active" data-view="overview"><i class="fa-solid fa-gauge-high"></i> Overview</button>
-                <button class="nav-item" data-view="live"><i class="fa-solid fa-tower-broadcast"></i> Live data</button>
                 <button class="nav-item" data-view="links"><i class="fa-solid fa-link"></i> Quick launch</button>
-                <button class="nav-item" data-view="more"><i class="fa-solid fa-layer-group"></i> More pages</button>
 
                 <div class="nav-group-label">Modules</div>
                 <button class="nav-item" data-module="/adminbanner.html"><i class="fa-solid fa-rectangle-ad"></i> Banner</button>
@@ -1283,14 +1604,13 @@
                 <button class="nav-item" data-module="adminqr.html"><i class="fa-solid fa-file-signature"></i> QR Codes</button>
                 <!-- NEW: Progress Report -->
                 <button class="nav-item" data-module="adminprogress.html"><i class="fa-solid fa-chart-simple"></i> Progress Report</button>
-                <!-- NEW: Index Gallery -->
-                <button class="nav-item" data-module="admingallery.html"><i class="fa-solid fa-images"></i> Index Gallery</button>
-                <button class="nav-item" data-module="adminnotification-center.html"><i class="fa-solid fa-bell"></i> Notification Center</button>
+                <!-- FAQ'S -->
+                <button class="nav-item" data-module="/blog/adminfaqs.html"><i class="fa-solid fa-circle-question"></i> FAQ'S</button>
                 <!-- NEW: Strategic Planning -->
                 <button class="nav-item" data-module="adminstrategicplanning.html"><i class="fa-solid fa-chess"></i> Strategic Planning</button>
 
                 <div class="nav-group-label">Account</div>
-                <button class="nav-item" data-module="blog/dashboard.html"><i class="fa-solid fa-newspaper"></i> Blog dashboard</button>
+                <button class="nav-item" data-module="/account/index.html"><i class="fa-solid fa-user-circle"></i> Account</button>
             </nav>
 
             <div class="sidebar-footer">
@@ -1310,8 +1630,8 @@
                     <span>Search site…</span>
                     <kbd>Ctrl K</kbd>
                 </button>
-                <button class="notif-bell" id="notifOpenBtn" type="button" title="Notification Center" aria-label="Notification Center" onclick="document.querySelector('[data-module=\'adminnotification-center.html\']').click()">
-                    <i class="fa-solid fa-bell"></i>
+                <button class="notif-bell" id="notifOpenBtn" type="button" title="FAQ'S" aria-label="FAQ'S" onclick="document.querySelector('[data-module=\'/blog/adminfaqs.html\']').click()">
+                    <i class="fa-solid fa-circle-question"></i>
                 </button>
                 <div class="topbar-clock" id="liveClock">
                     <span id="clockTime">--:--:--</span>
@@ -1328,6 +1648,26 @@
 
             <!-- ===== VIEW: OVERVIEW ===== -->
             <section class="view active" id="view-overview">
+                <div class="overview-notifications">
+                    <div class="overview-notif-wrap" id="overviewNotifWrap">
+                        <button class="overview-notif-bell" id="overviewNotifBell" type="button" title="Notifications" aria-label="Notifications" aria-expanded="false">
+                            <i class="fa-solid fa-bell"></i>
+                            <span class="overview-notif-count" id="overviewNotifCount">0</span>
+                        </button>
+                        <div class="overview-notif-panel" id="overviewNotifPanel">
+                            <div class="overview-notif-header">
+                                <h3>Notifications</h3>
+                                <button class="overview-notif-actions-btn" id="overviewNotifMarkAllReadBtn" type="button">✓ Mark all read</button>
+                            </div>
+                            <div class="overview-notif-actions">
+                                <label><input type="checkbox" id="overviewNotifSelectAllChk"> Select All</label>
+                                <button id="overviewNotifClearSelectedBtn" type="button">× Clear Selected</button>
+                                <button id="overviewNotifClearAllBtn" type="button">🗑 Clear All</button>
+                            </div>
+                            <div class="overview-notif-list" id="overviewNotifList"></div>
+                        </div>
+                    </div>
+                </div>
                 <div class="section-heading">
                     <h2><i class="fa-solid fa-grid-2"></i> Modules</h2>
                 </div>
@@ -1398,18 +1738,10 @@
                         <h3>Progress Report</h3>
                         <p>Track and manage project progress reports</p>
                         <span class="go">Open <i class="fa-solid fa-arrow-right"></i></span>
-                    </div>
-                    <!-- NEW: Index Gallery -->
-                    <div class="module-card c-gallery" data-module="admingallery.html" role="button" tabindex="0">
-                        <span class="icon-wrap"><i class="fa-solid fa-images"></i></span>
-                        <h3>Index Gallery</h3>
-                        <p>Manage gallery images and media</p>
-                        <span class="go">Open <i class="fa-solid fa-arrow-right"></i></span>
-                    </div>
-                    <!-- NEW: Notification Center -->
-                    <div class="module-card c-notifications" data-module="adminnotification-center.html" role="button" tabindex="0">
-                        <span class="icon-wrap"><i class="fa-solid fa-bell"></i></span>
-                        <h3>Notification Center</h3>
+                    </div><!-- NEW: FAQ'S -->
+                    <div class="module-card c-notifications" data-module="/blog/adminfaqs.html" role="button" tabindex="0">
+                        <span class="icon-wrap"><i class="fa-solid fa-circle-question"></i></span>
+                        <h3>FAQ'S</h3>
                         <p>Live alerts for new submissions across all tables</p>
                         <span class="go">Open <i class="fa-solid fa-arrow-right"></i></span>
                     </div>
@@ -1433,53 +1765,9 @@
                         <h3 style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;display:flex;align-items:center;gap:0.5rem;"><i class="fa-solid fa-bell" style="color:var(--accent);"></i> Notifications</h3>
                     </div>
                     <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:0.8rem;">Live submissions across all monitored tables now live in their own module.</p>
-                    <button class="btn-redirect" type="button" onclick="document.querySelector('[data-module=\'adminnotification-center.html\']').click()">
-                        Open Notification Center
+                    <button class="btn-redirect" type="button" onclick="document.querySelector('[data-module=\'/blog/adminfaqs.html\']').click()">
+                        Open FAQ'S
                     </button>
-                </div>
-            </section>
-
-            <!-- ===== VIEW: LIVE DATA ===== -->
-            <section class="view" id="view-live">
-                <div class="section-heading">
-                    <h2><i class="fa-solid fa-tower-broadcast"></i> Live system data</h2>
-                    <span class="meta"><span id="tableCountLg">0</span> tables · <span id="rowCountLg">0</span> rows · refreshes every 18s</span>
-                </div>
-
-                <div class="panel-row">
-                    <div class="panel" style="flex:1.3;">
-                        <h3><i class="fa-solid fa-bolt"></i> Activity feed</h3>
-                        <div id="feedContainer">
-                            <div class="feed-item"><span class="ftitle">Waiting for events…</span></div>
-                        </div>
-                    </div>
-                    <div class="panel" style="flex:0.9;">
-                        <h3><i class="fa-solid fa-satellite-dish"></i> Connection</h3>
-                        <div class="latency-row">
-                            <span class="latency-num" id="latencyVal">-- ms</span>
-                            <span id="latencyLabel" style="font-size:0.7rem;color:var(--text-muted);">query latency</span>
-                        </div>
-                        <div class="latency-bar-track"><div class="latency-bar-fill" id="latencyBar" style="width:0%;background:var(--success);"></div></div>
-                        <div class="uptime-row"><span>Console uptime</span><span id="uptimeDisplay">00:00:00</span></div>
-                    </div>
-                </div>
-
-                <div class="schema-card">
-                    <div class="section-heading" style="margin-bottom:0.8rem;">
-                        <h3 style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;display:flex;align-items:center;gap:0.5rem;"><i class="fa-solid fa-table" style="color:var(--accent);"></i> Schema snapshot</h3>
-                        <span class="meta">updated <span id="schemaTime">now</span></span>
-                    </div>
-                    <div class="schema-table-wrap">
-                        <table class="schema-table">
-                            <thead><tr><td>Table</td><td>Rows</td><td>Columns</td></tr></thead>
-                            <tbody id="schemaBody"></tbody>
-                        </table>
-                    </div>
-                    <div class="footnote-row">
-                        <span><i class="fa-solid fa-rotate-right"></i> auto-refresh every 18s</span>
-                        <span><i class="fa-solid fa-bolt" style="color:var(--success);"></i> realtime subscriptions active</span>
-                        <span><i class="fa-solid fa-circle-check" style="color:var(--accent);"></i> all reads via Supabase</span>
-                    </div>
                 </div>
             </section>
 
@@ -1557,80 +1845,24 @@
                 </div>
             </section>
 
-            <!-- ===== VIEW: MORE PAGES ===== -->
-            <section class="view" id="view-more">
-                <div class="section-heading">
-                    <h2><i class="fa-solid fa-layer-group"></i> More pages</h2>
-                    <span class="meta">Everything else on this site, opened right here.</span>
-                </div>
-
-                <div class="page-group">
-                    <h3 class="page-group-title"><i class="fa-solid fa-globe"></i> Site</h3>
-                    <div class="links-grid">
-                        <div class="link-item page-item" data-module="/index.html" role="button" tabindex="0"><span><i class="fa-solid fa-house link-icon"></i> Portfolio home</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="blog/dashboard.html" role="button" tabindex="0"><span><i class="fa-solid fa-newspaper link-icon"></i> Blog</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/git/index.html" role="button" tabindex="0"><span><i class="fa-brands fa-git-alt link-icon"></i> GitCheat sheet</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                    </div>
-                </div>
-
-                <div class="page-group">
-                    <h3 class="page-group-title"><i class="fa-solid fa-handshake-angle"></i> Rotaract Club</h3>
-                    <div class="links-grid">
-                        <div class="link-item page-item" data-module="blog/dashboard.html" role="button" tabindex="0"><span><i class="fa-solid fa-gauge link-icon"></i> Club dashboard</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/r/board.html" role="button" tabindex="0"><span><i class="fa-solid fa-user-tie link-icon"></i> Board of directors</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/r/membership.html" role="button" tabindex="0"><span><i class="fa-solid fa-id-card link-icon"></i> Membership</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/r/activemembers.html" role="button" tabindex="0"><span><i class="fa-solid fa-users-line link-icon"></i> Active members</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/r/upcomming-projects.html" role="button" tabindex="0"><span><i class="fa-solid fa-calendar-check link-icon"></i> Upcoming projects</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/r/past-projects.html" role="button" tabindex="0"><span><i class="fa-solid fa-box-archive link-icon"></i> Past projects archive</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/r/project-verified-list.html" role="button" tabindex="0"><span><i class="fa-solid fa-circle-check link-icon"></i> Approved projects</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/r/strategic-planning.html" role="button" tabindex="0"><span><i class="fa-solid fa-chess link-icon"></i> Strategic planning</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/r/minutes.html" role="button" tabindex="0"><span><i class="fa-solid fa-file-pen link-icon"></i> Minutes builder</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/r/loginminutes.html" role="button" tabindex="0"><span><i class="fa-solid fa-right-to-bracket link-icon"></i> Minutes login</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/r/anthem.html" role="button" tabindex="0"><span><i class="fa-solid fa-music link-icon"></i> Anthem player</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                    </div>
-                </div>
-
-                <div class="page-group">
-                    <h3 class="page-group-title"><i class="fa-solid fa-laptop-code"></i> Galkot Tech</h3>
-                    <div class="links-grid">
-                        <div class="link-item page-item" data-module="/gt/index.html" role="button" tabindex="0"><span><i class="fa-solid fa-graduation-cap link-icon"></i> Institute home</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/gt/gtregister.html" role="button" tabindex="0"><span><i class="fa-solid fa-pen-to-square link-icon"></i> Apply now</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/gt/courseverify.html" role="button" tabindex="0"><span><i class="fa-solid fa-certificate link-icon"></i> Course verify</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/gt/enrollmentverify.html" role="button" tabindex="0"><span><i class="fa-solid fa-clipboard-check link-icon"></i> Enrollment status</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/gt/stuadmin.html" role="button" tabindex="0"><span><i class="fa-solid fa-user-gear link-icon"></i> Course manager</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                    </div>
-                </div>
-
-                <div class="page-group">
-                    <h3 class="page-group-title"><i class="fa-solid fa-landmark"></i> Revenue Office (Galkot)</h3>
-                    <div class="links-grid">
-                        <div class="link-item page-item" data-module="/g/index.html" role="button" tabindex="0"><span><i class="fa-solid fa-building-columns link-icon"></i> Office home</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/g/pan.html" role="button" tabindex="0"><span><i class="fa-solid fa-id-card-clip link-icon"></i> PAN registration docs</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                    </div>
-                </div>
-
-                <div class="page-group">
-                    <h3 class="page-group-title"><i class="fa-solid fa-chart-line"></i> Nepal Share Portal</h3>
-                    <div class="links-grid">
-                        <div class="link-item page-item" data-module="/s/index.html" role="button" tabindex="0"><span><i class="fa-solid fa-right-to-bracket link-icon"></i> Login</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/s/planningindex.html" role="button" tabindex="0"><span><i class="fa-solid fa-newspaper link-icon"></i> News</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                    </div>
-                </div>
-
-                <div class="page-group">
-                    <h3 class="page-group-title"><i class="fa-solid fa-user"></i> Personal</h3>
-                    <div class="links-grid">
-                        <div class="link-item page-item" data-module="/p/index.html" role="button" tabindex="0"><span><i class="fa-solid fa-award link-icon"></i> Certifications</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                        <div class="link-item page-item" data-module="/p/resume.html" role="button" tabindex="0"><span><i class="fa-solid fa-file-lines link-icon"></i> Resume</span><i class="fa-solid fa-chevron-right arrow-icon"></i></div>
-                    </div>
-                </div>
-            </section>
-
             <!-- ===== VIEW: MODULE (loaded inline via iframe) ===== -->
             <section class="view" id="view-module">
-                <div class="section-heading">
+                <div class="section-heading module-workspace-heading">
                     <h2><i id="moduleIcon" class="fa-solid fa-cube"></i> <span id="moduleTitle">Module</span></h2>
-                    <a id="moduleNewTab" href="#" target="_blank" rel="noopener" class="tab-btn link-open-new">Open in new tab <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                    <div class="module-workspace-toolbar">
+                        <button type="button" class="module-back-btn" id="moduleBackBtn" title="Back to Dashboard">
+                            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+                        </button>
+                        <a class="module-home-btn" id="moduleHomeBtn" href="index.html" title="Back to Home Page">
+                            <i class="fa-solid fa-house"></i> Back to Home Page
+                        </a>
+                        <a id="moduleNewTab" href="#" target="_blank" rel="noopener" class="module-open-new-btn">
+                            Open in new tab <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                        <button type="button" class="module-close-btn" id="moduleCloseBtn" title="Close and return to Overview" aria-label="Close module and return to Overview">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="module-frame-wrap">
                     <div class="module-frame-loading" id="moduleFrameLoading"><i class="fa-solid fa-circle-notch"></i> Loading module…</div>
@@ -1674,11 +1906,333 @@
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
             const $ = (id) => document.getElementById(id);
+
+            // ============================================================
+            // NOTIFICATIONS — shared with Progress Report
+            // ============================================================
+            const notificationState = {
+                hasAdminNotificationsTable: null,
+                notifications: [],
+                notifSelected: new Set(),
+                notifChannel: null,
+                notifPollHandle: null,
+                notifInitialized: false,
+                notifPopupTimer: null,
+                notifAudioContext: null
+            };
+
+            function notificationToast(message, type = 'info') {
+                console[type === 'error' ? 'error' : 'log']('[Notifications]', message);
+            }
+
             const escapeHtml = (str) => {
                 if (!str) return '';
                 return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
                     .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
             };
+
+            const NOTIF_PAGE_LIMIT = 100;
+
+            function formatNotificationDate(value) {
+                if (!value) return '';
+                try {
+                    return new Date(value).toLocaleString('en-US', {
+                        month: 'short', day: 'numeric', year: 'numeric',
+                        hour: 'numeric', minute: '2-digit'
+                    });
+                } catch { return String(value); }
+            }
+
+            function renderNotificationEmpty(title, message) {
+                const wrap = document.createElement('div');
+                wrap.style.padding = '28px 18px';
+                wrap.style.textAlign = 'center';
+                wrap.style.color = 'var(--text-faint)';
+                wrap.innerHTML = `<div style="font-size:26px;margin-bottom:8px">🔔</div><div style="font-weight:700;color:var(--text);font-size:13px;margin-bottom:4px">${escapeHtml(title)}</div><div style="font-size:12px">${escapeHtml(message)}</div>`;
+                return wrap;
+            }
+
+            async function probeAdminNotificationsTable() {
+                if (notificationState.hasAdminNotificationsTable !== null) return notificationState.hasAdminNotificationsTable;
+                try {
+                    const { error } = await supabase.from('admin_notifications').select('id').limit(1);
+                    notificationState.hasAdminNotificationsTable = !error;
+                } catch {
+                    notificationState.hasAdminNotificationsTable = false;
+                }
+                return notificationState.hasAdminNotificationsTable;
+            }
+
+            async function loadNotifications() {
+                const ok = await probeAdminNotificationsTable();
+                if (!ok) {
+                    notificationState.notifications = [];
+                    renderNotificationPanel();
+                    return;
+                }
+                const { data, error } = await supabase
+                    .from('admin_notifications')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(NOTIF_PAGE_LIMIT);
+                if (error) {
+                    notificationState.notifications = [];
+                    renderNotificationPanel();
+                    return;
+                }
+                const incoming = data || [];
+                const previousIds = new Set(notificationState.notifications.map(n => n.id));
+                const newNotifications = notificationState.notifInitialized
+                    ? incoming.filter(n => !previousIds.has(n.id))
+                    : [];
+                notificationState.notifications = incoming;
+                if (newNotifications.length) {
+                    const latest = newNotifications[0];
+                    playNotificationSound();
+                    showNotificationPopup(latest);
+                }
+                notificationState.notifInitialized = true;
+                const liveIds = new Set(notificationState.notifications.map(n => n.id));
+                for (const id of Array.from(notificationState.notifSelected)) {
+                    if (!liveIds.has(id)) notificationState.notifSelected.delete(id);
+                }
+                renderNotificationPanel();
+            }
+
+            function unreadNotificationCount() {
+                return notificationState.notifications.filter(n => !n.is_read).length;
+            }
+
+            function renderNotificationBadge() {
+                const badge = $('overviewNotifCount');
+                const count = unreadNotificationCount();
+                badge.textContent = count > 99 ? '99+' : String(count);
+                badge.classList.toggle('show', count > 0);
+            }
+
+            function syncNotificationSelectAll() {
+                const chk = $('overviewNotifSelectAllChk');
+                if (!notificationState.notifications.length) {
+                    chk.checked = false;
+                    chk.indeterminate = false;
+                    return;
+                }
+                const selectedCount = notificationState.notifications.filter(n => notificationState.notifSelected.has(n.id)).length;
+                chk.checked = selectedCount === notificationState.notifications.length;
+                chk.indeterminate = selectedCount > 0 && selectedCount < notificationState.notifications.length;
+            }
+
+            function renderNotificationPanel() {
+                renderNotificationBadge();
+                const list = $('overviewNotifList');
+                list.innerHTML = '';
+                if (notificationState.hasAdminNotificationsTable === false) {
+                    list.appendChild(renderNotificationEmpty('Notifications not enabled', 'Run the admin_notifications SQL to enable this feature.'));
+                    syncNotificationSelectAll();
+                    return;
+                }
+                if (!notificationState.notifications.length) {
+                    list.appendChild(renderNotificationEmpty('No notifications', 'New records inserted into any table will appear here.'));
+                    syncNotificationSelectAll();
+                    return;
+                }
+                notificationState.notifications.forEach(n => {
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'overview-notif-checkbox';
+                    checkbox.checked = notificationState.notifSelected.has(n.id);
+                    checkbox.addEventListener('click', e => e.stopPropagation());
+                    checkbox.addEventListener('change', () => {
+                        if (checkbox.checked) notificationState.notifSelected.add(n.id);
+                        else notificationState.notifSelected.delete(n.id);
+                        syncNotificationSelectAll();
+                    });
+
+                    const body = document.createElement('div');
+                    body.className = 'overview-notif-body';
+                    const topRow = document.createElement('div');
+                    topRow.className = 'overview-notif-top-row';
+                    const title = document.createElement('div');
+                    title.className = 'overview-notif-title';
+                    title.textContent = n.title || 'New record';
+                    const tag = document.createElement('span');
+                    tag.className = 'overview-notif-tag';
+                    tag.textContent = n.table_name || 'table';
+                    topRow.append(title, tag);
+                    const message = document.createElement('div');
+                    message.className = 'overview-notif-message';
+                    message.textContent = n.message || '';
+                    const time = document.createElement('div');
+                    time.className = 'overview-notif-time';
+                    time.textContent = formatNotificationDate(n.created_at);
+                    body.append(topRow, message, time);
+
+                    const item = document.createElement('div');
+                    item.className = `overview-notif-item${n.is_read ? '' : ' unread'}`;
+                    item.append(checkbox, body);
+                    item.addEventListener('click', () => markNotificationRead(n.id));
+                    list.appendChild(item);
+                });
+                syncNotificationSelectAll();
+            }
+
+            async function markNotificationRead(id) {
+                const n = notificationState.notifications.find(x => x.id === id);
+                if (!n || n.is_read) return;
+                n.is_read = true;
+                renderNotificationPanel();
+                const { error } = await supabase.from('admin_notifications').update({ is_read: true }).eq('id', id);
+                if (error) {
+                    n.is_read = false;
+                    renderNotificationPanel();
+                    notificationToast(error.message || 'Failed to update notification', 'error');
+                }
+            }
+
+            async function markAllNotificationsRead() {
+                const unread = notificationState.notifications.filter(n => !n.is_read);
+                if (!unread.length) return;
+                unread.forEach(n => n.is_read = true);
+                renderNotificationPanel();
+                const ids = unread.map(n => n.id);
+                const { error } = await supabase.from('admin_notifications').update({ is_read: true }).in('id', ids);
+                if (error) {
+                    notificationToast(error.message || 'Failed to mark all as read', 'error');
+                    await loadNotifications();
+                }
+            }
+
+            async function clearSelectedNotifications() {
+                const ids = Array.from(notificationState.notifSelected);
+                if (!ids.length) { notificationToast('No notifications selected.', 'warning'); return; }
+                const { error } = await supabase.from('admin_notifications').delete().in('id', ids);
+                if (error) { notificationToast(error.message || 'Failed to clear selected notifications', 'error'); return; }
+                notificationState.notifSelected.clear();
+                await loadNotifications();
+            }
+
+            async function clearAllNotifications() {
+                if (!notificationState.notifications.length) return;
+                const ids = notificationState.notifications.map(n => n.id);
+                const { error } = await supabase.from('admin_notifications').delete().in('id', ids);
+                if (error) { notificationToast(error.message || 'Failed to clear notifications', 'error'); return; }
+                notificationState.notifSelected.clear();
+                await loadNotifications();
+            }
+
+            function subscribeNotificationsRealtime() {
+                if (!notificationState.hasAdminNotificationsTable || notificationState.notifChannel) return;
+                try {
+                    notificationState.notifChannel = supabase
+                        .channel('admin_notifications_changes_overview')
+                        .on('postgres_changes',
+                            { event: '*', schema: 'public', table: 'admin_notifications' },
+                            () => loadNotifications())
+                        .subscribe();
+                } catch {}
+            }
+
+            function startNotificationPolling() {
+                if (notificationState.notifPollHandle) return;
+                notificationState.notifPollHandle = setInterval(() => {
+                    if (notificationState.hasAdminNotificationsTable) loadNotifications();
+                }, 3000);
+            }
+
+            function playNotificationSound() {
+                try {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioCtx) return;
+                    if (!notificationState.notifAudioContext) notificationState.notifAudioContext = new AudioCtx();
+                    const ctx = notificationState.notifAudioContext;
+                    if (ctx.state === 'suspended') {
+                        ctx.resume().then(() => playNotificationSound()).catch(() => {});
+                        return;
+                    }
+                    const now = ctx.currentTime;
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, now);
+                    osc.frequency.setValueAtTime(1174, now + 0.10);
+                    gain.gain.setValueAtTime(0.0001, now);
+                    gain.gain.exponentialRampToValueAtTime(0.16, now + 0.015);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.45);
+                } catch {}
+            }
+
+            // Unlock Web Audio on the first user interaction; later background notifications can play sound.
+            document.addEventListener('pointerdown', () => {
+                try {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioCtx) return;
+                    if (!notificationState.notifAudioContext) notificationState.notifAudioContext = new AudioCtx();
+                    if (notificationState.notifAudioContext.state === 'suspended') notificationState.notifAudioContext.resume().catch(() => {});
+                } catch {}
+            }, { once: true, passive: true });
+
+            function showNotificationPopup(n) {
+                const popup = $('overviewNotifPopup');
+                if (!popup) return;
+                $('overviewNotifPopupTitle').textContent = n.title || 'New notification';
+                $('overviewNotifPopupMessage').textContent = n.message || '';
+                $('overviewNotifPopupTime').textContent = formatNotificationDate(n.created_at);
+                popup.classList.add('show');
+                clearTimeout(notificationState.notifPopupTimer);
+                notificationState.notifPopupTimer = setTimeout(() => popup.classList.remove('show'), 10000);
+            }
+
+            function teardownNotificationRealtime() {
+                if (notificationState.notifChannel) {
+                    supabase.removeChannel(notificationState.notifChannel);
+                    notificationState.notifChannel = null;
+                }
+                if (notificationState.notifPollHandle) {
+                    clearInterval(notificationState.notifPollHandle);
+                    notificationState.notifPollHandle = null;
+                }
+            }
+
+            async function initNotificationSystem() {
+                await loadNotifications();
+                if (notificationState.hasAdminNotificationsTable) {
+                    subscribeNotificationsRealtime();
+                    startNotificationPolling();
+                }
+            }
+
+            function toggleNotificationPanel(forceOpen) {
+                const panel = $('overviewNotifPanel');
+                const button = $('overviewNotifBell');
+                const shouldOpen = forceOpen !== undefined ? forceOpen : !panel.classList.contains('open');
+                panel.classList.toggle('open', shouldOpen);
+                button.setAttribute('aria-expanded', String(shouldOpen));
+                if (shouldOpen) loadNotifications();
+            }
+
+            $('overviewNotifBell').addEventListener('click', e => {
+                e.stopPropagation();
+                toggleNotificationPanel();
+            });
+            $('overviewNotifPanel').addEventListener('click', e => e.stopPropagation());
+            document.addEventListener('click', e => {
+                if ($('overviewNotifPanel').classList.contains('open') && !$('overviewNotifWrap').contains(e.target)) {
+                    toggleNotificationPanel(false);
+                }
+            });
+            $('overviewNotifMarkAllReadBtn').addEventListener('click', markAllNotificationsRead);
+            $('overviewNotifClearSelectedBtn').addEventListener('click', clearSelectedNotifications);
+            $('overviewNotifClearAllBtn').addEventListener('click', clearAllNotifications);
+            $('overviewNotifSelectAllChk').addEventListener('click', e => e.stopPropagation());
+            $('overviewNotifSelectAllChk').addEventListener('change', e => {
+                if (e.target.checked) notificationState.notifications.forEach(n => notificationState.notifSelected.add(n.id));
+                else notificationState.notifSelected.clear();
+                renderNotificationPanel();
+            });
 
             // ============================================================
             // ACCESS CONTROL
@@ -1725,6 +2279,7 @@
 
             supabase.auth.onAuthStateChange((event, session) => {
                 if (event === 'SIGNED_OUT' || !session) {
+                    teardownNotificationRealtime();
                     if (!window.location.pathname.includes('/index.html')) window.location.href = '/index.html';
                 }
             });
@@ -1751,12 +2306,16 @@
             // ============================================================
             const VIEW_META = {
                 overview: { title: 'Overview', sub: "Members, projects, minutes and inquiries — all in one place." },
-                live: { title: 'Live data', sub: 'Realtime counts and activity straight from Supabase.' },
                 links: { title: 'Quick launch', sub: 'Shortcuts to the tools this club uses most.' },
-                more: { title: 'More pages', sub: 'Every other page on this site, opened right here.' }
             };
 
             function switchView(name) {
+                if ($('view-module').classList.contains('module-fullscreen')) {
+                    $('view-module').classList.remove('module-fullscreen');
+                    const moduleFrame = $('moduleFrame');
+                    moduleFrame.src = 'about:blank';
+                    moduleFrame.dataset.current = '';
+                }
                 document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 const target = $('view-' + name);
@@ -1774,7 +2333,7 @@
                 btn.addEventListener('click', () => switchView(btn.dataset.view));
             });
 
-            // Module metadata — added adminprogress.html and admingallery.html
+            // Module metadata — added adminprogress.html and /account/index.html
             const MODULE_META = {
                 'adminbanner.html': { title: 'Banner', icon: 'fa-solid fa-rectangle-ad',
                 sub: 'Live meeting banner display settings.' },
@@ -1801,10 +2360,10 @@
                 // NEW: Progress Report
                 'adminprogress.html': { title: 'Progress Report', icon: 'fa-solid fa-chart-simple',
                     sub: 'Track and manage project progress reports.' },
-                // NEW: Index Gallery
-                'admingallery.html': { title: 'Index Gallery', icon: 'fa-solid fa-images',
-                    sub: 'Manage gallery images and media.' },
-                'adminnotification-center.html': { title: 'Notification Center', icon: 'fa-solid fa-bell',
+                // NEW: Account
+                '/account/index.html': { title: 'Account', icon: 'fa-solid fa-user-circle',
+                    sub: 'Manage account settings and profile.' },
+                '/blog/adminfaqs.html': { title: "FAQ'S", icon: 'fa-solid fa-circle-question',
                     sub: 'Live alerts for new submissions across all tables.' },
                 // NEW: Strategic Planning
                 'adminstrategicplanning.html': { title: 'Strategic Planning', icon: 'fa-solid fa-chess',
@@ -1865,7 +2424,7 @@
             function openModule(file) {
                 document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                $('view-module').classList.add('active');
+                $('view-module').classList.add('active', 'module-fullscreen');
                 const navBtn = document.querySelector(`.nav-item[data-module="${file}"]`);
                 if (navBtn) navBtn.classList.add('active');
 
@@ -1897,6 +2456,24 @@
                 }
             });
 
+            // Full-screen module navigation: close always returns to Overview
+            function closeModuleAndGoOverview() {
+                $('view-module').classList.remove('module-fullscreen', 'active');
+                const frame = $('moduleFrame');
+                frame.src = 'about:blank';
+                frame.dataset.current = '';
+                switchView('overview');
+            }
+            $('moduleBackBtn').addEventListener('click', () => {
+                window.location.href = 'admin.html';
+            });
+            $('moduleCloseBtn').addEventListener('click', closeModuleAndGoOverview);
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && $('view-module').classList.contains('module-fullscreen')) {
+                    closeModuleAndGoOverview();
+                }
+            });
+
             // Mobile sidebar
             const sidebar = $('sidebar');
             const menuToggle = $('menuToggle');
@@ -1921,6 +2498,7 @@
             // Logout
             $('logoutBtn').addEventListener('click', async () => {
                 if (confirm('Log out of the console?')) {
+                    teardownNotificationRealtime();
                     await supabase.auth.signOut();
                     window.location.href = '/index.html';
                 }
@@ -2573,9 +3151,7 @@
             }
 
             function setStatus(ok, text) {
-                const strip = $('statusStrip');
-                strip.classList.toggle('degraded', !ok);
-                $('statusStripText').textContent = text;
+                // Progress Report launcher occupies the former connection-status strip.
             }
 
             async function pingSupabase() {
@@ -2647,6 +3223,8 @@
                 const hasAccess = await checkAdminAccess();
                 if (!hasAccess) return;
                 await loadDailyQuote();
+                // Start notifications independently so they work automatically without opening the bell.
+                initNotificationSystem();
                 await initLiveData();
             }
 

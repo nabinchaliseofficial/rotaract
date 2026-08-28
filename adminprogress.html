@@ -1920,6 +1920,28 @@ function rowsToSheetData(rows) {
   });
   return { headers, sheetRows };
 }
+
+/* Excel has a hard limit of 32,767 UTF-16 characters per cell.
+   Keep the original data unchanged everywhere else; only the Excel
+   worksheet cell value is safely shortened when that limit is exceeded. */
+const EXCEL_CELL_TEXT_LIMIT = 32767;
+function safeExcelCellValue(value) {
+  if (typeof value !== "string") return value;
+  if (value.length <= EXCEL_CELL_TEXT_LIMIT) return value;
+  return value.slice(0, EXCEL_CELL_TEXT_LIMIT - 20) + " …[truncated]";
+}
+
+function sanitizeWorksheetForExcel(worksheet) {
+  Object.keys(worksheet).forEach(key => {
+    if (key[0] === "!") return;
+    const cell = worksheet[key];
+    if (cell && typeof cell.v === "string" && cell.v.length > EXCEL_CELL_TEXT_LIMIT) {
+      cell.v = safeExcelCellValue(cell.v);
+      cell.t = "s";
+    }
+  });
+  return worksheet;
+}
 function sanitizeSheetName(name, usedNames) {
   let safe = String(name).replace(/[:\\/?*\[\]]/g, "_");
   if (safe.length > 31) safe = safe.substring(0, 28) + "...";
@@ -2024,6 +2046,7 @@ async function runExcelExport() {
       let worksheet;
       if (sheetData) {
         worksheet = XLSX.utils.json_to_sheet(sheetData.sheetRows, { header: sheetData.headers });
+        sanitizeWorksheetForExcel(worksheet);
         worksheet["!autofilter"] = { ref: worksheet["!ref"] };
         worksheet["!freeze"] = { xSplit: 0, ySplit: 1 };
         worksheet["!cols"] = sheetData.headers.map(h => ({ wch: Math.min(40, Math.max(10, h.length + 2)) }));
@@ -2038,6 +2061,7 @@ async function runExcelExport() {
       summaryRows.push({ Table: table_name, "Display Name": display_name || table_name, Status: "Failed", Records: 0, Error: friendlyError(err) });
       const sheetName = sanitizeSheetName(table_name, usedSheetNames);
       const worksheet = XLSX.utils.aoa_to_sheet([["Export failed for this table"], ["Error", friendlyError(err)]]);
+      sanitizeWorksheetForExcel(worksheet);
       XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
     }
     setTablesProgress(i + 1, tables.length);
@@ -2066,6 +2090,7 @@ async function runExcelExport() {
       ...summaryRows.map(r => [r.Table, r["Display Name"], r.Status, r.Records, r.Error])
     ];
     const summarySheet = XLSX.utils.aoa_to_sheet(summarySheetAOA);
+    sanitizeWorksheetForExcel(summarySheet);
     XLSX.utils.book_append_sheet(workbook, summarySheet, "Export_Summary");
     workbook.SheetNames.unshift(workbook.SheetNames.splice(workbook.SheetNames.indexOf("Export_Summary"), 1)[0]);
   }
