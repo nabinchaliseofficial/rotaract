@@ -11,416 +11,74 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Poppins', 'Mukta', 'Segoe UI', Roboto, system-ui, sans-serif;
-    }
-
-    .np {
-      font-family: 'Mukta', 'Poppins', sans-serif;
-    }
-
-    body {
-      background: #f2f0eb;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .membership-card {
-      max-width: 900px;
-      width: 100%;
-      background: white;
-      border-radius: 32px;
-      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.25);
-      overflow: hidden;
-      transition: 0.25s ease;
-      border: 1px solid rgba(200, 180, 150, 0.3);
-    }
-
-    .club-header {
-      background: linear-gradient(145deg, #1a3c5e, #0f2a44);
-      padding: 18px 28px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      color: white;
-      border-bottom: 4px solid #d4af37;
-    }
-
-    .club-header img {
-      max-height: 70px;
-      width: auto;
-      object-fit: contain;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.08);
-      padding: 4px 10px;
-    }
-
-    .club-header h1 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      text-shadow: 0 2px 3px rgba(0,0,0,0.3);
-      flex: 1;
-    }
-
-    .club-header h1 small {
-      display: block;
-      font-size: 0.75rem;
-      font-weight: 300;
-      opacity: 0.85;
-      letter-spacing: 1px;
-    }
-
-    .club-footer {
-      background: #1e2e3f;
-      padding: 14px 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      color: #ddd;
-      border-top: 3px solid #b89b4b;
-      font-size: 0.9rem;
-      flex-wrap: wrap;
-    }
-
-    .club-footer img {
-      max-height: 55px;
-      width: auto;
-      object-fit: contain;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.05);
-      padding: 2px 8px;
-    }
-
-    .club-footer .footer-text {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      opacity: 0.8;
-    }
-
-    .club-footer .footer-text i {
-      color: #d4af37;
-    }
-
-    .form-body {
-      padding: 30px 32px 24px;
-      background: #fcfaf7;
-    }
-
-    .form-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 18px 24px;
-      margin-bottom: 20px;
-    }
-
-    .form-group {
-      flex: 1 0 calc(50% - 24px);
-      min-width: 200px;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    .form-group.full-width {
-      flex: 1 0 100%;
-    }
-
-    .form-group label {
-      font-weight: 600;
-      font-size: 0.85rem;
-      color: #2c3e4e;
-      letter-spacing: 0.3px;
-      display: flex;
-      align-items: flex-start;
-      gap: 6px;
-    }
-
-    .form-group label i {
-      color: #a67c3b;
-      width: 18px;
-      font-size: 0.9rem;
-      margin-top: 2px;
-    }
-
-    .form-group label .np-sub {
-      display: block;
-      font-weight: 400;
-      font-size: 0.72rem;
-      color: #8a7a63;
-      margin-top: 1px;
-    }
-
-    .form-group input, 
-    .form-group select, 
-    .form-group textarea {
-      padding: 10px 14px;
-      border: 1px solid #d6cec2;
-      border-radius: 16px;
-      font-size: 0.95rem;
-      background: white;
-      transition: 0.2s;
-      outline: none;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-    }
-
-    .form-group input:focus, 
-    .form-group select:focus, 
-    .form-group textarea:focus {
-      border-color: #a67c3b;
-      box-shadow: 0 0 0 3px rgba(166, 124, 59, 0.2);
-    }
-
-    .form-group input[type="file"] {
-      padding: 8px 6px;
-      background: #f4f1eb;
-      border-radius: 30px;
-      border: 1px dashed #b89b4b;
-    }
-
-    .inline-hint {
-      font-size: 0.75rem;
-      color: #7a6b5a;
-      margin-top: 2px;
-      padding-left: 6px;
-    }
-
-    .bs-hint {
-      font-size: 0.78rem;
-      color: #a67c3b;
-      margin-top: 2px;
-      padding-left: 6px;
-      font-weight: 600;
-      display: none;
-    }
-
+    /* ... (keep all your existing styles) ... */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', 'Mukta', 'Segoe UI', Roboto, system-ui, sans-serif; }
+    .np { font-family: 'Mukta', 'Poppins', sans-serif; }
+    body { background: #f2f0eb; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+    .membership-card { max-width: 900px; width: 100%; background: white; border-radius: 32px; box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.25); overflow: hidden; transition: 0.25s ease; border: 1px solid rgba(200, 180, 150, 0.3); }
+    .club-header { background: linear-gradient(145deg, #1a3c5e, #0f2a44); padding: 18px 28px; display: flex; align-items: center; gap: 16px; color: white; border-bottom: 4px solid #d4af37; }
+    .club-header img { max-height: 70px; width: auto; object-fit: contain; border-radius: 8px; background: rgba(255,255,255,0.08); padding: 4px 10px; }
+    .club-header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: 0.5px; text-shadow: 0 2px 3px rgba(0,0,0,0.3); flex: 1; }
+    .club-header h1 small { display: block; font-size: 0.75rem; font-weight: 300; opacity: 0.85; letter-spacing: 1px; }
+    .club-footer { background: #1e2e3f; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; gap: 20px; color: #ddd; border-top: 3px solid #b89b4b; font-size: 0.9rem; flex-wrap: wrap; }
+    .club-footer img { max-height: 55px; width: auto; object-fit: contain; border-radius: 8px; background: rgba(255,255,255,0.05); padding: 2px 8px; }
+    .club-footer .footer-text { display: flex; align-items: center; gap: 10px; opacity: 0.8; }
+    .club-footer .footer-text i { color: #d4af37; }
+    .form-body { padding: 30px 32px 24px; background: #fcfaf7; }
+    .form-row { display: flex; flex-wrap: wrap; gap: 18px 24px; margin-bottom: 20px; }
+    .form-group { flex: 1 0 calc(50% - 24px); min-width: 200px; display: flex; flex-direction: column; gap: 5px; }
+    .form-group.full-width { flex: 1 0 100%; }
+    .form-group label { font-weight: 600; font-size: 0.85rem; color: #2c3e4e; letter-spacing: 0.3px; display: flex; align-items: flex-start; gap: 6px; }
+    .form-group label i { color: #a67c3b; width: 18px; font-size: 0.9rem; margin-top: 2px; }
+    .form-group label .np-sub { display: block; font-weight: 400; font-size: 0.72rem; color: #8a7a63; margin-top: 1px; }
+    .form-group input, .form-group select, .form-group textarea { padding: 10px 14px; border: 1px solid #d6cec2; border-radius: 16px; font-size: 0.95rem; background: white; transition: 0.2s; outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #a67c3b; box-shadow: 0 0 0 3px rgba(166, 124, 59, 0.2); }
+    .form-group input[type="file"] { padding: 8px 6px; background: #f4f1eb; border-radius: 30px; border: 1px dashed #b89b4b; }
+    .form-group input[readonly] { background: #f0ece6; color: #4a4a4a; cursor: not-allowed; border-color: #c5bdb3; }
+    .inline-hint { font-size: 0.75rem; color: #7a6b5a; margin-top: 2px; padding-left: 6px; }
+    .bs-hint { font-size: 0.78rem; color: #a67c3b; margin-top: 2px; padding-left: 6px; font-weight: 600; display: none; }
     .bs-hint.show { display: block; }
-
-    .required-note {
-      text-align: right;
-      font-size: 0.78rem;
-      color: #a12b2b;
-      margin-bottom: 14px;
-      font-weight: 500;
-    }
-
-    .btn-submit {
-      background: #1a3c5e;
-      border: 1px solid #d4af37;
-      padding: 14px 32px;
-      border-radius: 60px;
-      color: white;
-      font-weight: 700;
-      font-size: 1.1rem;
-      letter-spacing: 0.5px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      cursor: pointer;
-      transition: 0.2s;
-      width: 100%;
-      box-shadow: 0 6px 14px rgba(26, 60, 94, 0.25);
-    }
-
-    .btn-submit:hover:not(:disabled) {
-      background: #0f2a44;
-      transform: scale(1.01);
-      box-shadow: 0 8px 20px rgba(26, 60, 94, 0.35);
-    }
-
-    .btn-submit:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-
-    .btn-submit i {
-      font-size: 1.2rem;
-    }
-
-    .status-msg {
-      margin-top: 20px;
-      padding: 12px 18px;
-      border-radius: 40px;
-      background: #e8f0e8;
-      color: #1f4f2b;
-      font-weight: 500;
-      display: none;
-      align-items: center;
-      gap: 12px;
-      border-left: 6px solid #2b7a4b;
-    }
-
-    .status-msg.error {
-      background: #fce9e9;
-      color: #a12b2b;
-      border-left-color: #b33;
-    }
-
-    .status-msg.show {
-      display: flex;
-    }
-
-    .footnote {
-      text-align: center;
-      margin-top: 18px;
-      font-size: 0.75rem;
-      color: #7f7567;
-      border-top: 1px solid #e0d8cc;
-      padding-top: 16px;
-    }
-
-    @media (max-width: 640px) {
-      .form-group {
-        flex: 1 0 100%;
-      }
-      .club-header {
-        flex-wrap: wrap;
-        justify-content: center;
-        text-align: center;
-      }
-      .club-footer {
-        justify-content: center;
-        text-align: center;
-      }
-      .club-header img {
-        max-height: 50px;
-      }
-      .club-footer img {
-        max-height: 40px;
-      }
-    }
-
-    .loading-spinner {
-      display: none;
-      width: 20px;
-      height: 20px;
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid #d4af37;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-right: 10px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .btn-submit.loading .loading-spinner {
-      display: inline-block;
-    }
-
-    .btn-submit.loading .btn-text {
-      display: none;
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .status-msg.show {
-      animation: fadeInUp 0.3s ease-out;
-    }
-
-    .club-header img.error,
-    .club-footer img.error {
-      display: none;
-    }
-
-    .club-header .img-fallback,
-    .club-footer .img-fallback {
-      display: none;
-    }
-
-    .club-header img.error + .img-fallback,
-    .club-footer img.error + .img-fallback {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255,215,0,0.1);
-      padding: 4px 14px 4px 10px;
-      border-radius: 40px;
-      border: 1px solid #d4af3750;
-      color: #f5e7c8;
-      font-size: 0.8rem;
-    }
-
-    .club-header img.error + .img-fallback i,
-    .club-footer img.error + .img-fallback i {
-      font-size: 1.2rem;
-      color: #d4af37;
-    }
-
-    /* Image preview */
-    .image-preview {
-      margin-top: 8px;
-      display: none;
-      align-items: center;
-      gap: 12px;
-    }
-    .image-preview.show {
-      display: flex;
-    }
-    .image-preview img {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #d4af37;
-      background: #f4f1eb;
-    }
-    .image-preview .file-name {
-      font-size: 0.8rem;
-      color: #2c3e4e;
-      font-weight: 500;
-    }
-    .image-preview .remove-image {
-      background: none;
-      border: none;
-      color: #a12b2b;
-      cursor: pointer;
-      font-size: 1rem;
-      padding: 4px 8px;
-      border-radius: 50%;
-      transition: 0.2s;
-    }
-    .image-preview .remove-image:hover {
-      background: #fce9e9;
-    }
+    .required-note { text-align: right; font-size: 0.78rem; color: #a12b2b; margin-bottom: 14px; font-weight: 500; }
+    .btn-submit { background: #1a3c5e; border: 1px solid #d4af37; padding: 14px 32px; border-radius: 60px; color: white; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px; display: inline-flex; align-items: center; justify-content: center; gap: 14px; cursor: pointer; transition: 0.2s; width: 100%; box-shadow: 0 6px 14px rgba(26, 60, 94, 0.25); }
+    .btn-submit:hover:not(:disabled) { background: #0f2a44; transform: scale(1.01); box-shadow: 0 8px 20px rgba(26, 60, 94, 0.35); }
+    .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+    .btn-submit i { font-size: 1.2rem; }
+    .status-msg { margin-top: 20px; padding: 12px 18px; border-radius: 40px; background: #e8f0e8; color: #1f4f2b; font-weight: 500; display: none; align-items: center; gap: 12px; border-left: 6px solid #2b7a4b; }
+    .status-msg.error { background: #fce9e9; color: #a12b2b; border-left-color: #b33; }
+    .status-msg.show { display: flex; }
+    .footnote { text-align: center; margin-top: 18px; font-size: 0.75rem; color: #7f7567; border-top: 1px solid #e0d8cc; padding-top: 16px; }
+    @media (max-width: 640px) { .form-group { flex: 1 0 100%; } .club-header { flex-wrap: wrap; justify-content: center; text-align: center; } .club-footer { justify-content: center; text-align: center; } .club-header img { max-height: 50px; } .club-footer img { max-height: 40px; } }
+    .loading-spinner { display: none; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #d4af37; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 10px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .btn-submit.loading .loading-spinner { display: inline-block; }
+    .btn-submit.loading .btn-text { display: none; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .status-msg.show { animation: fadeInUp 0.3s ease-out; }
+    .club-header img.error, .club-footer img.error { display: none; }
+    .club-header .img-fallback, .club-footer .img-fallback { display: none; }
+    .club-header img.error + .img-fallback, .club-footer img.error + .img-fallback { display: flex; align-items: center; gap: 8px; background: rgba(255,215,0,0.1); padding: 4px 14px 4px 10px; border-radius: 40px; border: 1px solid #d4af3750; color: #f5e7c8; font-size: 0.8rem; }
+    .club-header img.error + .img-fallback i, .club-footer img.error + .img-fallback i { font-size: 1.2rem; color: #d4af37; }
+    .image-preview { margin-top: 8px; display: none; align-items: center; gap: 12px; }
+    .image-preview.show { display: flex; }
+    .image-preview img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #d4af37; background: #f4f1eb; }
+    .image-preview .file-name { font-size: 0.8rem; color: #2c3e4e; font-weight: 500; }
+    .image-preview .remove-image { background: none; border: none; color: #a12b2b; cursor: pointer; font-size: 1rem; padding: 4px 8px; border-radius: 50%; transition: 0.2s; }
+    .image-preview .remove-image:hover { background: #fce9e9; }
+    .lock-icon { color: #8a7a63; font-size: 0.8rem; margin-left: 6px; }
+    .upload-progress { display: none; align-items: center; gap: 10px; margin-top: 8px; font-size: 0.85rem; color: #1a3c5e; }
+    .upload-progress.show { display: flex; }
+    .upload-progress .progress-bar { flex: 1; height: 6px; background: #e0d8cc; border-radius: 10px; overflow: hidden; }
+    .upload-progress .progress-bar .progress-fill { height: 100%; background: #d4af37; width: 0%; transition: width 0.3s; }
   </style>
 </head>
 <body>
 
 <div class="membership-card">
 
-  <!-- HEADER with clubheading.jpg -->
   <div class="club-header">
-    <img 
-      id="clubHeadingImg"
-      src="clubheading.jpg" 
-      alt="Club Heading" 
-      onerror="this.classList.add('error'); document.getElementById('headingFallback').style.display='flex';"
-    >
+    <img id="clubHeadingImg" src="clubheading.jpg" alt="Club Heading" onerror="this.classList.add('error'); document.getElementById('headingFallback').style.display='flex';">
     <div class="img-fallback" id="headingFallback" style="display:none;">
-      <i class="fas fa-image"></i> 
-      <span>clubheading.jpg</span>
+      <i class="fas fa-image"></i> <span>clubheading.jpg</span>
     </div>
     <h1>
       ROTARACT CLUB OF GALKOT BAGLUNG
@@ -428,7 +86,6 @@
     </h1>
   </div>
 
-  <!-- FORM BODY -->
   <div class="form-body">
     <div class="required-note">* <span class="np">आवश्यक फिल्ड</span> / required field</div>
     <form id="membershipForm">
@@ -488,8 +145,15 @@
           <span class="bs-hint" id="bsHint"></span>
         </div>
         <div class="form-group">
-          <label for="designation"><i class="fas fa-id-badge"></i> <span>Designation<span class="np-sub np">पद</span></span></label>
-          <input type="text" id="designation" placeholder="President / Secretary / ...">
+          <label for="position">
+            <i class="fas fa-id-badge"></i> 
+            <span>
+              Position / Designation 
+              <span class="np-sub np">पद</span>
+              <i class="fas fa-lock lock-icon"></i>
+            </span>
+          </label>
+          <input type="text" id="position" value="Club Member" readonly>
         </div>
       </div>
 
@@ -507,6 +171,12 @@
             <span class="file-name" id="fileName">file.jpg</span>
             <button type="button" class="remove-image" id="removeImageBtn"><i class="fas fa-times-circle"></i></button>
           </div>
+          <div class="upload-progress" id="uploadProgress">
+            <span id="progressText">Uploading...</span>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -523,7 +193,6 @@
       </button>
     </form>
 
-    <!-- Status Message -->
     <div id="statusMessage" class="status-msg">
       <i class="fas fa-check-circle"></i> 
       <span id="statusText">Member registered successfully!</span>
@@ -535,21 +204,14 @@
     </div>
   </div>
 
-  <!-- FOOTER with footer.jpg -->
   <div class="club-footer">
     <div class="footer-text">
       <i class="fas fa-rotate-left"></i> 
       <span>Rotaract · Service Above Self</span>
     </div>
-    <img 
-      id="footerImg"
-      src="footer.jpg" 
-      alt="Footer Image" 
-      onerror="this.classList.add('error'); document.getElementById('footerFallback').style.display='flex';"
-    >
+    <img id="footerImg" src="footer.jpg" alt="Footer Image" onerror="this.classList.add('error'); document.getElementById('footerFallback').style.display='flex';">
     <div class="img-fallback" id="footerFallback" style="display:none;">
-      <i class="fas fa-image"></i> 
-      <span>footer.jpg</span>
+      <i class="fas fa-image"></i> <span>footer.jpg</span>
     </div>
   </div>
 </div>
@@ -558,13 +220,8 @@
   (function() {
     "use strict";
 
-    // ============================================================
-    // ✅ SUPABASE CREDENTIALS
-    // ============================================================
     const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
-    
-    // Storage bucket name
     const STORAGE_BUCKET = "members-profile";
     const TABLE_NAME = "members";
 
@@ -582,10 +239,16 @@
     const dobInput = document.getElementById('dob');
     const bsHint = document.getElementById('bsHint');
     const phoneInput = document.getElementById('phone');
+    const positionInput = document.getElementById('position');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
 
     let selectedFile = null;
 
-    // ===== DATE OF BIRTH: cap at today, show live BS (Bikram Sambat) date =====
+    positionInput.value = "Club Member";
+    positionInput.readOnly = true;
+
     dobInput.max = new Date().toISOString().split('T')[0];
 
     dobInput.addEventListener('change', function() {
@@ -599,17 +262,14 @@
         bsHint.textContent = `BS: ${bs.year}-${String(bs.month).padStart(2, '0')}-${String(bs.date).padStart(2, '0')}`;
         bsHint.classList.add('show');
       } catch (err) {
-        // Conversion library unavailable or year out of supported range — fail silently
         bsHint.classList.remove('show');
       }
     });
 
-    // ===== PHONE: digits only while typing =====
     phoneInput.addEventListener('input', function() {
       phoneInput.value = phoneInput.value.replace(/\D/g, '').slice(0, 10);
     });
 
-    // ===== IMAGE PREVIEW =====
     fileInput.addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) {
@@ -617,7 +277,6 @@
         return;
       }
       
-      // Validate file size (max 2MB)
       if (file.size > 2 * 1024 * 1024) {
         setStatus('Image size exceeds 2MB limit / फोटो साइज २MB भन्दा ठूलो छ।', true);
         fileInput.value = '';
@@ -625,7 +284,6 @@
         return;
       }
 
-      // Validate file type
       const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
       if (!validTypes.includes(file.type)) {
         setStatus('Please upload a valid image (JPEG, PNG, GIF, WEBP, SVG) / मान्य फोटो अपलोड गर्नुहोस्।', true);
@@ -657,7 +315,6 @@
       hidePreview();
     });
 
-    // ===== STATUS FUNCTIONS =====
     function setStatus(message, isError = false) {
       statusText.innerText = message;
       statusMsg.className = 'status-msg show';
@@ -682,7 +339,20 @@
       }
     }
 
-    // ===== UPLOAD IMAGE TO SUPABASE STORAGE =====
+    function showProgress(show) {
+      if (show) {
+        uploadProgress.classList.add('show');
+      } else {
+        uploadProgress.classList.remove('show');
+        progressFill.style.width = '0%';
+      }
+    }
+
+    function updateProgress(percent, text) {
+      progressFill.style.width = percent + '%';
+      if (text) progressText.textContent = text;
+    }
+
     async function uploadImage(file, memberId) {
       if (!file) return null;
       
@@ -690,6 +360,13 @@
       const fileName = `member_${memberId}_${Date.now()}.${ext}`;
 
       try {
+        showProgress(true);
+        updateProgress(10, 'Preparing upload...');
+
+        console.log('📤 Uploading to bucket:', STORAGE_BUCKET);
+        console.log('📄 File name:', fileName);
+        console.log('📦 File size:', file.size, 'bytes');
+
         const { data, error } = await supabase.storage
           .from(STORAGE_BUCKET)
           .upload(fileName, file, {
@@ -698,25 +375,36 @@
           });
 
         if (error) {
-          console.error('Storage upload error:', error);
+          console.error('❌ Storage upload error:', error);
+          console.error('Error details:', JSON.stringify(error, null, 2));
           throw new Error('Image upload failed: ' + error.message);
         }
 
-        // Get public URL
+        console.log('✅ Upload successful:', data);
+
+        updateProgress(80, 'Getting public URL...');
+
         const { data: urlData } = supabase.storage
           .from(STORAGE_BUCKET)
           .getPublicUrl(fileName);
 
+        console.log('🔗 Public URL:', urlData.publicUrl);
+
+        updateProgress(100, 'Upload complete!');
+        await new Promise(resolve => setTimeout(resolve, 300));
+        showProgress(false);
+
         return urlData.publicUrl;
       } catch (err) {
-        console.error('Upload error:', err);
+        console.error('❌ Upload error:', err);
+        showProgress(false);
         throw new Error('Image upload failed: ' + err.message);
       }
     }
 
-    // ===== CHECK IF BUCKET EXISTS =====
     async function ensureBucketExists() {
       try {
+        console.log('🔍 Checking if bucket exists:', STORAGE_BUCKET);
         const { data, error } = await supabase.storage.from(STORAGE_BUCKET).list('public', { limit: 1 });
         if (error && error.message.includes('Bucket not found')) {
           console.warn('⚠️ Bucket not found. Creating...');
@@ -726,27 +414,27 @@
             allowed_mime_types: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']
           });
           if (createError) {
-            console.warn('Could not create bucket:', createError.message);
+            console.error('❌ Could not create bucket:', createError.message);
             return false;
           }
           console.log('✅ Bucket created:', STORAGE_BUCKET);
           return true;
         }
         if (error) {
-          console.warn('Bucket check error:', error.message);
+          console.warn('⚠️ Bucket check error:', error.message);
           return false;
         }
         console.log('✅ Bucket exists:', STORAGE_BUCKET);
         return true;
       } catch (err) {
-        console.warn('Bucket check failed:', err.message);
+        console.error('❌ Bucket check failed:', err.message);
         return false;
       }
     }
 
-    // ===== TEST CONNECTION =====
     async function testConnection() {
       try {
+        console.log('🔍 Testing connection to table:', TABLE_NAME);
         const { data, error } = await supabase.from(TABLE_NAME).select('count').limit(1);
         if (error) {
           console.warn('⚠️ Table connection test:', error.message);
@@ -761,14 +449,12 @@
 
     testConnection();
 
-    // ===== FORM SUBMIT =====
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       hideStatus();
       setLoading(true);
 
       try {
-        // Gather fields
         const name = document.getElementById('name').value.trim();
         const address = document.getElementById('address').value.trim();
         const phone = document.getElementById('phone').value.trim();
@@ -776,11 +462,10 @@
         const gender = document.getElementById('gender').value;
         const email = document.getElementById('email').value.trim();
         const dob = document.getElementById('dob').value;
-        const designation = document.getElementById('designation').value.trim();
+        const position = "Club Member";
         const profession = document.getElementById('profession').value.trim();
         const mentor = document.getElementById('mentor').value.trim();
 
-        // Validation
         if (!name || !address || !phone || !email || !dob) {
           setStatus('Please fill all required fields (Name, Address, Phone, Email, DOB) / कृपया सबै आवश्यक फिल्ड भर्नुहोस्।', true);
           setLoading(false);
@@ -801,10 +486,9 @@
           return;
         }
 
-        // Build record - matching your table schema exactly
         const record = {
           name: name,
-          position: designation || null,
+          position: position,
           profile_image: null,
           status: 'Active',
           email: email,
@@ -836,28 +520,58 @@
 
         console.log('✅ Member inserted with ID:', memberId);
 
-        // Upload image if selected
         let imageUrl = null;
         if (selectedFile) {
           try {
-            console.log('📤 Uploading image to storage...');
+            console.log('📤 Starting image upload process...');
             imageUrl = await uploadImage(selectedFile, memberId);
-            console.log('✅ Image uploaded:', imageUrl);
+            console.log('✅ Image uploaded successfully, URL:', imageUrl);
 
-            // Update the record with the image URL
             if (imageUrl) {
-              const { error: updateError } = await supabase
+              console.log('📝 Attempting to update profile_image for member:', memberId);
+              console.log('📝 Image URL to save:', imageUrl);
+              
+              // Try UPDATE with explicit column
+              const { data: updateData, error: updateError } = await supabase
                 .from(TABLE_NAME)
                 .update({ profile_image: imageUrl })
-                .eq('id', memberId);
+                .eq('id', memberId)
+                .select();
 
               if (updateError) {
-                console.warn('⚠️ Could not update image URL:', updateError.message);
+                console.error('❌ UPDATE error details:', updateError);
+                console.error('❌ UPDATE error message:', updateError.message);
+                console.error('❌ UPDATE error code:', updateError.code);
+                console.error('❌ UPDATE error hint:', updateError.hint);
+                
+                // Try a different approach - update using raw SQL
+                console.log('🔄 Trying alternative update method...');
+                const { error: rawError } = await supabase.rpc('update_member_image', {
+                  p_id: memberId,
+                  p_image: imageUrl
+                });
+                
+                if (rawError) {
+                  console.error('❌ Raw update also failed:', rawError);
+                  setStatus('⚠️ Member saved but image URL update failed. Error: ' + updateError.message, true);
+                  setLoading(false);
+                  return;
+                } else {
+                  console.log('✅ Profile image updated using RPC!');
+                }
+              } else {
+                console.log('✅ Profile image URL saved successfully!');
+                console.log('📊 Updated record:', updateData);
               }
             }
           } catch (uploadErr) {
-            console.warn('⚠️ Image upload failed but member was saved:', uploadErr.message);
+            console.error('❌ Image upload process failed:', uploadErr);
+            setStatus('⚠️ Member saved but image upload failed. Error: ' + uploadErr.message, true);
+            setLoading(false);
+            return;
           }
+        } else {
+          console.log('ℹ️ No image selected for upload');
         }
 
         setStatus('🎉 Registration successful! Welcome to Rotaract Club of Galkot Baglung! / सदस्यता दर्ता सफल भयो, स्वागत छ!', false);
@@ -865,12 +579,14 @@
         fileInput.value = '';
         hidePreview();
         bsHint.classList.remove('show');
+        document.getElementById('position').value = "Club Member";
         setLoading(false);
 
       } catch (err) {
         console.error('❌ Unexpected error:', err);
         setStatus('⚠️ Unexpected error / अप्रत्याशित त्रुटि: ' + err.message, true);
         setLoading(false);
+        showProgress(false);
       }
     });
 
@@ -878,7 +594,7 @@
     console.log(`📊 Using table: "${TABLE_NAME}"`);
     console.log(`📦 Storage bucket: "${STORAGE_BUCKET}"`);
     console.log('🔗 Connected to Supabase project:', SUPABASE_URL);
-    console.log('✅ Ready to save member registrations with image upload!');
+    console.log('✅ Ready to save member registrations with image upload to profile_image!');
   })();
 </script>
 

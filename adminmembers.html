@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
-    <!-- html2pdf library for PDF generation (member print/export) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         :root {
@@ -364,6 +363,7 @@
             background: #e5a800;
             transform: scale(1.02);
         }
+        /* delete button removed from members – kept only for roles and blood bridge */
         .action-btn-sm.delete-btn {
             background: #f43f5e;
             color: #fff;
@@ -734,6 +734,80 @@
         .role-badge.viewer { background: #e5e7eb; color: #374151; }
         .role-badge.no-role { background: #f3f4f6; color: #6b7280; }
 
+        /* ---------- NEW STATISTICS DASHBOARD ---------- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            padding: 0.25rem 0;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1rem 0.75rem;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            border-color: rgba(255,255,255,0.15);
+        }
+        .stat-card .stat-icon {
+            font-size: 1.6rem;
+            line-height: 1.2;
+            margin-bottom: 0.1rem;
+        }
+        .stat-card .stat-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+        .stat-card .stat-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--text-muted);
+            margin-top: 0.1rem;
+        }
+        /* individual accent colors (subtle) */
+        .stat-card.total .stat-number { color: var(--cls-personal); }
+        .stat-card.active .stat-number { color: var(--cls-professional); }
+        .stat-card.inactive .stat-number { color: #94a3b8; }
+        .stat-card.board .stat-number { color: var(--cls-rotaract); }
+        .stat-card.recent .stat-number { color: var(--cls-galkot); }
+        .stat-card.birthday .stat-number { color: var(--cls-links); }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+            .stat-card .stat-number {
+                font-size: 1.6rem;
+            }
+        }
+        @media (max-width: 400px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(30px) scale(0.95); }
@@ -775,7 +849,6 @@
 </head>
 <body>
 
-    <!-- ===== ACCESS DENIED OVERLAY ===== -->
     <div class="access-denied-overlay" id="accessDeniedOverlay">
         <div class="denied-icon"><i class="fa-solid fa-lock"></i></div>
         <h2>⛔ Access Denied</h2>
@@ -798,8 +871,17 @@
         <p>Manage members, roles, and sync in realtime.</p>
     </header>
 
-    <!-- MEMBERS SECTION -->
     <section class="workspace-section" id="members-panel">
+        <!-- NEW STATISTICS DASHBOARD -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card total"><div class="stat-icon">👥</div><div class="stat-number" id="statTotal">0</div><div class="stat-label">Total Members</div></div>
+            <div class="stat-card active"><div class="stat-icon">🟢</div><div class="stat-number" id="statActive">0</div><div class="stat-label">Active</div></div>
+            <div class="stat-card inactive"><div class="stat-icon">⚪</div><div class="stat-number" id="statInactive">0</div><div class="stat-label">Inactive</div></div>
+            <div class="stat-card board"><div class="stat-icon">👔</div><div class="stat-number" id="statBoard">0</div><div class="stat-label">Board Members</div></div>
+            <div class="stat-card recent"><div class="stat-icon">🆕</div><div class="stat-number" id="statRecent">0</div><div class="stat-label">Recently Added</div></div>
+            <div class="stat-card birthday"><div class="stat-icon">📅</div><div class="stat-number" id="statBirthday">0</div><div class="stat-label">Birthday This Month</div></div>
+        </div>
+
         <div class="panel-header">
             <h2><i class="fa-solid fa-user-check" style="color: var(--cls-professional);"></i> Members</h2>
             <div class="panel-actions">
@@ -821,7 +903,6 @@
         </div>
     </section>
 
-    <!-- ROLE MANAGEMENT SECTION -->
     <section class="workspace-section" id="roles-panel">
         <div class="panel-header">
             <h2><i class="fa-solid fa-user-shield" style="color: var(--cls-links);"></i> Manage Roles</h2>
@@ -839,7 +920,17 @@
         </div>
     </section>
 
-    <!-- BLOOD BRIDGE ADMINS SECTION -->
+    <section class="workspace-section" id="update-requests-panel">
+        <div class="panel-header">
+            <h2><i class="fa-solid fa-pen-to-square" style="color: var(--cls-personal);"></i> Member Update Requests</h2>
+            <div class="panel-actions">
+                <span id="updateRequestsCountBadge" class="status-badge" style="background:rgba(56,189,248,0.18);color:var(--cls-personal);padding:0.45rem 0.75rem;">0 pending</span>
+                <button class="action-btn" id="refresh-update-requests-btn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+            </div>
+        </div>
+        <div id="updateRequestsList" style="display:flex;flex-direction:column;gap:14px;"></div>
+    </section>
+
     <section class="workspace-section" id="blood-bridge-admins-panel">
         <div class="panel-header">
             <h2><i class="fa-solid fa-droplet" style="color: var(--cls-galkot);"></i> Blood Bridge Admins</h2>
@@ -856,7 +947,6 @@
         </div>
     </section>
 
-    <!-- MODAL for Member -->
     <div class="modal-overlay" id="memberModal">
         <div class="modal-content">
             <button class="modal-close" id="memberModalCloseBtn"><i class="fa-solid fa-xmark"></i></button>
@@ -906,7 +996,6 @@
                     <select id="memberStatus"><option value="active">Active</option><option value="inactive">Inactive</option></select>
                 </div>
 
-                <!-- Image Upload -->
                 <div class="form-group">
                     <label>Profile Image</label>
                     <div class="image-preview" id="imagePreviewContainer">
@@ -931,7 +1020,6 @@
         </div>
     </div>
 
-    <!-- MODAL for Role Management (Add/Edit) -->
     <div class="modal-overlay" id="roleModal">
         <div class="modal-content">
             <button class="modal-close" id="roleModalCloseBtn"><i class="fa-solid fa-xmark"></i></button>
@@ -972,8 +1060,6 @@
         </div>
     </div>
 
-
-    <!-- MODAL for Blood Bridge Admin -->
     <div class="modal-overlay" id="bloodBridgeAdminModal">
         <div class="modal-content">
             <button class="modal-close" id="bloodBridgeAdminModalCloseBtn"><i class="fa-solid fa-xmark"></i></button>
@@ -1026,12 +1112,8 @@
             const USER_ROLES_TABLE = 'user_roles';
             const BLOOD_BRIDGE_ADMINS_TABLE = 'blood_bridge_admins';
 
-            // This account must never show a Delete action in Manage Roles
-            // or Blood Bridge Admins. Matching is case-insensitive.
             const PROTECTED_ADMIN_EMAIL = 'pilotprosoft@gmail.com';
 
-            // Supabase REST responses can be capped by the API row limit.
-            // Fetch in pages so every database row is loaded into the slider.
             const fetchAllRows = async (queryFactory, pageSize = 1000) => {
                 const allRows = [];
                 let from = 0;
@@ -1053,9 +1135,6 @@
             const isProtectedEmail = (email) =>
                 String(email || '').trim().toLowerCase() === PROTECTED_ADMIN_EMAIL;
 
-            // ============================================================
-            // ===== SECURE ADMIN ACCESS CONTROL =====
-            // ============================================================
             const accessDeniedOverlay = document.getElementById('accessDeniedOverlay');
 
             const showAccessDenied = () => {
@@ -1120,6 +1199,50 @@
 
             let memSliderIndex = 0;
             let roleSliderIndex = 0;
+            let updateRequests = [];
+
+            // ----- STATS UPDATE -----
+            const updateStats = () => {
+                const total = allMembers.length;
+                const active = allMembers.filter(m => m.status === 'active').length;
+                const inactive = allMembers.filter(m => m.status !== 'active').length;
+
+                const boardPositions = [
+                    'President', 'President Elect', 'Secretary', 'Joint Secretary', 'Treasurer',
+                    'Vice President', 'IPP', 'Membership Chair', 'Public Image Chair',
+                    'Service Projects Chair', 'Health Program Chair', 'Rotary Foundation Chair',
+                    'Sergeant At Arms', 'IT Officer', 'Young Leaders Contact', 'Learning Facilitator',
+                    'Club Advisor', 'International Service Chair'
+                ];
+                const board = allMembers.filter(m => {
+                    const pos = (m.position || '').trim();
+                    return pos && boardPositions.some(bp => pos.toLowerCase().includes(bp.toLowerCase()));
+                }).length;
+
+                const now = new Date();
+                const thirtyDaysAgo = new Date(now);
+                thirtyDaysAgo.setDate(now.getDate() - 30);
+                const recent = allMembers.filter(m => {
+                    if (!m.created_at) return false;
+                    const d = new Date(m.created_at);
+                    return d >= thirtyDaysAgo;
+                }).length;
+
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+                const birthday = allMembers.filter(m => {
+                    if (!m.birthday) return false;
+                    const bd = new Date(m.birthday);
+                    return bd.getMonth() === currentMonth && bd.getFullYear() <= currentYear;
+                }).length;
+
+                document.getElementById('statTotal').textContent = total;
+                document.getElementById('statActive').textContent = active;
+                document.getElementById('statInactive').textContent = inactive;
+                document.getElementById('statBoard').textContent = board;
+                document.getElementById('statRecent').textContent = recent;
+                document.getElementById('statBirthday').textContent = birthday;
+            };
 
             const escapeHtml = (str) => {
                 if (!str) return '';
@@ -1141,7 +1264,6 @@
                 }, 3000);
             };
 
-            // ---------- ROLE HELPERS ----------
             const getRoleBadgeClass = (role) => {
                 if (!role || role === 'no_role') return 'no-role';
                 return role;
@@ -1171,7 +1293,6 @@
                 return map[role] || '❌';
             };
 
-            // ---------- IMAGE UPLOAD HELPERS ----------
             const uploadImage = async (file, memberId) => {
                 if (!file) return null;
                 const ext = file.name.split('.').pop() || 'jpg';
@@ -1199,7 +1320,6 @@
                 } catch (e) { console.warn('Could not delete old image:', e); }
             };
 
-            // ---------- SLIDER HELPERS ----------
             function renderSlider(trackId, items, dotsId, renderFn, sliderIndex) {
                 const track = document.getElementById(trackId);
                 if (!track) return;
@@ -1257,13 +1377,12 @@
                 }
             }
 
-            // ---------- RENDER FUNCTIONS ----------
             function renderMemberItem(item) {
                 const status = item.status || 'active';
                 const badgeClass = status === 'active' ? 'status-active' : 'status-inactive';
                 const toggleText = status === 'active' ? 'Set Inactive' : 'Set Active';
                 const toggleClass = status === 'active' ? '' : 'inactive-toggle';
-                const profileImg = item.profile_image || item.photo || item.photo_url || '';
+                const profileImg = item.profile_image || '';
                 return `
                     <article class="member-node" style="border-left-color: ${status === 'active' ? 'var(--cls-rotaract)' : '#94a3b8'};">
                         <div class="node-meta">
@@ -1287,7 +1406,7 @@
                             <button class="action-btn-sm status-toggle ${toggleClass}" data-id="${item.id}" data-action="toggle-status"><i class="fa-solid fa-arrows-rotate"></i> ${toggleText}</button>
                             <button class="action-btn-sm edit-btn" data-id="${item.id}" data-action="edit"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
                             <button class="action-btn-sm print-btn" data-id="${item.id}" data-action="print"><i class="fa-solid fa-print"></i> Print</button>
-                            <button class="action-btn-sm delete-btn" data-id="${item.id}" data-action="delete"><i class="fa-solid fa-trash"></i> Delete</button>
+                            <!-- delete button removed from members -->
                         </div>
                     </article>
                 `;
@@ -1335,9 +1454,6 @@
                 `;
             }
 
-            // ============================================================
-            // ===== LOAD MEMBERS =====
-            // ============================================================
             const loadMembers = async (searchTerm = '') => {
                 const isAuthorized = await checkAdminRole();
                 if (!isAuthorized) return;
@@ -1350,6 +1466,7 @@
                     if (error) throw error;
                     allMembers = data || [];
                     renderSlider('membersTrack', allMembers, 'memDots', renderMemberItem, memSliderIndex);
+                    updateStats();
                 } catch (err) {
                     document.getElementById('membersTrack').innerHTML =
                         `<div class="status-msg" style="color:#ef4444;"><i class="fa-solid fa-circle-exclamation"></i> ${err.message}</div>`;
@@ -1357,20 +1474,6 @@
                 }
             };
 
-            // ============================================================
-            // ===== MEMBER PRINT / PDF EXPORT =====
-            // Same html2pdf approach as activemembers.html's roster export.
-            // Two pieces:
-            //   1) exportMemberRosterPdf(status) - "Print All Active/Inactive"
-            //      header buttons - a compact roster table, queried fresh
-            //      from the DB by status (independent of the search box).
-            //   2) printSingleMember(id) - the per-card "Print" button next
-            //      to Delete - a full one-member profile with every column
-            //      the `members` table has, photo fields excluded, and
-            //      duplicate-value columns (phone/phone_number,
-            //      dob/birthday/date_of_birth, position/designation)
-            //      collapsed so nothing prints twice.
-            // ============================================================
             const escapeHtmlPdf = (str) => {
                 const div = document.createElement('div');
                 div.textContent = str == null ? '' : String(str);
@@ -1391,10 +1494,6 @@
                 return d.toLocaleString();
             };
 
-            // Pulls the first non-empty value out of several possible
-            // column names that hold the same real-world fact, so a
-            // legacy duplicate column (e.g. phone_number vs phone) never
-            // shows up twice on the printout.
             const firstNonEmpty = (member, keys) => {
                 for (const k of keys) {
                     const v = member[k];
@@ -1403,45 +1502,21 @@
                 return '';
             };
 
-            // Ordered, de-duplicated field list for a full single-member
-            // printout. Every real `members` table column is represented
-            // here exactly once (photo/photo_url/profile_image excluded
-            // per request), with aliases merged into one row.
             const getMemberPrintFields = (member) => {
                 const fields = [
                     { label: 'Member ID', value: member.id != null ? String(member.id) : '' },
                     { label: 'Name', value: member.name || '' },
                     { label: 'Status', value: member.status || 'active' },
-                    { label: 'Rotary ID', value: member.rotary_id || '' },
-                    { label: 'Position / Designation', value: firstNonEmpty(member, ['position', 'designation']) },
+                    { label: 'Position', value: member.position || '' },
                     { label: 'Profession', value: member.profession || '' },
                     { label: 'Gender', value: member.gender || '' },
                     { label: 'Blood Group', value: member.blood_group || '' },
-                    { label: 'Phone Number', value: firstNonEmpty(member, ['phone', 'phone_number']) },
+                    { label: 'Phone Number', value: member.phone || '' },
                     { label: 'Email', value: member.email || '' },
-                    { label: 'Date of Birth', value: formatPdfDate(firstNonEmpty(member, ['dob', 'date_of_birth', 'birthday'])) },
-                    { label: 'Address', value: member.address || '' },
-                    { label: 'Mentor', value: member.mentor || '' },
-                    { label: 'Registered On', value: formatPdfDateTime(member.created_at) },
-                    { label: 'Last Updated', value: formatPdfDateTime(member.updated_at) },
-                    { label: 'Timestamp', value: formatPdfDateTime(member.timestamp) }
+                    { label: 'Date of Birth', value: formatPdfDate(member.birthday) },
+                    { label: 'Address', value: member.address || '' }
                 ];
-
-                // Final safety pass: if two rows ended up with the exact
-                // same displayed value (e.g. timestamp === created_at),
-                // keep only the first so nothing is printed twice.
-                const seenValues = new Set();
-                const deduped = [];
-                fields.forEach(f => {
-                    if (!f.value) return; // skip empty fields entirely
-                    const key = f.label === 'Registered On' || f.label === 'Last Updated' || f.label === 'Timestamp'
-                        ? f.value // datetime fields compare on their own formatted value
-                        : f.value.toString().trim().toLowerCase();
-                    if (seenValues.has(key)) return;
-                    seenValues.add(key);
-                    deduped.push(f);
-                });
-                return deduped;
+                return fields;
             };
 
             const runHtml2Pdf = (container, opt, onDone) => {
@@ -1455,7 +1530,6 @@
                 }, 80);
             };
 
-            // ---- 1) PRINT ALL ACTIVE / INACTIVE (roster table) ----
             const exportMemberRosterPdf = async (statusFilter) => {
                 const btn = document.getElementById(
                     statusFilter === 'active' ? 'printActiveMembersBtn' : 'printInactiveMembersBtn'
@@ -1485,8 +1559,8 @@
 
                     const rows = list.map((member, idx) => {
                         const name = member.name || '—';
-                        const position = firstNonEmpty(member, ['position', 'designation']) || '—';
-                        const phone = firstNonEmpty(member, ['phone', 'phone_number']) || '—';
+                        const position = member.position || '—';
+                        const phone = member.phone || '—';
                         const email = member.email || '—';
                         const blood = member.blood_group || '—';
                         const address = member.address || '—';
@@ -1584,7 +1658,6 @@
                 }
             };
 
-            // ---- 2) PRINT ONE MEMBER (full profile, all fields, no photo) ----
             window.printSingleMember = function(id) {
                 const member = allMembers.find(m => m.id === id);
                 if (!member) { showToast('Member not found.', 'error'); return; }
@@ -1653,25 +1726,24 @@
             document.getElementById('printActiveMembersBtn')?.addEventListener('click', () => exportMemberRosterPdf('active'));
             document.getElementById('printInactiveMembersBtn')?.addEventListener('click', () => exportMemberRosterPdf('inactive'));
 
-            // ============================================================
-            // ===== BLOOD BRIDGE ADMINS =====
-            // ============================================================
             const renderBloodBridgeAdminItem = (admin) => {
                 const statusClass = admin.status === 'active' ? 'status-active' : 'status-inactive';
                 const initials = (admin.email || 'A').charAt(0).toUpperCase();
                 return `
-                    <div class="member-card">
-                        <div class="member-avatar" style="display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;">${initials}</div>
-                        <div class="member-info">
-                            <h3>${escapeHtml(admin.email || 'No email')}</h3>
-                            <p><strong>Role:</strong> ${escapeHtml(admin.role || 'hospital')}</p>
-                            <p><strong>User ID:</strong> ${escapeHtml(admin.user_id || 'Not linked')}</p>
-                            <p><span class="status-badge ${statusClass}">${escapeHtml(admin.status || 'active')}</span></p>
+                    <div class="member-node" style="border-left-color: var(--cls-galkot);">
+                        <div class="member-header">
+                            <div class="member-avatar" style="display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;background:rgba(255,255,255,0.05);">${initials}</div>
+                            <div class="node-title">${escapeHtml(admin.email || 'No email')}</div>
                         </div>
-                        <div class="member-actions">
-                            <button class="action-btn edit-blood-bridge-admin" data-id="${admin.id}"><i class="fa-solid fa-pen"></i></button>
+                        <div class="node-detail"><strong>Role:</strong> ${escapeHtml(admin.role || 'hospital')}</div>
+                        <div class="node-detail"><strong>User ID:</strong> ${escapeHtml(admin.user_id || 'Not linked')}</div>
+                        <div class="node-meta">
+                            <span class="status-badge ${statusClass}">${escapeHtml(admin.status || 'active')}</span>
+                        </div>
+                        <div class="application-actions">
+                            <button class="action-btn-sm edit-btn edit-blood-bridge-admin" data-id="${admin.id}"><i class="fa-solid fa-pen"></i> Edit</button>
                             ${!isProtectedEmail(admin.email) ? `
-                            <button class="action-btn clear-btn-accent delete-blood-bridge-admin" data-id="${admin.id}"><i class="fa-solid fa-trash"></i></button>` : ''}
+                            <button class="action-btn-sm delete-btn delete-blood-bridge-admin" data-id="${admin.id}"><i class="fa-solid fa-trash"></i> Delete</button>` : ''}
                         </div>
                     </div>`;
             };
@@ -1758,14 +1830,105 @@
                 }
             });
 
-            // ============================================================
-            // ===== LOAD USER ROLES - WITH NAME AND EMAIL =====
-            // ============================================================
+            const loadUpdateRequests = async () => {
+                try {
+                    const { data, error } = await supabase
+                        .from('member_update_requests')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    if (error) throw error;
+                    updateRequests = data || [];
+                    renderUpdateRequests();
+                } catch (err) {
+                    console.error('Error loading update requests:', err);
+                    const list = document.getElementById('updateRequestsList');
+                    if (list) list.innerHTML = `<div class="state"><i class="fa-solid fa-triangle-exclamation"></i> Failed to load update requests: ${escapeHtml(err.message || 'Unknown error')}</div>`;
+                }
+            };
+
+            function renderUpdateRequests() {
+                const list = document.getElementById('updateRequestsList');
+                const badge = document.getElementById('updateRequestsCountBadge');
+                if (!list) return;
+                const pendingCount = updateRequests.filter(r => (r.status || 'pending') === 'pending').length;
+                if (badge) badge.textContent = `${pendingCount} pending`;
+
+                if (!updateRequests.length) {
+                    list.innerHTML = '<div class="state"><i class="fa-solid fa-inbox"></i> No update requests yet.</div>';
+                    return;
+                }
+
+                list.innerHTML = updateRequests.map(r => {
+                    const status = r.status || 'pending';
+                    const statusColor = status === 'pending' ? 'var(--cls-galkot)' : (status === 'resolved' ? 'var(--cls-professional)' : '#94a3b8');
+                    const created = r.created_at ? new Date(r.created_at).toLocaleString() : '';
+                    return `
+                        <article class="member-node" style="border-left-color: ${statusColor};">
+                            <div class="node-meta">
+                                <span>Request #${r.id}</span>
+                                <span class="status-badge" style="background:${statusColor}22;color:${statusColor};">${escapeHtml(status)}</span>
+                            </div>
+                            <div class="node-title">${escapeHtml(r.member_name || 'Unknown Member')}</div>
+                            ${r.member_email ? `<a href="mailto:${escapeHtml(r.member_email)}" class="node-detail" style="color: var(--cls-personal);">${escapeHtml(r.member_email)}</a>` : ''}
+                            <div class="node-detail" style="white-space:pre-wrap;"><i class="fa-solid fa-message"></i> ${escapeHtml(r.request_details || '')}</div>
+                            ${created ? `<div class="node-detail"><i class="fa-solid fa-clock"></i> ${escapeHtml(created)}</div>` : ''}
+                            <div class="application-actions">
+                                ${r.member_id ? `<button class="action-btn-sm edit-btn" data-action="edit-member" data-id="${r.member_id}"><i class="fa-solid fa-user-pen"></i> Edit Member</button>` : ''}
+                                ${status !== 'resolved' ? `<button class="action-btn-sm status-toggle" data-action="resolve-request" data-id="${r.id}"><i class="fa-solid fa-check"></i> Mark Resolved</button>` : ''}
+                                <button class="action-btn-sm delete-btn" data-action="delete-request" data-id="${r.id}"><i class="fa-solid fa-trash"></i> Delete</button>
+                            </div>
+                        </article>
+                    `;
+                }).join('');
+            }
+
+            document.getElementById('updateRequestsList')?.addEventListener('click', async (e) => {
+                const btn = e.target.closest('.action-btn-sm');
+                if (!btn) return;
+                const action = btn.dataset.action;
+                const id = btn.dataset.id;
+
+                if (action === 'edit-member') {
+                    editMember(parseInt(id, 10));
+                    return;
+                }
+
+                if (action === 'resolve-request') {
+                    try {
+                        const { error } = await supabase
+                            .from('member_update_requests')
+                            .update({ status: 'resolved', resolved_at: new Date().toISOString() })
+                            .eq('id', id);
+                        if (error) throw error;
+                        showToast('✅ Marked as resolved.', 'success');
+                        await loadUpdateRequests();
+                    } catch (err) {
+                        showToast('❌ Error updating request: ' + err.message, 'error');
+                    }
+                }
+
+                if (action === 'delete-request') {
+                    if (!confirm('Delete this update request permanently?')) return;
+                    try {
+                        const { error } = await supabase
+                            .from('member_update_requests')
+                            .delete()
+                            .eq('id', id);
+                        if (error) throw error;
+                        showToast('🗑️ Request deleted.', 'success');
+                        await loadUpdateRequests();
+                    } catch (err) {
+                        showToast('❌ Error deleting request: ' + err.message, 'error');
+                    }
+                }
+            });
+
+            document.getElementById('refresh-update-requests-btn')?.addEventListener('click', loadUpdateRequests);
+
             const loadUserRoles = async () => {
                 const isAuthorized = await checkAdminRole();
                 if (!isAuthorized) return;
                 try {
-                    // Load ALL user_roles rows, not just the first API page.
                     const rolesData = await fetchAllRows(() =>
                         supabase
                             .from(USER_ROLES_TABLE)
@@ -1773,8 +1936,6 @@
                             .order('created_at', { ascending: false })
                     );
 
-                    // Load ALL view rows too, so a large user list cannot be
-                    // silently truncated by Supabase's default row limit.
                     const viewResult = await (async () => {
                         try {
                             const rows = await fetchAllRows(() =>
@@ -1806,8 +1967,6 @@
                             };
                         });
 
-                        // Also include any user_roles rows that are not exposed
-                        // by the view, ensuring the database list is complete.
                         const mergedIds = new Set(merged.map(item => item.user_id));
                         (rolesData || []).forEach(role => {
                             if (!mergedIds.has(role.user_id)) {
@@ -1822,7 +1981,6 @@
                             }
                         });
                     } else {
-                        // Fallback: Join with ALL members rows to get names.
                         const membersData = await fetchAllRows(() =>
                             supabase
                                 .from(MEMBERS_TABLE)
@@ -1863,7 +2021,6 @@
                     userRoles = merged;
                     const rolesCountBadge = document.getElementById('rolesCountBadge');
                     if (rolesCountBadge) rolesCountBadge.textContent = `${userRoles.length} users`;
-                    // Reset to a valid page after a refresh/delete.
                     const rolePerView = getItemsPerView();
                     const roleTotalSlides = Math.max(1, Math.ceil(userRoles.length / rolePerView));
                     if (roleSliderIndex >= roleTotalSlides) roleSliderIndex = roleTotalSlides - 1;
@@ -1878,9 +2035,6 @@
                 }
             };
 
-            // ============================================================
-            // ===== ROLE LISTENERS =====
-            // ============================================================
             function attachRoleListeners() {
                 document.querySelectorAll('#rolesTrack .action-btn-sm').forEach(btn => {
                     btn.removeEventListener('click', handleRoleAction);
@@ -1907,9 +2061,6 @@
                 }
             }
 
-            // ============================================================
-            // ===== OPEN EDIT ROLE MODAL =====
-            // ============================================================
             const openEditRoleModal = (userId, email, currentRole, fullName, status) => {
                 document.getElementById('roleUserId').value = userId || '';
                 document.getElementById('roleUserEmail').value = email || '';
@@ -1922,9 +2073,6 @@
                 document.getElementById('roleModal').classList.add('active');
             };
 
-            // ============================================================
-            // ===== OPEN ADD ROLE MODAL =====
-            // ============================================================
             const openAddRoleModal = () => {
                 document.getElementById('roleUserId').value = '';
                 document.getElementById('roleUserEmail').value = '';
@@ -1937,16 +2085,10 @@
                 document.getElementById('roleModal').classList.add('active');
             };
 
-            // ============================================================
-            // ===== CLOSE ROLE MODAL =====
-            // ============================================================
             const closeRoleModal = () => {
                 document.getElementById('roleModal').classList.remove('active');
             };
 
-            // ============================================================
-            // ===== SUBMIT ROLE (Add/Edit) =====
-            // ============================================================
             document.getElementById('roleForm')?.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
@@ -1966,19 +2108,16 @@
                     let result;
 
                     if (editMode === 'edit' && userId) {
-                        // Update existing role
                         result = await supabase
                             .from(USER_ROLES_TABLE)
                             .update({
                                 role: newRole,
                                 status: status,
                                 email: email,
-                                full_name: fullName || email.split('@')[0],
-                                updated_at: new Date().toISOString()
+                                full_name: fullName || email.split('@')[0]
                             })
                             .eq('user_id', userId);
                     } else {
-                        // Add new role - first check if user exists in auth.users
                         const { data: authUser, error: authError } = await supabase
                             .from('auth.users')
                             .select('id')
@@ -1990,7 +2129,6 @@
                             return;
                         }
 
-                        // Check if role already exists
                         const { data: existingRole } = await supabase
                             .from(USER_ROLES_TABLE)
                             .select('user_id')
@@ -2010,8 +2148,7 @@
                                 full_name: fullName || email.split('@')[0],
                                 role: newRole,
                                 status: status,
-                                created_at: new Date().toISOString(),
-                                updated_at: new Date().toISOString()
+                                created_at: new Date().toISOString()
                             }]);
                     }
 
@@ -2027,9 +2164,6 @@
                 }
             });
 
-            // ============================================================
-            // ===== DELETE USER ROLE =====
-            // ============================================================
             const deleteUserRole = async (userId) => {
                 if (!userId) {
                     showToast('❌ User ID not found.', 'error');
@@ -2061,9 +2195,6 @@
                 }
             };
 
-            // ============================================================
-            // ===== TOGGLE MEMBER STATUS =====
-            // ============================================================
             const toggleMemberStatus = async (id) => {
                 try {
                     const member = allMembers.find(m => m.id === id);
@@ -2078,9 +2209,6 @@
                 }
             };
 
-            // ============================================================
-            // ===== TOGGLE USER STATUS =====
-            // ============================================================
             const toggleUserStatus = async (userId) => {
                 try {
                     const user = userRoles.find(u => u.user_id === userId);
@@ -2100,28 +2228,8 @@
                 }
             };
 
-            // ============================================================
-            // ===== DELETE MEMBER =====
-            // ============================================================
-            const deleteMember = async (id) => {
-                if (!confirm(`⚠️ Delete member #${id}?`)) return;
-                try {
-                    const member = allMembers.find(m => m.id === id);
-                    if (member && member.profile_image) {
-                        await deleteOldImage(member.profile_image);
-                    }
-                    await supabase.from(MEMBERS_TABLE).delete().eq('id', id);
-                    showToast(`🗑️ Member #${id} deleted`, 'success');
-                    await loadMembers(document.getElementById('memberSearchInput').value || '');
-                    await loadUserRoles();
-                } catch (err) {
-                    showToast('❌ Error deleting: ' + err.message, 'error');
-                }
-            };
+            // member delete removed per request
 
-            // ============================================================
-            // ===== EDIT MEMBER =====
-            // ============================================================
             const editMember = async (id) => {
                 try {
                     const { data, error } = await supabase.from(MEMBERS_TABLE).select('*').eq('id', id).single();
@@ -2141,7 +2249,7 @@
                     document.getElementById('memberBirthday').value = data.birthday ? data.birthday.split('T')[0] : '';
                     document.getElementById('memberStatus').value = data.status || 'active';
 
-                    const imgUrl = data.profile_image || data.photo || data.photo_url || '';
+                    const imgUrl = data.profile_image || '';
                     existingImageUrl = imgUrl;
                     document.getElementById('profileImageUrl').value = imgUrl;
                     const preview = document.getElementById('imagePreview');
@@ -2164,9 +2272,6 @@
                 }
             };
 
-            // ============================================================
-            // ===== OPEN ADD MODAL =====
-            // ============================================================
             const openAddModal = () => {
                 editingMemberId = null;
                 document.getElementById('memberForm').reset();
@@ -2190,9 +2295,6 @@
                 document.getElementById('profileImageInput').value = '';
             };
 
-            // ============================================================
-            // ===== IMAGE PREVIEW =====
-            // ============================================================
             document.getElementById('profileImageInput')?.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -2216,9 +2318,6 @@
                 existingImageUrl = '';
             });
 
-            // ============================================================
-            // ===== FORM SUBMIT =====
-            // ============================================================
             document.getElementById('memberForm')?.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const memberData = {
@@ -2267,7 +2366,6 @@
                             throw new Error('Invalid member ID for update: ' + id);
                         }
 
-                        // .select() confirms that a real row was updated.
                         result = await supabase
                             .from('members')
                             .update(memberData)
@@ -2298,21 +2396,17 @@
                 }
             });
 
-            // ============================================================
-            // ===== EVENT LISTENERS =====
-            // ============================================================
             document.getElementById('membersTrack')?.addEventListener('click', (e) => {
                 const btn = e.target.closest('.action-btn-sm');
                 if (!btn) return;
                 const id = parseInt(btn.dataset.id);
                 const action = btn.dataset.action;
-                if (action === 'delete') deleteMember(id);
-                else if (action === 'edit') editMember(id);
+                if (action === 'edit') editMember(id);
                 else if (action === 'toggle-status') toggleMemberStatus(id);
                 else if (action === 'print') printSingleMember(id);
+                // delete action removed
             });
 
-            // Slider navigation
             document.getElementById('memSliderPrev')?.addEventListener('click', () => {
                 const perView = getItemsPerView();
                 const totalSlides = Math.ceil(allMembers.length / perView);
@@ -2341,7 +2435,6 @@
                 updateSlider('rolesTrack', userRoles, 'roleDots', renderRoleItem, roleSliderIndex);
             });
 
-            // Refresh buttons
             document.getElementById('refresh-members-btn')?.addEventListener('click', () => {
                 loadMembers(document.getElementById('memberSearchInput').value || '');
             });
@@ -2362,10 +2455,8 @@
                 updateSlider('bloodBridgeAdminsTrack', bloodBridgeAdmins, 'bloodBridgeAdminsDots', renderBloodBridgeAdminItem, bloodBridgeAdminSliderIndex); bindBloodBridgeAdminActions();
             });
 
-            // Add Role button
             document.getElementById('addRoleBtn')?.addEventListener('click', openAddRoleModal);
 
-            // Search
             document.getElementById('memberSearchBtn')?.addEventListener('click', () => {
                 loadMembers(document.getElementById('memberSearchInput').value || '');
             });
@@ -2373,7 +2464,6 @@
                 if (e.key === 'Enter') loadMembers(e.target.value);
             });
 
-            // Modal events
             document.getElementById('addMemberBtn')?.addEventListener('click', openAddModal);
             document.getElementById('memberModalCloseBtn')?.addEventListener('click', closeModal);
             document.getElementById('memberModalCancelBtn')?.addEventListener('click', closeModal);
@@ -2381,21 +2471,18 @@
                 if (e.target === document.getElementById('memberModal')) closeModal();
             });
 
-            // Role Modal events
             document.getElementById('roleModalCloseBtn')?.addEventListener('click', closeRoleModal);
             document.getElementById('roleModalCancelBtn')?.addEventListener('click', closeRoleModal);
             document.getElementById('roleModal')?.addEventListener('click', (e) => {
                 if (e.target === document.getElementById('roleModal')) closeRoleModal();
             });
 
-            // Back & Logout
             document.getElementById('backToAdminBtn')?.addEventListener('click', () => { window.location.href = 'admin.html'; });
             document.getElementById('logout-btn')?.addEventListener('click', async () => {
                 await supabase.auth.signOut();
                 window.location.href = '/index.html';
             });
 
-            // ---------- REALTIME ----------
             const setupRealtime = () => {
                 supabase.channel('members-realtime')
                     .on('postgres_changes', { event: '*', schema: 'public', table: MEMBERS_TABLE }, () => {
@@ -2403,7 +2490,6 @@
                         loadMembers(document.getElementById('memberSearchInput').value || '');
                     })
                     .subscribe();
-
 
                 supabase.channel('roles-realtime')
                     .on('postgres_changes', { event: '*', schema: 'public', table: USER_ROLES_TABLE }, () => {
@@ -2420,7 +2506,6 @@
                     .subscribe();
             };
 
-            // ---------- INIT ----------
             const init = async () => {
                 const { data: { session } } = await supabase.auth.getSession();
                 if (!session) {
@@ -2434,7 +2519,7 @@
                     return;
                 }
 
-                await Promise.all([loadMembers(), loadUserRoles(), loadBloodBridgeAdmins()]);
+                await Promise.all([loadMembers(), loadUserRoles(), loadBloodBridgeAdmins(), loadUpdateRequests()]);
                 setupRealtime();
 
                 let resizeTimeout;

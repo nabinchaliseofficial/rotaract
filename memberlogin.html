@@ -3,1387 +3,175 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Members | Rotaract Club of Galkot Baglung</title>
-
-  <!-- Fonts -->
+  <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Font Awesome -->
-  <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <!-- XLSX & QRCode -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
-    :root {
-      --primary: #D91A5C;
-      --primary-dark: #A61042;
-      --gold: #D4AF37;
-      --dark: #0B1120;
-      --dark-2: #111827;
-
-      --bg: #f7f9fc;
-      --card: #ffffff;
-      --text: #0f172a;
-      --muted: #64748b;
-      --border: #e5e7eb;
-
-      --shadow-sm: 0 5px 20px rgba(15, 23, 42, .06);
-      --shadow-md: 0 15px 45px rgba(15, 23, 42, .10);
-      --shadow-lg: 0 25px 70px rgba(15, 23, 42, .16);
-
-      --radius: 22px;
-    }
-
-    [data-theme="dark"] {
-      --bg: #080d18;
-      --card: #111827;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --border: #263244;
-
-      --shadow-sm: 0 5px 20px rgba(0,0,0,.25);
-      --shadow-md: 0 15px 45px rgba(0,0,0,.35);
-      --shadow-lg: 0 25px 70px rgba(0,0,0,.45);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      transition: .3s ease;
-    }
-
-    button,
-    input {
-      font-family: inherit;
-    }
-
-    /* =========================================================
-       TOP BAR
-    ========================================================= */
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-
-      min-height: 72px;
-      padding: 12px 25px;
-
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-
-      background: rgba(255,255,255,.88);
-      backdrop-filter: blur(18px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    [data-theme="dark"] .topbar {
-      background: rgba(11,17,32,.92);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .brand-icon {
-      width: 44px;
-      height: 44px;
-      flex-shrink: 0;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 14px;
-
-      color: #fff;
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-
-      box-shadow: 0 8px 25px rgba(217,26,92,.25);
-    }
-
-    .brand-text h1 {
-      font-size: 1rem;
-      font-weight: 800;
-      line-height: 1.2;
-    }
-
-    .brand-text span {
-      display: block;
-      color: var(--muted);
-      font-size: .72rem;
-      margin-top: 2px;
-    }
-
-    .theme-btn {
-      width: 42px;
-      height: 42px;
-
-      border: 1px solid var(--border);
-      border-radius: 50%;
-
-      background: var(--card);
-      color: var(--text);
-
-      cursor: pointer;
-      transition: .25s ease;
-    }
-
-    .theme-btn:hover {
-      color: var(--primary);
-      transform: rotate(15deg);
-      box-shadow: var(--shadow-sm);
-    }
-
-    /* =========================================================
-       PAGE HEADER
-    ========================================================= */
-
-    .page-header {
-      position: relative;
-      overflow: hidden;
-
-      padding: 75px 20px 85px;
-
-      text-align: center;
-
-      background:
-        radial-gradient(circle at 15% 20%, rgba(217,26,92,.18), transparent 35%),
-        radial-gradient(circle at 85% 80%, rgba(212,175,55,.14), transparent 35%),
-        linear-gradient(135deg, var(--dark), #17223a);
-      color: #fff;
-    }
-
-    .page-header::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-
-      background-image:
-        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
-
-      background-size: 35px 35px;
-      mask-image: linear-gradient(to bottom, black, transparent);
-    }
-
-    .header-content {
-      position: relative;
-      z-index: 2;
-
-      max-width: 900px;
-      margin: auto;
-    }
-
-    .header-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-
-      padding: 7px 17px;
-
-      border-radius: 50px;
-      border: 1px solid rgba(212,175,55,.35);
-
-      background: rgba(212,175,55,.10);
-      color: #f4df88;
-
-      font-size: .72rem;
-      font-weight: 800;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-    }
-
-    .page-header h2 {
-      margin: 20px 0 12px;
-
-      font-size: clamp(2.2rem, 6vw, 4.4rem);
-      line-height: 1.05;
-      font-weight: 900;
-      letter-spacing: -2px;
-    }
-
-    .page-header h2 span {
-      background: linear-gradient(135deg, #f5d86b, #fff2a9, #d4af37);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .page-header p {
-      max-width: 680px;
-      margin: auto;
-
-      color: rgba(255,255,255,.72);
-      font-size: 1rem;
-    }
-
-    /* =========================================================
-       STATS
-    ========================================================= */
-
-    .stats {
-      max-width: 1100px;
-      margin: -35px auto 50px;
-
-      position: relative;
-      z-index: 5;
-
-      padding: 0 20px;
-
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-    }
-
-    .stat-card {
-      padding: 23px 18px;
-
-      text-align: center;
-
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-
-      box-shadow: var(--shadow-md);
-    }
-
-    .stat-icon {
-      width: 45px;
-      height: 45px;
-
-      margin: 0 auto 9px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 14px;
-
-      background: rgba(217,26,92,.10);
-      color: var(--primary);
-    }
-
-    .stat-number {
-      font-size: 1.7rem;
-      font-weight: 900;
-    }
-
-    .stat-label {
-      margin-top: 2px;
-
-      color: var(--muted);
-      font-size: .7rem;
-      font-weight: 700;
-      letter-spacing: .6px;
-      text-transform: uppercase;
-    }
-
-    /* =========================================================
-       SECTION
-    ========================================================= */
-
-    .section {
-      max-width: 1250px;
-      margin: 0 auto;
-
-      padding: 35px 20px 75px;
-    }
-
-    .section-header {
-      margin-bottom: 32px;
-      text-align: center;
-    }
-
-    .section-title {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-
-      font-size: clamp(1.7rem, 4vw, 2.5rem);
-      font-weight: 900;
-      letter-spacing: -.8px;
-    }
-
-    .section-title i {
-      color: var(--primary);
-    }
-
-    .section-subtitle {
-      margin-top: 7px;
-      color: var(--muted);
-      font-size: .9rem;
-    }
-
-    /* =========================================================
-       BOARD
-    ========================================================= */
-
-    .board-section {
-      padding-top: 0;
-    }
-
-    .board-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 24px;
-    }
-
-    .board-card {
-      position: relative;
-
-      overflow: hidden;
-
-      padding: 28px 20px 24px;
-
-      text-align: center;
-
-      background:
-        linear-gradient(
-          145deg,
-          var(--card),
-          var(--card)
-        );
-
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-
-      box-shadow: var(--shadow-sm);
-
-      transition:
-        transform .35s ease,
-        box-shadow .35s ease,
-        border-color .35s ease;
-    }
-
-    .board-card::before {
-      content: "";
-
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-
-      height: 4px;
-
-      background: linear-gradient(
-        90deg,
-        var(--primary),
-        var(--gold)
-      );
-    }
-
-    .board-card:hover {
-      transform: translateY(-8px);
-      box-shadow: var(--shadow-lg);
-      border-color: rgba(217,26,92,.3);
-    }
-
-    .avatar-wrap {
-      position: relative;
-
-      width: 112px;
-      height: 112px;
-
-      margin: 0 auto 17px;
-    }
-
-    .board-avatar {
-      width: 100%;
-      height: 100%;
-
-      object-fit: cover;
-
-      border-radius: 50%;
-      border: 4px solid var(--gold);
-
-      background: #e2e8f0;
-
-      box-shadow: 0 8px 25px rgba(0,0,0,.12);
-    }
-
-    .board-badge {
-      position: absolute;
-
-      right: -2px;
-      bottom: 2px;
-
-      width: 31px;
-      height: 31px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 50%;
-
-      color: #fff;
-      background: var(--primary);
-
-      border: 3px solid var(--card);
-
-      font-size: .7rem;
-    }
-
-    .member-name {
-      font-size: 1.05rem;
-      font-weight: 800;
-
-      color: var(--text);
-    }
-
-    .member-position {
-      display: inline-flex;
-
-      margin-top: 7px;
-      padding: 5px 13px;
-
-      border-radius: 50px;
-
-      color: var(--primary);
-      background: rgba(217,26,92,.09);
-
-      font-size: .72rem;
-      font-weight: 800;
-    }
-
-    .member-meta {
-      margin-top: 13px;
-
-      display: flex;
-      justify-content: center;
-      gap: 7px;
-      flex-wrap: wrap;
-    }
-
-    .meta-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-
-      padding: 5px 9px;
-
-      border-radius: 50px;
-
-      background: var(--bg);
-      color: var(--muted);
-
-      font-size: .65rem;
-      font-weight: 600;
-    }
-
-    /* =========================================================
-       ACTIVE MEMBERS
-    ========================================================= */
-
-    .members-section {
-      background: var(--bg);
-      border-top: 1px solid var(--border);
-    }
-
-    .member-tools {
-      max-width: 900px;
-      margin: 0 auto 30px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .search-box {
-      position: relative;
-      flex: 1;
-      min-width: 260px;
-    }
-
-    .search-box i {
-      position: absolute;
-
-      left: 17px;
-      top: 50%;
-
-      transform: translateY(-50%);
-
-      color: var(--muted);
-    }
-
-    .search-box input {
-      width: 100%;
-
-      height: 48px;
-
-      padding: 0 18px 0 46px;
-
-      border: 1px solid var(--border);
-      border-radius: 50px;
-
-      outline: none;
-
-      background: var(--card);
-      color: var(--text);
-
-      transition: .25s ease;
-    }
-
-    .search-box input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(217,26,92,.08);
-    }
-
-    .refresh-btn {
-      height: 48px;
-
-      padding: 0 19px;
-
-      border: 0;
-      border-radius: 50px;
-
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: #fff;
-
-      cursor: pointer;
-
-      font-weight: 700;
-
-      box-shadow: 0 8px 25px rgba(217,26,92,.2);
-
-      transition: .25s ease;
-    }
-
-    .refresh-btn:hover {
-      transform: translateY(-2px);
-    }
-
-    .members-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
-      gap: 18px;
-    }
-
-    .member-card {
-      padding: 21px 17px;
-
-      text-align: center;
-
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-
-      box-shadow: var(--shadow-sm);
-
-      transition: .3s ease;
-
-      cursor: pointer;
-    }
-
-    .member-card:hover {
-      transform: translateY(-5px);
-      border-color: rgba(217,26,92,.3);
-      box-shadow: var(--shadow-md);
-    }
-
-    .member-avatar {
-      width: 78px;
-      height: 78px;
-
-      margin: 0 auto 12px;
-
-      border-radius: 50%;
-
-      object-fit: cover;
-
-      border: 3px solid var(--gold);
-    }
-
-    .member-card .member-name {
-      font-size: .9rem;
-    }
-
-    .member-card .member-position {
-      margin-top: 5px;
-
-      color: var(--muted);
-      background: var(--bg);
-
-      font-size: .62rem;
-    }
-
-    /* =========================================================
-       LOADING / EMPTY / ERROR
-    ========================================================= */
-
-    .state {
-      grid-column: 1 / -1;
-
-      min-height: 180px;
-
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-
-      color: var(--muted);
-      text-align: center;
-    }
-
-    .state i {
-      font-size: 2rem;
-      margin-bottom: 12px;
-      color: var(--primary);
-    }
-
-    .spinner {
-      width: 42px;
-      height: 42px;
-
-      border: 4px solid rgba(217,26,92,.15);
-      border-top-color: var(--primary);
-
-      border-radius: 50%;
-
-      animation: spin 1s linear infinite;
-
-      margin-bottom: 15px;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    /* =========================================================
-       MODAL
-    ========================================================= */
-
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-
-      z-index: 9999;
-
-      display: none;
-      align-items: center;
-      justify-content: center;
-
-      padding: 20px;
-
-      background: rgba(3,7,18,.72);
-      backdrop-filter: blur(8px);
-    }
-
-    .modal-overlay.active {
-      display: flex;
-    }
-
-    .modal {
-      position: relative;
-
-      width: 100%;
-      max-width: 480px;
-      max-height: 90vh;
-
-      overflow-y: auto;
-
-      padding: 32px 25px;
-
-      background: var(--card);
-
-      border: 1px solid var(--border);
-      border-radius: 28px;
-
-      box-shadow: 0 35px 100px rgba(0,0,0,.35);
-
-      animation: modalIn .35s ease;
-    }
-
-    @keyframes modalIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px) scale(.96);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    .modal-close {
-      position: absolute;
-
-      top: 15px;
-      right: 15px;
-
-      width: 38px;
-      height: 38px;
-
-      border: 0;
-      border-radius: 50%;
-
-      background: var(--bg);
-      color: var(--text);
-
-      cursor: pointer;
-
-      font-size: 1rem;
-    }
-
-    .modal-profile {
-      text-align: center;
-    }
-
-    .modal-photo {
-      width: 125px;
-      height: 125px;
-
-      object-fit: cover;
-
-      border-radius: 50%;
-
-      border: 4px solid var(--gold);
-
-      margin-bottom: 15px;
-    }
-
-    .modal-profile h3 {
-      font-size: 1.45rem;
-      font-weight: 900;
-    }
-
-    .modal-position {
-      display: inline-block;
-
-      margin-top: 6px;
-
-      padding: 6px 15px;
-
-      border-radius: 50px;
-
-      background: rgba(217,26,92,.10);
-      color: var(--primary);
-
-      font-size: .72rem;
-      font-weight: 800;
-    }
-
-    .modal-info {
-      margin-top: 25px;
-
-      display: grid;
-      gap: 10px;
-    }
-
-    .info-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-
-      padding: 12px 14px;
-
-      border-radius: 13px;
-
-      background: var(--bg);
-    }
-
-    .info-row i {
-      width: 20px;
-      flex-shrink: 0;
-
-      color: var(--primary);
-
-      margin-top: 3px;
-    }
-
-    .info-label {
-      color: var(--muted);
-      font-size: .65rem;
-      text-transform: uppercase;
-      font-weight: 800;
-      letter-spacing: .4px;
-    }
-
-    .info-value {
-      color: var(--text);
-      font-size: .82rem;
-      font-weight: 600;
-      word-break: break-word;
-    }
-
-    /* =========================================================
-       FOOTER
-    ========================================================= */
-
-    footer {
-      padding: 30px 20px;
-
-      text-align: center;
-
-      background: var(--dark);
-      color: rgba(255,255,255,.6);
-
-      font-size: .75rem;
-    }
-
-    footer strong {
-      color: var(--gold);
-    }
-
-
-    /* =========================================================
-       ADVANCED MEMBER TOOLS
-    ========================================================= */
-    .member-tools { max-width: 1200px; }
-    .tool-btn {
-      height: 48px;
-      padding: 0 16px;
-      border: 0;
-      border-radius: 50px;
-      color: #fff;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-weight: 800;
-      white-space: nowrap;
-      transition: .25s ease;
-      box-shadow: 0 8px 22px rgba(15,23,42,.12);
-    }
-    .tool-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(15,23,42,.18); }
-    .tool-btn:disabled { opacity:.55; cursor:not-allowed; transform:none; }
-    .tool-export { background: linear-gradient(135deg,#15803d,#166534); }
-    .tool-call { background: linear-gradient(135deg,#16a34a,#15803d); }
-    .tool-mail { background: linear-gradient(135deg,#7c3aed,#5b21b6); }
-
-    .birthday-banner {
-      margin: -5px 20px 35px;
-      padding: 15px 20px;
-      border: 1px solid rgba(212,175,55,.55);
-      border-radius: 20px;
-      background: linear-gradient(135deg,rgba(255,249,195,.96),rgba(253,224,71,.72));
-      display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
-      box-shadow: var(--shadow-sm);
-    }
-    .birthday-title { color:#78350f; font-weight:900; display:flex; gap:9px; align-items:center; }
-    .birthday-title i { color:#b45309; font-size:1.2rem; }
-    .birthday-chips { display:flex; gap:8px; flex-wrap:wrap; }
-    .birthday-chip {
-      background:#fff; color:#78350f; border:1px solid #facc15; border-radius:999px;
-      padding:7px 12px; font-size:.78rem; font-weight:800; cursor:pointer;
-    }
-    .birthday-chip:hover { transform:translateY(-1px); }
-    .no-birthday { color:#92400e; font-weight:700; font-size:.8rem; }
-
-    .member-actions {
-      margin-top: 14px; display:flex; justify-content:center; gap:8px; flex-wrap:wrap;
-    }
-    .member-action {
-      border:0; text-decoration:none; display:inline-flex; align-items:center; gap:6px;
-      padding:7px 11px; border-radius:999px; font-size:.7rem; font-weight:900; cursor:pointer;
-      transition:.2s ease;
-    }
-    .member-action:hover { transform:translateY(-2px); }
-    .call-action { background:#dcfce7; color:#166534; }
-    .email-action { background:#dbeafe; color:#1d4ed8; }
-
-    .member-metrics {
-      margin-top: 13px;
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:6px;
-      text-align:left;
-    }
-    .metric-mini {
-      background:var(--bg);
-      border:1px solid var(--border);
-      border-radius:11px;
-      padding:7px 8px;
-      min-width:0;
-    }
-    .metric-mini .metric-value { display:block; font-weight:900; font-size:.82rem; color:var(--text); }
-    .metric-mini .metric-label { display:block; color:var(--muted); font-size:.56rem; line-height:1.2; margin-top:2px; font-weight:700; }
-    .metric-mini.wide { grid-column:1/-1; }
-
-    .modal-actions {
-      display:flex; gap:9px; justify-content:center; flex-wrap:wrap; margin:18px 0 4px;
-    }
-    .modal-action-btn {
-      display:inline-flex; align-items:center; justify-content:center; gap:7px;
-      border:0; border-radius:999px; padding:10px 16px; text-decoration:none; font-weight:800; font-size:.8rem;
-      cursor:pointer;
-    }
-    .modal-action-call { background:#dcfce7; color:#166534; }
-    .modal-action-email { background:#dbeafe; color:#1d4ed8; }
-    .modal-action-print { background:#fef3c7; color:#92400e; }
-    .modal-qr-section { display:flex; flex-direction:column; align-items:center; gap:6px; margin:18px 0 4px; padding-top:16px; border-top:1px dashed var(--border); }
-    .modal-qr-box { background:#fff; padding:10px; border:1px solid var(--border); border-radius:14px; line-height:0; }
-    .modal-qr-label { font-size:.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:.55px; font-weight:800; }
-    .section-tools { margin:0 0 18px; }
-
-    .metric-panel {
-      margin-top:18px; padding:15px; border-radius:18px; background:var(--bg);
-      border:1px solid var(--border);
-    }
-    .metric-panel-title { font-size:.72rem; text-transform:uppercase; letter-spacing:.7px; color:var(--muted); font-weight:900; margin-bottom:10px; }
-    .metric-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
-    .metric-box { padding:10px 7px; border-radius:14px; background:var(--card); border:1px solid var(--border); text-align:center; }
-    .metric-box strong { display:block; font-size:1rem; color:var(--text); }
-    .metric-box span { display:block; margin-top:2px; font-size:.58rem; color:var(--muted); font-weight:700; line-height:1.2; }
-    .last-synced { color:var(--muted); font-size:.68rem; text-align:center; margin-top:8px; }
-
-    @media (max-width: 850px) {
-      .metric-grid { grid-template-columns:repeat(2,1fr); }
-      .tool-btn { flex:1 1 150px; }
-    }
-    @media (max-width: 450px) {
-      .member-metrics { grid-template-columns:1fr 1fr; }
-      .metric-grid { grid-template-columns:1fr 1fr; }
-      .birthday-banner { margin-left:15px; margin-right:15px; }
-    }
-
-
-    /* =========================================================
-       INTEGRATED RECOGNITION
-    ========================================================= */
-    .recognition-section {
-      background: var(--bg);
-      border-top: 1px solid var(--border);
-    }
-
-    .recognition-tools {
-      max-width: 1200px;
-      margin-bottom: 24px;
-    }
-
-    .recognition-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      min-height: 48px;
-      padding: 0 15px;
-      border: 1px solid var(--border);
-      border-radius: 50px;
-      background: var(--card);
-      color: var(--muted);
-      font-size: .72rem;
-      font-weight: 800;
-    }
-
-    .recognition-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 24px;
-    }
-
-    .recognition-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 22px;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .recognition-card-header {
-      display: flex;
-      align-items: center;
-      gap: 13px;
-      padding-bottom: 15px;
-      margin-bottom: 15px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .recognition-icon {
-      width: 48px;
-      height: 48px;
-      flex: 0 0 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 15px;
-      font-size: 1.2rem;
-    }
-
-    .leader-icon {
-      color: #166534;
-      background: #dcfce7;
-    }
-
-    .star-icon {
-      color: #166534;
-      background: #dcfce7;
-    }
-
-    .recognition-card-header h3 {
-      font-size: 1.15rem;
-      font-weight: 900;
-      color: var(--text);
-    }
-
-    .recognition-card-header p {
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: .68rem;
-      font-weight: 700;
-    }
-
-    .recognition-list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .recognition-winner {
-      display: grid;
-      grid-template-columns: 34px 58px minmax(0,1fr) auto;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      border-radius: 18px;
-      border: 1px solid #86efac;
-      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-      color: #14532d;
-    }
-
-    .recognition-rank {
-      width: 34px;
-      height: 34px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      background: #16a34a;
-      color: #fff;
-      font-size: .78rem;
-      font-weight: 900;
-      box-shadow: 0 5px 14px rgba(22,163,74,.22);
-    }
-
-    .recognition-avatar {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid #22c55e;
-      background: #dcfce7;
-    }
-
-    .recognition-name {
-      font-size: .92rem;
-      font-weight: 900;
-      color: #14532d;
-    }
-
-    .recognition-designation {
-      display: inline-flex;
-      margin-top: 4px;
-      padding: 4px 9px;
-      border-radius: 999px;
-      background: rgba(22,163,74,.10);
-      color: #166534;
-      font-size: .62rem;
-      font-weight: 800;
-    }
-
-    .recognition-metrics {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 5px;
-      flex-wrap: wrap;
-    }
-
-    .recognition-metric {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 5px 8px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.72);
-      color: #166534;
-      font-size: .6rem;
-      font-weight: 800;
-      border: 1px solid rgba(34,197,94,.20);
-    }
-
-    .recognition-score {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 7px 11px;
-      border-radius: 999px;
-      background: #15803d;
-      color: #fff;
-      font-size: .72rem;
-      font-weight: 900;
-      white-space: nowrap;
-    }
-
-    .recognition-no-winner {
-      padding: 20px;
-      text-align: center;
-      color: var(--muted);
-      font-size: .8rem;
-      font-weight: 700;
-      border: 1px dashed var(--border);
-      border-radius: 16px;
-    }
-
-    .recognition-loading {
-      padding: 20px;
-      text-align: center;
-      color: var(--muted);
-      font-size: .8rem;
-    }
-
-    .recognition-note {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 9px;
-      margin-top: 18px;
-    }
-
-    .recognition-note span {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 10px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: var(--card);
-      color: var(--muted);
-      font-size: .6rem;
-      font-weight: 700;
-    }
-
-    .recognition-note i {
-      color: #16a34a;
-    }
-
-    .member-recognition-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      margin-top: 9px;
-      padding: 5px 9px;
-      border-radius: 999px;
-      background: #dcfce7;
-      border: 1px solid #86efac;
-      color: #166534;
-      font-size: .58rem;
-      font-weight: 900;
-    }
-
-    .recognition-export-sheet {
-      position: fixed;
-      left: -100000px;
-      top: 0;
-      width: 1200px;
-      background: #fff;
-      color: #0f172a;
-      padding: 35px;
-      z-index: -1;
-    }
-
-    .recognition-export-sheet h1 {
-      font-size: 25px;
-      margin-bottom: 4px;
-    }
-
-    .recognition-export-sheet .export-subtitle {
-      color: #64748b;
-      font-size: 12px;
-      margin-bottom: 24px;
-    }
-
-    .recognition-export-sheet .export-awards {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-
-    .recognition-export-sheet .export-award {
-      border: 1px solid #d1d5db;
-      border-radius: 18px;
-      padding: 18px;
-      break-inside: avoid;
-    }
-
-    .recognition-export-sheet .export-award h2 {
-      font-size: 18px;
-      margin-bottom: 14px;
-      color: #166534;
-    }
-
-    .recognition-export-sheet .export-winner {
-      border: 1px solid #86efac;
-      background: #f0fdf4;
-      border-radius: 14px;
-      padding: 12px;
-      margin-bottom: 10px;
-      display: grid;
-      grid-template-columns: 32px 1fr auto;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .recognition-export-sheet .export-rank {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      background: #16a34a;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      font-size: 12px;
-    }
-
-    .recognition-export-sheet .export-name {
-      font-weight: 900;
-      font-size: 13px;
-      color: #14532d;
-    }
-
-    .recognition-export-sheet .export-designation {
-      font-size: 10px;
-      color: #166534;
-      margin-top: 2px;
-    }
-
-    .recognition-export-sheet .export-score {
-      background: #15803d;
-      color: #fff;
-      padding: 6px 9px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 900;
-      white-space: nowrap;
-    }
-
-    @media (max-width: 850px) {
-      .recognition-grid { grid-template-columns: 1fr; }
-      .recognition-winner { grid-template-columns: 34px 52px minmax(0,1fr); }
-      .recognition-metrics { grid-column: 2 / -1; justify-content: flex-start; }
-      .recognition-score { margin-left: auto; }
-    }
-
-    @media (max-width: 480px) {
-      .recognition-winner {
-        grid-template-columns: 30px 48px minmax(0,1fr);
-        gap: 8px;
-      }
-      .recognition-avatar { width: 48px; height: 48px; }
-      .recognition-name { font-size: .8rem; }
-      .recognition-score { grid-column: 1 / -1; margin-left: 0; justify-content: center; }
-      .recognition-metrics { grid-column: 1 / -1; }
-    }
-
-
-    /* =========================================================
-       RESPONSIVE
-    ========================================================= */
-
-    @media (max-width: 700px) {
-
-      .topbar {
-        padding: 10px 15px;
-      }
-
-      .page-header {
-        padding: 60px 18px 75px;
-      }
-
-      .stats {
-        grid-template-columns: 1fr;
-        margin-top: -25px;
-      }
-
-      .board-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .members-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .section {
-        padding-left: 15px;
-        padding-right: 15px;
-      }
-    }
-
-    @media (max-width: 450px) {
-
-      .brand-text span {
-        display: none;
-      }
-
-      .board-grid,
-      .members-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .member-tools {
-        flex-direction: column;
-      }
-
-      .search-box {
-        width: 100%;
-      }
-
-      .refresh-btn {
-        width: 100%;
-      }
-    }
-    /* DATA VERIFICATION GATE */
-    body.data-locked > *:not(#memberVerifyModal) { visibility: hidden; }
-    #memberVerifyModal { position:fixed; inset:0; z-index:99999; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(7,12,25,.78); backdrop-filter:blur(12px); }
-    #memberVerifyModal.hidden { display:none; }
-    .verify-card { width:min(440px,100%); padding:32px; border-radius:24px; background:var(--card); color:var(--text); border:1px solid var(--border); box-shadow:var(--shadow-lg); text-align:center; }
-    .verify-icon { width:68px; height:68px; margin:0 auto 18px; display:flex; align-items:center; justify-content:center; border-radius:20px; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; font-size:1.7rem; box-shadow:0 12px 30px rgba(217,26,92,.25); }
-    .verify-card h3 { font-size:1.35rem; margin-bottom:7px; }
-    .verify-card p { color:var(--muted); font-size:.88rem; margin-bottom:22px; }
-    .verify-field { text-align:left; margin-bottom:14px; }
-    .verify-field label { display:block; margin-bottom:6px; font-size:.78rem; font-weight:700; }
-    .verify-field input { width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:12px; background:var(--bg); color:var(--text); outline:none; font-size:.9rem; }
-    .verify-field input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(217,26,92,.10); }
-    .verify-btn { width:100%; border:0; border-radius:12px; padding:13px 16px; margin-top:5px; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; font-weight:800; cursor:pointer; }
-    .verify-btn:disabled { opacity:.7; cursor:wait; }
-    .verify-error { min-height:20px; margin-top:12px; color:#dc2626; font-size:.78rem; font-weight:600; }
-
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:#f7f9fc; color:#0f172a; transition:.3s; }
+    :root{--primary:#D91A5C;--primary-dark:#A61042;--gold:#D4AF37;--dark:#0B1120;--dark-2:#111827;--bg:#f7f9fc;--card:#ffffff;--text:#0f172a;--muted:#64748b;--border:#e5e7eb;--shadow-sm:0 5px 20px rgba(15,23,42,.06);--shadow-md:0 15px 45px rgba(15,23,42,.10);--shadow-lg:0 25px 70px rgba(15,23,42,.16);--radius:22px;}
+    [data-theme="dark"]{--bg:#080d18;--card:#111827;--text:#f8fafc;--muted:#94a3b8;--border:#263244;--shadow-sm:0 5px 20px rgba(0,0,0,.25);--shadow-md:0 15px 45px rgba(0,0,0,.35);--shadow-lg:0 25px 70px rgba(0,0,0,.45);}
+    .topbar{position:sticky;top:0;z-index:1000;min-height:72px;padding:12px 25px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(255,255,255,.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);}
+    [data-theme="dark"] .topbar{background:rgba(11,17,32,.92);}
+    .brand{display:flex;align-items:center;gap:12px;min-width:0;}
+    .brand-icon{width:44px;height:44px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:14px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-dark));box-shadow:0 8px 25px rgba(217,26,92,.25);}
+    .brand-text h1{font-size:1rem;font-weight:800;line-height:1.2;}
+    .brand-text span{display:block;color:var(--muted);font-size:.72rem;margin-top:2px;}
+    .theme-btn{width:42px;height:42px;border:1px solid var(--border);border-radius:50%;background:var(--card);color:var(--text);cursor:pointer;transition:.25s;}
+    .theme-btn:hover{color:var(--primary);transform:rotate(15deg);box-shadow:var(--shadow-sm);}
+    .page-header{position:relative;overflow:hidden;padding:75px 20px 85px;text-align:center;background:radial-gradient(circle at 15% 20%,rgba(217,26,92,.18),transparent 35%),radial-gradient(circle at 85% 80%,rgba(212,175,55,.14),transparent 35%),linear-gradient(135deg,var(--dark),#17223a);color:#fff;}
+    .page-header::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:35px 35px;mask-image:linear-gradient(to bottom,black,transparent);}
+    .header-content{position:relative;z-index:2;max-width:900px;margin:auto;}
+    .header-badge{display:inline-flex;align-items:center;gap:8px;padding:7px 17px;border-radius:50px;border:1px solid rgba(212,175,55,.35);background:rgba(212,175,55,.10);color:#f4df88;font-size:.72rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;}
+    .page-header h2{margin:20px 0 12px;font-size:clamp(2.2rem,6vw,4.4rem);line-height:1.05;font-weight:900;letter-spacing:-2px;}
+    .page-header h2 span{background:linear-gradient(135deg,#f5d86b,#fff2a9,#d4af37);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .page-header p{max-width:680px;margin:auto;color:rgba(255,255,255,.72);font-size:1rem;}
+    .stats{max-width:1100px;margin:-35px auto 50px;position:relative;z-index:5;padding:0 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+    .stat-card{padding:23px 18px;text-align:center;background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-md);}
+    .stat-icon{width:45px;height:45px;margin:0 auto 9px;display:flex;align-items:center;justify-content:center;border-radius:14px;background:rgba(217,26,92,.10);color:var(--primary);}
+    .stat-number{font-size:1.7rem;font-weight:900;}
+    .stat-label{margin-top:2px;color:var(--muted);font-size:.7rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;}
+    .section{max-width:1250px;margin:0 auto;padding:35px 20px 75px;}
+    .section-header{margin-bottom:32px;text-align:center;}
+    .section-title{display:flex;align-items:center;justify-content:center;gap:10px;font-size:clamp(1.7rem,4vw,2.5rem);font-weight:900;letter-spacing:-.8px;}
+    .section-title i{color:var(--primary);}
+    .section-subtitle{margin-top:7px;color:var(--muted);font-size:.9rem;}
+    .board-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;}
+    .board-card{position:relative;overflow:hidden;padding:28px 20px 24px;text-align:center;background:linear-gradient(145deg,var(--card),var(--card));border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);transition:transform .35s ease,box-shadow .35s ease,border-color .35s ease;}
+    .board-card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--primary),var(--gold));}
+    .board-card:hover{transform:translateY(-8px);box-shadow:var(--shadow-lg);border-color:rgba(217,26,92,.3);}
+    .avatar-wrap{position:relative;width:112px;height:112px;margin:0 auto 17px;}
+    .board-avatar{width:100%;height:100%;object-fit:cover;border-radius:50%;border:4px solid var(--gold);background:#e2e8f0;box-shadow:0 8px 25px rgba(0,0,0,.12);}
+    .board-badge{position:absolute;right:-2px;bottom:2px;width:31px;height:31px;display:flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;background:var(--primary);border:3px solid var(--card);font-size:.7rem;}
+    .member-name{font-size:1.05rem;font-weight:800;color:var(--text);}
+    .member-position{display:inline-flex;margin-top:7px;padding:5px 13px;border-radius:50px;color:var(--primary);background:rgba(217,26,92,.09);font-size:.72rem;font-weight:800;}
+    .member-meta{margin-top:13px;display:flex;justify-content:center;gap:7px;flex-wrap:wrap;}
+    .meta-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:50px;background:var(--bg);color:var(--muted);font-size:.65rem;font-weight:600;}
+    .members-section{background:var(--bg);border-top:1px solid var(--border);}
+    .member-tools{max-width:900px;margin:0 auto 30px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;}
+    .search-box{position:relative;flex:1;min-width:260px;}
+    .search-box i{position:absolute;left:17px;top:50%;transform:translateY(-50%);color:var(--muted);}
+    .search-box input{width:100%;height:48px;padding:0 18px 0 46px;border:1px solid var(--border);border-radius:50px;outline:none;background:var(--card);color:var(--text);transition:.25s;}
+    .search-box input:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(217,26,92,.08);}
+    .refresh-btn{height:48px;padding:0 19px;border:0;border-radius:50px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;cursor:pointer;font-weight:700;box-shadow:0 8px 25px rgba(217,26,92,.2);transition:.25s;}
+    .refresh-btn:hover{transform:translateY(-2px);}
+    .members-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:18px;}
+    .member-card{padding:21px 17px;text-align:center;background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-sm);transition:.3s;cursor:pointer;}
+    .member-card:hover{transform:translateY(-5px);border-color:rgba(217,26,92,.3);box-shadow:var(--shadow-md);}
+    .member-avatar{width:78px;height:78px;margin:0 auto 12px;border-radius:50%;object-fit:cover;border:3px solid var(--gold);}
+    .member-card .member-name{font-size:.9rem;}
+    .member-card .member-position{margin-top:5px;color:var(--muted);background:var(--bg);font-size:.62rem;}
+    .state{grid-column:1/-1;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);text-align:center;}
+    .state i{font-size:2rem;margin-bottom:12px;color:var(--primary);}
+    .spinner{width:42px;height:42px;border:4px solid rgba(217,26,92,.15);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:15px;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .modal-overlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(3,7,18,.72);backdrop-filter:blur(8px);}
+    .modal-overlay.active{display:flex;}
+    .modal{position:relative;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;padding:32px 25px;background:var(--card);border:1px solid var(--border);border-radius:28px;box-shadow:0 35px 100px rgba(0,0,0,.35);animation:modalIn .35s ease;}
+    @keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.96);}to{opacity:1;transform:translateY(0) scale(1);}}
+    .modal-close{position:absolute;top:15px;right:15px;width:38px;height:38px;border:0;border-radius:50%;background:var(--bg);color:var(--text);cursor:pointer;font-size:1rem;}
+    .modal-profile{text-align:center;}
+    .modal-photo{width:125px;height:125px;object-fit:cover;border-radius:50%;border:4px solid var(--gold);margin-bottom:15px;}
+    .modal-profile h3{font-size:1.45rem;font-weight:900;}
+    .modal-position{display:inline-block;margin-top:6px;padding:6px 15px;border-radius:50px;background:rgba(217,26,92,.10);color:var(--primary);font-size:.72rem;font-weight:800;}
+    .modal-info{margin-top:25px;display:grid;gap:10px;}
+    .info-row{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:13px;background:var(--bg);}
+    .info-row i{width:20px;flex-shrink:0;color:var(--primary);margin-top:3px;}
+    .info-label{color:var(--muted);font-size:.65rem;text-transform:uppercase;font-weight:800;letter-spacing:.4px;}
+    .info-value{color:var(--text);font-size:.82rem;font-weight:600;word-break:break-word;}
+    footer{padding:30px 20px;text-align:center;background:var(--dark);color:rgba(255,255,255,.6);font-size:.75rem;}
+    footer strong{color:var(--gold);}
+    .birthday-banner{margin:-5px 20px 35px;padding:15px 20px;border:1px solid rgba(212,175,55,.55);border-radius:20px;background:linear-gradient(135deg,rgba(255,249,195,.96),rgba(253,224,71,.72));display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;box-shadow:var(--shadow-sm);}
+    .birthday-title{color:#78350f;font-weight:900;display:flex;gap:9px;align-items:center;}
+    .birthday-title i{color:#b45309;font-size:1.2rem;}
+    .birthday-chips{display:flex;gap:8px;flex-wrap:wrap;}
+    .birthday-chip{background:#fff;color:#78350f;border:1px solid #facc15;border-radius:999px;padding:7px 12px;font-size:.78rem;font-weight:800;cursor:pointer;}
+    .birthday-chip:hover{transform:translateY(-1px);}
+    .no-birthday{color:#92400e;font-weight:700;font-size:.8rem;}
+    .member-actions{margin-top:14px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
+    .member-action{border:0;text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;font-size:.7rem;font-weight:900;cursor:pointer;transition:.2s;}
+    .member-action:hover{transform:translateY(-2px);}
+    .call-action{background:#dcfce7;color:#166534;}
+    .email-action{background:#dbeafe;color:#1d4ed8;}
+    .member-metrics{margin-top:13px;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;text-align:left;}
+    .metric-mini{background:var(--bg);border:1px solid var(--border);border-radius:11px;padding:7px 8px;min-width:0;}
+    .metric-mini .metric-value{display:block;font-weight:900;font-size:.82rem;color:var(--text);}
+    .metric-mini .metric-label{display:block;color:var(--muted);font-size:.56rem;line-height:1.2;margin-top:2px;font-weight:700;}
+    .metric-mini.wide{grid-column:1/-1;}
+    .modal-actions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin:18px 0 4px;}
+    .modal-action-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;border-radius:999px;padding:10px 16px;text-decoration:none;font-weight:800;font-size:.8rem;cursor:pointer;}
+    .modal-action-call{background:#dcfce7;color:#166534;}
+    .modal-action-email{background:#dbeafe;color:#1d4ed8;}
+    .modal-action-print{background:#fef3c7;color:#92400e;}
+    .modal-qr-section{display:flex;flex-direction:column;align-items:center;gap:6px;margin:18px 0 4px;padding-top:16px;border-top:1px dashed var(--border);}
+    .modal-qr-box{background:#fff;padding:10px;border:1px solid var(--border);border-radius:14px;line-height:0;}
+    .modal-qr-label{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.55px;font-weight:800;}
+    .metric-panel{margin-top:18px;padding:15px;border-radius:18px;background:var(--bg);border:1px solid var(--border);}
+    .metric-panel-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:900;margin-bottom:10px;}
+    .metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+    .metric-box{padding:10px 7px;border-radius:14px;background:var(--card);border:1px solid var(--border);text-align:center;}
+    .metric-box strong{display:block;font-size:1rem;color:var(--text);}
+    .metric-box span{display:block;margin-top:2px;font-size:.58rem;color:var(--muted);font-weight:700;line-height:1.2;}
+    .last-synced{color:var(--muted);font-size:.68rem;text-align:center;margin-top:8px;}
+    .section-tools{margin:0 0 18px;}
+    .tool-btn{height:48px;padding:0 16px;border:0;border-radius:50px;color:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:800;white-space:nowrap;transition:.25s;box-shadow:0 8px 22px rgba(15,23,42,.12);}
+    .tool-btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(15,23,42,.18);}
+    .tool-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;}
+    .tool-export{background:linear-gradient(135deg,#15803d,#166534);}
+    .recognition-section{background:var(--bg);border-top:1px solid var(--border);}
+    .recognition-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;}
+    .recognition-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:22px;box-shadow:var(--shadow-sm);}
+    .recognition-card-header{display:flex;align-items:center;gap:13px;padding-bottom:15px;margin-bottom:15px;border-bottom:1px solid var(--border);}
+    .recognition-icon{width:48px;height:48px;flex:0 0 48px;display:flex;align-items:center;justify-content:center;border-radius:15px;font-size:1.2rem;}
+    .leader-icon{color:#166534;background:#dcfce7;}
+    .star-icon{color:#166534;background:#dcfce7;}
+    .recognition-card-header h3{font-size:1.15rem;font-weight:900;color:var(--text);}
+    .recognition-card-header p{margin-top:3px;color:var(--muted);font-size:.68rem;font-weight:700;}
+    .recognition-list{display:grid;gap:12px;}
+    .recognition-winner{display:grid;grid-template-columns:34px 58px minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px;border-radius:18px;border:1px solid #86efac;background:linear-gradient(135deg,#f0fdf4,#dcfce7);color:#14532d;}
+    .recognition-rank{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#16a34a;color:#fff;font-size:.78rem;font-weight:900;box-shadow:0 5px 14px rgba(22,163,74,.22);}
+    .recognition-avatar{width:58px;height:58px;border-radius:50%;object-fit:cover;border:3px solid #22c55e;background:#dcfce7;}
+    .recognition-name{font-size:.92rem;font-weight:900;color:#14532d;}
+    .recognition-designation{display:inline-flex;margin-top:4px;padding:4px 9px;border-radius:999px;background:rgba(22,163,74,.10);color:#166534;font-size:.62rem;font-weight:800;}
+    .recognition-metrics{display:flex;justify-content:flex-end;align-items:center;gap:5px;flex-wrap:wrap;}
+    .recognition-metric{display:inline-flex;align-items:center;gap:4px;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.72);color:#166534;font-size:.6rem;font-weight:800;border:1px solid rgba(34,197,94,.20);}
+    .recognition-score{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border-radius:999px;background:#15803d;color:#fff;font-size:.72rem;font-weight:900;white-space:nowrap;}
+    .recognition-no-winner{padding:20px;text-align:center;color:var(--muted);font-size:.8rem;font-weight:700;border:1px dashed var(--border);border-radius:16px;}
+    .recognition-status{display:inline-flex;align-items:center;gap:7px;min-height:48px;padding:0 15px;border:1px solid var(--border);border-radius:50px;background:var(--card);color:var(--muted);font-size:.72rem;font-weight:800;}
+    .recognition-note{display:flex;justify-content:center;flex-wrap:wrap;gap:9px;margin-top:18px;}
+    .recognition-note span{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid var(--border);border-radius:999px;background:var(--card);color:var(--muted);font-size:.6rem;font-weight:700;}
+    .recognition-note i{color:#16a34a;}
+    @media (max-width:850px){.recognition-grid{grid-template-columns:1fr;}.recognition-winner{grid-template-columns:34px 52px minmax(0,1fr);}.recognition-metrics{grid-column:2/-1;justify-content:flex-start;}.recognition-score{margin-left:auto;}}
+    @media (max-width:480px){.recognition-winner{grid-template-columns:30px 48px minmax(0,1fr);gap:8px;}.recognition-avatar{width:48px;height:48px;}.recognition-name{font-size:.8rem;}.recognition-score{grid-column:1/-1;margin-left:0;justify-content:center;}.recognition-metrics{grid-column:1/-1;}}
+    @media (max-width:700px){.stats{grid-template-columns:1fr;margin-top:-25px;}.board-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.members-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.section{padding-left:15px;padding-right:15px;}}
+    @media (max-width:450px){.brand-text span{display:none;}.board-grid,.members-grid{grid-template-columns:1fr;}.member-tools{flex-direction:column;}.search-box{width:100%;}.refresh-btn{width:100%;}}
+    body.data-locked > *:not(#memberVerifyModal){visibility:hidden;}
+    #memberVerifyModal{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(7,12,25,.78);backdrop-filter:blur(12px);}
+    #memberVerifyModal.hidden{display:none;}
+    #updateRequestModal.hidden{display:none;}
+    #updateRequestModal{display:flex;}
+    .verify-card{width:min(440px,100%);padding:32px;border-radius:24px;background:var(--card);color:var(--text);border:1px solid var(--border);box-shadow:var(--shadow-lg);text-align:center;}
+    .verify-icon{width:68px;height:68px;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;border-radius:20px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;font-size:1.7rem;box-shadow:0 12px 30px rgba(217,26,92,.25);}
+    .verify-card h3{font-size:1.35rem;margin-bottom:7px;}
+    .verify-card p{color:var(--muted);font-size:.88rem;margin-bottom:22px;}
+    .verify-field{text-align:left;margin-bottom:14px;}
+    .verify-field label{display:block;margin-bottom:6px;font-size:.78rem;font-weight:700;}
+    .verify-field input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);outline:none;font-size:.9rem;}
+    .verify-field input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(217,26,92,.10);}
+    .verify-btn{width:100%;border:0;border-radius:12px;padding:13px 16px;margin-top:5px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;font-weight:800;cursor:pointer;}
+    .verify-btn:disabled{opacity:.7;cursor:wait;}
+    .verify-error{min-height:20px;margin-top:12px;color:#dc2626;font-size:.78rem;font-weight:600;}
   </style>
 </head>
-
 <body class="data-locked">
-
   <div id="memberVerifyModal">
     <div class="verify-card">
       <div class="verify-icon"><i class="fa-solid fa-shield-halved"></i></div>
@@ -1398,212 +186,91 @@
     </div>
   </div>
 
-
-  <!-- =========================================================
-       TOP BAR
-  ========================================================= -->
-
-  <header class="topbar">
-
-    <div class="brand">
-      <div class="brand-icon">
-        <i class="fa-solid fa-people-group"></i>
-      </div>
-
-      <div class="brand-text">
-        <h1>Rotaract Club of Galkot Baglung</h1>
-        <span>Members Directory</span>
-      </div>
+  <div id="updateRequestModal" class="hidden" style="position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;padding:20px;background:rgba(7,12,25,.78);backdrop-filter:blur(12px);">
+    <div class="verify-card">
+      <div class="verify-icon"><i class="fa-solid fa-pen-to-square"></i></div>
+      <h3>Request Info Update</h3>
+      <p>Tell us what needs to be corrected in your member record. Our admin team will review and update it.</p>
+      <form id="updateRequestForm" autocomplete="off">
+        <div class="verify-field"><label for="updateRequestDetails">What needs updating?</label><textarea id="updateRequestDetails" rows="4" placeholder="e.g. My phone number should be 98X-XXXXXXX" required style="width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--card);color:var(--text);font-family:inherit;resize:vertical;"></textarea></div>
+        <button class="verify-btn" id="updateRequestSubmitBtn" type="submit"><i class="fa-solid fa-paper-plane"></i> Submit Request</button>
+        <button type="button" id="updateRequestCancelBtn" class="verify-btn" style="background:transparent;color:var(--muted);box-shadow:none;margin-top:8px;">Cancel</button>
+        <div class="verify-error" id="updateRequestError" aria-live="polite"></div>
+        <div class="verify-error" id="updateRequestSuccess" aria-live="polite" style="color:#16a34a;"></div>
+      </form>
     </div>
-
-    <button class="theme-btn"
-            id="themeBtn"
-            title="Toggle Dark Mode">
-      <i class="fa-solid fa-moon"></i>
-    </button>
-
-  </header>
-
-
-  <!-- =========================================================
-       HEADER
-  ========================================================= -->
-
-  <section class="page-header">
-
-    <div class="header-content">
-
-      <div class="header-badge">
-        <i class="fa-solid fa-database"></i>
-        Live Database Directory
-      </div>
-
-      <h2>
-        Our <span>Members</span>
-      </h2>
-
-      <p>
-        Board of Directors and active members are loaded directly
-        from the Supabase <strong>members</strong> table.
-      </p>
-
-    </div>
-
-  </section>
-
-
-  <!-- =========================================================
-       STATS
-  ========================================================= -->
-
-  <div class="stats">
-
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="fa-solid fa-users"></i>
-      </div>
-
-      <div class="stat-number" id="totalMembers">
-        0
-      </div>
-
-      <div class="stat-label">
-        Total Active Members
-      </div>
-    </div>
-
-
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="fa-solid fa-crown"></i>
-      </div>
-
-      <div class="stat-number" id="totalBoard">
-        0
-      </div>
-
-      <div class="stat-label">
-        Board of Directors
-      </div>
-    </div>
-
-
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="fa-solid fa-user-group"></i>
-      </div>
-
-      <div class="stat-number" id="totalClubMembers">
-        0
-      </div>
-
-      <div class="stat-label">
-        Active Club Members
-      </div>
-    </div>
-
   </div>
 
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon"><i class="fa-solid fa-people-group"></i></div>
+      <div class="brand-text"><h1>Rotaract Club of Galkot Baglung</h1><span>Members Directory</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="theme-btn" id="logoutBtn" title="Log out" style="display:none;"><i class="fa-solid fa-right-from-bracket"></i></button>
+      <button class="theme-btn" id="themeBtn" title="Toggle Dark Mode"><i class="fa-solid fa-moon"></i></button>
+    </div>
+  </header>
 
+  <section class="page-header">
+    <div class="header-content">
+      <div class="header-badge"><i class="fa-solid fa-database"></i> Live Database Directory</div>
+      <h2>Our <span>Members</span></h2>
+      <p>Board of Directors and active members are loaded directly from the Supabase <strong>members</strong> table.</p>
+    </div>
+  </section>
+
+  <div class="stats">
+    <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-users"></i></div><div class="stat-number" id="totalMembers">0</div><div class="stat-label">Total Active Members</div></div>
+    <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-crown"></i></div><div class="stat-number" id="totalBoard">0</div><div class="stat-label">Board of Directors</div></div>
+    <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-user-group"></i></div><div class="stat-number" id="totalClubMembers">0</div><div class="stat-label">Active Club Members</div></div>
+  </div>
+
+  <section class="section" id="myProfileSection" style="display:none;padding-top:0;">
+    <div style="max-width:900px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);padding:24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+      <img id="myProfilePhoto" src="" alt="" style="width:76px;height:76px;border-radius:50%;object-fit:cover;border:3px solid var(--gold);">
+      <div style="flex:1;min-width:200px;">
+        <div style="font-size:.72rem;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);">Welcome back</div>
+        <div style="font-size:1.3rem;font-weight:900;" id="myProfileName">Member</div>
+        <div style="margin-top:4px;color:var(--muted);font-size:.85rem;" id="myProfileMeta">—</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="refresh-btn" id="saveMyContactBtn" style="height:42px;padding:0 16px;"><i class="fa-solid fa-address-card"></i> Save My Contact</button>
+        <button class="refresh-btn" id="requestUpdateBtn" style="height:42px;padding:0 16px;display:inline-flex;align-items:center;background:linear-gradient(135deg,#334155,#1e293b);"><i class="fa-solid fa-pen-to-square"></i> Request Info Update</button>
+      </div>
+    </div>
+  </section>
 
   <div class="birthday-banner" id="birthdayBanner">
     <div class="birthday-title"><i class="fa-solid fa-cake-candles"></i> Upcoming Birthdays</div>
     <div class="birthday-chips" id="birthdayChips"><span class="no-birthday">Loading birthdays...</span></div>
   </div>
-
-  <div class="mail-note">
-    <div class="last-synced" id="lastSynced">Loading live member data...</div>
-  </div>
-
-  <!-- =========================================================
-       BOARD OF DIRECTORS
-  ========================================================= -->
+  <div class="last-synced" id="lastSynced">Loading live member data...</div>
 
   <section class="section board-section">
-
-    <div class="section-header">
-
-      <div class="section-title">
-        <i class="fa-solid fa-crown"></i>
-        Board of Directors
-      </div>
-
-      <div class="section-subtitle">
-        R.Y. 2026-27 Leadership Team
-      </div>
-
-    </div>
-
+    <div class="section-header"><div class="section-title"><i class="fa-solid fa-crown"></i> Board of Directors</div><div class="section-subtitle">R.Y. 2026-27 Leadership Team</div></div>
     <div class="member-tools section-tools">
-      <button class="tool-btn tool-export" id="exportBoardBtn" type="button" disabled>
-        <i class="fa-solid fa-file-excel"></i> Export Member
-      </button>
+      <button class="tool-btn tool-export" id="exportBoardBtn" type="button" disabled><i class="fa-solid fa-file-excel"></i> Export Member</button>
     </div>
-
-    <div class="board-grid" id="boardGrid">
-
-      <div class="state">
-        <div class="spinner"></div>
-        <div>Loading Board of Directors...</div>
-      </div>
-
-    </div>
-
+    <div class="board-grid" id="boardGrid"><div class="state"><div class="spinner"></div><div>Loading Board of Directors...</div></div></div>
   </section>
 
-
-
-  <!-- =========================================================
-       RECOGNITION
-  ========================================================= -->
   <section class="section recognition-section" id="recognitionSection">
-    <div class="section-header">
-      <div class="section-title">
-        <i class="fa-solid fa-trophy"></i>
-        Member Recognition
-      </div>
-      <div class="section-subtitle">
-        R.Y. 2026-27 · Top 2 Outstanding Club Leaders and Top 2 Rising Stars
-      </div>
-    </div>
-
+    <div class="section-header"><div class="section-title"><i class="fa-solid fa-trophy"></i> Member Recognition</div><div class="section-subtitle">R.Y. 2026-27 · Top 2 Outstanding Club Leaders and Top 2 Rising Stars</div></div>
     <div class="recognition-tools member-tools section-tools">
-      <button class="tool-btn tool-export" id="exportRecognitionExcelBtn" type="button" disabled>
-        <i class="fa-solid fa-file-excel"></i> Export Recognition Excel
-      </button>
-      <span class="recognition-status" id="recognitionStatus">
-        <i class="fa-solid fa-spinner fa-spin"></i> Calculating recognition...
-      </span>
+      <button class="tool-btn tool-export" id="exportRecognitionExcelBtn" type="button" disabled><i class="fa-solid fa-file-excel"></i> Export Recognition Excel</button>
+      <span class="recognition-status" id="recognitionStatus"><i class="fa-solid fa-spinner fa-spin"></i> Calculating recognition...</span>
     </div>
-
     <div class="recognition-grid" id="recognitionGrid">
       <div class="recognition-card">
-        <div class="recognition-card-header">
-          <div class="recognition-icon leader-icon"><i class="fa-solid fa-crown"></i></div>
-          <div>
-            <h3>Outstanding Club Leader</h3>
-            <p>Top 2 eligible Board Members · President excluded</p>
-          </div>
-        </div>
-        <div class="recognition-list" id="leaderRecognitionList">
-          <div class="recognition-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
-        </div>
+        <div class="recognition-card-header"><div class="recognition-icon leader-icon"><i class="fa-solid fa-crown"></i></div><div><h3>Outstanding Club Leader</h3><p>Top 2 eligible Board Members · President excluded</p></div></div>
+        <div class="recognition-list" id="leaderRecognitionList"><div class="recognition-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div></div>
       </div>
-
       <div class="recognition-card">
-        <div class="recognition-card-header">
-          <div class="recognition-icon star-icon"><i class="fa-solid fa-star"></i></div>
-          <div>
-            <h3>Rising Star</h3>
-            <p>Top 2 eligible Club Members · Non-board</p>
-          </div>
-        </div>
-        <div class="recognition-list" id="risingRecognitionList">
-          <div class="recognition-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
-        </div>
+        <div class="recognition-card-header"><div class="recognition-icon star-icon"><i class="fa-solid fa-star"></i></div><div><h3>Rising Star</h3><p>Top 2 eligible Club Members · Non-board</p></div></div>
+        <div class="recognition-list" id="risingRecognitionList"><div class="recognition-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div></div>
       </div>
     </div>
-
     <div class="recognition-note">
       <span><i class="fa-solid fa-user-check"></i> Attendance is calculated from published meeting minutes.</span>
       <span><i class="fa-solid fa-droplet"></i> Blood Entry Bonus: +1 per 10 blood donor entries.</span>
@@ -1613,1011 +280,244 @@
     </div>
   </section>
 
-
-  <!-- =========================================================
-       ACTIVE MEMBERS
-  ========================================================= -->
-
   <section class="section members-section">
-
-    <div class="section-header">
-
-      <div class="section-title">
-        👥 Active Members
-      </div>
-
-      <div class="section-subtitle">
-        Active members from the same Supabase members table
-      </div>
-
-    </div>
-
-
+    <div class="section-header"><div class="section-title">👥 Active Members</div><div class="section-subtitle">Active members from the same Supabase members table</div></div>
     <div class="member-tools section-tools">
-
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="search" id="memberSearch" placeholder="Search name, position, profession, email, phone..." autocomplete="off">
-      </div>
-
-      <button class="refresh-btn" id="refreshBtn" type="button">
-        <i class="fa-solid fa-rotate"></i> Refresh
-      </button>
-
-
+      <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="search" id="memberSearch" placeholder="Search name, position, profession, email, phone..." autocomplete="off"></div>
+      <button class="refresh-btn" id="refreshBtn" type="button"><i class="fa-solid fa-rotate"></i> Refresh</button>
     </div>
-
-
-    <div class="members-grid" id="membersGrid">
-
-      <div class="state">
-        <div class="spinner"></div>
-        <div>Loading Active Members...</div>
-      </div>
-
-    </div>
-
+    <div class="members-grid" id="membersGrid"><div class="state"><div class="spinner"></div><div>Loading Active Members...</div></div></div>
   </section>
 
-
-  <!-- =========================================================
-       MEMBER MODAL
-  ========================================================= -->
-
   <div class="modal-overlay" id="memberModal">
-
     <div class="modal">
-
-      <button
-        class="modal-close"
-        id="modalClose"
-        aria-label="Close">
-
-        <i class="fa-solid fa-xmark"></i>
-
-      </button>
-
-
+      <button class="modal-close" id="modalClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
       <div class="modal-profile">
-
-        <img
-          id="modalPhoto"
-          class="modal-photo"
-          src=""
-          alt="Member">
-
-        <h3 id="modalName">
-          Member
-        </h3>
-
-        <div
-          class="modal-position"
-          id="modalPosition">
-          Club Member
-        </div>
-
+        <img id="modalPhoto" class="modal-photo" src="" alt="Member">
+        <h3 id="modalName">Member</h3>
+        <div class="modal-position" id="modalPosition">Club Member</div>
       </div>
-
-
       <div class="modal-info">
-
-        <div class="info-row">
-
-          <i class="fa-solid fa-envelope"></i>
-
-          <div>
-            <div class="info-label">
-              Email
-            </div>
-
-            <div
-              class="info-value"
-              id="modalEmail">
-              —
-            </div>
-          </div>
-
-        </div>
-
-
-        <div class="info-row">
-
-          <i class="fa-solid fa-phone"></i>
-
-          <div>
-            <div class="info-label">
-              Phone
-            </div>
-
-            <div
-              class="info-value"
-              id="modalPhone">
-              —
-            </div>
-          </div>
-
-        </div>
-
-
-        <div class="info-row">
-
-          <i class="fa-solid fa-venus-mars"></i>
-
-          <div>
-            <div class="info-label">
-              Gender
-            </div>
-
-            <div
-              class="info-value"
-              id="modalGender">
-              —
-            </div>
-          </div>
-
-        </div>
-
-
-        <div class="info-row">
-
-          <i class="fa-solid fa-droplet"></i>
-
-          <div>
-            <div class="info-label">
-              Blood Group
-            </div>
-
-            <div
-              class="info-value"
-              id="modalBlood">
-              —
-            </div>
-          </div>
-
-        </div>
-
-
-        <div class="info-row">
-
-          <i class="fa-solid fa-location-dot"></i>
-
-          <div>
-            <div class="info-label">
-              Address
-            </div>
-
-            <div
-              class="info-value"
-              id="modalAddress">
-              —
-            </div>
-          </div>
-
-        </div>
-
-
-        <div class="info-row">
-
-          <i class="fa-solid fa-briefcase"></i>
-
-          <div>
-            <div class="info-label">
-              Profession
-            </div>
-
-            <div
-              class="info-value"
-              id="modalProfession">
-              —
-            </div>
-          </div>
-
-        </div>
-
-
-        <div class="info-row">
-
-          <i class="fa-solid fa-cake-candles"></i>
-
-          <div>
-            <div class="info-label">
-              Birthday
-            </div>
-
-            <div
-              class="info-value"
-              id="modalBirthday">
-              —
-            </div>
-          </div>
-
-        </div>
-
+        <div class="info-row"><i class="fa-solid fa-envelope"></i><div><div class="info-label">Email</div><div class="info-value" id="modalEmail">—</div></div></div>
+        <div class="info-row"><i class="fa-solid fa-phone"></i><div><div class="info-label">Phone</div><div class="info-value" id="modalPhone">—</div></div></div>
+        <div class="info-row"><i class="fa-solid fa-venus-mars"></i><div><div class="info-label">Gender</div><div class="info-value" id="modalGender">—</div></div></div>
+        <div class="info-row"><i class="fa-solid fa-droplet"></i><div><div class="info-label">Blood Group</div><div class="info-value" id="modalBlood">—</div></div></div>
+        <div class="info-row"><i class="fa-solid fa-location-dot"></i><div><div class="info-label">Address</div><div class="info-value" id="modalAddress">—</div></div></div>
+        <div class="info-row"><i class="fa-solid fa-briefcase"></i><div><div class="info-label">Profession</div><div class="info-value" id="modalProfession">—</div></div></div>
+        <div class="info-row"><i class="fa-solid fa-cake-candles"></i><div><div class="info-label">Birthday</div><div class="info-value" id="modalBirthday">—</div></div></div>
       </div>
-
-      <div class="modal-qr-section">
-        <div class="modal-qr-box" id="modalQrBox"></div>
-        <div class="modal-qr-label">Scan QR to save member contact</div>
-      </div>
-
-      <div class="modal-actions">
-        <a id="modalCallBtn" class="modal-action-btn modal-action-call" href="#"><i class="fa-solid fa-phone"></i> Call Member</a>
-        <a id="modalEmailBtn" class="modal-action-btn modal-action-email" href="#"><i class="fa-solid fa-envelope"></i> Email Member</a>
-      </div>
-
-      <div class="metric-panel">
-        <div class="metric-panel-title"><i class="fa-solid fa-chart-line"></i> Member Performance · R.Y. 2026-27</div>
-        <div class="metric-grid">
-          <div class="metric-box"><strong id="modalAttendance">0%</strong><span>Attendance %</span></div>
-          <div class="metric-box"><strong id="modalCoordinated">0</strong><span>Project Coordinated</span></div>
-          <div class="metric-box"><strong id="modalParticipated">0</strong><span>Project Participated</span></div>
-          <div class="metric-box"><strong id="modalVolunteerHours">0</strong><span>Project Volunteer Hours</span></div>
-        </div>
-      </div>
-
+      <div class="modal-qr-section"><div class="modal-qr-box" id="modalQrBox"></div><div class="modal-qr-label">Scan QR to save member contact</div></div>
+      <div class="modal-actions"><a id="modalCallBtn" class="modal-action-btn modal-action-call" href="#"><i class="fa-solid fa-phone"></i> Call Member</a><a id="modalEmailBtn" class="modal-action-btn modal-action-email" href="#"><i class="fa-solid fa-envelope"></i> Email Member</a></div>
+      <div class="metric-panel"><div class="metric-panel-title"><i class="fa-solid fa-chart-line"></i> Member Performance · R.Y. 2026-27</div><div class="metric-grid"><div class="metric-box"><strong id="modalAttendance">0%</strong><span>Attendance %</span></div><div class="metric-box"><strong id="modalCoordinated">0</strong><span>Project Coordinated</span></div><div class="metric-box"><strong id="modalParticipated">0</strong><span>Project Participated</span></div><div class="metric-box"><strong id="modalVolunteerHours">0</strong><span>Project Volunteer Hours</span></div></div></div>
     </div>
-
   </div>
 
-
-  <!-- =========================================================
-       FOOTER
-  ========================================================= -->
-
-  <footer>
-
-    <strong>Rotaract Club of Galkot Baglung</strong>
-    <br>
-
-    Live members directory powered by Supabase
-
-  </footer>
-
+  <footer><strong>Rotaract Club of Galkot Baglung</strong><br>Live members directory powered by Supabase</footer>
 
   <script>
-"use strict";
+    "use strict";
+    const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const SUPABASE_URL = "https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWZ2cWtmY3hxZ2pqdGZ2dnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDM1MzMsImV4cCI6MjA5NjIxOTUzM30.TQQZJJi27pNcXMlD0m8MsrAbqjLHGgVnw-L3bNDR2bU";
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let allMembers = [], boardMembers = [], activeClubMembers = [], currentFilteredMembers = [];
+    const BOARD_DESIGNATIONS = new Set(["chartered president","president","secretary","treasurer","international service chair","club advisor","ipp","past president/advisor","joint secretary","president elect","health program chair","learning facilitator","vice president","rotaract membership chair","it officer","sergeant at arms","rotary foundation chair","rotaract service projects chair","young leaders contact","service projects chair","membership chair","public image chair"]);
+    function normalizePosition(v){return String(v||"").replace(/\u00a0/g," ").replace(/\s+/g," ").trim().toLowerCase();}
+    function isBoardMember(m){const p=normalizePosition(m.position||m.designation||m.role||""); if(BOARD_DESIGNATIONS.has(p)) return true; return p.includes("vice president")||p.includes("president elect")||p.includes("club advisor")||p.includes("past president")||p.includes("international service chair")||p.includes("service projects chair")||p.includes("membership chair")||p.includes("public image chair");}
+    function getAvatar(name,size=200){return "https://ui-avatars.com/api/?name="+encodeURIComponent(name||"Member")+"&background=D91A5C&color=ffffff&size="+size;}
+    function getPhoto(m,size=200){const photo=String(m.profile_image||"").trim();return photo||getAvatar(m.name,size);}
+    function escapeHTML(v){const d=document.createElement("div");d.textContent=v==null?"":String(v);return d.innerHTML;}
+    function escapeAttr(v){return escapeHTML(v).replace(/"/g,"&quot;");}
+    function displayValue(v){const x=String(v||"").trim();return x||"Not provided";}
+    function formatMetric(v,suffix=""){if(v===null||v===undefined||v==="")return "0"+suffix;const n=Number(v);if(!Number.isFinite(n))return escapeHTML(v);return (Number.isInteger(n)?n:n.toFixed(2).replace(/\.?0+$/,""))+suffix;}
+    function normalizeName(v){return String(v||"").trim().toLowerCase().replace(/^rtr(?:\.\s*|\s+)/i,"").replace(/^dr(?:\.\s*|\s+)/i,"").replace(/\s+/g," ");}
+    function formatBirthday(v){if(!v)return "Not provided";const d=new Date(v);if(Number.isNaN(d.getTime()))return String(v);return d.toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});}
+    function daysUntilBirthday(v){if(!v)return 9999;const d=new Date(v);if(Number.isNaN(d.getTime()))return 9999;const now=new Date();const year=now.getFullYear();let b=new Date(year,d.getMonth(),d.getDate());b.setHours(0,0,0,0);const t=new Date(now);t.setHours(0,0,0,0);if(b<t)b.setFullYear(year+1);return Math.round((b-t)/86400000);}
+    function isBirthdayToday(v){return daysUntilBirthday(v)===0;}
 
-let allMembers = [], boardMembers = [], activeClubMembers = [];
-let currentFilteredMembers = [];
-let birthdayPopupShown = false;
+    async function safeQuery(table,select,configure){try{let q=supabaseClient.from(table).select(select);if(configure)q=configure(q);const{data,error}=await q;if(error)throw error;return data||[];}catch(e){console.warn(`Optional query ${table} failed:`,e.message||e);return[];}}
 
-const BOARD_DESIGNATIONS = new Set([
-  "chartered president","president","secretary","treasurer","international service chair",
-  "club advisor","ipp","past president/advisor","joint secretary","president elect",
-  "health program chair","learning facilitator","vice president","rotaract membership chair",
-  "it officer","sergeant at arms","rotary foundation chair","rotaract service projects chair",
-  "young leaders contact","service projects chair","membership chair","public image chair"
-]);
+    async function loadPerformanceMetrics(members){
+      const ids=new Set(members.map(m=>String(m.id)));const metrics={};members.forEach(m=>metrics[m.id]={attendancePct:0,projectCoordinated:0,projectParticipated:0,projectVolunteerHours:0});
+      const minutes=await safeQuery("meeting_minutes","*");
+      const published=(minutes||[]).filter(m=>String(m.status||"").toLowerCase()==="published");
+      const clubMinutes=published.filter(m=>{const t=String(m.meeting_type||(m.data||{}).meeting_type||"").trim().toLowerCase();return t!=="board meeting"&&t!=="special board meeting";});
+      const allSets=published.map(meeting=>{const list=Array.isArray((meeting.data||{}).members)?meeting.data.members:[];return new Set(list.map(x=>normalizeName(x&&(x.name||x.full_name||x))));});
+      const clubSets=clubMinutes.map(meeting=>{const list=Array.isArray((meeting.data||{}).members)?meeting.data.members:[];return new Set(list.map(x=>normalizeName(x&&(x.name||x.full_name||x))));});
+      members.forEach(m=>{const board=isBoardMember(m);const sets=board?allSets:clubSets;const total=board?published.length:clubMinutes.length;const key=normalizeName(m.name);const attended=sets.filter(set=>set.has(key)).length;metrics[m.id].attendancePct=total?Math.round((attended/total)*1000)/10:0;});
+      const coord=await safeQuery("upcoming_projects","project_coordinator_id,status",q=>q.eq("status","completed"));(coord||[]).forEach(row=>{const id=String(row.project_coordinator_id||"");if(metrics[id])metrics[id].projectCoordinated++;});
+      const parts=await safeQuery("project_participants","member_id,project_id,participant_type",q=>q.eq("participant_type","member"));const projectIds=[...new Set((parts||[]).map(r=>r.project_id).filter(x=>x!=null))];const projectMap={};
+      if(projectIds.length){const projects=await safeQuery("upcoming_projects","id,participants_count,project_volunteer_hours,volunteering_hours",q=>q.in("id",projectIds));(projects||[]).forEach(p=>{const count=Number(p.participants_count)>0?Number(p.participants_count):null;const total=p.project_volunteer_hours!=null?Number(p.project_volunteer_hours):(p.volunteering_hours!=null?Number(p.volunteering_hours):null);projectMap[p.id]=(total!=null&&count)?total/count:0;});}
+      (parts||[]).forEach(r=>{const id=String(r.member_id||"");if(!metrics[id])return;metrics[id].projectParticipated++;metrics[id].projectVolunteerHours+=projectMap[r.project_id]||0;});
+      Object.values(metrics).forEach(x=>x.projectVolunteerHours=Math.round(x.projectVolunteerHours*100)/100);return metrics;
+    }
 
-function normalizePosition(v) {
-  return String(v || "").replace(/\u00a0/g," ").replace(/\s+/g," ").trim().toLowerCase();
-}
-function isBoardMember(m) {
-  const p = normalizePosition(m.position || m.designation || m.role);
-  if (BOARD_DESIGNATIONS.has(p)) return true;
-  return p.includes("vice president") || p.includes("president elect") ||
-         p.includes("club advisor") || p.includes("past president") ||
-         p.includes("international service chair") || p.includes("service projects chair") ||
-         p.includes("membership chair") || p.includes("public image chair");
-}
-function getAvatar(name,size=200) {
-  return "https://ui-avatars.com/api/?name="+encodeURIComponent(name||"Member")+"&background=D91A5C&color=ffffff&size="+size;
-}
-function getPhoto(m,size=200) {
-  const photo = String(m.profile_image || m.photo_url || m.photo || m.profile_image_url || "").trim();
-  return photo || getAvatar(m.name,size);
-}
-function escapeHTML(v) {
-  const d=document.createElement("div"); d.textContent=v==null?"":String(v); return d.innerHTML;
-}
-function escapeAttr(v) { return escapeHTML(v).replace(/"/g,"&quot;"); }
-function displayValue(v) { const x=String(v||"").trim(); return x || "Not provided"; }
-function formatMetric(v,suffix="") {
-  if (v === null || v === undefined || v === "") return "0"+suffix;
-  const n=Number(v); if (!Number.isFinite(n)) return escapeHTML(v);
-  return (Number.isInteger(n)?n:n.toFixed(2).replace(/\.?0+$/,"")) + suffix;
-}
-function normalizeName(v) {
-  return String(v||"").trim().toLowerCase()
-    .replace(/^rtr(?:\.\s*|\s+)/i,"")
-    .replace(/^dr(?:\.\s*|\s+)/i,"")
-    .replace(/\s+/g," ");
-}
-function formatBirthday(v) {
-  if (!v) return "Not provided";
-  const d=new Date(v); if (Number.isNaN(d.getTime())) return String(v);
-  return d.toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
-}
-function daysUntilBirthday(v) {
-  if (!v) return 9999;
-  const d=new Date(v); if (Number.isNaN(d.getTime())) return 9999;
-  const now=new Date(); const year=now.getFullYear();
-  let b=new Date(year,d.getMonth(),d.getDate()); b.setHours(0,0,0,0);
-  const t=new Date(now); t.setHours(0,0,0,0);
-  if (b<t) b.setFullYear(year+1);
-  return Math.round((b-t)/86400000);
-}
-function isBirthdayToday(v) { return daysUntilBirthday(v)===0; }
+    async function loadMembers(){
+      const boardGrid=document.getElementById("boardGrid"),membersGrid=document.getElementById("membersGrid");
+      boardGrid.innerHTML='<div class="state"><div class="spinner"></div><div>Loading Board of Directors...</div></div>';
+      membersGrid.innerHTML='<div class="state"><div class="spinner"></div><div>Loading Active Members...</div></div>';
+      try{
+        const{data,error}=await supabaseClient.from("members").select("id,name,email,phone,gender,blood_group,position,address,profession,birthday,status,profile_image").eq("status","active").order("id",{ascending:true});
+        if(error)throw error;
+        allMembers=Array.isArray(data)?data:[];const metrics=await loadPerformanceMetrics(allMembers);allMembers.forEach(m=>Object.assign(m,metrics[m.id]||{}));
+        boardMembers=allMembers.filter(isBoardMember);activeClubMembers=allMembers.filter(m=>!isBoardMember(m));currentFilteredMembers=activeClubMembers.slice();
+        renderBoard();renderActiveMembers(activeClubMembers);updateStats();updateBirthdays();
+        document.getElementById("lastSynced").textContent="Last synced: "+new Date().toLocaleString();
+        document.getElementById("exportBoardBtn").disabled=allMembers.length===0;
+        maybeShowBirthdayPopup();
+      }catch(error){
+        console.error("Members loading error:",error);
+        boardGrid.innerHTML=`<div class="state"><i class="fa-solid fa-triangle-exclamation"></i><div>Failed to load Board of Directors.</div><small>${escapeHTML(error.message||"Unknown error")}</small></div>`;
+        membersGrid.innerHTML=`<div class="state"><i class="fa-solid fa-triangle-exclamation"></i><div>Failed to load Active Members.</div><small>${escapeHTML(error.message||"Unknown error")}</small></div>`;
+      }
+    }
 
-async function safeQuery(table, select, configure) {
-  try {
-    let q=supabaseClient.from(table).select(select);
-    if (configure) q=configure(q);
-    const {data,error}=await q;
-    if (error) throw error;
-    return data||[];
-  } catch(e) {
-    console.warn(`Optional query ${table} failed:`,e.message||e);
-    return [];
-  }
-}
+    function updateStats(){document.getElementById("totalMembers").textContent=allMembers.length;document.getElementById("totalBoard").textContent=boardMembers.length;document.getElementById("totalClubMembers").textContent=activeClubMembers.length;}
+    function metricBlock(m){return `<div class="member-metrics"><div class="metric-mini"><span class="metric-value">${formatMetric(m.attendancePct,"%")}</span><span class="metric-label">Attendance</span></div><div class="metric-mini"><span class="metric-value">${formatMetric(m.projectCoordinated)}</span><span class="metric-label">Projects Coordinated</span></div><div class="metric-mini"><span class="metric-value">${formatMetric(m.projectParticipated)}</span><span class="metric-label">Projects Participated</span></div><div class="metric-mini"><span class="metric-value">${formatMetric(m.projectVolunteerHours," hrs")}</span><span class="metric-label">Volunteer Hours</span></div></div>`;}
+    function actionBlock(m){return `<div class="member-actions">${m.phone?`<a class="member-action call-action" href="tel:${escapeAttr(m.phone)}" onclick="event.stopPropagation()"><i class="fa-solid fa-phone"></i> Call</a>`:""}${m.email?`<a class="member-action email-action" href="mailto:${escapeAttr(m.email)}" onclick="event.stopPropagation()"><i class="fa-solid fa-envelope"></i> Email</a>`:""}</div>`;}
+    function renderBoard(){const c=document.getElementById("boardGrid");if(!boardMembers.length){c.innerHTML='<div class="state"><i class="fa-solid fa-users-slash"></i><div>No active board members found.</div></div>';return;}c.innerHTML=boardMembers.map(m=>{const name=escapeHTML(displayValue(m.name)),pos=escapeHTML(displayValue(m.position)),photo=escapeAttr(getPhoto(m,220));return `<article class="board-card" data-member-id="${escapeAttr(m.id)}" tabindex="0"><div class="avatar-wrap"><img class="board-avatar" src="${photo}" alt="${name}" loading="lazy" onerror="this.onerror=null;this.src='${getAvatar(m.name,220)}'"><div class="board-badge"><i class="fa-solid fa-star"></i></div></div><div class="member-name">${name}</div><div class="member-position">${pos}</div><div class="member-meta">${m.profession?`<span class="meta-pill"><i class="fa-solid fa-briefcase"></i>${escapeHTML(m.profession)}</span>`:""}${m.blood_group?`<span class="meta-pill"><i class="fa-solid fa-droplet"></i>${escapeHTML(m.blood_group)}</span>`:""}</div>${metricBlock(m)}${actionBlock(m)}</article>`;}).join("");attachCardEvents(c,boardMembers);}
+    function renderActiveMembers(members){const c=document.getElementById("membersGrid");if(!members.length){c.innerHTML='<div class="state"><i class="fa-solid fa-user-slash"></i><div>No active club members found.</div></div>';return;}c.innerHTML=members.map(m=>{const name=escapeHTML(displayValue(m.name)),pos=escapeHTML(displayValue(m.position)),photo=escapeAttr(getPhoto(m,180));return `<article class="member-card" data-member-id="${escapeAttr(m.id)}" tabindex="0"><img class="member-avatar" src="${photo}" alt="${name}" loading="lazy" onerror="this.onerror=null;this.src='${getAvatar(m.name,180)}'"><div class="member-name">${name}</div><div class="member-position">${pos}</div><div class="member-meta">${m.profession?`<span class="meta-pill"><i class="fa-solid fa-briefcase"></i>${escapeHTML(m.profession)}</span>`:""}</div>${metricBlock(m)}${actionBlock(m)}</article>`;}).join("");attachCardEvents(c,members);}
+    function attachCardEvents(container,list){container.querySelectorAll("[data-member-id]").forEach(card=>{const open=()=>{const m=list.find(x=>String(x.id)===String(card.dataset.memberId));if(m)openMemberModal(m);};card.addEventListener("click",open);card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open();}});});}
 
-async function loadPerformanceMetrics(members) {
-  const ids=new Set(members.map(m=>String(m.id)));
-  const metrics={};
-  members.forEach(m=>metrics[m.id]={attendancePct:0,projectCoordinated:0,projectParticipated:0,projectVolunteerHours:0});
+    function buildVCard(m){const name=String(m.name||"Member").replace(/^RTR\.\s*/i,"");const lines=["BEGIN:VCARD","VERSION:3.0",`FN:${name}`];if(m.position)lines.push(`TITLE:${m.position}`);if(m.email)lines.push(`EMAIL:${m.email}`);if(m.phone)lines.push(`TEL:${m.phone}`);lines.push("ORG:Rotaract Club of Galkot Baglung");lines.push("END:VCARD");return lines.join("\n");}
+    function renderMemberQR(m){const box=document.getElementById("modalQrBox");if(!box)return;box.innerHTML="";if(typeof QRCode==="undefined"){box.innerHTML='<span style="font-size:.7rem;color:#64748b">QR unavailable</span>';return;}new QRCode(box,{text:buildVCard(m),width:140,height:140,colorDark:"#0f172a",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});}
+    function openMemberModal(m){document.getElementById("modalPhoto").src=getPhoto(m,250);document.getElementById("modalPhoto").alt=displayValue(m.name);document.getElementById("modalName").textContent=displayValue(m.name);document.getElementById("modalPosition").textContent=displayValue(m.position);document.getElementById("modalEmail").textContent=displayValue(m.email);document.getElementById("modalPhone").textContent=displayValue(m.phone);document.getElementById("modalGender").textContent=displayValue(m.gender);document.getElementById("modalBlood").textContent=displayValue(m.blood_group);document.getElementById("modalAddress").textContent=displayValue(m.address);document.getElementById("modalProfession").textContent=displayValue(m.profession);document.getElementById("modalBirthday").textContent=formatBirthday(m.birthday);document.getElementById("modalAttendance").textContent=formatMetric(m.attendancePct,"%");document.getElementById("modalCoordinated").textContent=formatMetric(m.projectCoordinated);document.getElementById("modalParticipated").textContent=formatMetric(m.projectParticipated);document.getElementById("modalVolunteerHours").textContent=formatMetric(m.projectVolunteerHours);renderMemberQR(m);const call=document.getElementById("modalCallBtn"),email=document.getElementById("modalEmailBtn");call.href=m.phone?"tel:"+m.phone:"#";call.style.display=m.phone?"inline-flex":"none";email.href=m.email?"mailto:"+m.email:"#";email.style.display=m.email?"inline-flex":"none";document.getElementById("memberModal").classList.add("active");document.body.style.overflow="hidden";}
+    function closeModal(){document.getElementById("memberModal").classList.remove("active");document.body.style.overflow="";}
+    document.getElementById("modalClose").addEventListener("click",closeModal);
+    document.getElementById("memberModal").addEventListener("click",e=>{if(e.target.id==="memberModal")closeModal();});
+    document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
 
-  // Meeting attendance — same scope/logic used by recognition.html.
-  const minutes=await safeQuery("meeting_minutes","*");
-  const published=(minutes||[]).filter(m=>String(m.status||"").toLowerCase()==="published");
-  const clubMinutes=published.filter(m=>{
-    const t=String(m.meeting_type || (m.data||{}).meeting_type || "").trim().toLowerCase();
-    return t!=="board meeting" && t!=="special board meeting";
-  });
-  const allSets=published.map(meeting=>{
-    const list=Array.isArray((meeting.data||{}).members)?meeting.data.members:[];
-    return new Set(list.map(x=>normalizeName(x && (x.name||x.full_name||x))));
-  });
-  const clubSets=clubMinutes.map(meeting=>{
-    const list=Array.isArray((meeting.data||{}).members)?meeting.data.members:[];
-    return new Set(list.map(x=>normalizeName(x && (x.name||x.full_name||x))));
-  });
-  members.forEach(m=>{
-    const board=isBoardMember(m);
-    const sets=board?allSets:clubSets;
-    const total=board?published.length:clubMinutes.length;
-    const key=normalizeName(m.name);
-    const attended=sets.filter(set=>set.has(key)).length;
-    metrics[m.id].attendancePct=total?Math.round((attended/total)*1000)/10:0;
-  });
+    function updateBirthdays(){const chips=document.getElementById("birthdayChips");const upcoming=allMembers.filter(m=>m.birthday).sort((a,b)=>daysUntilBirthday(a.birthday)-daysUntilBirthday(b.birthday)).filter(m=>daysUntilBirthday(m.birthday)<=30);if(!upcoming.length){chips.innerHTML='<span class="no-birthday">No birthdays in the next 30 days.</span>';return;}chips.innerHTML=upcoming.map(m=>{const d=daysUntilBirthday(m.birthday);const text=d===0?"Today 🎉":(d===1?"Tomorrow":"In "+d+" days");return `<button class="birthday-chip" data-birthday-id="${escapeAttr(m.id)}"><i class="fa-solid fa-cake-candles"></i> ${escapeHTML(m.name)} · ${text}</button>`;}).join("");chips.querySelectorAll("[data-birthday-id]").forEach(b=>b.addEventListener("click",()=>{const m=allMembers.find(x=>String(x.id)===String(b.dataset.birthdayId));if(m)openMemberModal(m);}));}
+    function maybeShowBirthdayPopup(){if(birthdayPopupShown)return;const today=allMembers.find(m=>isBirthdayToday(m.birthday));if(!today)return;birthdayPopupShown=true;setTimeout(()=>alert(`🎉 Happy Birthday, ${today.name}! 🎂\n\nWishing you a wonderful day from Rotaract Club of Galkot Baglung!`),500);}
+    let birthdayPopupShown=false;
 
-  // Completed coordinated projects — same source as recognition.html.
-  const coord=await safeQuery("upcoming_projects","project_coordinator_id,status",q=>q.eq("status","completed"));
-  (coord||[]).forEach(row=>{
-    const id=String(row.project_coordinator_id||"");
-    if (metrics[id]) metrics[id].projectCoordinated++;
-  });
+    function filterMembers(){const q=document.getElementById("memberSearch").value.trim().toLowerCase();currentFilteredMembers=activeClubMembers.filter(m=>[m.name,m.position,m.profession,m.address,m.gender,m.blood_group,m.email,m.phone].filter(Boolean).join(" ").toLowerCase().includes(q));renderActiveMembers(currentFilteredMembers);}
+    document.getElementById("memberSearch").addEventListener("input",filterMembers);
+    document.getElementById("refreshBtn").addEventListener("click",async()=>{const b=document.getElementById("refreshBtn");b.disabled=true;b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Loading...';await loadMembers();b.disabled=false;b.innerHTML='<i class="fa-solid fa-rotate"></i> Refresh';});
+    function exportMembersExcel(list,filename,sheetName="Members"){if(!list.length){alert("No members found to export.");return;}if(typeof XLSX==="undefined"){alert("Excel export library failed to load.");return;}const rows=list.map(m=>({"Name":m.name||"","Email":m.email||"","Phone":m.phone||"","Gender":m.gender||"","Blood Group":m.blood_group||"","Position":m.position||"","Profession":m.profession||"","Address":m.address||"","Birthday":m.birthday||""}));const ws=XLSX.utils.json_to_sheet(rows);ws["!cols"]=[{wch:28},{wch:32},{wch:18},{wch:12},{wch:14},{wch:26},{wch:24},{wch:32},{wch:16}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,sheetName);XLSX.writeFile(wb,filename);}
+    document.getElementById("exportBoardBtn").addEventListener("click",()=>exportMembersExcel(allMembers,"Rotaract_Galkot_Baglung_All_Members.xlsx","Members"));
 
-  // Project participation + per-person volunteer hours — same source/calculation.
-  const parts=await safeQuery("project_participants","member_id,project_id,participant_type",q=>q.eq("participant_type","member"));
-  const projectIds=[...new Set((parts||[]).map(r=>r.project_id).filter(x=>x!=null))];
-  const projectMap={};
-  if(projectIds.length){
-    const projects=await safeQuery("upcoming_projects","id,participants_count,project_volunteer_hours,volunteering_hours",q=>q.in("id",projectIds));
-    (projects||[]).forEach(p=>{
-      const count=Number(p.participants_count)>0?Number(p.participants_count):null;
-      const total=p.project_volunteer_hours!=null?Number(p.project_volunteer_hours):
-                  (p.volunteering_hours!=null?Number(p.volunteering_hours):null);
-      projectMap[p.id]=(total!=null && count)?total/count:0;
-    });
-  }
-  (parts||[]).forEach(r=>{
-    const id=String(r.member_id||"");
-    if(!metrics[id]) return;
-    metrics[id].projectParticipated++;
-    metrics[id].projectVolunteerHours += projectMap[r.project_id]||0;
-  });
-  Object.values(metrics).forEach(x=>x.projectVolunteerHours=Math.round(x.projectVolunteerHours*100)/100);
-  return metrics;
-}
+    // Recognition
+    let recognitionAwardMap=new Map();
+    const RECOGNITION_BOARD_DESIGNATIONS=['President','President Elect','Secretary','Joint Secretary','Treasurer','Vice President','IPP','Membership Chair','Public Image Chair','Service Projects Chair','Health Program Chair','Rotary Foundation Chair','Sergeant At Arms','IT Officer','Young Leaders Contact','Learning Facilitator','Club Advisor','International Service Chair','Chartered President'];
+    function recognitionNormalizeKey(str){return String(str||'').trim().toLowerCase().replace(/^rtr(?:\.\s*|\s+)/i,'').replace(/^dr(?:\.\s*|\s+)/i,'').replace(/\s+/g,' ');}
+    function recognitionNormalizeDesignationText(str){return String(str||'').toLowerCase().replace(/\brotaract\b/g,' ').replace(/\brotary\b/g,' ').replace(/\bpp\b/g,' ').replace(/\//g,' ').replace(/\s+/g,' ').trim();}
+    const RECOGNITION_NORMALIZED_BOARD=RECOGNITION_BOARD_DESIGNATIONS.map(recognitionNormalizeDesignationText);
+    function classifyRecognitionMember(m){const raw=String(m.position||'').trim();const normalized=recognitionNormalizeDesignationText(raw);const idx=RECOGNITION_NORMALIZED_BOARD.indexOf(normalized);const isBoard=idx!==-1;const designation=isBoard?RECOGNITION_BOARD_DESIGNATIONS[idx]:(raw||'Club Member');return{designation,isBoard,isPresident:isBoard&&designation==='President'};}
+    function recognitionGetPhoto(m,size=180){const photo=String(m.profile_image||"").trim();return photo||("https://ui-avatars.com/api/?name="+encodeURIComponent(m.name||"Member")+"&background=D91A5C&color=ffffff&size="+size);}
+    function recognitionFullName(name){const raw=String(name||'').trim();if(!raw)return 'RTR. Member';const stripped=raw.replace(/^rtr(?:\.\s*|\s+)/i,'').trim();return 'RTR. '+stripped;}
+    function renderRecognitionWinner(m,rank){const photo=recognitionGetPhoto(m,180);const name=recognitionFullName(m.fullName);const designation=m.designation||'Club Member';return `<article class="recognition-winner"><div class="recognition-rank">${rank}</div><img class="recognition-avatar" src="${photo}" alt="${name}" loading="lazy" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=Member&background=D91A5C&color=ffffff&size=180'"><div><div class="recognition-name">${name}</div><div class="recognition-designation">${designation}</div><div class="recognition-metrics"><span class="recognition-metric"><i class="fa-solid fa-user-check"></i>${Number(m.attendancePct).toFixed(1)}% attendance</span><span class="recognition-metric"><i class="fa-solid fa-droplet"></i>+${m.bloodBonus} blood</span><span class="recognition-metric"><i class="fa-solid fa-clipboard-check"></i>+${m.coordinatorPoints} coordinator</span><span class="recognition-metric"><i class="fa-solid fa-people-group"></i>+${m.projectParticipationPoints} participation</span></div></div><div class="recognition-score"><i class="fa-solid fa-star"></i>${Number(m.finalScore).toFixed(1)}</div></article>`;}
+    function renderRecognitionList(containerId,winners){const container=document.getElementById(containerId);if(!container)return;if(!winners.length){container.innerHTML='<div class="recognition-no-winner"><i class="fa-solid fa-circle-info"></i> No eligible winner found.</div>';return;}container.innerHTML=winners.map((m,i)=>renderRecognitionWinner(m,i+1)).join("");}
+    async function loadRecognition(){const status=document.getElementById("recognitionStatus");const excelBtn=document.getElementById("exportRecognitionExcelBtn");try{if(!allMembers.length)throw new Error("No active members found.");const[minutes,bloodRows,coordProjects,participantRows]=await Promise.all([safeQuery("meeting_minutes","*"),safeQuery("blood_bridge_galkot","data_entry_by"),safeQuery("upcoming_projects","project_coordinator_id,status",q=>q.eq("status","completed")),safeQuery("project_participants","member_id,project_id,participant_type",q=>q.eq("participant_type","member"))]);const publishedMinutes=minutes.filter(m=>String(m.status||"").toLowerCase()==="published");const clubMemberMinutes=publishedMinutes.filter(m=>{const t=String(m.meeting_type||(m.data||{}).meeting_type||"").trim().toLowerCase();return t!=="board meeting"&&t!=="special board meeting";});const presentSetsAll=publishedMinutes.map(meeting=>{const list=Array.isArray((meeting.data||{}).members)?meeting.data.members:[];return new Set(list.map(p=>recognitionNormalizeKey(p&&(p.name||p.full_name||p))));});const presentSetsClub=clubMemberMinutes.map(meeting=>{const list=Array.isArray((meeting.data||{}).members)?meeting.data.members:[];return new Set(list.map(p=>recognitionNormalizeKey(p&&(p.name||p.full_name||p))));});const bloodEntryCountMap={};bloodRows.forEach(row=>{if(!row.data_entry_by)return;const key=recognitionNormalizeKey(row.data_entry_by);bloodEntryCountMap[key]=(bloodEntryCountMap[key]||0)+1;});const coordinatorPointsMap={};coordProjects.forEach(row=>{if(!row.project_coordinator_id)return;const id=String(row.project_coordinator_id);coordinatorPointsMap[id]=(coordinatorPointsMap[id]||0)+1;});const projectIds=[...new Set(participantRows.map(r=>r.project_id).filter(id=>id!=null))];let projectHoursById={};if(projectIds.length){const projects=await safeQuery("upcoming_projects","id,participants_count,project_volunteer_hours,volunteering_hours",q=>q.in("id",projectIds));projects.forEach(p=>{const count=Number(p.participants_count)>0?Number(p.participants_count):null;const total=p.project_volunteer_hours!=null?Number(p.project_volunteer_hours):(p.volunteering_hours!=null?Number(p.volunteering_hours):null);projectHoursById[p.id]=(total!=null&&count)?total/count:0;});}const projectParticipationCountMap={};const projectVolunteerHoursMap={};participantRows.forEach(row=>{const id=String(row.member_id||"");if(!id)return;projectParticipationCountMap[id]=(projectParticipationCountMap[id]||0)+1;projectVolunteerHoursMap[id]=(projectVolunteerHoursMap[id]||0)+(projectHoursById[row.project_id]||0);});const recognitionScores=allMembers.map(m=>{const classification=classifyRecognitionMember(m);const presentSets=classification.isBoard?presentSetsAll:presentSetsClub;const totalMeetings=classification.isBoard?publishedMinutes.length:clubMemberMinutes.length;const key=recognitionNormalizeKey(m.name||m.full_name);const attended=presentSets.filter(s=>s.has(key)).length;const attendancePct=totalMeetings?Math.round((attended/totalMeetings)*1000)/10:0;const bloodEntryCount=bloodEntryCountMap[key]||0;const bloodBonus=Math.floor(bloodEntryCount/10);const coordinatorPoints=coordinatorPointsMap[String(m.id)]||0;const projectParticipationCount=projectParticipationCountMap[String(m.id)]||0;const projectParticipationPoints=projectParticipationCount;const bonus=bloodBonus+coordinatorPoints+projectParticipationPoints;const finalScore=attendancePct+bonus;return{id:m.id,fullName:m.name||"Unknown Member",designation:classification.designation,isBoard:classification.isBoard,isPresident:classification.isPresident,attendancePct,attended,totalMeetings,bloodEntryCount,bloodBonus,coordinatorPoints,projectParticipationCount,projectParticipationPoints,projectVolunteerHours:Math.round((projectVolunteerHoursMap[String(m.id)]||0)*100)/100,bonus,finalScore,memberStatus:String(m.status||"").trim()};});const leaders=recognitionScores.filter(m=>m.isBoard===true&&!m.isPresident).sort((a,b)=>b.finalScore-a.finalScore);const rising=recognitionScores.filter(m=>m.isBoard===false).sort((a,b)=>b.finalScore-a.finalScore);const recognitionLeaderWinners=leaders.slice(0,2);const recognitionRisingWinners=rising.slice(0,2);recognitionAwardMap=new Map();recognitionLeaderWinners.forEach(m=>recognitionAwardMap.set(String(m.id),"Outstanding Club Leader"));recognitionRisingWinners.forEach(m=>recognitionAwardMap.set(String(m.id),"Rising Star"));renderRecognitionList("leaderRecognitionList",recognitionLeaderWinners);renderRecognitionList("risingRecognitionList",recognitionRisingWinners);if(status){status.innerHTML=`<i class="fa-solid fa-circle-check"></i> Recognition updated · ${publishedMinutes.length} published meeting(s)`;}if(excelBtn)excelBtn.disabled=false;}catch(e){console.error("Recognition load error:",e);renderRecognitionList("leaderRecognitionList",[]);renderRecognitionList("risingRecognitionList",[]);if(status)status.innerHTML=`<i class="fa-solid fa-triangle-exclamation"></i> Recognition unavailable`;}}
+    document.getElementById("exportRecognitionExcelBtn").addEventListener("click",()=>{if(typeof XLSX==="undefined"){alert("Excel export library failed to load.");return;}if(!allMembers.length){alert("No recognition data.");return;}const recognitionScores=allMembers.map(m=>{const classification=classifyRecognitionMember(m);const key=recognitionNormalizeKey(m.name||m.full_name);const attendancePct=m.attendancePct||0;const bloodEntryCount=0;const bloodBonus=0;const coordinatorPoints=m.projectCoordinated||0;const projectParticipationPoints=m.projectParticipated||0;const bonus=bloodBonus+coordinatorPoints+projectParticipationPoints;const finalScore=attendancePct+bonus;return{fullName:m.name||"Unknown",designation:classification.designation,isBoard:classification.isBoard,isPresident:classification.isPresident,attendancePct,attended:0,totalMeetings:0,bloodEntryCount,bloodBonus,coordinatorPoints,projectParticipationPoints,projectVolunteerHours:m.projectVolunteerHours||0,bonus,finalScore,memberStatus:String(m.status||"").trim()};});const rows=recognitionScores.filter(m=>m.memberStatus.toLowerCase()==="active").map(m=>({"Name":recognitionFullName(m.fullName),"Category":m.isPresident?"President (excluded)":(m.isBoard?"Board Roster":"Club Member"),"Designation":m.designation,"Meetings Counted":m.totalMeetings,"Meetings Attended":m.attended,"Attendance %":m.attendancePct,"Blood Donor Entries":m.bloodEntryCount,"Blood Entry Bonus":m.bloodBonus,"Completed Project Coordinator Points":m.coordinatorPoints,"Project Participation Count":m.projectParticipationPoints,"Project Participation Points":m.projectParticipationPoints,"Project Volunteer Hours":m.projectVolunteerHours,"Total Bonus":m.bonus,"Final Score":Number(m.finalScore.toFixed(1)),"Award":recognitionAwardMap.get(String(m.id))||""}));if(!rows.length){alert("No active recognition data found.");return;}const ws=XLSX.utils.json_to_sheet(rows);ws["!cols"]=[{wch:26},{wch:20},{wch:24},{wch:16},{wch:16},{wch:13},{wch:18},{wch:16},{wch:26},{wch:22},{wch:22},{wch:20},{wch:13},{wch:12},{wch:24}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Recognition");XLSX.writeFile(wb,`Recognition_Galkot_Baglung_${new Date().toISOString().slice(0,10)}.xlsx`);});
 
-async function loadMembers() {
-  const boardGrid=document.getElementById("boardGrid");
-  const membersGrid=document.getElementById("membersGrid");
-  boardGrid.innerHTML='<div class="state"><div class="spinner"></div><div>Loading Board of Directors...</div></div>';
-  membersGrid.innerHTML='<div class="state"><div class="spinner"></div><div>Loading Active Members...</div></div>';
+    // Dark mode
+    const themeBtn=document.getElementById("themeBtn");
+    function setTheme(theme){document.documentElement.setAttribute("data-theme",theme);localStorage.setItem("members-theme",theme);themeBtn.innerHTML=theme==="dark"?'<i class="fa-solid fa-sun"></i>':'<i class="fa-solid fa-moon"></i>';}
+    setTheme(localStorage.getItem("members-theme")||"light");
+    themeBtn.addEventListener("click",()=>setTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark"));
 
-  try {
-    const {data,error}=await supabaseClient.from("members")
-      .select("id,name,email,phone,gender,blood_group,position,address,profession,birthday,status,profile_image,photo_url,photo,full_name,designation,role")
-      .eq("status","active").order("id",{ascending:true});
-    if(error) throw error;
-    allMembers=Array.isArray(data)?data:[];
-    const metrics=await loadPerformanceMetrics(allMembers);
-    allMembers.forEach(m=>Object.assign(m,metrics[m.id]||{}));
+    // Verification
+    // Session + lockout config
+    const SESSION_KEY='membersDirectoryVerified';
+    const SESSION_MEMBER_KEY='membersDirectoryMemberId';
+    const SESSION_TS_KEY='membersDirectoryVerifiedAt';
+    const SESSION_TTL_MS=24*60*60*1000; // 24 hours
+    const ATTEMPT_KEY='membersDirectoryAttempts';
+    const ATTEMPT_WINDOW_MS=10*60*1000; // 10 minutes
+    const ATTEMPT_MAX=5;
 
-    boardMembers=allMembers.filter(isBoardMember);
-    activeClubMembers=allMembers.filter(m=>!isBoardMember(m));
-    currentFilteredMembers=activeClubMembers.slice();
+    function getAttempts(){try{const raw=JSON.parse(sessionStorage.getItem(ATTEMPT_KEY)||'[]');const cutoff=Date.now()-ATTEMPT_WINDOW_MS;return raw.filter(t=>t>cutoff);}catch(e){return [];}}
+    function recordAttempt(){const list=getAttempts();list.push(Date.now());sessionStorage.setItem(ATTEMPT_KEY,JSON.stringify(list));}
+    function isLockedOut(){return getAttempts().length>=ATTEMPT_MAX;}
+    function lockoutMessage(){const list=getAttempts();const oldest=Math.min(...list);const waitMs=ATTEMPT_WINDOW_MS-(Date.now()-oldest);const mins=Math.max(1,Math.ceil(waitMs/60000));return `Too many attempts. Please try again in ${mins} minute(s).`;}
 
-    renderBoard();
-    renderActiveMembers(activeClubMembers);
-    updateStats();
-    updateBirthdays();
+    function hasValidSession(){if(sessionStorage.getItem(SESSION_KEY)!=='1')return false;const ts=Number(sessionStorage.getItem(SESSION_TS_KEY)||0);if(!ts||(Date.now()-ts)>SESSION_TTL_MS){clearSession();return false;}return true;}
+    function clearSession(){sessionStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_MEMBER_KEY);sessionStorage.removeItem(SESSION_TS_KEY);}
 
-    const now=new Date();
-    document.getElementById("lastSynced").textContent="Last synced: "+now.toLocaleString();
-    document.getElementById("exportBoardBtn").disabled=allMembers.length===0;
+    async function verifyMemberAccess(email,dob){const normalizedEmail=String(email||'').trim().toLowerCase();const submittedDob=String(dob||'').trim();if(!normalizedEmail||!submittedDob)throw new Error('Please enter both email and date of birth.');const{data:adminRows,error:adminError}=await supabaseClient.from('blood_bridge_admins').select('id,email,role,status').ilike('email',normalizedEmail).eq('status','active').limit(1);if(adminError)throw adminError;if(!adminRows||!adminRows.length)throw new Error('This email is not authorized for member access.');const{data:memberRows,error:memberError}=await supabaseClient.from('members').select('id,email,birthday,status').ilike('email',normalizedEmail).eq('status','active').limit(20);if(memberError)throw memberError;const matchedMember=(memberRows||[]).find(m=>String(m.birthday||'').slice(0,10)===submittedDob);if(!matchedMember)throw new Error('Email and date of birth do not match our records.');return{verified:true,email:normalizedEmail,memberId:matchedMember.id};}
 
-    maybeShowBirthdayPopup();
-  } catch(error) {
-    console.error("Members loading error:",error);
-    boardGrid.innerHTML=`<div class="state"><i class="fa-solid fa-triangle-exclamation"></i><div>Failed to load Board of Directors.</div><small>${escapeHTML(error.message||"Unknown error")}</small></div>`;
-    membersGrid.innerHTML=`<div class="state"><i class="fa-solid fa-triangle-exclamation"></i><div>Failed to load Active Members.</div><small>${escapeHTML(error.message||"Unknown error")}</small></div>`;
-  }
-}
+    function showMyProfile(memberId){const section=document.getElementById('myProfileSection');const logoutBtn=document.getElementById('logoutBtn');if(!memberId){section.style.display='none';logoutBtn.style.display='none';currentMember=null;return;}const m=allMembers.find(x=>String(x.id)===String(memberId));logoutBtn.style.display='inline-flex';if(!m){section.style.display='none';currentMember=null;return;}currentMember=m;section.style.display='block';document.getElementById('myProfilePhoto').src=getPhoto(m,150);document.getElementById('myProfilePhoto').alt=displayValue(m.name);document.getElementById('myProfileName').textContent=displayValue(m.name);document.getElementById('myProfileMeta').textContent=[m.position,m.blood_group?`Blood: ${m.blood_group}`:null].filter(Boolean).join(' · ')||'Club Member';document.getElementById('saveMyContactBtn').onclick=()=>{const vcard=buildVCard(m);const blob=new Blob([vcard],{type:'text/vcard'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(m.name||'member').replace(/\s+/g,'_')+'.vcf';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);};}
+    let currentMember=null;
 
-function updateStats() {
-  document.getElementById("totalMembers").textContent=allMembers.length;
-  document.getElementById("totalBoard").textContent=boardMembers.length;
-  document.getElementById("totalClubMembers").textContent=activeClubMembers.length;
-}
-function metricBlock(m) {
-  return `
-    <div class="member-metrics">
-      <div class="metric-mini"><span class="metric-value">${formatMetric(m.attendancePct,"%")}</span><span class="metric-label">Attendance</span></div>
-      <div class="metric-mini"><span class="metric-value">${formatMetric(m.projectCoordinated)}</span><span class="metric-label">Projects Coordinated</span></div>
-      <div class="metric-mini"><span class="metric-value">${formatMetric(m.projectParticipated)}</span><span class="metric-label">Projects Participated</span></div>
-      <div class="metric-mini"><span class="metric-value">${formatMetric(m.projectVolunteerHours," hrs")}</span><span class="metric-label">Volunteer Hours</span></div>
-    </div>`;
-}
-function actionBlock(m) {
-  return `<div class="member-actions">
-    ${m.phone?`<a class="member-action call-action" href="tel:${escapeAttr(m.phone)}" onclick="event.stopPropagation()"><i class="fa-solid fa-phone"></i> Call</a>`:""}
-    ${m.email?`<a class="member-action email-action" href="mailto:${escapeAttr(m.email)}" onclick="event.stopPropagation()"><i class="fa-solid fa-envelope"></i> Email</a>`:""}
-  </div>`;
-}
-function renderBoard() {
-  const c=document.getElementById("boardGrid");
-  if(!boardMembers.length){c.innerHTML='<div class="state"><i class="fa-solid fa-users-slash"></i><div>No active board members found.</div></div>';return;}
-  c.innerHTML=boardMembers.map(m=>{
-    const name=escapeHTML(displayValue(m.name)), pos=escapeHTML(displayValue(m.position)), photo=escapeAttr(getPhoto(m,220));
-    return `<article class="board-card" data-member-id="${escapeAttr(m.id)}" tabindex="0">
-      <div class="avatar-wrap"><img class="board-avatar" src="${photo}" alt="${name}" loading="lazy" onerror="this.onerror=null;this.src='${getAvatar(m.name,220)}'"><div class="board-badge"><i class="fa-solid fa-star"></i></div></div>
-      <div class="member-name">${name}</div>
-      <div class="member-position">${pos}</div>
-      <div class="member-meta">
-        ${m.profession?`<span class="meta-pill"><i class="fa-solid fa-briefcase"></i>${escapeHTML(m.profession)}</span>`:""}
-        ${m.blood_group?`<span class="meta-pill"><i class="fa-solid fa-droplet"></i>${escapeHTML(m.blood_group)}</span>`:""}
-      </div>
-      ${metricBlock(m)}
-      ${actionBlock(m)}
-    </article>`;
-  }).join("");
-  attachCardEvents(c,boardMembers);
-}
-function renderActiveMembers(members) {
-  const c=document.getElementById("membersGrid");
-  if(!members.length){c.innerHTML='<div class="state"><i class="fa-solid fa-user-slash"></i><div>No active club members found.</div></div>';return;}
-  c.innerHTML=members.map(m=>{
-    const name=escapeHTML(displayValue(m.name)), pos=escapeHTML(displayValue(m.position)), photo=escapeAttr(getPhoto(m,180));
-    return `<article class="member-card" data-member-id="${escapeAttr(m.id)}" tabindex="0">
-      <img class="member-avatar" src="${photo}" alt="${name}" loading="lazy" onerror="this.onerror=null;this.src='${getAvatar(m.name,180)}'">
-      <div class="member-name">${name}</div>
-      <div class="member-position">${pos}</div>
-      <div class="member-meta">${m.profession?`<span class="meta-pill"><i class="fa-solid fa-briefcase"></i>${escapeHTML(m.profession)}</span>`:""}</div>
-      ${metricBlock(m)}
-      ${actionBlock(m)}
-    </article>`;
-  }).join("");
-  attachCardEvents(c,members);
-}
-function attachCardEvents(container,list) {
-  container.querySelectorAll("[data-member-id]").forEach(card=>{
-    const open=()=>{const m=list.find(x=>String(x.id)===String(card.dataset.memberId));if(m)openMemberModal(m);};
-    card.addEventListener("click",open);
-    card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open();}});
-  });
-}
-
-function buildVCard(m) {
-  const name=String(m.name||m.full_name||"Member").replace(/^RTR\.\s*/i,"");
-  const lines=["BEGIN:VCARD","VERSION:3.0",`FN:${name}`];
-  const role=m.position||m.designation||m.role;
-  if(role) lines.push(`TITLE:${role}`);
-  if(m.email) lines.push(`EMAIL:${m.email}`);
-  const phone=m.phone||m.phone_number;
-  if(phone) lines.push(`TEL:${phone}`);
-  lines.push("ORG:Rotaract Club of Galkot Baglung");
-  if(m.rotary_id) lines.push(`NOTE:Rotary ID ${m.rotary_id}`);
-  lines.push("END:VCARD");
-  return lines.join("\n");
-}
-function renderMemberQR(m) {
-  const box=document.getElementById("modalQrBox");
-  if(!box) return;
-  box.innerHTML="";
-  if(typeof QRCode==="undefined") { box.innerHTML='<span style="font-size:.7rem;color:#64748b">QR unavailable</span>'; return; }
-  new QRCode(box,{text:buildVCard(m),width:140,height:140,colorDark:"#0f172a",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
-}
-function openMemberModal(m) {
-  document.getElementById("modalPhoto").src=getPhoto(m,250);
-  document.getElementById("modalPhoto").alt=displayValue(m.name);
-  document.getElementById("modalName").textContent=displayValue(m.name);
-  document.getElementById("modalPosition").textContent=displayValue(m.position);
-  document.getElementById("modalEmail").textContent=displayValue(m.email);
-  document.getElementById("modalPhone").textContent=displayValue(m.phone);
-  document.getElementById("modalGender").textContent=displayValue(m.gender);
-  document.getElementById("modalBlood").textContent=displayValue(m.blood_group);
-  document.getElementById("modalAddress").textContent=displayValue(m.address);
-  document.getElementById("modalProfession").textContent=displayValue(m.profession);
-  document.getElementById("modalBirthday").textContent=formatBirthday(m.birthday);
-  document.getElementById("modalAttendance").textContent=formatMetric(m.attendancePct,"%");
-  document.getElementById("modalCoordinated").textContent=formatMetric(m.projectCoordinated);
-  document.getElementById("modalParticipated").textContent=formatMetric(m.projectParticipated);
-  document.getElementById("modalVolunteerHours").textContent=formatMetric(m.projectVolunteerHours);
-  renderMemberQR(m);
-  const call=document.getElementById("modalCallBtn"), email=document.getElementById("modalEmailBtn");
-  call.href=m.phone?"tel:"+m.phone:"#"; call.style.display=m.phone?"inline-flex":"none";
-  email.href=m.email?"mailto:"+m.email:"#"; email.style.display=m.email?"inline-flex":"none";
-  document.getElementById("memberModal").classList.add("active");
-  document.body.style.overflow="hidden";
-}
-function closeModal(){document.getElementById("memberModal").classList.remove("active");document.body.style.overflow="";}
-document.getElementById("modalClose").addEventListener("click",closeModal);
-document.getElementById("memberModal").addEventListener("click",e=>{if(e.target.id==="memberModal")closeModal();});
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
-
-function updateBirthdays() {
-  const chips=document.getElementById("birthdayChips");
-  const upcoming=allMembers.filter(m=>m.birthday).sort((a,b)=>daysUntilBirthday(a.birthday)-daysUntilBirthday(b.birthday)).filter(m=>daysUntilBirthday(m.birthday)<=30);
-  if(!upcoming.length){chips.innerHTML='<span class="no-birthday">No birthdays in the next 30 days.</span>';return;}
-  chips.innerHTML=upcoming.map(m=>{
-    const d=daysUntilBirthday(m.birthday);
-    const text=d===0?"Today 🎉":(d===1?"Tomorrow":"In "+d+" days");
-    return `<button class="birthday-chip" data-birthday-id="${escapeAttr(m.id)}"><i class="fa-solid fa-cake-candles"></i> ${escapeHTML(m.name)} · ${text}</button>`;
-  }).join("");
-  chips.querySelectorAll("[data-birthday-id]").forEach(b=>b.addEventListener("click",()=>{const m=allMembers.find(x=>String(x.id)===String(b.dataset.birthdayId));if(m)openMemberModal(m);}));
-}
-function maybeShowBirthdayPopup() {
-  if(birthdayPopupShown) return;
-  const today=allMembers.find(m=>isBirthdayToday(m.birthday));
-  if(!today) return;
-  birthdayPopupShown=true;
-  setTimeout(()=>alert(`🎉 Happy Birthday, ${today.name}! 🎂\n\nWishing you a wonderful day from Rotaract Club of Galkot Baglung!`),500);
-}
-
-function filterMembers() {
-  const q=document.getElementById("memberSearch").value.trim().toLowerCase();
-  currentFilteredMembers=activeClubMembers.filter(m=>[
-    m.name,m.position,m.profession,m.address,m.gender,m.blood_group,m.email,m.phone
-  ].filter(Boolean).join(" ").toLowerCase().includes(q));
-  renderActiveMembers(currentFilteredMembers);
-}
-document.getElementById("memberSearch").addEventListener("input",filterMembers);
-
-document.getElementById("refreshBtn").addEventListener("click",async()=>{
-  const b=document.getElementById("refreshBtn"); b.disabled=true; b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
-  await loadMembers(); b.disabled=false; b.innerHTML='<i class="fa-solid fa-rotate"></i> Refresh';
-});
-
-function exportMembersExcel(list, filename, sheetName="Members") {
-  if(!list.length) { alert("No members found to export."); return; }
-  if(typeof XLSX==="undefined") { alert("Excel export library failed to load."); return; }
-  const rows=list.map(m=>({
-    "Name":m.name||m.full_name||"",
-    "Email":m.email||"",
-    "Phone":m.phone||"",
-    "Gender":m.gender||"",
-    "Blood Group":m.blood_group||"",
-    "Position":m.position||m.designation||m.role||"",
-    "Profession":m.profession||"",
-    "Address":m.address||"",
-    "Birthday":m.birthday||""
-  }));
-  const ws=XLSX.utils.json_to_sheet(rows);
-  ws["!cols"]=[{wch:28},{wch:32},{wch:18},{wch:12},{wch:14},{wch:26},{wch:24},{wch:32},{wch:16}];
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,sheetName);
-  XLSX.writeFile(wb,filename);
-}
-document.getElementById("exportBoardBtn").addEventListener("click",()=>exportMembersExcel(allMembers,"Rotaract_Galkot_Baglung_All_Members.xlsx","Members"));
-
-
-
-// =========================================================
-// INTEGRATED RECOGNITION SYSTEM
-// Uses the same scoring logic as recognition.html.
-// =========================================================
-let recognitionScores = [];
-let recognitionLeaderWinners = [];
-let recognitionRisingWinners = [];
-let recognitionAwardMap = new Map();
-
-const RECOGNITION_BOARD_DESIGNATIONS = [
-  'President',
-  'President Elect',
-  'Secretary',
-  'Joint Secretary',
-  'Treasurer',
-  'Vice President',
-  'IPP',
-  'Membership Chair',
-  'Public Image Chair',
-  'Service Projects Chair',
-  'Health Program Chair',
-  'Rotary Foundation Chair',
-  'Sergeant At Arms',
-  'IT Officer',
-  'Young Leaders Contact',
-  'Learning Facilitator',
-  'Club Advisor',
-  'International Service Chair',
-  'Chartered President'
-];
-
-function recognitionNormalizeKey(str) {
-  return String(str || '').trim().toLowerCase()
-    .replace(/^rtr(?:\.\s*|\s+)/i, '')
-    .replace(/^dr(?:\.\s*|\s+)/i, '')
-    .replace(/\s+/g, ' ');
-}
-
-function recognitionNormalizeDesignationText(str) {
-  return String(str || '').toLowerCase()
-    .replace(/\brotaract\b/g, ' ')
-    .replace(/\brotary\b/g, ' ')
-    .replace(/\bpp\b/g, ' ')
-    .replace(/\//g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-const RECOGNITION_NORMALIZED_BOARD = RECOGNITION_BOARD_DESIGNATIONS.map(recognitionNormalizeDesignationText);
-
-function classifyRecognitionMember(m) {
-  const raw = String(m.designation || m.position || m.role || '').trim();
-  const normalized = recognitionNormalizeDesignationText(raw);
-  const idx = RECOGNITION_NORMALIZED_BOARD.indexOf(normalized);
-  const isBoard = idx !== -1;
-  const designation = isBoard ? RECOGNITION_BOARD_DESIGNATIONS[idx] : (raw || 'Club Member');
-  return {
-    designation,
-    isBoard,
-    isPresident: isBoard && designation === 'President'
-  };
-}
-
-async function recognitionSafeQuery(table, select, configure) {
-  try {
-    let q = supabaseClient.from(table).select(select);
-    if (configure) q = configure(q);
-    const { data, error } = await q;
-    if (error) throw error;
-    return data || [];
-  } catch (e) {
-    console.warn("Recognition optional query failed:", table, e.message || e);
-    return [];
-  }
-}
-
-function recognitionGetPhoto(m, size=180) {
-  const photo = String(m.profile_image || m.photo_url || m.photo || m.profile_image_url || "").trim();
-  return photo || ("https://ui-avatars.com/api/?name=" + encodeURIComponent(m.name || "Member") + "&background=D91A5C&color=ffffff&size=" + size);
-}
-
-function recognitionFullName(name) {
-  const raw = String(name || '').trim();
-  if (!raw) return 'RTR. Member';
-  const stripped = raw.replace(/^rtr(?:\.\s*|\s+)/i, '').trim();
-  return 'RTR. ' + stripped;
-}
-
-function recognitionEscape(v) {
-  const d = document.createElement("div");
-  d.textContent = v == null ? "" : String(v);
-  return d.innerHTML;
-}
-
-function renderRecognitionWinner(m, rank) {
-  const photo = recognitionEscape(recognitionGetPhoto(m, 180));
-  const name = recognitionEscape(recognitionFullName(m.fullName));
-  const designation = recognitionEscape(m.designation || 'Club Member');
-
-  return `
-    <article class="recognition-winner">
-      <div class="recognition-rank">${rank}</div>
-      <img class="recognition-avatar"
-           src="${photo}"
-           alt="${name}"
-           loading="lazy"
-           onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=Member&background=D91A5C&color=ffffff&size=180'">
-      <div>
-        <div class="recognition-name">${name}</div>
-        <div class="recognition-designation">${designation}</div>
-        <div class="recognition-metrics">
-          <span class="recognition-metric"><i class="fa-solid fa-user-check"></i>${Number(m.attendancePct).toFixed(1)}% attendance</span>
-          <span class="recognition-metric"><i class="fa-solid fa-droplet"></i>+${m.bloodBonus} blood</span>
-          <span class="recognition-metric"><i class="fa-solid fa-clipboard-check"></i>+${m.coordinatorPoints} coordinator</span>
-          <span class="recognition-metric"><i class="fa-solid fa-people-group"></i>+${m.projectParticipationPoints} participation</span>
-        </div>
-      </div>
-      <div class="recognition-score"><i class="fa-solid fa-star"></i>${Number(m.finalScore).toFixed(1)}</div>
-    </article>
-  `;
-}
-
-function renderRecognitionList(containerId, winners) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  if (!winners.length) {
-    container.innerHTML = '<div class="recognition-no-winner"><i class="fa-solid fa-circle-info"></i> No eligible winner found.</div>';
-    return;
-  }
-  container.innerHTML = winners.map((m, i) => renderRecognitionWinner(m, i + 1)).join("");
-}
-
-function applyRecognitionBadges() {
-  document.querySelectorAll(".member-recognition-badge").forEach(el => el.remove());
-
-  allMembers.forEach(m => {
-    const award = recognitionAwardMap.get(String(m.id));
-    if (!award) return;
-
-    document.querySelectorAll(`[data-member-id="${CSS.escape(String(m.id))}"]`).forEach(card => {
-      const badge = document.createElement("div");
-      badge.className = "member-recognition-badge";
-      badge.innerHTML = '<i class="fa-solid fa-trophy"></i> ' + award;
-      card.appendChild(badge);
-    });
-  });
-}
-
-async function loadRecognition() {
-  const status = document.getElementById("recognitionStatus");
-  const excelBtn = document.getElementById("exportRecognitionExcelBtn");
-
-  try {
-    if (!allMembers.length) throw new Error("No active members found.");
-
-    const [minutes, bloodRows, coordProjects, participantRows] = await Promise.all([
-      recognitionSafeQuery("meeting_minutes", "*"),
-      recognitionSafeQuery("blood_bridge_galkot", "data_entry_by"),
-      recognitionSafeQuery("upcoming_projects", "project_coordinator_id,status", q => q.eq("status", "completed")),
-      recognitionSafeQuery("project_participants", "member_id,project_id,participant_type", q => q.eq("participant_type", "member"))
-    ]);
-
-    const publishedMinutes = minutes.filter(m => String(m.status || "").toLowerCase() === "published");
-
-    const clubMemberMinutes = publishedMinutes.filter(m => {
-      const t = String(m.meeting_type || (m.data || {}).meeting_type || "").trim().toLowerCase();
-      return t !== "board meeting" && t !== "special board meeting";
+    // Update Request popup
+    function openUpdateRequestModal(){const modal=document.getElementById('updateRequestModal');document.getElementById('updateRequestDetails').value='';document.getElementById('updateRequestError').textContent='';document.getElementById('updateRequestSuccess').textContent='';modal.classList.remove('hidden');}
+    function closeUpdateRequestModal(){document.getElementById('updateRequestModal').classList.add('hidden');}
+    document.getElementById('requestUpdateBtn').addEventListener('click',openUpdateRequestModal);
+    document.getElementById('updateRequestCancelBtn').addEventListener('click',closeUpdateRequestModal);
+    document.getElementById('updateRequestModal').addEventListener('click',e=>{if(e.target.id==='updateRequestModal')closeUpdateRequestModal();});
+    document.getElementById('updateRequestForm').addEventListener('submit',async(event)=>{
+      event.preventDefault();
+      const errorBox=document.getElementById('updateRequestError');
+      const successBox=document.getElementById('updateRequestSuccess');
+      const btn=document.getElementById('updateRequestSubmitBtn');
+      errorBox.textContent='';successBox.textContent='';
+      const details=document.getElementById('updateRequestDetails').value.trim();
+      if(!details){errorBox.textContent='Please describe what needs updating.';return;}
+      if(!currentMember){errorBox.textContent='Could not identify your member record. Please re-verify.';return;}
+      btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+      try{
+        const{error}=await supabaseClient.from('member_update_requests').insert([{
+          member_id:currentMember.id,
+          member_name:currentMember.name||null,
+          member_email:currentMember.email||null,
+          request_details:details,
+          status:'pending'
+        }]);
+        if(error)throw error;
+        successBox.textContent='Request submitted! Our admin team will review it soon.';
+        setTimeout(closeUpdateRequestModal,1800);
+      }catch(error){
+        console.error('Update request failed:',error);
+        errorBox.textContent=error?.message||'Failed to submit request. Please try again.';
+      }finally{
+        btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-paper-plane"></i> Submit Request';
+      }
     });
 
-    const presentSetsAll = publishedMinutes.map(meeting => {
-      const list = Array.isArray((meeting.data || {}).members) ? meeting.data.members : [];
-      return new Set(list.map(p => recognitionNormalizeKey(p && (p.name || p.full_name || p))));
-    });
+    async function startVerifiedMembersDirectory(){
+      const modal=document.getElementById('memberVerifyModal');
+      const form=document.getElementById('memberVerifyForm');
+      const btn=document.getElementById('verifyBtn');
+      const errorBox=document.getElementById('verifyError');
+      const logoutBtn=document.getElementById('logoutBtn');
 
-    const presentSetsClub = clubMemberMinutes.map(meeting => {
-      const list = Array.isArray((meeting.data || {}).members) ? meeting.data.members : [];
-      return new Set(list.map(p => recognitionNormalizeKey(p && (p.name || p.full_name || p))));
-    });
+      logoutBtn.addEventListener('click',()=>{clearSession();showMyProfile(null);document.body.classList.add('data-locked');modal.classList.remove('hidden');form.reset();errorBox.textContent='';});
 
-    const bloodEntryCountMap = {};
-    bloodRows.forEach(row => {
-      if (!row.data_entry_by) return;
-      const key = recognitionNormalizeKey(row.data_entry_by);
-      bloodEntryCountMap[key] = (bloodEntryCountMap[key] || 0) + 1;
-    });
+      if(hasValidSession()){
+        document.body.classList.remove('data-locked');
+        modal.classList.add('hidden');
+        await loadMembers();
+        await loadRecognition();
+        showMyProfile(sessionStorage.getItem(SESSION_MEMBER_KEY));
+        return;
+      }
 
-    const coordinatorPointsMap = {};
-    coordProjects.forEach(row => {
-      if (!row.project_coordinator_id) return;
-      const id = String(row.project_coordinator_id);
-      coordinatorPointsMap[id] = (coordinatorPointsMap[id] || 0) + 1;
-    });
-
-    const projectIds = [...new Set(participantRows.map(r => r.project_id).filter(id => id != null))];
-    let projectHoursById = {};
-    if (projectIds.length) {
-      const projects = await recognitionSafeQuery(
-        "upcoming_projects",
-        "id,participants_count,project_volunteer_hours,volunteering_hours",
-        q => q.in("id", projectIds)
-      );
-      projects.forEach(p => {
-        const count = Number(p.participants_count) > 0 ? Number(p.participants_count) : null;
-        const total = p.project_volunteer_hours != null
-          ? Number(p.project_volunteer_hours)
-          : (p.volunteering_hours != null ? Number(p.volunteering_hours) : null);
-        projectHoursById[p.id] = (total != null && count) ? total / count : 0;
+      form.addEventListener('submit',async(event)=>{
+        event.preventDefault();
+        errorBox.textContent='';
+        if(isLockedOut()){errorBox.textContent=lockoutMessage();return;}
+        btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
+        try{
+          const result=await verifyMemberAccess(document.getElementById('verifyEmail').value,document.getElementById('verifyDob').value);
+          sessionStorage.setItem(SESSION_KEY,'1');
+          sessionStorage.setItem(SESSION_MEMBER_KEY,String(result.memberId));
+          sessionStorage.setItem(SESSION_TS_KEY,String(Date.now()));
+          modal.classList.add('hidden');
+          document.body.classList.remove('data-locked');
+          await loadMembers();
+          await loadRecognition();
+          showMyProfile(result.memberId);
+        }catch(error){
+          recordAttempt();
+          console.error('Member verification failed:',error);
+          errorBox.textContent=isLockedOut()?lockoutMessage():(error?.message==='Failed to fetch'?'Verification service is unavailable. Please try again.':(error?.message||'Verification failed. Please check your details.'));
+        }finally{
+          btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-unlock"></i> Verify &amp; Continue';
+        }
       });
     }
-
-    const projectParticipationCountMap = {};
-    const projectVolunteerHoursMap = {};
-    participantRows.forEach(row => {
-      const id = String(row.member_id || "");
-      if (!id) return;
-      projectParticipationCountMap[id] = (projectParticipationCountMap[id] || 0) + 1;
-      projectVolunteerHoursMap[id] = (projectVolunteerHoursMap[id] || 0) + (projectHoursById[row.project_id] || 0);
-    });
-
-    recognitionScores = allMembers.map(m => {
-      const classification = classifyRecognitionMember(m);
-      const presentSets = classification.isBoard ? presentSetsAll : presentSetsClub;
-      const totalMeetings = classification.isBoard ? publishedMinutes.length : clubMemberMinutes.length;
-      const key = recognitionNormalizeKey(m.name || m.full_name);
-      const attended = presentSets.filter(s => s.has(key)).length;
-      const attendancePct = totalMeetings
-        ? Math.round((attended / totalMeetings) * 1000) / 10
-        : 0;
-
-      const bloodEntryCount = bloodEntryCountMap[key] || 0;
-      const bloodBonus = Math.floor(bloodEntryCount / 10);
-      const coordinatorPoints = coordinatorPointsMap[String(m.id)] || 0;
-      const projectParticipationCount = projectParticipationCountMap[String(m.id)] || 0;
-      const projectParticipationPoints = projectParticipationCount;
-      const bonus = bloodBonus + coordinatorPoints + projectParticipationPoints;
-      const finalScore = attendancePct + bonus;
-
-      return {
-        id: m.id,
-        fullName: m.name || m.full_name || "Unknown Member",
-        designation: classification.designation,
-        isBoard: classification.isBoard,
-        isPresident: classification.isPresident,
-        attendancePct,
-        attended,
-        totalMeetings,
-        bloodEntryCount,
-        bloodBonus,
-        coordinatorPoints,
-        projectParticipationCount,
-        projectParticipationPoints,
-        projectVolunteerHours: Math.round((projectVolunteerHoursMap[String(m.id)] || 0) * 100) / 100,
-        bonus,
-        finalScore,
-        memberStatus: String(m.status || "").trim()
-      };
-    });
-
-    const leaders = recognitionScores
-      .filter(m => m.isBoard === true && !m.isPresident)
-      .sort((a, b) => b.finalScore - a.finalScore);
-
-    const rising = recognitionScores
-      .filter(m => m.isBoard === false)
-      .sort((a, b) => b.finalScore - a.finalScore);
-
-    recognitionLeaderWinners = leaders.slice(0, 2);
-    recognitionRisingWinners = rising.slice(0, 2);
-
-    recognitionAwardMap = new Map();
-    recognitionLeaderWinners.forEach(m => recognitionAwardMap.set(String(m.id), "Outstanding Club Leader"));
-    recognitionRisingWinners.forEach(m => recognitionAwardMap.set(String(m.id), "Rising Star"));
-
-    renderRecognitionList("leaderRecognitionList", recognitionLeaderWinners);
-    renderRecognitionList("risingRecognitionList", recognitionRisingWinners);
-    applyRecognitionBadges();
-
-    if (status) {
-      status.innerHTML = `<i class="fa-solid fa-circle-check"></i> Recognition updated · ${publishedMinutes.length} published meeting(s)`;
-    }
-    if (excelBtn) excelBtn.disabled = false;
-
-    // Re-render cards so recognition badges remain attached after search/filter.
-    const oldRenderActive = window.__originalRenderActiveMembers;
-    if (oldRenderActive) {
-      window.__originalRenderActiveMembers = null;
-    }
-  } catch (e) {
-    console.error("Recognition load error:", e);
-    renderRecognitionList("leaderRecognitionList", []);
-    renderRecognitionList("risingRecognitionList", []);
-    if (status) status.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Recognition unavailable`;
-  }
-}
-
-function recognitionRowsForExcel() {
-  return recognitionScores
-    .filter(m => m.memberStatus.toLowerCase() === "active")
-    .map(m => ({
-      "Name": recognitionFullName(m.fullName),
-      "Category": m.isPresident ? "President (excluded)" : (m.isBoard ? "Board Roster" : "Club Member"),
-      "Designation": m.designation,
-      "Meetings Counted": m.totalMeetings,
-      "Meetings Attended": m.attended,
-      "Attendance %": m.attendancePct,
-      "Blood Donor Entries": m.bloodEntryCount,
-      "Blood Entry Bonus": m.bloodBonus,
-      "Completed Project Coordinator Points": m.coordinatorPoints,
-      "Project Participation Count": m.projectParticipationCount,
-      "Project Participation Points": m.projectParticipationPoints,
-      "Project Volunteer Hours": m.projectVolunteerHours,
-      "Total Bonus": m.bonus,
-      "Final Score": Number(m.finalScore.toFixed(1)),
-      "Award": recognitionAwardMap.get(String(m.id)) || ""
-    }));
-}
-
-document.getElementById("exportRecognitionExcelBtn").addEventListener("click", () => {
-  const rows = recognitionRowsForExcel();
-  if (!rows.length) { alert("No active recognition data found."); return; }
-  if (typeof XLSX === "undefined") { alert("Excel export library failed to load."); return; }
-
-  const ws = XLSX.utils.json_to_sheet(rows);
-  ws["!cols"] = [
-    {wch:26},{wch:20},{wch:24},{wch:16},{wch:16},{wch:13},{wch:18},
-    {wch:16},{wch:26},{wch:22},{wch:22},{wch:20},{wch:13},{wch:12},{wch:24}
-  ];
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Recognition");
-  const todayStr = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `Recognition_Galkot_Baglung_${todayStr}.xlsx`);
-});
-
-// Keep recognition badges visible after search/filter renders.
-const __baseRenderActiveMembers = renderActiveMembers;
-renderActiveMembers = function(members) {
-  __baseRenderActiveMembers(members);
-  applyRecognitionBadges();
-};
-
-
-// Dark mode
-const themeBtn=document.getElementById("themeBtn");
-function setTheme(theme){
-  document.documentElement.setAttribute("data-theme",theme);
-  localStorage.setItem("members-theme",theme);
-  themeBtn.innerHTML=theme==="dark"?'<i class="fa-solid fa-sun"></i>':'<i class="fa-solid fa-moon"></i>';
-}
-setTheme(localStorage.getItem("members-theme")||"light");
-themeBtn.addEventListener("click",()=>setTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark"));
-
-
-async function verifyMemberAccess(email, dob) {
-  const normalizedEmail = String(email || '').trim().toLowerCase();
-  const submittedDob = String(dob || '').trim();
-  if (!normalizedEmail || !submittedDob) throw new Error('Please enter both email and date of birth.');
-
-  const { data: adminRows, error: adminError } = await supabaseClient
-    .from('blood_bridge_admins').select('id,email,role,status')
-    .ilike('email', normalizedEmail).eq('status','active').limit(1);
-  if (adminError) throw adminError;
-  if (!adminRows || !adminRows.length) throw new Error('This email is not authorized for member access.');
-
-  const { data: memberRows, error: memberError } = await supabaseClient
-    .from('members').select('id,email,birthday,status')
-    .ilike('email', normalizedEmail).eq('status','active').limit(20);
-  if (memberError) throw memberError;
-  const matchedMember = (memberRows || []).find(m => String(m.birthday || '').slice(0,10) === submittedDob);
-  if (!matchedMember) throw new Error('Email and date of birth do not match our records.');
-  return { verified:true, email:normalizedEmail, memberId:matchedMember.id };
-}
-
-async function startVerifiedMembersDirectory() {
-  const modal=document.getElementById('memberVerifyModal');
-  const form=document.getElementById('memberVerifyForm');
-  const btn=document.getElementById('verifyBtn');
-  const errorBox=document.getElementById('verifyError');
-  if (sessionStorage.getItem('membersDirectoryVerified') === '1') {
-    document.body.classList.remove('data-locked'); modal.classList.add('hidden');
-    await loadMembers(); await loadRecognition(); return;
-  }
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault(); errorBox.textContent=''; btn.disabled=true;
-    btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
-    try {
-      await verifyMemberAccess(document.getElementById('verifyEmail').value, document.getElementById('verifyDob').value);
-      sessionStorage.setItem('membersDirectoryVerified','1');
-      modal.classList.add('hidden'); document.body.classList.remove('data-locked');
-      await loadMembers(); await loadRecognition();
-    } catch(error) {
-      console.error('Member verification failed:',error);
-      errorBox.textContent=error?.message==='Failed to fetch' ? 'Verification service is unavailable. Please try again.' : (error?.message || 'Verification failed. Please check your details.');
-    } finally {
-      btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-unlock"></i> Verify &amp; Continue';
-    }
-  });
-}
-startVerifiedMembersDirectory();
-</script>
-
+    startVerifiedMembersDirectory();
+  </script>
 </body>
 </html>
