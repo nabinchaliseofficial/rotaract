@@ -566,7 +566,7 @@
     
     // Storage bucket name
     const STORAGE_BUCKET = "members-profile";
-    const TABLE_NAME = "member_registrations";
+    const TABLE_NAME = "members";
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
@@ -803,18 +803,17 @@
 
         // Build record - matching your table schema exactly
         const record = {
-          full_name: name,
-          address: address,
-          phone: phone,
-          blood_group: bloodGroup || null,
-          gender: gender,
-          email: email,
-          birth_date: dob,
+          name: name,
           position: designation || null,
+          profile_image: null,
+          status: 'Active',
+          email: email,
+          phone: phone,
+          gender: gender || null,
+          blood_group: bloodGroup || null,
+          address: address,
           profession: profession || null,
-          mentor: mentor || null,
-          // timestamp and created_at will use default values (now())
-          // phone_number is the same as phone, but we already have phone column
+          birthday: dob
         };
 
         console.log('📤 Inserting member data:', record);

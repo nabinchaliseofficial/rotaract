@@ -798,23 +798,6 @@
         <p>Manage members, roles, and sync in realtime.</p>
     </header>
 
-    <!-- NEW MEMBER REQUESTS SECTION -->
-    <section class="workspace-section" id="registrations-panel">
-        <div class="panel-header">
-            <h2><i class="fa-solid fa-user-plus" style="color: var(--cls-galkot);"></i> New Member Requests</h2>
-            <div class="panel-actions">
-                <button class="action-btn" id="refresh-registrations-btn"><i class="fa-solid fa-rotate"></i> Refresh</button>
-                <button class="action-btn clear-btn-accent" id="clear-registrations-btn"><i class="fa-solid fa-trash-can" style="color:#ef4444;"></i> Clear All</button>
-            </div>
-        </div>
-        <div class="slider-container" id="registrationsSlider">
-            <button class="slider-btn prev" id="regSliderPrev"><i class="fa-solid fa-chevron-left"></i></button>
-            <div class="slider-track" id="registrationsTrack"></div>
-            <button class="slider-btn next" id="regSliderNext"><i class="fa-solid fa-chevron-right"></i></button>
-            <div class="slider-dots" id="regDots"></div>
-        </div>
-    </section>
-
     <!-- MEMBERS SECTION -->
     <section class="workspace-section" id="members-panel">
         <div class="panel-header">
@@ -828,7 +811,6 @@
                 <button class="action-btn btn-print-active-accent" id="printActiveMembersBtn"><i class="fa-solid fa-file-pdf"></i> Print All Active</button>
                 <button class="action-btn btn-print-inactive-accent" id="printInactiveMembersBtn"><i class="fa-solid fa-file-pdf"></i> Print All Inactive</button>
                 <button class="action-btn" id="refresh-members-btn"><i class="fa-solid fa-rotate"></i> Refresh</button>
-                <button class="action-btn clear-btn-accent" id="clear-members-btn"><i class="fa-solid fa-trash-can" style="color:#ef4444;"></i> Clear All</button>
             </div>
         </div>
         <div class="slider-container" id="membersSlider">
@@ -844,6 +826,7 @@
         <div class="panel-header">
             <h2><i class="fa-solid fa-user-shield" style="color: var(--cls-links);"></i> Manage Roles</h2>
             <div class="panel-actions">
+                <span id="rolesCountBadge" class="status-badge" style="background:rgba(167,139,250,0.18);color:var(--cls-links);padding:0.45rem 0.75rem;">0 users</span>
                 <button class="action-btn btn-add-accent" id="addRoleBtn"><i class="fa-solid fa-plus"></i> Add Role</button>
                 <button class="action-btn" id="refresh-roles-btn"><i class="fa-solid fa-rotate"></i> Refresh</button>
             </div>
@@ -853,6 +836,23 @@
             <div class="slider-track" id="rolesTrack"></div>
             <button class="slider-btn next" id="roleSliderNext"><i class="fa-solid fa-chevron-right"></i></button>
             <div class="slider-dots" id="roleDots"></div>
+        </div>
+    </section>
+
+    <!-- BLOOD BRIDGE ADMINS SECTION -->
+    <section class="workspace-section" id="blood-bridge-admins-panel">
+        <div class="panel-header">
+            <h2><i class="fa-solid fa-droplet" style="color: var(--cls-galkot);"></i> Blood Bridge Admins</h2>
+            <div class="panel-actions">
+                <button class="action-btn btn-add-accent" id="addBloodBridgeAdminBtn"><i class="fa-solid fa-plus"></i> Add Admin</button>
+                <button class="action-btn" id="refresh-blood-bridge-admins-btn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+            </div>
+        </div>
+        <div class="slider-container" id="bloodBridgeAdminsSlider">
+            <button class="slider-btn prev" id="bloodBridgeAdminSliderPrev"><i class="fa-solid fa-chevron-left"></i></button>
+            <div class="slider-track" id="bloodBridgeAdminsTrack"></div>
+            <button class="slider-btn next" id="bloodBridgeAdminSliderNext"><i class="fa-solid fa-chevron-right"></i></button>
+            <div class="slider-dots" id="bloodBridgeAdminsDots"></div>
         </div>
     </section>
 
@@ -884,7 +884,7 @@
                             <option value="Joint Secretary">Joint Secretary</option>
                             <option value="Treasurer">Treasurer</option>
                             <option value="Vice President">Vice President</option>
-                            <option value="IPP / Mentor">IPP / Mentor</option>
+                            <option value="IPP">IPP</option>
                             <option value="Membership Chair">Membership Chair</option>
                             <option value="Public Image Chair">Public Image Chair</option>
                             <option value="Service Projects Chair">Service Projects Chair</option>
@@ -895,7 +895,7 @@
                             <option value="Young Leaders Contact">Young Leaders Contact</option>
                             <option value="Learning Facilitator">Learning Facilitator</option>
                             <option value="Club Advisor">Club Advisor</option>
-                            <option value="ISD Advisor">ISD Advisor</option>
+                            <option value="International Service Chair">International Service Chair</option>
                         </select>
                     </div>
                 </div>
@@ -954,7 +954,7 @@
                         <option value="editor">✏️ Editor</option>
                         <option value="secretary">📝 Secretary</option>
                         <option value="president">👑 President</option>
-                        <option value="admin">⚙️ Admin</option>
+                        <option value="super_admin">👑 Super Admin</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -967,6 +967,44 @@
                 <div class="form-actions">
                     <button type="button" class="action-btn btn-cancel-accent" id="roleModalCancelBtn">Cancel</button>
                     <button type="submit" class="action-btn btn-save-accent"><i class="fa-solid fa-floppy-disk"></i> <span id="roleSubmitBtnText">Save Role</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- MODAL for Blood Bridge Admin -->
+    <div class="modal-overlay" id="bloodBridgeAdminModal">
+        <div class="modal-content">
+            <button class="modal-close" id="bloodBridgeAdminModalCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-title"><i class="fa-solid fa-droplet" style="color: var(--cls-galkot);"></i> <span id="bloodBridgeAdminModalTitle">Add Blood Bridge Admin</span></div>
+            <form id="bloodBridgeAdminForm">
+                <input type="hidden" id="bloodBridgeAdminId" value="">
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="bloodBridgeAdminEmail" placeholder="hospital@example.com" required />
+                </div>
+                <div class="form-group">
+                    <label>User ID (optional)</label>
+                    <input type="text" id="bloodBridgeAdminUserId" placeholder="Auth user UUID" />
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="bloodBridgeAdminRole">
+                        <option value="hospital">🏥 Hospital</option>
+                        <option value="super_admin">👑 Super Admin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="bloodBridgeAdminStatus">
+                        <option value="active">✅ Active</option>
+                        <option value="inactive">❌ Inactive</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="action-btn btn-cancel-accent" id="bloodBridgeAdminModalCancelBtn">Cancel</button>
+                    <button type="submit" class="action-btn btn-save-accent"><i class="fa-solid fa-floppy-disk"></i> Save Admin</button>
                 </div>
             </form>
         </div>
@@ -985,8 +1023,35 @@
 
             const STORAGE_BUCKET = 'members-profile';
             const MEMBERS_TABLE = 'members';
-            const REGISTRATIONS_TABLE = 'member_registrations';
             const USER_ROLES_TABLE = 'user_roles';
+            const BLOOD_BRIDGE_ADMINS_TABLE = 'blood_bridge_admins';
+
+            // This account must never show a Delete action in Manage Roles
+            // or Blood Bridge Admins. Matching is case-insensitive.
+            const PROTECTED_ADMIN_EMAIL = 'pilotprosoft@gmail.com';
+
+            // Supabase REST responses can be capped by the API row limit.
+            // Fetch in pages so every database row is loaded into the slider.
+            const fetchAllRows = async (queryFactory, pageSize = 1000) => {
+                const allRows = [];
+                let from = 0;
+
+                while (true) {
+                    const { data, error } = await queryFactory().range(from, from + pageSize - 1);
+                    if (error) throw error;
+
+                    const rows = data || [];
+                    allRows.push(...rows);
+
+                    if (rows.length < pageSize) break;
+                    from += pageSize;
+                }
+
+                return allRows;
+            };
+
+            const isProtectedEmail = (email) =>
+                String(email || '').trim().toLowerCase() === PROTECTED_ADMIN_EMAIL;
 
             // ============================================================
             // ===== SECURE ADMIN ACCESS CONTROL =====
@@ -1047,12 +1112,12 @@
 
             let editingMemberId = null;
             let allMembers = [];
-            let registrations = [];
             let userRoles = [];
+            let bloodBridgeAdmins = [];
+            let bloodBridgeAdminSliderIndex = 0;
             let currentImageFile = null;
             let existingImageUrl = '';
 
-            let regSliderIndex = 0;
             let memSliderIndex = 0;
             let roleSliderIndex = 0;
 
@@ -1154,10 +1219,7 @@
                     dots.querySelectorAll('.slider-dot').forEach(dot => {
                         dot.addEventListener('click', () => {
                             const idx = parseInt(dot.dataset.index);
-                            if (dotsId === 'regDots') {
-                                regSliderIndex = idx;
-                                updateSlider('registrationsTrack', registrations, 'regDots', renderRegistrationItem, regSliderIndex);
-                            } else if (dotsId === 'memDots') {
+                            if (dotsId === 'memDots') {
                                 memSliderIndex = idx;
                                 updateSlider('membersTrack', allMembers, 'memDots', renderMemberItem, memSliderIndex);
                             } else if (dotsId === 'roleDots') {
@@ -1196,37 +1258,6 @@
             }
 
             // ---------- RENDER FUNCTIONS ----------
-            function renderRegistrationItem(item) {
-                const name = item.full_name || item.name || '';
-                const imgUrl = item.profile_image || '';
-                return `
-                    <article class="member-node" style="border-left-color: #fbbf24;">
-                        <div class="node-meta">
-                            <span>📝 Request</span>
-                            <span>${item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</span>
-                        </div>
-                        <div class="member-header">
-                            ${imgUrl ? `<img src="${escapeHtml(imgUrl)}" class="member-avatar" alt="avatar" onerror="this.style.display='none';" />` : ''}
-                            <div class="member-avatar" style="${imgUrl ? 'display:none;' : 'display:flex;'}align-items:center;justify-content:center;background:rgba(255,255,255,0.05);"><i class="fa-solid fa-user-plus" style="color:var(--cls-galkot);font-size:1.5rem;"></i></div>
-                            <div class="node-title" style="color: var(--cls-galkot);">${escapeHtml(name)}</div>
-                        </div>
-                        <a href="mailto:${escapeHtml(item.email)}" class="node-detail" style="color: var(--cls-personal);">${escapeHtml(item.email)}</a>
-                        ${item.phone || item.phone_number ? `<div class="node-detail"><i class="fa-solid fa-phone"></i> ${escapeHtml(item.phone || item.phone_number)}</div>` : ''}
-                        ${item.position ? `<div class="node-detail"><i class="fa-solid fa-briefcase"></i> ${escapeHtml(item.position)}</div>` : ''}
-                        ${item.address ? `<div class="node-detail"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(item.address)}</div>` : ''}
-                        ${item.profession ? `<div class="node-detail"><i class="fa-solid fa-briefcase"></i> ${escapeHtml(item.profession)}</div>` : ''}
-                        ${item.gender ? `<div class="node-detail"><i class="fa-solid fa-venus-mars"></i> ${escapeHtml(item.gender)}</div>` : ''}
-                        ${item.blood_group ? `<div class="node-detail"><i class="fa-solid fa-droplet"></i> ${escapeHtml(item.blood_group)}</div>` : ''}
-                        ${item.birth_date ? `<div class="node-detail"><i class="fa-solid fa-calendar"></i> ${new Date(item.birth_date).toLocaleDateString()}</div>` : ''}
-                        ${item.mentor ? `<div class="node-detail"><i class="fa-solid fa-star"></i> Mentor: ${escapeHtml(item.mentor)}</div>` : ''}
-                        <div class="application-actions">
-                            <button class="action-btn-sm verify-btn" data-id="${item.id}" data-action="verify"><i class="fa-solid fa-check"></i> Verify & Add</button>
-                            <button class="action-btn-sm reject-btn" data-id="${item.id}" data-action="reject"><i class="fa-solid fa-times"></i> Reject</button>
-                        </div>
-                    </article>
-                `;
-            }
-
             function renderMemberItem(item) {
                 const status = item.status || 'active';
                 const badgeClass = status === 'active' ? 'status-active' : 'status-inactive';
@@ -1295,34 +1326,14 @@
                             <button class="action-btn-sm status-toggle ${isActive ? '' : 'inactive-toggle'}" data-user-id="${userId}" data-action="toggle-user-status">
                                 <i class="fa-solid fa-arrows-rotate"></i> ${isActive ? 'Set Inactive' : 'Set Active'}
                             </button>
+                            ${!isProtectedEmail(userEmail) ? `
                             <button class="action-btn-sm delete-btn" data-user-id="${userId}" data-action="delete-role">
                                 <i class="fa-solid fa-trash"></i> Delete
-                            </button>
+                            </button>` : ''}
                         </div>
                     </article>
                 `;
             }
-
-            // ============================================================
-            // ===== LOAD REGISTRATIONS =====
-            // ============================================================
-            const loadRegistrations = async () => {
-                const isAuthorized = await checkAdminRole();
-                if (!isAuthorized) return;
-                try {
-                    const { data, error } = await supabase
-                        .from(REGISTRATIONS_TABLE)
-                        .select('*')
-                        .order('created_at', { ascending: false });
-                    if (error) throw error;
-                    registrations = data || [];
-                    renderSlider('registrationsTrack', registrations, 'regDots', renderRegistrationItem, regSliderIndex);
-                } catch (err) {
-                    console.error('Error loading registrations:', err);
-                    document.getElementById('registrationsTrack').innerHTML =
-                        `<div class="status-msg" style="color:#ef4444;"><i class="fa-solid fa-circle-exclamation"></i> ${err.message}</div>`;
-                }
-            };
 
             // ============================================================
             // ===== LOAD MEMBERS =====
@@ -1643,29 +1654,147 @@
             document.getElementById('printInactiveMembersBtn')?.addEventListener('click', () => exportMemberRosterPdf('inactive'));
 
             // ============================================================
+            // ===== BLOOD BRIDGE ADMINS =====
+            // ============================================================
+            const renderBloodBridgeAdminItem = (admin) => {
+                const statusClass = admin.status === 'active' ? 'status-active' : 'status-inactive';
+                const initials = (admin.email || 'A').charAt(0).toUpperCase();
+                return `
+                    <div class="member-card">
+                        <div class="member-avatar" style="display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;">${initials}</div>
+                        <div class="member-info">
+                            <h3>${escapeHtml(admin.email || 'No email')}</h3>
+                            <p><strong>Role:</strong> ${escapeHtml(admin.role || 'hospital')}</p>
+                            <p><strong>User ID:</strong> ${escapeHtml(admin.user_id || 'Not linked')}</p>
+                            <p><span class="status-badge ${statusClass}">${escapeHtml(admin.status || 'active')}</span></p>
+                        </div>
+                        <div class="member-actions">
+                            <button class="action-btn edit-blood-bridge-admin" data-id="${admin.id}"><i class="fa-solid fa-pen"></i></button>
+                            ${!isProtectedEmail(admin.email) ? `
+                            <button class="action-btn clear-btn-accent delete-blood-bridge-admin" data-id="${admin.id}"><i class="fa-solid fa-trash"></i></button>` : ''}
+                        </div>
+                    </div>`;
+            };
+
+            const loadBloodBridgeAdmins = async () => {
+                const isAuthorized = await checkAdminRole();
+                if (!isAuthorized) return;
+                try {
+                    const { data, error } = await supabase
+                        .from(BLOOD_BRIDGE_ADMINS_TABLE)
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    if (error) throw error;
+                    bloodBridgeAdmins = data || [];
+                    renderSlider('bloodBridgeAdminsTrack', bloodBridgeAdmins, 'bloodBridgeAdminsDots', renderBloodBridgeAdminItem, bloodBridgeAdminSliderIndex);
+                    bindBloodBridgeAdminActions();
+                } catch (err) {
+                    console.error('Blood Bridge Admins load error:', err);
+                    showToast('❌ Error loading Blood Bridge Admins: ' + err.message, 'error');
+                }
+            };
+
+            const openBloodBridgeAdminModal = (admin = null) => {
+                document.getElementById('bloodBridgeAdminId').value = admin?.id || '';
+                document.getElementById('bloodBridgeAdminEmail').value = admin?.email || '';
+                document.getElementById('bloodBridgeAdminUserId').value = admin?.user_id || '';
+                document.getElementById('bloodBridgeAdminRole').value = admin?.role || 'hospital';
+                document.getElementById('bloodBridgeAdminStatus').value = admin?.status || 'active';
+                document.getElementById('bloodBridgeAdminModalTitle').textContent = admin ? 'Edit Blood Bridge Admin' : 'Add Blood Bridge Admin';
+                document.getElementById('bloodBridgeAdminModal').classList.add('active');
+            };
+
+            const closeBloodBridgeAdminModal = () => document.getElementById('bloodBridgeAdminModal').classList.remove('active');
+
+            const bindBloodBridgeAdminActions = () => {
+                document.querySelectorAll('.edit-blood-bridge-admin').forEach(btn => btn.onclick = () => {
+                    const admin = bloodBridgeAdmins.find(a => String(a.id) === String(btn.dataset.id));
+                    if (admin) openBloodBridgeAdminModal(admin);
+                });
+                document.querySelectorAll('.delete-blood-bridge-admin').forEach(btn => btn.onclick = async () => {
+                    const admin = bloodBridgeAdmins.find(a => String(a.id) === String(btn.dataset.id));
+                    if (admin && isProtectedEmail(admin.email)) {
+                        showToast('🔒 Delete is disabled for the protected admin account.', 'error');
+                        return;
+                    }
+                    if (!confirm('Delete this Blood Bridge Admin?')) return;
+                    const { error } = await supabase.from(BLOOD_BRIDGE_ADMINS_TABLE).delete().eq('id', btn.dataset.id);
+                    if (error) showToast('❌ ' + error.message, 'error');
+                    else { showToast('✅ Blood Bridge Admin deleted.', 'success'); loadBloodBridgeAdmins(); }
+                });
+            };
+
+            document.getElementById('bloodBridgeAdminForm')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('bloodBridgeAdminId').value;
+                const userIdValue = document.getElementById('bloodBridgeAdminUserId').value.trim();
+                const payload = {
+                    email: document.getElementById('bloodBridgeAdminEmail').value.trim(),
+                    user_id: userIdValue || null,
+                    role: document.getElementById('bloodBridgeAdminRole').value,
+                    status: document.getElementById('bloodBridgeAdminStatus').value
+                };
+                try {
+                    let result;
+                    if (id) {
+                        result = await supabase
+                            .from(BLOOD_BRIDGE_ADMINS_TABLE)
+                            .update(payload)
+                            .eq('id', id);
+                    } else {
+                        result = await supabase
+                            .from(BLOOD_BRIDGE_ADMINS_TABLE)
+                            .insert([payload]);
+                    }
+                    if (result.error) {
+                        console.error('Blood Bridge Admin save error:', result.error);
+                        throw result.error;
+                    }
+                    closeBloodBridgeAdminModal();
+                    showToast(id ? '✅ Blood Bridge Admin updated.' : '✅ Blood Bridge Admin added.', 'success');
+                    await loadBloodBridgeAdmins();
+                } catch (err) {
+                    showToast('❌ Error saving Blood Bridge Admin: ' + err.message, 'error');
+                }
+            });
+
+            // ============================================================
             // ===== LOAD USER ROLES - WITH NAME AND EMAIL =====
             // ============================================================
             const loadUserRoles = async () => {
                 const isAuthorized = await checkAdminRole();
                 if (!isAuthorized) return;
                 try {
-                    const { data: rolesData, error: rolesError } = await supabase
-                        .from(USER_ROLES_TABLE)
-                        .select('*')
-                        .order('created_at', { ascending: false });
+                    // Load ALL user_roles rows, not just the first API page.
+                    const rolesData = await fetchAllRows(() =>
+                        supabase
+                            .from(USER_ROLES_TABLE)
+                            .select('*')
+                            .order('created_at', { ascending: false })
+                    );
 
-                    if (rolesError) throw rolesError;
+                    // Load ALL view rows too, so a large user list cannot be
+                    // silently truncated by Supabase's default row limit.
+                    const viewResult = await (async () => {
+                        try {
+                            const rows = await fetchAllRows(() =>
+                                supabase
+                                    .from('user_roles_view')
+                                    .select('*')
+                                    .order('joined_at', { ascending: false })
+                            );
+                            return { data: rows, error: null };
+                        } catch (viewError) {
+                            return { data: null, error: viewError };
+                        }
+                    })();
 
-                    // Try to get user details from user_roles_view first
-                    const { data: viewData, error: viewError } = await supabase
-                        .from('user_roles_view')
-                        .select('*')
-                        .order('joined_at', { ascending: false });
-
+                    const viewData = viewResult.data;
+                    const viewError = viewResult.error;
                     let merged = [];
 
                     if (!viewError && viewData && viewData.length > 0) {
-                        merged = (viewData || []).map(viewUser => {
+                        merged = viewData.map(viewUser => {
                             const roleEntry = (rolesData || []).find(r => r.user_id === viewUser.user_id);
                             return {
                                 user_id: viewUser.user_id,
@@ -1676,23 +1805,39 @@
                                 status: roleEntry?.status || 'active'
                             };
                         });
+
+                        // Also include any user_roles rows that are not exposed
+                        // by the view, ensuring the database list is complete.
+                        const mergedIds = new Set(merged.map(item => item.user_id));
+                        (rolesData || []).forEach(role => {
+                            if (!mergedIds.has(role.user_id)) {
+                                merged.push({
+                                    user_id: role.user_id,
+                                    email: role.email || 'Unknown',
+                                    full_name: role.full_name || role.email?.split('@')[0] || 'Unknown User',
+                                    role: role.role || 'no_role',
+                                    created_at: role.created_at,
+                                    status: role.status || 'active'
+                                });
+                            }
+                        });
                     } else {
-                        // Fallback: Join with members table to get name
-                        const { data: membersData } = await supabase
-                            .from(MEMBERS_TABLE)
-                            .select('email, name')
-                            .not('email', 'is', null);
+                        // Fallback: Join with ALL members rows to get names.
+                        const membersData = await fetchAllRows(() =>
+                            supabase
+                                .from(MEMBERS_TABLE)
+                                .select('email, name')
+                                .not('email', 'is', null)
+                        );
 
                         const memberMap = {};
-                        if (membersData) {
-                            membersData.forEach(m => {
-                                if (m.email) memberMap[m.email.toLowerCase()] = m.name;
-                            });
-                        }
+                        (membersData || []).forEach(m => {
+                            if (m.email) memberMap[m.email.toLowerCase()] = m.name;
+                        });
 
                         merged = (rolesData || []).map(role => {
                             const email = role.email || 'Unknown';
-                            const fullName = memberMap[email.toLowerCase()] || email.split('@')[0] || 'Unknown User';
+                            const fullName = memberMap[email.toLowerCase()] || role.full_name || email.split('@')[0] || 'Unknown User';
                             return {
                                 user_id: role.user_id,
                                 email: email,
@@ -1708,7 +1853,7 @@
                         merged = (rolesData || []).map(role => ({
                             user_id: role.user_id,
                             email: role.email || 'Unknown',
-                            full_name: role.email?.split('@')[0] || 'Unknown User',
+                            full_name: role.full_name || role.email?.split('@')[0] || 'Unknown User',
                             role: role.role || 'no_role',
                             created_at: role.created_at,
                             status: role.status || 'active'
@@ -1716,6 +1861,12 @@
                     }
 
                     userRoles = merged;
+                    const rolesCountBadge = document.getElementById('rolesCountBadge');
+                    if (rolesCountBadge) rolesCountBadge.textContent = `${userRoles.length} users`;
+                    // Reset to a valid page after a refresh/delete.
+                    const rolePerView = getItemsPerView();
+                    const roleTotalSlides = Math.max(1, Math.ceil(userRoles.length / rolePerView));
+                    if (roleSliderIndex >= roleTotalSlides) roleSliderIndex = roleTotalSlides - 1;
                     renderSlider('rolesTrack', userRoles, 'roleDots', renderRoleItem, roleSliderIndex);
                     attachRoleListeners();
 
@@ -1885,6 +2036,12 @@
                     return;
                 }
 
+                const protectedUser = userRoles.find(u => u.user_id === userId);
+                if (protectedUser && isProtectedEmail(protectedUser.email)) {
+                    showToast('🔒 Delete is disabled for the protected admin account.', 'error');
+                    return;
+                }
+
                 if (!confirm('⚠️ Are you sure you want to delete this user role permanently?')) return;
 
                 try {
@@ -1901,77 +2058,6 @@
                 } catch (err) {
                     console.error('Error deleting role:', err);
                     showToast('❌ Error deleting role: ' + err.message, 'error');
-                }
-            };
-
-            // ============================================================
-            // ===== VERIFY REGISTRATION =====
-            // ============================================================
-            const verifyRegistration = async (id) => {
-                if (!confirm('✅ Verify this member and add to active members list?')) return;
-                try {
-                    const reg = registrations.find(r => String(r.id) === String(id));
-                    if (!reg) { showToast('Registration not found.', 'error'); return; }
-
-                    const memberData = {
-                        name: reg.full_name || reg.name || '',
-                        email: reg.email || '',
-                        phone: reg.phone || reg.phone_number || '',
-                        gender: reg.gender || '',
-                        blood_group: reg.blood_group || '',
-                        position: reg.position || '',
-                        address: reg.address || '',
-                        profession: reg.profession || '',
-                        birthday: reg.birth_date || null,
-                        profile_image: reg.profile_image || '',
-                        status: 'active'
-                    };
-
-                    const { data: existing } = await supabase
-                        .from(MEMBERS_TABLE)
-                        .select('id')
-                        .eq('email', memberData.email)
-                        .maybeSingle();
-
-                    if (existing) {
-                        showToast('⚠️ Member already exists. Deleting request...', 'info');
-                        await supabase.from(REGISTRATIONS_TABLE).delete().eq('id', id);
-                        await loadRegistrations();
-                        await loadMembers(document.getElementById('memberSearchInput').value || '');
-                        return;
-                    }
-
-                    const { data: insertData, error: insertError } = await supabase
-                        .from(MEMBERS_TABLE)
-                        .insert([memberData])
-                        .select();
-
-                    if (insertError) throw new Error(insertError.message);
-
-                    await supabase.from(REGISTRATIONS_TABLE).delete().eq('id', id);
-
-                    showToast('✅ Member verified and added to active members!', 'success');
-                    await loadRegistrations();
-                    await loadMembers(document.getElementById('memberSearchInput').value || '');
-                    await loadUserRoles();
-
-                } catch (err) {
-                    console.error('Error verifying member:', err);
-                    showToast('❌ Error verifying member: ' + err.message, 'error');
-                }
-            };
-
-            // ============================================================
-            // ===== REJECT REGISTRATION =====
-            // ============================================================
-            const rejectRegistration = async (id) => {
-                if (!confirm('❌ Reject this registration? This will delete it permanently.')) return;
-                try {
-                    await supabase.from(REGISTRATIONS_TABLE).delete().eq('id', id);
-                    showToast('🗑️ Registration rejected.', 'info');
-                    await loadRegistrations();
-                } catch (err) {
-                    showToast('❌ Error rejecting: ' + err.message, 'error');
                 }
             };
 
@@ -2215,15 +2301,6 @@
             // ============================================================
             // ===== EVENT LISTENERS =====
             // ============================================================
-            document.getElementById('registrationsTrack')?.addEventListener('click', (e) => {
-                const btn = e.target.closest('.action-btn-sm');
-                if (!btn) return;
-                const id = btn.dataset.id;
-                const action = btn.dataset.action;
-                if (action === 'verify') verifyRegistration(id);
-                else if (action === 'reject') rejectRegistration(id);
-            });
-
             document.getElementById('membersTrack')?.addEventListener('click', (e) => {
                 const btn = e.target.closest('.action-btn-sm');
                 if (!btn) return;
@@ -2236,20 +2313,6 @@
             });
 
             // Slider navigation
-            document.getElementById('regSliderPrev')?.addEventListener('click', () => {
-                const perView = getItemsPerView();
-                const totalSlides = Math.ceil(registrations.length / perView);
-                regSliderIndex = (regSliderIndex - 1 + totalSlides) % totalSlides;
-                updateSlider('registrationsTrack', registrations, 'regDots', renderRegistrationItem, regSliderIndex);
-            });
-
-            document.getElementById('regSliderNext')?.addEventListener('click', () => {
-                const perView = getItemsPerView();
-                const totalSlides = Math.ceil(registrations.length / perView);
-                regSliderIndex = (regSliderIndex + 1) % totalSlides;
-                updateSlider('registrationsTrack', registrations, 'regDots', renderRegistrationItem, regSliderIndex);
-            });
-
             document.getElementById('memSliderPrev')?.addEventListener('click', () => {
                 const perView = getItemsPerView();
                 const totalSlides = Math.ceil(allMembers.length / perView);
@@ -2279,41 +2342,28 @@
             });
 
             // Refresh buttons
-            document.getElementById('refresh-registrations-btn')?.addEventListener('click', loadRegistrations);
             document.getElementById('refresh-members-btn')?.addEventListener('click', () => {
                 loadMembers(document.getElementById('memberSearchInput').value || '');
             });
             document.getElementById('refresh-roles-btn')?.addEventListener('click', loadUserRoles);
+            document.getElementById('refresh-blood-bridge-admins-btn')?.addEventListener('click', loadBloodBridgeAdmins);
+            document.getElementById('addBloodBridgeAdminBtn')?.addEventListener('click', () => openBloodBridgeAdminModal());
+            document.getElementById('bloodBridgeAdminModalCloseBtn')?.addEventListener('click', closeBloodBridgeAdminModal);
+            document.getElementById('bloodBridgeAdminModalCancelBtn')?.addEventListener('click', closeBloodBridgeAdminModal);
+            document.getElementById('bloodBridgeAdminModal')?.addEventListener('click', (e) => { if (e.target.id === 'bloodBridgeAdminModal') closeBloodBridgeAdminModal(); });
+            document.getElementById('bloodBridgeAdminSliderPrev')?.addEventListener('click', () => {
+                const perView = getItemsPerView(); const totalSlides = Math.max(1, Math.ceil(bloodBridgeAdmins.length / perView));
+                bloodBridgeAdminSliderIndex = (bloodBridgeAdminSliderIndex - 1 + totalSlides) % totalSlides;
+                updateSlider('bloodBridgeAdminsTrack', bloodBridgeAdmins, 'bloodBridgeAdminsDots', renderBloodBridgeAdminItem, bloodBridgeAdminSliderIndex); bindBloodBridgeAdminActions();
+            });
+            document.getElementById('bloodBridgeAdminSliderNext')?.addEventListener('click', () => {
+                const perView = getItemsPerView(); const totalSlides = Math.max(1, Math.ceil(bloodBridgeAdmins.length / perView));
+                bloodBridgeAdminSliderIndex = (bloodBridgeAdminSliderIndex + 1) % totalSlides;
+                updateSlider('bloodBridgeAdminsTrack', bloodBridgeAdmins, 'bloodBridgeAdminsDots', renderBloodBridgeAdminItem, bloodBridgeAdminSliderIndex); bindBloodBridgeAdminActions();
+            });
 
             // Add Role button
             document.getElementById('addRoleBtn')?.addEventListener('click', openAddRoleModal);
-
-            // Clear buttons
-            document.getElementById('clear-registrations-btn')?.addEventListener('click', async () => {
-                if (!confirm("⚠️ DELETE ALL registration requests?")) return;
-                try {
-                    await supabase.from(REGISTRATIONS_TABLE).delete().neq('id', '');
-                    showToast('✅ All registrations cleared.', 'success');
-                    await loadRegistrations();
-                } catch (err) {
-                    showToast('❌ Error clearing: ' + err.message, 'error');
-                }
-            });
-
-            document.getElementById('clear-members-btn')?.addEventListener('click', async () => {
-                if (!confirm("⚠️ DELETE ALL members?")) return;
-                try {
-                    for (const m of allMembers) {
-                        if (m.profile_image) await deleteOldImage(m.profile_image);
-                    }
-                    await supabase.from(MEMBERS_TABLE).delete().neq('id', 0);
-                    showToast('✅ All members cleared.', 'success');
-                    await loadMembers();
-                    await loadUserRoles();
-                } catch (err) {
-                    showToast('❌ Error clearing: ' + err.message, 'error');
-                }
-            });
 
             // Search
             document.getElementById('memberSearchBtn')?.addEventListener('click', () => {
@@ -2354,17 +2404,18 @@
                     })
                     .subscribe();
 
-                supabase.channel('registrations-realtime')
-                    .on('postgres_changes', { event: '*', schema: 'public', table: REGISTRATIONS_TABLE }, () => {
-                        console.log('🔄 Registrations changed');
-                        loadRegistrations();
-                    })
-                    .subscribe();
 
                 supabase.channel('roles-realtime')
                     .on('postgres_changes', { event: '*', schema: 'public', table: USER_ROLES_TABLE }, () => {
                         console.log('🔄 Roles changed');
                         loadUserRoles();
+                    })
+                    .subscribe();
+
+                supabase.channel('blood-bridge-admins-realtime')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: BLOOD_BRIDGE_ADMINS_TABLE }, () => {
+                        console.log('🔄 Blood Bridge Admins changed');
+                        loadBloodBridgeAdmins();
                     })
                     .subscribe();
             };
@@ -2383,16 +2434,17 @@
                     return;
                 }
 
-                await Promise.all([loadRegistrations(), loadMembers(), loadUserRoles()]);
+                await Promise.all([loadMembers(), loadUserRoles(), loadBloodBridgeAdmins()]);
                 setupRealtime();
 
                 let resizeTimeout;
                 window.addEventListener('resize', () => {
                     clearTimeout(resizeTimeout);
                     resizeTimeout = setTimeout(() => {
-                        updateSlider('registrationsTrack', registrations, 'regDots', renderRegistrationItem, regSliderIndex);
                         updateSlider('membersTrack', allMembers, 'memDots', renderMemberItem, memSliderIndex);
                         updateSlider('rolesTrack', userRoles, 'roleDots', renderRoleItem, roleSliderIndex);
+                        updateSlider('bloodBridgeAdminsTrack', bloodBridgeAdmins, 'bloodBridgeAdminsDots', renderBloodBridgeAdminItem, bloodBridgeAdminSliderIndex);
+                        bindBloodBridgeAdminActions();
                     }, 200);
                 });
             };

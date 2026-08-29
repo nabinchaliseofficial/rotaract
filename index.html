@@ -2295,93 +2295,186 @@
 
     // ============================================================
     // BOARD OF DIRECTORS + ACTIVE CLUB MEMBERS (from Supabase)
+    // IMPORTANT: This section reads the SAME `members` table used by
+    // adminmembers.html. Admin saves `position` and `profile_image`, so
+    // the public page uses those fields as the primary source.
     // ============================================================
     let allMembers = [];
 
-    function getMemberPhoto(m) { return m.photo_url || m.photo || m.profile_image || ''; }
+    const DEFAULT_AVATAR = (name, size) =>
+      'https://ui-avatars.com/api/?name=' + encodeURIComponent(name || 'Member') +
+      '&background=D91A5C&color=fff&size=' + size;
 
-    // Only these active designations are shown in Board of Directors.
-    // Every other active member is shown in Active Members.
+    function getMemberPhoto(m) {
+      // adminmembers.html saves the uploaded image in profile_image.
+      // Prefer it over legacy photo/photo_url fields so edits are reflected.
+      return String(m?.profile_image || '').trim();
+    }
+
+    function getMemberDesignation(m) {
+      // adminmembers.html saves the form value in `position`.
+      return String(m?.position || '').trim();
+    }
+
+    // These are the Board designations currently supported by the site.
+    // Keep all values normalized because normalizeDesignation() lowercases them.
     const BOARD_DESIGNATIONS = new Set([
       'chartered president',
       'president',
       'secretary',
       'treasurer',
-      'pp/isd/advisor',
-      'ipp/mentor',
+      'international service chair',
+      'club advisor',
+      'ipp',
       'past president/advisor',
       'joint secretary',
       'president elect',
-      'Health Program Chair',
-      'pp/rotaract learning facilitator',
-      'rotaract vice president',
+      'health program chair',
+      'learning facilitator',
+      'vice president',
       'rotaract membership chair',
       'it officer',
       'sergeant at arms',
-      'rotaract foundation chair',
+      'rotary foundation chair',
       'rotaract service projects chair',
-      'young leaders contact'
+      'young leaders contact', 
+      'service projects chair'
     ]);
 
     function normalizeDesignation(value) {
-      return (value || '')
-        .toString()
+      return String(value || '')
         .replace(/\u00a0/g, ' ')
         .replace(/\s+/g, ' ')
         .trim()
         .toLowerCase();
     }
 
+    function isActiveMember(m) {
+      return String(m?.status || '').trim().toLowerCase() === 'active';
+    }
+
+    function isBoardMember(m) {
+      return BOARD_DESIGNATIONS.has(normalizeDesignation(getMemberDesignation(m)));
+    }
+
+    function escapeMemberText(value) {
+      const div = document.createElement('div');
+      div.textContent = value == null ? '' : String(value);
+      return div.innerHTML;
+    }
+
     function renderBoardMembers(data) {
       const marquee = document.getElementById('boardMarquee');
-      const boardData = data.filter(m =>
-        (m.status || '').toString().trim().toLowerCase() === 'active' &&
-        BOARD_DESIGNATIONS.has(normalizeDesignation(m.designation || m.position || m.role))
-      );
-      if (!boardData.length) { marquee.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);width:100%;">No active board members found</div>`; return; }
+      if (!marquee) return;
+
+      const boardData = (data || []).filter(m => isActiveMember(m) && isBoardMember(m));
+
+      if (!boardData.length) {
+        marquee.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);width:100%;">No active board members found</div>`;
+        return;
+      }
+
+      // Keep database order. Do not alphabetically reorder the Board here;
+      // the record saved in Supabase is the source of truth.
       const doubled = [...boardData, ...boardData];
       marquee.innerHTML = doubled.map(m => {
-        const name=m.name||'Member', position=m.designation||'Board Member', photo=getMemberPhoto(m);
-        return `<div class="board-card" data-id="${m.id}"><img src="${photo || 'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=D91A5C&color=fff&size=80'}" alt="${name}" class="avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=D91A5C&color=fff&size=80'"><div class="name">${name}</div><div class="position">${position}</div></div>`;
+        const name = String(m.name || 'Member').trim();
+        const position = getMemberDesignation(m) || 'Board Member';
+        const photo = getMemberPhoto(m);
+        const safeName = escapeMemberText(name);
+        const safePosition = escapeMemberText(position);
+        const avatar = photo || DEFAULT_AVATAR(name, 80);
+        return `<div class="board-card" data-id="${String(m.id)}">
+          <img src="${escapeMemberText(avatar)}" alt="${safeName}" class="avatar" loading="lazy"
+            onerror="this.onerror=null;this.src='${DEFAULT_AVATAR(name, 80)}';">
+          <div class="name">${safeName}</div>
+          <div class="position">${safePosition}</div>
+        </div>`;
       }).join('');
-      marquee.querySelectorAll('.board-card').forEach(card => card.addEventListener('click', () => {
-        const member=allMembers.find(m=>String(m.id)===String(card.dataset.id));
-        if(member) openMemberPopupFromSupabase(member);
-      }));
+
+      marquee.querySelectorAll('.board-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const member = allMembers.find(m => String(m.id) === String(card.dataset.id));
+          if (member) openMemberPopupFromSupabase(member);
+        });
+      });
     }
 
     function renderMembersMarquee(data) {
-      const marquee=document.getElementById('membersMarquee');
-      const clubMembers=data.filter(m =>
-        (m.status||'').toString().trim().toLowerCase()==='active' &&
-        !BOARD_DESIGNATIONS.has(normalizeDesignation(m.designation || m.position || m.role))
-      );
-      if(!clubMembers.length){ marquee.innerHTML=`<div style="padding:20px;text-align:center;color:var(--text-muted);width:100%;">No active Club Members found</div>`; return; }
-      const doubled=[...clubMembers,...clubMembers];
-      marquee.innerHTML=doubled.map(m=>{
-        const name=m.name||'Member', photo=getMemberPhoto(m);
-        return `<div class="member-marquee-card" data-id="${m.id}"><img src="${photo || 'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=D91A5C&color=fff&size=64'}" alt="${name}" class="avatar" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=D91A5C&color=fff&size=64'"><div class="name">${name}</div><div class="designation">${m.designation || m.position || m.role || 'Club Member'}</div></div>`;
+      const marquee = document.getElementById('membersMarquee');
+      if (!marquee) return;
+
+      const clubMembers = (data || []).filter(m => isActiveMember(m) && !isBoardMember(m));
+
+      if (!clubMembers.length) {
+        marquee.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);width:100%;">No active Club Members found</div>`;
+        return;
+      }
+
+      const doubled = [...clubMembers, ...clubMembers];
+      marquee.innerHTML = doubled.map(m => {
+        const name = String(m.name || 'Member').trim();
+        const designation = getMemberDesignation(m) || 'Club Member';
+        const photo = getMemberPhoto(m);
+        const safeName = escapeMemberText(name);
+        const safeDesignation = escapeMemberText(designation);
+        const avatar = photo || DEFAULT_AVATAR(name, 64);
+        return `<div class="member-marquee-card" data-id="${String(m.id)}">
+          <img src="${escapeMemberText(avatar)}" alt="${safeName}" class="avatar" loading="lazy"
+            onerror="this.onerror=null;this.src='${DEFAULT_AVATAR(name, 64)}';">
+          <div class="name">${safeName}</div>
+          <div class="designation">${safeDesignation}</div>
+        </div>`;
       }).join('');
-      marquee.querySelectorAll('.member-marquee-card').forEach(card => card.addEventListener('click', () => {
-        const member=allMembers.find(m=>String(m.id)===String(card.dataset.id));
-        if(member) openMemberPopupFromSupabase(member);
-      }));
+
+      marquee.querySelectorAll('.member-marquee-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const member = allMembers.find(m => String(m.id) === String(card.dataset.id));
+          if (member) openMemberPopupFromSupabase(member);
+        });
+      });
     }
 
     async function loadBoardAndActiveMembers() {
       try {
-        const {data,error}=await supabase.from('members').select('*').eq('status','active').order('name',{ascending:true});
-        if(error) throw error;
-        allMembers=data||[];
+        // Read the same table/columns used by adminmembers.html.
+        const { data, error } = await supabase
+          .from('members')
+          .select('id, name, email, phone, gender, blood_group, position, address, profession, birthday, status, profile_image')
+          .eq('status', 'active')
+          .order('id', { ascending: true });
+
+        if (error) throw error;
+
+        allMembers = Array.isArray(data) ? data : [];
         renderBoardMembers(allMembers);
         renderMembersMarquee(allMembers);
-      } catch(err) {
-        console.error('Failed to load active members:',err);
-        document.getElementById('boardMarquee').innerHTML=`<div style="padding:20px;text-align:center;color:#EF4444;width:100%;">Failed to load Board of Directors</div>`;
-        document.getElementById('membersMarquee').innerHTML=`<div style="padding:20px;text-align:center;color:#EF4444;width:100%;">Failed to load Active Members</div>`;
+      } catch (err) {
+        console.error('Failed to load active members:', err);
+        const board = document.getElementById('boardMarquee');
+        const members = document.getElementById('membersMarquee');
+        if (board) board.innerHTML = `<div style="padding:20px;text-align:center;color:#EF4444;width:100%;">Failed to load Board of Directors</div>`;
+        if (members) members.innerHTML = `<div style="padding:20px;text-align:center;color:#EF4444;width:100%;">Failed to load Active Members</div>`;
       }
     }
+
     loadBoardAndActiveMembers();
+
+    // Re-render the public page immediately whenever adminmembers.html
+    // inserts, edits, deletes, or changes a member's status.
+    supabase
+      .channel('public-members-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'members' }, payload => {
+        console.log('🔄 Members changed:', payload.eventType);
+        loadBoardAndActiveMembers();
+      })
+      .subscribe((status) => {
+        console.log('Members realtime:', status);
+      });
+
+    // Fallback refresh in case Realtime is unavailable/not enabled for the
+    // `members` table. This guarantees newly saved admin data appears after refresh.
+    setInterval(loadBoardAndActiveMembers, 30000);
 
     // ============================================================
     // PAST PRESIDENTS & ADVISORS SLIDER
@@ -2441,12 +2534,12 @@
     }
 
     function buildVCardForPopup(member) {
-      const name = getFullNameForPopup(member.name || member.full_name || '').replace(/^RTR\.\s*/, '');
+      const name = getFullNameForPopup(member.name || '').replace(/^RTR\.\s*/, '');
       const lines = ['BEGIN:VCARD', 'VERSION:3.0', `FN:${name}`];
-      const role = member.designation || member.role || member.position || 'Member';
+      const role = member.position || 'Member';
       if (role) lines.push(`TITLE:${role}`);
       if (member.email) lines.push(`EMAIL:${member.email}`);
-      const phone = member.phone || member.phone_number;
+      const phone = member.phone;
       if (phone) lines.push(`TEL:${phone}`);
       lines.push('ORG:Rotaract Club of Galkot Baglung');
       if (member.rotary_id) lines.push(`NOTE:Rotary ID ${member.rotary_id}`);
@@ -2511,9 +2604,9 @@
     }
 
     function openMemberPopupFromSupabase(member) {
-      const displayName = getFullNameForPopup(member.name || member.full_name || '');
+      const displayName = getFullNameForPopup(member.name || '');
       const initials = getInitialsForPopup(displayName);
-      const photoSrc = getPhotoForPopup(member.photo_url || member.photo || member.profile_image || '');
+      const photoSrc = getPhotoForPopup(member.profile_image || '');
 
       memberPopupAvatar.innerHTML = '';
       if (photoSrc) {
@@ -2530,7 +2623,7 @@
       }
 
       memberPopupName.textContent = displayName;
-      memberPopupDesignation.textContent = member.designation || member.role || member.position || 'Member';
+      memberPopupDesignation.textContent = member.position || 'Member';
       
       if (isVerifiedForPopup(member)) {
         memberPopupVerified.classList.add('show');
@@ -2546,10 +2639,10 @@
       // Update detail fields
       document.getElementById('mpEmail').textContent = member.email || '—';
       document.getElementById('mpRotary').textContent = member.rotary_id || '—';
-      document.getElementById('mpPhone').textContent = member.phone || member.phone_number || '—';
+      document.getElementById('mpPhone').textContent = member.phone || '—';
       document.getElementById('mpBlood').textContent = member.blood_group || '—';
       document.getElementById('mpGender').textContent = member.gender || '—';
-      document.getElementById('mpDob').textContent = member.dob || member.date_of_birth || member.birthday || '—';
+      document.getElementById('mpDob').textContent = member.birthday || '—';
       document.getElementById('mpProfession').textContent = member.profession || '—';
       document.getElementById('mpAddress').textContent = member.address || '—';
 
@@ -2585,11 +2678,11 @@
       if (!currentPopupMember) return;
       const m = currentPopupMember;
       const text = [
-        getFullNameForPopup(m.name || m.full_name || ''),
-        m.designation || m.role || m.position || 'Member',
+        getFullNameForPopup(m.name || ''),
+        m.position || 'Member',
         m.email ? `Email: ${m.email}` : null,
         m.rotary_id ? `Rotary ID: ${m.rotary_id}` : null,
-        m.phone || m.phone_number ? `Phone: ${m.phone || m.phone_number}` : null,
+        m.phone ? `Phone: ${m.phone}` : null,
         m.profession ? `Profession: ${m.profession}` : null,
         m.address ? `Address: ${m.address}` : null
       ].filter(Boolean).join('\n');
@@ -2769,7 +2862,7 @@
 
         const { data: members, error: memError } = await supabase
           .from('members')
-          .select('id, name, full_name, designation, role, position, status, mentor, photo_url, photo, profile_image')
+          .select('id, name, email, phone, gender, blood_group, position, address, profession, birthday, status, profile_image')
           .eq('status', 'active');
 
         if (memError) throw new Error('Members fetch failed: ' + memError.message);
@@ -2870,7 +2963,7 @@
         // Reuse the board roster already defined for the Board of Directors section.
         // BOARD_DESIGNATIONS is a Set, so BOARD_ONLY_DESIGNATIONS is not needed.
         function classifyMember(m) {
-          const rawDesignation = (m.designation || m.position || m.role || '').toString().trim();
+          const rawDesignation = (m.position || '').toString().trim();
           const normalized = normalizeDesignation(rawDesignation);
           const isBoard = BOARD_DESIGNATIONS.has(normalized);
           const isPresident = normalized === 'president';
@@ -2911,11 +3004,11 @@
           const projectParticipationCount = projectParticipationCountMap[m.id] || 0;
           const projectParticipationPoints = projectParticipationCount;
           const bonus = bloodBonus + coordinatorPoints + projectParticipationPoints;
-          const photoUrl = m.photo_url || m.photo || m.profile_image || null;
+          const photoUrl = m.profile_image || null;
           const finalScore = attendancePct + bonus;
           const projectVolunteerHours = Math.round((projectVolunteerHoursMap[m.id] || 0) * 100) / 100;
           return {
-            id: m.id, fullName: m.name || m.full_name || 'Unknown Member', designation: classification.designation,
+            id: m.id, fullName: m.name || 'Unknown Member', designation: classification.designation,
             photoUrl, attendancePct, bonus, bloodEntryCount, bloodBonus,
             coordinatorPoints, finalScore, isBoard: classification.isBoard, isPresident: classification.isPresident,
             projectParticipationCount, projectParticipationPoints, projectVolunteerHours
@@ -2983,7 +3076,7 @@
       try {
         const { data: members, error: memError } = await supabase
           .from('members')
-          .select('name, birthday, dob')
+          .select('name, birthday')
           .eq('status', 'active');
 
         if (memError) throw memError;
@@ -2994,7 +3087,7 @@
           todayDate.setHours(0, 0, 0, 0);
           
           const upcomingBirthdays = members.filter(m => {
-            const birthDate = m.birthday || m.dob;
+            const birthDate = m.birthday;
             if (!birthDate) return false;
             const d = new Date(birthDate);
             if (isNaN(d.getTime())) return false;
@@ -3010,7 +3103,7 @@
 
           birthdayItems = upcomingBirthdays.map(m => {
             const name = m.name || 'Member';
-            const birthDate = m.birthday || m.dob;
+            const birthDate = m.birthday;
             const dateStr = birthDate ? new Date(birthDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
             return `
               <span class="ticker-item">
