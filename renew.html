@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="lok.ico" />
+    <title>परिचयपत्र नवीकरण फारम</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            background-color: #f0f2f5;
+        }
+        /* प्रिन्ट गर्दा नचाहिने तत्वहरू लुकाउने */
+        @media print {
+            .no-print {
+                display: none;
+            }
+            #preview-area {
+                box-shadow: none;
+                border: none;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            .print-container {
+                display: block !important;
+                width: 100% !important;
+                padding: 0 !important;
+            }
+        }
+        .input-field {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            margin-top: 4px;
+        }
+        .placeholder {
+            color: #9ca3af;
+            font-style: italic;
+            min-width: 50px;
+            display: inline-block;
+            border-bottom: 1px dotted #9ca3af;
+        }
+
+        /* ===== नयाँ थपिएका UI स्टाइलहरू (Login/Dashboard/Serial) ===== */
+        .app-hidden { display: none !important; }
+        #login-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1e40af 100%);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .login-card {
+            background: #fff; border-radius: 16px; padding: 2.5rem;
+            width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .toast {
+            position: fixed; top: 20px; right: 20px; z-index: 10000;
+            padding: 14px 22px; border-radius: 10px; color: #fff; font-weight: 600;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2); transition: all .3s ease;
+            opacity: 0; transform: translateY(-20px); pointer-events: none;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: #16a34a; }
+        .toast.error { background: #dc2626; }
+        .toast.info { background: #2563eb; }
+        .stat-card {
+            border-radius: 14px; padding: 1.25rem; color: #fff;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+        }
+        .tab-btn {
+            padding: 10px 22px; border-radius: 10px 10px 0 0; font-weight: 700;
+            cursor: pointer; border: 1px solid transparent; border-bottom: none;
+        }
+        .tab-btn.active { background: #fff; border-color: #d1d5db; color: #1d4ed8; }
+        .tab-btn:not(.active) { background: #e5e7eb; color: #4b5563; }
+        #dashboard-table th {
+            position: sticky; top: 0; background: #1e3a8a; color: #fff;
+            padding: 10px 8px; font-size: 0.85rem; white-space: nowrap;
+        }
+        #dashboard-table td { padding: 8px; font-size: 0.85rem; white-space: nowrap; border-bottom: 1px solid #e5e7eb; }
+        #dashboard-table tr:hover { background: #f0f7ff; }
+        .badge-guardian { background:#fde68a; color:#92400e; padding:2px 8px; border-radius:999px; font-size:.75rem; font-weight:700; }
+        .action-btn { padding: 4px 10px; border-radius: 6px; font-size: .78rem; font-weight: 700; cursor: pointer; }
+        @media print {
+            #login-overlay, #dashboard-section, #app-header, .no-print, .toast { display: none !important; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- ===== 🔐 LOGIN POPUP ===== -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-1">🔐 लगइन गर्नुहोस्</h2>
+            <p class="text-center text-gray-500 mb-6 text-sm">सामाजिक सुरक्षा नवीकरण प्रणाली</p>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="font-semibold text-gray-700">प्रयोगकर्ता आईडी</label>
+                    <input type="text" id="login-id" class="input-field" autocomplete="username" required>
+                </div>
+                <div>
+                    <label class="font-semibold text-gray-700">पासवर्ड</label>
+                    <input type="password" id="login-pass" class="input-field" autocomplete="current-password" required>
+                </div>
+                <p id="login-error" class="text-red-500 text-sm text-center"></p>
+                <button type="submit" class="w-full bg-blue-700 text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition-colors">
+                    लगइन गर्नुहोस्
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <div class="max-w-7xl mx-auto app-hidden" id="app-content">
+        <header class="text-center mb-8 no-print" id="app-header">
+            <h1 class="text-3xl font-bold text-gray-800">सामाजिक सुरक्षा परिचयपत्र नवीकरण फारम</h1>
+            <p class="text-gray-600 mt-2">बायाँतिरको फारममा विवरण भर्नुहोस् र दायाँतिर पूर्वावलोकन हेर्नुहोस्।</p>
+            <div class="flex justify-center gap-3 mt-4">
+                <button id="tab-form-btn" class="tab-btn active">📝 फारम</button>
+                <button id="tab-dashboard-btn" class="tab-btn">📊 ड्यासबोर्ड</button>
+                <button id="logout-btn" class="ml-4 bg-red-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-red-700 transition-colors">
+                    लगआउट
+                </button>
+            </div>
+        </header>
+
+        <!-- ===== 📊 DASHBOARD SECTION ===== -->
+        <div id="dashboard-section" class="no-print app-hidden">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="stat-card" style="background:#2563eb;">
+                    <p class="text-sm opacity-90">कुल आवेदनहरू</p>
+                    <p class="text-3xl font-bold" id="stat-total">0</p>
+                </div>
+                <div class="stat-card" style="background:#16a34a;">
+                    <p class="text-sm opacity-90">आजका प्रविष्टिहरू</p>
+                    <p class="text-3xl font-bold" id="stat-today">0</p>
+                </div>
+                <div class="stat-card" style="background:#9333ea;">
+                    <p class="text-sm opacity-90">यस महिना</p>
+                    <p class="text-3xl font-bold" id="stat-month">0</p>
+                </div>
+                <div class="stat-card" style="background:#ea580c;">
+                    <p class="text-sm opacity-90">संरक्षक भएका</p>
+                    <p class="text-3xl font-bold" id="stat-guardian">0</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-lg mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-3 mb-3">
+                    <input type="text" id="search-box" placeholder="खोज्नुहोस्: नाम/सिरियल/परिचयपत्र/मोबाइल" class="input-field md:col-span-2">
+                    <input type="text" id="filter-ward" placeholder="वडा नं." class="input-field">
+                    <select id="filter-gender" class="input-field">
+                        <option value="">सबै लिङ्ग</option>
+                        <option value="पुरुष">पुरुष</option>
+                        <option value="महिला">महिला</option>
+                        <option value="अन्य">अन्य</option>
+                    </select>
+                    <select id="filter-group" class="input-field">
+                        <option value="">सबै समुह</option>
+                        <option value="अन्य जेष्ठ नागरिक">अन्य जेष्ठ नागरिक</option>
+                        <option value="जेष्ठ नागरिक दलित">जेष्ठ नागरिक दलित</option>
+                        <option value="जेष्ठ नागरिक एकल महिला">जेष्ठ नागरिक एकल महिला</option>
+                        <option value="विधवा">विधवा</option>
+                        <option value="पुर्ण अपाङ्गता">पुर्ण अपाङ्गता</option>
+                        <option value="अति अशक्त अपाङ्गता">अति अशक्त अपाङ्गता</option>
+                        <option value="दलित बालबालिका">दलित बालबालिका</option>
+                    </select>
+                    <select id="filter-guardian" class="input-field">
+                        <option value="">सबै</option>
+                        <option value="yes">संरक्षक भएको</option>
+                        <option value="no">संरक्षक नभएको</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-3 mb-3">
+                    <input type="date" id="filter-date" class="input-field md:col-span-2">
+                    <button id="clear-filters-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg px-3">फिल्टर हटाउनुहोस्</button>
+                    <button id="refresh-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg px-3">🔄 रिफ्रेस</button>
+                    <button id="export-excel-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-3 md:col-span-2">📥 Excel निर्यात</button>
+                </div>
+
+                <div class="overflow-x-auto border rounded-lg" style="max-height:480px; overflow-y:auto;">
+                    <table class="w-full" id="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>सि.नं.</th><th>मिति</th><th>वडा</th><th>नाम</th><th>लिङ्ग</th>
+                                <th>समुह</th><th>सामाजिक सु.प.नं.</th><th>राष्ट्रिय प.नं.</th><th>मोबाइल</th>
+                                <th>संरक्षक</th><th>कार्य</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-tbody"></tbody>
+                    </table>
+                </div>
+                <div class="flex justify-between items-center mt-3 text-sm text-gray-600">
+                    <span id="pagination-info"></span>
+                    <div class="flex gap-2">
+                        <button id="prev-page-btn" class="action-btn bg-gray-200 hover:bg-gray-300">← अघिल्लो</button>
+                        <span id="page-indicator" class="font-bold"></span>
+                        <button id="next-page-btn" class="action-btn bg-gray-200 hover:bg-gray-300">पछिल्लो →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="form-section" class="grid grid-cols-1 lg:grid-cols-2 gap-8 print-container">
+            <!-- Input Form Section -->
+            <div id="input-form" class="bg-white p-6 rounded-xl shadow-lg no-print">
+                <h2 class="text-2xl font-bold mb-6 border-b pb-3">विवरण भर्नुहोस्</h2>
+                <form id="detailsForm" class="space-y-6">
+                    <!-- Serial Number (auto, from DB sequence) -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
+                        <span class="font-semibold text-blue-800">सिरियल नं.:</span>
+                        <span id="serial-display" class="text-xl font-bold text-blue-900">नयाँ (सेभ गर्दा स्वतः तयार हुनेछ)</span>
+                    </div>
+                    <input type="hidden" id="record-id">
+                    <input type="hidden" id="serial-number">
+                    <!-- General Info -->
+                    <div>
+                        <label for="form-date" class="font-semibold text-gray-700">मिति (बि.सं.)</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <input type="text" id="year" placeholder="वर्ष" class="input-field">
+                            <input type="text" id="month" placeholder="महिना" class="input-field">
+                            <input type="text" id="day" placeholder="गते" class="input-field">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="ward-no" class="font-semibold text-gray-700">वडा नं.</label>
+                        <input type="text" id="ward-no" class="input-field">
+                    </div>
+
+                    <!-- Beneficiary Details -->
+                    <div class="border-t pt-4">
+                        <h3 class="text-xl font-bold mb-4 text-gray-800">लाभग्राहीको विवरण</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="name" class="font-semibold text-gray-700">नाम थर</label>
+                                <input type="text" id="name" class="input-field">
+                            </div>
+                            <div>
+                                <label for="gender" class="font-semibold text-gray-700">लिङ्ग</label>
+                                <select id="gender" class="input-field">
+                                    <option value="">छान्नुहोस्</option>
+                                    <option value="पुरुष">पुरुष</option>
+                                    <option value="महिला">महिला</option>
+                                    <option value="अन्य">अन्य</option>
+                                </select>
+                            </div>
+                            <div class="col-span-1 md:col-span-2">
+                                <label for="group" class="font-semibold text-gray-700">लक्षित समुह</label>
+                                <select id="group" class="input-field">
+                                    <option value="">छान्नुहोस्</option>
+                                    <option value="अन्य जेष्ठ नागरिक">अन्य जेष्ठ नागरिक</option>
+                                    <option value="जेष्ठ नागरिक दलित">जेष्ठ नागरिक दलित</option>
+                                    <option value="जेष्ठ नागरिक एकल महिला">जेष्ठ नागरिक एकल महिला</option>
+                                    <option value="विधवा">विधवा</option>
+                                    <option value="पुर्ण अपाङ्गता">पुर्ण अपाङ्गता</option>
+                                    <option value="अति अशक्त अपाङ्गता">अति अशक्त अपाङ्गता</option>
+                                    <option value="दलित बालबालिका">दलित बालबालिका</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="social-id" class="font-semibold text-gray-700">सामाजिक सुरक्षा परिचयपत्र नं.</label>
+                                <input type="text" id="social-id" class="input-field" maxlength="13">
+                                <p id="social-id-error" class="text-red-500 text-sm mt-1"></p>
+                            </div>
+                            <div>
+                                <label for="national-id" class="font-semibold text-gray-700">राष्ट्रिय परिचयपत्र नं.</label>
+                                <input type="text" id="national-id" class="input-field" maxlength="10">
+                                <p id="national-id-error" class="text-red-500 text-sm mt-1"></p>
+                            </div>
+                            <div>
+                                <label for="mobile" class="font-semibold text-gray-700">सम्पर्क मोबाइल नं.</label>
+                                <input type="text" id="mobile" class="input-field">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Guardian Checkbox -->
+                    <div class="border-t pt-4">
+                         <div class="flex items-center">
+                            <input type="checkbox" id="needsGuardian" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                            <label for="needsGuardian" class="ml-2 block text-sm text-gray-900">बालबालिका वा आफैँ उपस्थित हुन नसक्ने व्यक्तिको हकमा हो?</label>
+                        </div>
+                    </div>
+
+
+                    <!-- Guardian Details (Initially Hidden) -->
+                    <div id="guardian-form-section" class="border-t pt-4" style="display: none;">
+                        <h3 class="text-xl font-bold mb-4 text-gray-800">संरक्षक/मायवरको विवरण</h3>
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="guardian-name" class="font-semibold text-gray-700">नाम थर</label>
+                                <input type="text" id="guardian-name" class="input-field">
+                            </div>
+                             <div>
+                                <label for="relation" class="font-semibold text-gray-700">भत्ता प्राप्त गर्ने व्यक्तिसँगको नाता</label>
+                                <input type="text" id="relation" class="input-field">
+                            </div>
+                             <div>
+                                <label for="guardian-mobile" class="font-semibold text-gray-700">सम्पर्क मोबाईल नं.</label>
+                                <input type="text" id="guardian-mobile" class="input-field">
+                            </div>
+                            <div>
+                                <label for="guardian-national-id" class="font-semibold text-gray-700">राष्ट्रिय परिचयपत्र नं.</label>
+                                <input type="text" id="guardian-national-id" class="input-field" maxlength="10">
+                                <p id="guardian-national-id-error" class="text-red-500 text-sm mt-1"></p>
+                            </div>
+                             <div>
+                                <label for="citizenship-no" class="font-semibold text-gray-700">नागरिकता प्रमाणपत्र नं.</label>
+                                <input type="text" id="citizenship-no" class="input-field">
+                            </div>
+                            <div>
+                                <label for="issue-details" class="font-semibold text-gray-700">जारि भएको जिल्ला र मिति</label>
+                                <input type="text" id="issue-details" class="input-field">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center pt-4 space-y-3">
+                        <button type="button" id="save-btn" class="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300">
+                            💾 सेभ गर्नुहोस्
+                        </button>
+                        <button type="button" id="new-entry-btn" class="w-full bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition-colors duration-300">
+                            ➕ नयाँ फारम
+                        </button>
+                         <button type="button" onclick="window.print()" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300">
+                            प्रिन्ट गर्नुहोस्
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Preview Area -->
+            <div id="preview-area" class="bg-white p-8 md:p-12 rounded-xl shadow-lg leading-relaxed">
+                <div class="text-center mb-6">
+                    <h2 class="font-bold">अनुसूची- २</h2>
+                    <p>(दफा ४ को उपदफा (१) सँग सम्बन्धित )</p>
+                </div>
+                <div class="text-right mb-6">
+                    <p>सि.नं.: <span id="preview-serial" class="placeholder">--</span></p>
+                    <p>मिति: <span id="preview-year" class="placeholder">२०&nbsp;&nbsp;</span>/<span id="preview-month" class="placeholder">&nbsp;&nbsp;</span>/<span id="preview-day" class="placeholder">&nbsp;&nbsp;</span> गते</p>
+                </div>
+
+                <div class="space-y-2 mb-4">
+                    <p>श्री वडा अध्यक्षज्यू,</p>
+                    <p>गलकोट नगरपालिका</p>
+                    <p>वडा नं. <span id="preview-ward-no" class="placeholder">...</span>, बागलुङ</p>
+                    <p>गण्डकी प्रदेश</p>
+                </div>
+
+                <h3 class="text-center font-bold underline mb-4">विषयः परिचयपत्र नवीकरण सम्बन्धमा ।</h3>
+
+                <p class="mb-4">
+                    प्रस्तुत विषयमा चालु आर्थिक वर्षमा सामाजिक सुरक्षा भत्ता प्राप्त गर्नका लागि परिचयपत्र नवीकरण गरिदिनु हुन देहायको विवरण सहित निवेदन पेश गरेको छु ।
+                </p>
+                <p class="mb-4">
+                    म सरकारी वा सार्वजनिक पदमा नियुक्ति, निर्वाचित, मनोनित भएको व्यक्ति होइन र मैले नेपाल सरकार, प्रदेश सरकार र स्थानीय तहको पूर्ण वा आंशिक स्वामित्वमा भएको संगठित संस्थाबाट नियमित रुपले पारिश्रमिक, निवृत्तभरण, अवकाश सुविधा वा अन्य सुविधा पाएको छैन । व्यहोरा ठीक साँचो हो, झुठ्ठा ठहरे प्रचलित कानून बमोजिम सहुँला बुझाउँला ।
+                </p>
+                <p class="mb-4">
+                    ६० वर्ष भन्दा मूनिका विधवा महिला लाभग्राहीको हकमा अर्को विवाह नभएको र सामाजिक सुरक्षा भत्ता पाउन कुनै कानूनले अयोग्य नभएको व्यहोरा प्रमाणित भएको हुनुपर्नेछ ।
+                </p>
+
+                <div class="mb-6 border-t border-b py-4">
+                    <h4 class="font-bold underline mb-2">लाभग्राहीको विवरणः</h4>
+                    <div class="grid grid-cols-2 gap-x-8 gap-y-2">
+                        <p>नाम थर :- <span id="preview-name" class="placeholder">नाम</span></p>
+                        <p>लिङ्ग:- <span id="preview-gender" class="placeholder">लिङ्ग</span></p>
+                        <p class="col-span-2">लक्षित समुह:- <span id="preview-group" class="placeholder">समुह</span></p>
+                        <p>सामाजिक सुरक्षा परिचयपत्र नं.: <span id="preview-social-id" class="placeholder">नं.</span></p>
+                        <p>राष्ट्रिय परिचयपत्र नं.:- <span id="preview-national-id" class="placeholder">नं.</span></p>
+                        <p>सम्पर्क मोबाइल नं.:- <span id="preview-mobile" class="placeholder">नं.</span></p>
+                        <p>दस्तखतः- ....................................</p>
+                        <p>मिति:- ..................................</p>
+                    </div>
+                </div>
+
+                <div id="guardian-preview-section" class="mb-6">
+                    <h4 class="font-bold text-center mb-2">संरक्षक/ मायवर/ स्याहारसुसार गर्ने व्यक्तिको विवरण (बालबालिका वा आफैँ उपस्थित हुन नसक्ने व्यक्तिको हकमा)</h4>
+                    <p class="mb-4">
+                        यस निवेदनमा भएको लाभग्राहीको दस्तखत / सहिछाप मेरो रोहवरमा भएको ठिक साँचो हो । यसमा भएको दस्तखत वा मितिमा फरक परेमा कानून बमोजिम सहुँदा बुझाउँला भनी सहिछाप गर्ने इच्छाएको व्यक्तिको:-
+                    </p>
+                     <div class="grid grid-cols-2 gap-x-8 gap-y-2">
+                        <p>नाम थर:- <span id="preview-guardian-name" class="placeholder">नाम</span></p>
+                        <p>दस्तखतः- ....................................</p>
+                        <p>भत्ता प्राप्त गर्ने व्यक्तिसँगको नाताः <span id="preview-relation" class="placeholder">नाता</span></p>
+                        <p>सम्पर्क मोबाईल नं.:- <span id="preview-guardian-mobile" class="placeholder">नं.</span></p>
+                        <p>राष्ट्रिय परिचयपत्र नं.:- <span id="preview-guardian-national-id" class="placeholder">नं.</span></p>
+                        <p>नागरिकता प्रमाणपत्र नं.:- <span id="preview-citizenship-no" class="placeholder">नं.</span></p>
+                        <p class="col-span-2">जारि भएको जिल्ला र मितिः- <span id="preview-issue-details" class="placeholder">विवरण</span></p>
+                    </div>
+                </div>
+
+                <div class="border-t pt-4">
+                    <h4 class="font-bold underline mb-2">कार्यालयको प्रयोजनको लागि</h4>
+                     <div class="grid grid-cols-2 gap-x-8 gap-y-2">
+                        <p>दर्ता नं.:- ....................................</p>
+                        <p>रुजु गर्ने कर्मचारीको नाम थर: ....................................</p>
+                        <p>पदः ....................................</p>
+                        <p>दस्तखतः- ....................................</p>
+                        <p>मितिः ....................................</p>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /#form-section -->
+    </div><!-- /#app-content -->
+
+    <script>
+        // --- Helper Functions ---
+
+        // Function to convert English digits to Nepali digits
+        const toNepaliNumber = (numStr) => {
+            if (numStr === null || numStr === undefined) return '';
+            const englishNumerals = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            const nepaliNumerals = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+            let nepaliStr = String(numStr);
+            for (let i = 0; i < 10; i++) {
+                nepaliStr = nepaliStr.replace(new RegExp(englishNumerals[i], "g"), nepaliNumerals[i]);
+            }
+            return nepaliStr;
+        };
+        
+        // Function to set up event listeners for text fields with optional validation
+        function listenAndUpdate(inputId, previewId, defaultValue, options = {}) {
+            const { isNumeric = false, validation = null } = options;
+
+            const inputElement = document.getElementById(inputId);
+            const previewElement = document.getElementById(previewId);
+            const errorElement = validation ? document.getElementById(validation.errorId) : null;
+            
+            previewElement.textContent = defaultValue;
+
+            inputElement.addEventListener('input', () => {
+                let value = inputElement.value;
+                if (isNumeric) {
+                    value = value.replace(/[^0-9]/g, '');
+                    inputElement.value = value;
+                } else {
+                    value = value.trim();
+                }
+
+                // Update Preview
+                if (value !== '') {
+                    previewElement.textContent = isNumeric ? toNepaliNumber(value) : value;
+                    previewElement.classList.remove('placeholder');
+                } else {
+                    previewElement.textContent = defaultValue;
+                    previewElement.classList.add('placeholder');
+                }
+
+                // Handle Validation
+                if (validation && errorElement) {
+                    if (value.length > 0 && value.length !== validation.length) {
+                        errorElement.textContent = validation.message;
+                    } else {
+                        errorElement.textContent = '';
+                    }
+                }
+            });
+        }
+
+        // --- Event Listeners Setup ---
+
+        // Date fields
+        listenAndUpdate('year', 'preview-year', '२०\u00a0\u00a0', { isNumeric: true });
+        listenAndUpdate('month', 'preview-month', '\u00a0\u00a0', { isNumeric: true });
+        listenAndUpdate('day', 'preview-day', '\u00a0\u00a0', { isNumeric: true });
+
+        // Other fields
+        listenAndUpdate('ward-no', 'preview-ward-no', '...', { isNumeric: true });
+        listenAndUpdate('name', 'preview-name', 'नाम');
+        listenAndUpdate('gender', 'preview-gender', 'लिङ्ग');
+        listenAndUpdate('group', 'preview-group', 'समुह');
+        listenAndUpdate('mobile', 'preview-mobile', 'नं.', { isNumeric: true });
+        
+        // Fields with validation
+        listenAndUpdate('social-id', 'preview-social-id', 'नं.', {
+            isNumeric: true,
+            validation: {
+                length: 13,
+                errorId: 'social-id-error',
+                message: 'परिचयपत्र नं. १३ अंकको हुनुपर्छ।'
+            }
+        });
+        listenAndUpdate('national-id', 'preview-national-id', 'नं.', {
+            isNumeric: true,
+            validation: {
+                length: 10,
+                errorId: 'national-id-error',
+                message: 'राष्ट्रिय परिचयपत्र नं. १० अंकको हुनुपर्छ।'
+            }
+        });
+
+        // Guardian fields
+        listenAndUpdate('guardian-name', 'preview-guardian-name', 'नाम');
+        listenAndUpdate('relation', 'preview-relation', 'नाता');
+        listenAndUpdate('guardian-mobile', 'preview-guardian-mobile', 'नं.', { isNumeric: true });
+        listenAndUpdate('citizenship-no', 'preview-citizenship-no', 'नं.', { isNumeric: true });
+        listenAndUpdate('issue-details', 'preview-issue-details', 'विवरण');
+        listenAndUpdate('guardian-national-id', 'preview-guardian-national-id', 'नं.', {
+            isNumeric: true,
+            validation: {
+                length: 10,
+                errorId: 'guardian-national-id-error',
+                message: 'राष्ट्रिय परिचयपत्र नं. १० अंकको हुनुपर्छ।'
+            }
+        });
+
+        // Guardian section visibility toggle
+        const needsGuardianCheckbox = document.getElementById('needsGuardian');
+        const guardianFormSection = document.getElementById('guardian-form-section');
+        
+        needsGuardianCheckbox.addEventListener('change', () => {
+            const isChecked = needsGuardianCheckbox.checked;
+            guardianFormSection.style.display = isChecked ? 'block' : 'none';
+        });
+
+        /* =======================================================
+           ============ नयाँ थपिएका FEATURES (Login, ==============
+           ============ Supabase, Dashboard, Excel) ================
+           ======================================================= */
+
+        // ---------- Supabase Setup ----------
+        const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const TABLE_NAME = 'social_security_renewals';
+
+        // ---------- Toast ----------
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ---------- Login ----------
+        const LOGIN_ID = '1111';
+        const LOGIN_PASS = '2222';
+        const loginOverlay = document.getElementById('login-overlay');
+        const appContent = document.getElementById('app-content');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('login-error');
+
+        function checkSession() {
+            if (sessionStorage.getItem('ssrn_logged_in') === 'true') {
+                loginOverlay.classList.add('app-hidden');
+                appContent.classList.remove('app-hidden');
+                loadDashboardData();
+            } else {
+                loginOverlay.classList.remove('app-hidden');
+                appContent.classList.add('app-hidden');
+            }
+        }
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('login-id').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+            if (id === LOGIN_ID && pass === LOGIN_PASS) {
+                sessionStorage.setItem('ssrn_logged_in', 'true');
+                loginError.textContent = '';
+                checkSession();
+                showToast('सफलतापूर्वक लगइन भयो', 'success');
+            } else {
+                loginError.textContent = 'आईडी वा पासवर्ड मिलेन।';
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            sessionStorage.removeItem('ssrn_logged_in');
+            checkSession();
+        });
+
+        // ---------- Tabs ----------
+        const tabFormBtn = document.getElementById('tab-form-btn');
+        const tabDashboardBtn = document.getElementById('tab-dashboard-btn');
+        const formSection = document.getElementById('form-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+
+        tabFormBtn.addEventListener('click', () => {
+            tabFormBtn.classList.add('active');
+            tabDashboardBtn.classList.remove('active');
+            formSection.classList.remove('app-hidden');
+            dashboardSection.classList.add('app-hidden');
+        });
+        tabDashboardBtn.addEventListener('click', () => {
+            tabDashboardBtn.classList.add('active');
+            tabFormBtn.classList.remove('active');
+            dashboardSection.classList.remove('app-hidden');
+            formSection.classList.add('app-hidden');
+            loadDashboardData();
+        });
+
+        // ---------- Field map (form id -> DB column) ----------
+        const FIELD_MAP = {
+            'year': 'bs_year', 'month': 'bs_month', 'day': 'bs_day',
+            'ward-no': 'ward_no', 'name': 'name', 'gender': 'gender', 'group': 'target_group',
+            'social-id': 'social_id', 'national-id': 'national_id', 'mobile': 'mobile',
+            'guardian-name': 'guardian_name', 'relation': 'relation', 'guardian-mobile': 'guardian_mobile',
+            'guardian-national-id': 'guardian_national_id', 'citizenship-no': 'citizenship_no',
+            'issue-details': 'issue_details'
+        };
+
+        function collectFormData() {
+            const data = {};
+            for (const [inputId, col] of Object.entries(FIELD_MAP)) {
+                const el = document.getElementById(inputId);
+                data[col] = el ? el.value.trim() : '';
+            }
+            data['needs_guardian'] = needsGuardianCheckbox.checked;
+            return data;
+        }
+
+        function fillFormFromRecord(record) {
+            document.getElementById('record-id').value = record.id;
+            document.getElementById('serial-number').value = record.serial_no;
+            document.getElementById('serial-display').textContent = toNepaliNumber(record.serial_no);
+            document.getElementById('preview-serial').textContent = toNepaliNumber(record.serial_no);
+            document.getElementById('preview-serial').classList.remove('placeholder');
+
+            for (const [inputId, col] of Object.entries(FIELD_MAP)) {
+                const el = document.getElementById(inputId);
+                if (el) {
+                    el.value = record[col] || '';
+                    el.dispatchEvent(new Event('input'));
+                }
+            }
+            needsGuardianCheckbox.checked = !!record.needs_guardian;
+            guardianFormSection.style.display = record.needs_guardian ? 'block' : 'none';
+        }
+
+        function resetForm() {
+            document.getElementById('detailsForm').reset();
+            document.getElementById('record-id').value = '';
+            document.getElementById('serial-number').value = '';
+            document.getElementById('serial-display').textContent = 'नयाँ (सेभ गर्दा स्वतः तयार हुनेछ)';
+            guardianFormSection.style.display = 'none';
+            document.querySelectorAll('#detailsForm input[type="text"]').forEach(el => el.dispatchEvent(new Event('input')));
+            document.getElementById('preview-serial').textContent = '--';
+            document.getElementById('preview-serial').classList.add('placeholder');
+        }
+
+        document.getElementById('new-entry-btn').addEventListener('click', resetForm);
+
+        // ---------- Save (Insert / Update) ----------
+        document.getElementById('save-btn').addEventListener('click', async () => {
+            const saveBtn = document.getElementById('save-btn');
+            const recordId = document.getElementById('record-id').value;
+            const payload = collectFormData();
+
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'सेभ हुँदैछ...';
+
+            try {
+                if (recordId) {
+                    const { error } = await supabaseClient
+                        .from(TABLE_NAME)
+                        .update(payload)
+                        .eq('id', recordId);
+                    if (error) throw error;
+                    showToast('रेकर्ड अपडेट भयो', 'success');
+                } else {
+                    const { data, error } = await supabaseClient
+                        .from(TABLE_NAME)
+                        .insert([payload])
+                        .select()
+                        .single();
+                    if (error) throw error;
+                    document.getElementById('record-id').value = data.id;
+                    document.getElementById('serial-number').value = data.serial_no;
+                    document.getElementById('serial-display').textContent = toNepaliNumber(data.serial_no);
+                    document.getElementById('preview-serial').textContent = toNepaliNumber(data.serial_no);
+                    document.getElementById('preview-serial').classList.remove('placeholder');
+                    showToast(`सफलतापूर्वक सेभ भयो (सि.नं. ${toNepaliNumber(data.serial_no)})`, 'success');
+                }
+                loadDashboardData();
+            } catch (err) {
+                console.error(err);
+                showToast('सेभ गर्दा त्रुटि भयो: ' + (err.message || ''), 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '💾 सेभ गर्नुहोस्';
+            }
+        });
+
+        // ---------- Dashboard State ----------
+        let allRecords = [];
+        let filteredRecords = [];
+        let currentPage = 1;
+        const PAGE_SIZE = 15;
+
+        async function loadDashboardData() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from(TABLE_NAME)
+                    .select('*')
+                    .order('serial_no', { ascending: true });
+                if (error) throw error;
+                allRecords = data || [];
+                applyFilters();
+                updateStats();
+            } catch (err) {
+                console.error(err);
+                showToast('डाटा लोड गर्दा त्रुटि भयो: ' + (err.message || ''), 'error');
+            }
+        }
+
+        function updateStats() {
+            const now = new Date();
+            const todayStr = now.toISOString().slice(0, 10);
+            const monthStr = now.toISOString().slice(0, 7);
+
+            document.getElementById('stat-total').textContent = toNepaliNumber(allRecords.length);
+            document.getElementById('stat-today').textContent = toNepaliNumber(
+                allRecords.filter(r => (r.created_at || '').slice(0, 10) === todayStr).length
+            );
+            document.getElementById('stat-month').textContent = toNepaliNumber(
+                allRecords.filter(r => (r.created_at || '').slice(0, 7) === monthStr).length
+            );
+            document.getElementById('stat-guardian').textContent = toNepaliNumber(
+                allRecords.filter(r => r.needs_guardian).length
+            );
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('search-box').value.trim().toLowerCase();
+            const ward = document.getElementById('filter-ward').value.trim().toLowerCase();
+            const gender = document.getElementById('filter-gender').value;
+            const group = document.getElementById('filter-group').value;
+            const guardian = document.getElementById('filter-guardian').value;
+            const dateFilter = document.getElementById('filter-date').value;
+
+            filteredRecords = allRecords.filter(r => {
+                if (search) {
+                    const hay = [r.serial_no, r.name, r.social_id, r.national_id, r.mobile]
+                        .map(v => (v === null || v === undefined) ? '' : String(v).toLowerCase())
+                        .join(' ');
+                    if (!hay.includes(search)) return false;
+                }
+                if (ward && !String(r.ward_no || '').toLowerCase().includes(ward)) return false;
+                if (gender && r.gender !== gender) return false;
+                if (group && r.target_group !== group) return false;
+                if (guardian === 'yes' && !r.needs_guardian) return false;
+                if (guardian === 'no' && r.needs_guardian) return false;
+                if (dateFilter && (r.created_at || '').slice(0, 10) !== dateFilter) return false;
+                return true;
+            });
+            currentPage = 1;
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('dashboard-tbody');
+            tbody.innerHTML = '';
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const pageItems = filteredRecords.slice(start, start + PAGE_SIZE);
+
+            if (pageItems.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" class="text-center py-6 text-gray-400">कुनै डाटा फेला परेन</td></tr>';
+            }
+
+            pageItems.forEach(r => {
+                const tr = document.createElement('tr');
+                const bsDate = [r.bs_year, r.bs_month, r.bs_day].filter(Boolean).join('/');
+                tr.innerHTML = `
+                    <td class="font-bold">${toNepaliNumber(r.serial_no)}</td>
+                    <td>${bsDate || '-'}</td>
+                    <td>${r.ward_no || '-'}</td>
+                    <td>${r.name || '-'}</td>
+                    <td>${r.gender || '-'}</td>
+                    <td>${r.target_group || '-'}</td>
+                    <td>${r.social_id || '-'}</td>
+                    <td>${r.national_id || '-'}</td>
+                    <td>${r.mobile || '-'}</td>
+                    <td>${r.needs_guardian ? '<span class="badge-guardian">छ</span>' : '-'}</td>
+                    <td>
+                        <button class="action-btn bg-blue-100 text-blue-700 view-btn" data-id="${r.id}">हेर्नुहोस्</button>
+                        <button class="action-btn bg-yellow-100 text-yellow-800 edit-btn" data-id="${r.id}">सम्पादन</button>
+                        <button class="action-btn bg-purple-100 text-purple-700 clone-btn" data-id="${r.id}">क्लोन गर्नुहोस्</button>
+                        <button class="action-btn bg-red-100 text-red-700 delete-btn" data-id="${r.id}">मेटाउनुहोस्</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const totalPages = Math.max(1, Math.ceil(filteredRecords.length / PAGE_SIZE));
+            document.getElementById('pagination-info').textContent =
+                `कुल ${toNepaliNumber(filteredRecords.length)} मध्ये ${toNepaliNumber(pageItems.length)} देखाइएको`;
+            document.getElementById('page-indicator').textContent = `${toNepaliNumber(currentPage)} / ${toNepaliNumber(totalPages)}`;
+
+            tbody.querySelectorAll('.view-btn').forEach(btn =>
+                btn.addEventListener('click', () => viewOrEditRecord(btn.dataset.id, false)));
+            tbody.querySelectorAll('.edit-btn').forEach(btn =>
+                btn.addEventListener('click', () => viewOrEditRecord(btn.dataset.id, true)));
+            tbody.querySelectorAll('.clone-btn').forEach(btn =>
+                btn.addEventListener('click', () => cloneRecord(btn.dataset.id)));
+            tbody.querySelectorAll('.delete-btn').forEach(btn =>
+                btn.addEventListener('click', () => deleteRecord(btn.dataset.id)));
+        }
+
+        function viewOrEditRecord(id, switchToForm) {
+            const record = allRecords.find(r => String(r.id) === String(id));
+            if (!record) return;
+            fillFormFromRecord(record);
+            if (switchToForm) {
+                tabFormBtn.click();
+                showToast('रेकर्ड सम्पादनको लागि तयार छ', 'info');
+            } else {
+                showToast(`सि.नं. ${toNepaliNumber(record.serial_no)} - ${record.name || ''}`, 'info');
+            }
+        }
+
+        // --- Clone Function: fills form with record data but resets ID and serial ---
+        function cloneRecord(id) {
+            const record = allRecords.find(r => String(r.id) === String(id));
+            if (!record) return;
+            // Fill the form with the record data
+            fillFormFromRecord(record);
+            // Reset ID and serial so it saves as a new record
+            document.getElementById('record-id').value = '';
+            document.getElementById('serial-number').value = '';
+            document.getElementById('serial-display').textContent = 'नयाँ (सेभ गर्दा स्वतः तयार हुनेछ)';
+            document.getElementById('preview-serial').textContent = '--';
+            document.getElementById('preview-serial').classList.add('placeholder');
+            // Switch to form tab
+            tabFormBtn.click();
+            showToast('क्लोन गरियो - सेभ गर्दा नयाँ सिरियल नम्बर आउनेछ', 'info');
+        }
+
+        async function deleteRecord(id) {
+            if (!confirm('के तपाईं यो रेकर्ड मेटाउन निश्चित हुनुहुन्छ?')) return;
+            try {
+                const { error } = await supabaseClient.from(TABLE_NAME).delete().eq('id', id);
+                if (error) throw error;
+                showToast('रेकर्ड मेटाइयो', 'success');
+                loadDashboardData();
+            } catch (err) {
+                console.error(err);
+                showToast('मेटाउँदा त्रुटि भयो: ' + (err.message || ''), 'error');
+            }
+        }
+
+        // ---------- Filters / Search / Pagination wiring ----------
+        document.getElementById('search-box').addEventListener('input', applyFilters);
+        document.getElementById('filter-ward').addEventListener('input', applyFilters);
+        document.getElementById('filter-gender').addEventListener('change', applyFilters);
+        document.getElementById('filter-group').addEventListener('change', applyFilters);
+        document.getElementById('filter-guardian').addEventListener('change', applyFilters);
+        document.getElementById('filter-date').addEventListener('change', applyFilters);
+        document.getElementById('clear-filters-btn').addEventListener('click', () => {
+            document.getElementById('search-box').value = '';
+            document.getElementById('filter-ward').value = '';
+            document.getElementById('filter-gender').value = '';
+            document.getElementById('filter-group').value = '';
+            document.getElementById('filter-guardian').value = '';
+            document.getElementById('filter-date').value = '';
+            applyFilters();
+        });
+        document.getElementById('refresh-btn').addEventListener('click', () => {
+            loadDashboardData();
+            showToast('डाटा रिफ्रेस भयो', 'info');
+        });
+        document.getElementById('prev-page-btn').addEventListener('click', () => {
+            if (currentPage > 1) { currentPage--; renderTable(); }
+        });
+        document.getElementById('next-page-btn').addEventListener('click', () => {
+            const totalPages = Math.max(1, Math.ceil(filteredRecords.length / PAGE_SIZE));
+            if (currentPage < totalPages) { currentPage++; renderTable(); }
+        });
+
+        // ---------- Excel Export (robust, handles 32767-char limit, Nepali unicode) ----------
+        document.getElementById('export-excel-btn').addEventListener('click', () => {
+            if (filteredRecords.length === 0) {
+                showToast('निर्यात गर्न डाटा छैन', 'error');
+                return;
+            }
+
+            const MAX_CELL_LEN = 32000; // safety margin below Excel's 32767 limit
+            const safeCell = (val) => {
+                if (val === null || val === undefined) return '';
+                let str = String(val);
+                if (str.length > MAX_CELL_LEN) str = str.slice(0, MAX_CELL_LEN);
+                return str;
+            };
+
+            const headers = [
+                'सि.नं.', 'मिति (वर्ष)', 'मिति (महिना)', 'मिति (गते)', 'वडा नं.',
+                'नाम थर', 'लिङ्ग', 'लक्षित समुह', 'सामाजिक सुरक्षा प.नं.', 'राष्ट्रिय प.नं.',
+                'मोबाइल नं.', 'संरक्षक आवश्यक', 'संरक्षकको नाम', 'नाता', 'संरक्षक मोबाइल',
+                'संरक्षक राष्ट्रिय प.नं.', 'नागरिकता नं.', 'जारि जिल्ला/मिति', 'सेभ मिति'
+            ];
+
+            const rows = filteredRecords.map(r => [
+                safeCell(r.serial_no),
+                safeCell(r.bs_year), safeCell(r.bs_month), safeCell(r.bs_day),
+                safeCell(r.ward_no), safeCell(r.name), safeCell(r.gender), safeCell(r.target_group),
+                safeCell(r.social_id), safeCell(r.national_id), safeCell(r.mobile),
+                safeCell(r.needs_guardian ? 'छ' : 'छैन'),
+                safeCell(r.guardian_name), safeCell(r.relation), safeCell(r.guardian_mobile),
+                safeCell(r.guardian_national_id), safeCell(r.citizenship_no), safeCell(r.issue_details),
+                safeCell(r.created_at ? String(r.created_at).slice(0, 10) : '')
+            ]);
+
+            try {
+                const wsData = [headers, ...rows];
+                const worksheet = XLSX.utils.aoa_to_sheet(wsData);
+                worksheet['!cols'] = headers.map(() => ({ wch: 18 }));
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'Renewals');
+
+                const today = new Date().toISOString().slice(0, 10);
+                const filename = `Social_Security_Renewal_Report_${today}.xlsx`;
+                XLSX.writeFile(workbook, filename, { bookType: 'xlsx', type: 'binary' });
+                showToast('Excel फाइल डाउनलोड भयो', 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('Excel निर्यात गर्दा त्रुटि भयो: ' + (err.message || ''), 'error');
+            }
+        });
+
+        // ---------- Init ----------
+        checkSession();
+
+    </script>
+
+</body>
+</html>
