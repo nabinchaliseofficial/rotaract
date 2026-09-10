@@ -1,8 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ne">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="lok.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="lok.ico" />
     <title>परिचयपत्र नवीकरण फारम</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,29 +12,99 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Chart.js for professional charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         body {
             font-family: 'Noto Sans Devanagari', sans-serif;
             background-color: #f0f2f5;
         }
-        /* प्रिन्ट गर्दा नचाहिने तत्वहरू लुकाउने */
+        /* ----- PRINT IMPROVEMENTS: A4 one‑page, prominent serial, readable data ----- */
         @media print {
-            .no-print {
-                display: none;
+            .no-print { display: none !important; }
+            body {
+                background: #fff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                font-size: 12.5px;
             }
             #preview-area {
-                box-shadow: none;
-                border: none;
-                width: 100%;
-                margin: 0;
-                padding: 0;
+                box-shadow: none !important;
+                border: none !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 5mm 8mm !important;
+                font-size: 12.5px;
+                line-height: 1.35;
             }
             .print-container {
                 display: block !important;
                 width: 100% !important;
                 padding: 0 !important;
+                margin: 0 !important;
+            }
+            #form-section {
+                display: block !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            #input-form { display: none !important; }
+            #preview-area .mb-6 { margin-bottom: 3px !important; }
+            #preview-area .mb-4 { margin-bottom: 2px !important; }
+            #preview-area .mb-2 { margin-bottom: 1px !important; }
+            #preview-area .py-4 { padding-top: 2px !important; padding-bottom: 2px !important; }
+            #preview-area .pt-4 { padding-top: 2px !important; }
+            #preview-area .gap-y-2 { row-gap: 1px !important; }
+            #preview-area .gap-x-8 { column-gap: 12px !important; }
+            #preview-area .space-y-2 > * + * { margin-top: 1px !important; }
+            #preview-area .border-t { border-top-width: 1px !important; margin-top: 1px !important; }
+            #preview-area .border-b { border-bottom-width: 1px !important; margin-bottom: 1px !important; }
+            #preview-area h3 { font-size: 13.5px !important; margin-bottom: 1px !important; }
+            #preview-area h4 { font-size: 12.5px !important; margin-bottom: 1px !important; }
+            #preview-area p { margin-bottom: 0px !important; }
+            .preview-serial-large {
+                font-size: 22px !important;
+                font-weight: 900 !important;
+                color: #000 !important;
+                letter-spacing: 0.5px;
+            }
+            /* Make entered data bold and larger for print */
+            #preview-area .placeholder { border-bottom: 1px dotted #555 !important; font-style: normal; color: #000; }
+            #preview-area span:not(.placeholder) {
+                font-weight: 700 !important;
+                color: #000 !important;
+                font-size: 13.5px !important;
+            }
+            #preview-area .preview-serial-large:not(.placeholder) {
+                font-size: 24px !important;
+                font-weight: 900 !important;
+            }
+            /* Compact header with print date */
+            .print-header-compact {
+                display: block !important;
+                text-align: center;
+                font-size: 11px;
+                border-bottom: 1px solid #999;
+                margin-bottom: 3px;
+                padding-bottom: 1px;
+            }
+            .print-date-time {
+                display: block !important;
+                text-align: right;
+                font-size: 9.5px;
+                color: #333;
+                margin-top: 0px;
+                margin-bottom: 2px;
+            }
+            @page {
+                size: A4 portrait;
+                margin: 5mm 8mm;
             }
         }
+        /* Hide print-header by default on screen */
+        .print-header-compact, .print-date-time { display: none; }
+
         .input-field {
             width: 100%;
             padding: 8px;
@@ -48,7 +120,7 @@
             border-bottom: 1px dotted #9ca3af;
         }
 
-        /* ===== नयाँ थपिएका UI स्टाइलहरू (Login/Dashboard/Serial) ===== */
+        /* ===== नयाँ थपिएका UI स्टाइलहरू ===== */
         .app-hidden { display: none !important; }
         #login-overlay {
             position: fixed; inset: 0; z-index: 9999;
@@ -69,27 +141,144 @@
         .toast.success { background: #16a34a; }
         .toast.error { background: #dc2626; }
         .toast.info { background: #2563eb; }
-        .stat-card {
-            border-radius: 14px; padding: 1.25rem; color: #fff;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+
+        /* ===== Modern Dashboard Styles ===== */
+        .stat-card-modern {
+            border-radius: 18px;
+            padding: 1.5rem 1.25rem;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+        .stat-card-modern:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 35px -8px rgba(0,0,0,0.2), 0 12px 16px -8px rgba(0,0,0,0.12);
+        }
+        .stat-card-modern .stat-icon {
+            position: absolute; right: 1rem; top: 1rem;
+            font-size: 2.2rem; opacity: 0.25; line-height: 1;
+        }
+        .stat-card-modern .stat-label {
+            font-size: 0.9rem; letter-spacing: 0.03em;
+            text-transform: uppercase; opacity: 0.9; font-weight: 600;
+        }
+        .stat-card-modern .stat-value {
+            font-size: 2.4rem; font-weight: 800;
+            line-height: 1.1; margin-top: 0.35rem;
+        }
+
+        .ward-card {
+            border-radius: 14px; padding: 0.7rem 0.5rem;
+            background: #fff; border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+            text-align: center;
+        }
+        .ward-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(0,0,0,0.1);
+            border-color: #93c5fd;
+        }
+        .ward-card .ward-number {
+            font-size: 0.95rem; font-weight: 800;
+            color: #1e3a8a; background: #dbeafe;
+            border-radius: 999px; display: inline-block;
+            padding: 1px 10px; margin-bottom: 2px;
+        }
+        .ward-card .ward-count {
+            font-size: 1.6rem; font-weight: 800;
+            color: #0f172a; line-height: 1.1;
+        }
+        .ward-card .ward-label {
+            font-size: 0.7rem; color: #64748b; font-weight: 600;
+        }
+        .ward-card .ward-bar {
+            height: 4px; border-radius: 999px;
+            background: #e2e8f0; margin-top: 4px; overflow: hidden;
+        }
+        .ward-card .ward-bar-fill {
+            height: 100%; border-radius: 999px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        }
+
         .tab-btn {
             padding: 10px 22px; border-radius: 10px 10px 0 0; font-weight: 700;
             cursor: pointer; border: 1px solid transparent; border-bottom: none;
         }
         .tab-btn.active { background: #fff; border-color: #d1d5db; color: #1d4ed8; }
         .tab-btn:not(.active) { background: #e5e7eb; color: #4b5563; }
+
         #dashboard-table th {
             position: sticky; top: 0; background: #1e3a8a; color: #fff;
-            padding: 10px 8px; font-size: 0.85rem; white-space: nowrap;
+            padding: 8px 6px; font-size: 0.8rem; white-space: nowrap;
         }
-        #dashboard-table td { padding: 8px; font-size: 0.85rem; white-space: nowrap; border-bottom: 1px solid #e5e7eb; }
+        #dashboard-table td { padding: 6px; font-size: 0.8rem; white-space: nowrap; border-bottom: 1px solid #e5e7eb; }
         #dashboard-table tr:hover { background: #f0f7ff; }
         .badge-guardian { background:#fde68a; color:#92400e; padding:2px 8px; border-radius:999px; font-size:.75rem; font-weight:700; }
-        .action-btn { padding: 4px 10px; border-radius: 6px; font-size: .78rem; font-weight: 700; cursor: pointer; }
+        .action-btn { padding: 3px 8px; border-radius: 6px; font-size: .75rem; font-weight: 700; cursor: pointer; }
+
+        /* Dashboard header card */
+        .dash-header-card {
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border-radius: 18px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+        .dash-header-card h2 { font-size: 1.5rem; font-weight: 800; color: #1e293b; margin: 0; }
+        .dash-header-card .meta { font-size: 0.9rem; color: #475569; display: flex; gap: 1.5rem; flex-wrap: wrap; }
+        .dash-header-card .meta span { background: #f1f5f9; padding: 0.3rem 1rem; border-radius: 999px; font-weight: 600; }
+        .chart-container { position: relative; height: 220px; width: 100%; }
+
+        @media (max-width: 640px) {
+            .dash-header-card { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+            .chart-container { height: 180px; }
+        }
         @media print {
             #login-overlay, #dashboard-section, #app-header, .no-print, .toast { display: none !important; }
         }
+
+        /* ----- Admin settings for verifier ----- */
+        .admin-settings-card {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 14px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1rem;
+        }
+        .admin-settings-card label {
+            font-weight: 600;
+            color: #9a3412;
+            font-size: 0.85rem;
+        }
+        .admin-settings-card input {
+            border: 1px solid #fdba74;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+        .admin-settings-card button {
+            background: #ea580c;
+            color: #fff;
+            font-weight: 700;
+            padding: 6px 18px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            transition: background 0.15s;
+        }
+        .admin-settings-card button:hover { background: #c2410c; }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -123,37 +312,77 @@
             <h1 class="text-3xl font-bold text-gray-800">सामाजिक सुरक्षा परिचयपत्र नवीकरण फारम</h1>
             <p class="text-gray-600 mt-2">बायाँतिरको फारममा विवरण भर्नुहोस् र दायाँतिर पूर्वावलोकन हेर्नुहोस्।</p>
             <div class="flex justify-center gap-3 mt-4">
-                <button id="tab-form-btn" class="tab-btn active">📝 फारम</button>
-                <button id="tab-dashboard-btn" class="tab-btn">📊 ड्यासबोर्ड</button>
+                <button id="tab-dashboard-btn" class="tab-btn active">📊 ड्यासबोर्ड</button>
+                <button id="tab-form-btn" class="tab-btn">📝 फारम</button>
                 <button id="logout-btn" class="ml-4 bg-red-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-red-700 transition-colors">
                     लगआउट
                 </button>
             </div>
         </header>
 
-        <!-- ===== 📊 DASHBOARD SECTION ===== -->
-        <div id="dashboard-section" class="no-print app-hidden">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div class="stat-card" style="background:#2563eb;">
-                    <p class="text-sm opacity-90">कुल आवेदनहरू</p>
-                    <p class="text-3xl font-bold" id="stat-total">0</p>
+        <!-- ===== 📊 DASHBOARD SECTION (DEFAULT) ===== -->
+        <div id="dashboard-section" class="no-print">
+            <!-- Professional Dashboard Header -->
+            <div class="dash-header-card">
+                <div>
+                    <h2>🏛️ गलकोट नगरपालिका</h2>
+                    <p class="text-sm text-slate-500 font-medium">सामाजिक सुरक्षा परिचयपत्र नवीकरण — आ.व. २०८३/८४</p>
                 </div>
-                <div class="stat-card" style="background:#16a34a;">
-                    <p class="text-sm opacity-90">आजका प्रविष्टिहरू</p>
-                    <p class="text-3xl font-bold" id="stat-today">0</p>
-                </div>
-                <div class="stat-card" style="background:#9333ea;">
-                    <p class="text-sm opacity-90">यस महिना</p>
-                    <p class="text-3xl font-bold" id="stat-month">0</p>
-                </div>
-                <div class="stat-card" style="background:#ea580c;">
-                    <p class="text-sm opacity-90">संरक्षक भएका</p>
-                    <p class="text-3xl font-bold" id="stat-guardian">0</p>
+                <div class="meta">
+                    <span>📅 अन्तिम अपडेट: <span id="last-updated-time">--</span></span>
+                    <span id="record-count-badge">कुल: ०</span>
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-xl shadow-lg mb-4">
-                <div class="grid grid-cols-1 md:grid-cols-6 gap-3 mb-3">
+            <!-- Modern Stats Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+                <div class="stat-card-modern" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+                    <span class="stat-icon">📋</span>
+                    <p class="stat-label">कुल आवेदनहरू</p>
+                    <p class="stat-value" id="stat-total">0</p>
+                </div>
+                <div class="stat-card-modern" style="background: linear-gradient(135deg, #16a34a, #15803d);">
+                    <span class="stat-icon">📅</span>
+                    <p class="stat-label">आजका प्रविष्टिहरू</p>
+                    <p class="stat-value" id="stat-today">0</p>
+                </div>
+                <div class="stat-card-modern" style="background: linear-gradient(135deg, #9333ea, #7e22ce);">
+                    <span class="stat-icon">🗓️</span>
+                    <p class="stat-label">यस महिना</p>
+                    <p class="stat-value" id="stat-month">0</p>
+                </div>
+                <div class="stat-card-modern" style="background: linear-gradient(135deg, #ea580c, #c2410c);">
+                    <span class="stat-icon">👪</span>
+                    <p class="stat-label">संरक्षक भएका</p>
+                    <p class="stat-value" id="stat-guardian">0</p>
+                </div>
+            </div>
+
+            <!-- Ward-wise Stats -->
+            <div class="bg-white p-4 rounded-2xl shadow-lg mb-5 border border-slate-100">
+                <h3 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <span class="text-lg">🏘️</span> वडा अनुसार आवेदन संख्या
+                </h3>
+                <div id="ward-stats-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-2">
+                    <!-- Ward cards injected by JS -->
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                <div class="bg-white p-4 rounded-2xl shadow-lg border border-slate-100">
+                    <h4 class="text-sm font-bold text-slate-700 mb-2">📊 वडागत तुलना</h4>
+                    <div class="chart-container"><canvas id="wardChart"></canvas></div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-lg border border-slate-100">
+                    <h4 class="text-sm font-bold text-slate-700 mb-2">📈 दैनिक नवीकरण प्रवृत्ति (१४ दिन)</h4>
+                    <div class="chart-container"><canvas id="trendChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Table & Filters -->
+            <div class="bg-white p-4 rounded-2xl shadow-lg mb-4 border border-slate-100">
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-2 mb-2">
                     <input type="text" id="search-box" placeholder="खोज्नुहोस्: नाम/सिरियल/परिचयपत्र/मोबाइल" class="input-field md:col-span-2">
                     <input type="text" id="filter-ward" placeholder="वडा नं." class="input-field">
                     <select id="filter-gender" class="input-field">
@@ -178,14 +407,23 @@
                         <option value="no">संरक्षक नभएको</option>
                     </select>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-6 gap-3 mb-3">
-                    <input type="date" id="filter-date" class="input-field md:col-span-2">
-                    <button id="clear-filters-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg px-3">फिल्टर हटाउनुहोस्</button>
-                    <button id="refresh-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg px-3">🔄 रिफ्रेस</button>
-                    <button id="export-excel-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-3 md:col-span-2">📥 Excel निर्यात</button>
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-2 mb-2">
+                    <!-- Advanced Date Filter Options -->
+                    <select id="date-preset-filter" class="input-field md:col-span-2">
+                        <option value="">📅 मिति छान्नुहोस्</option>
+                        <option value="today">आज</option>
+                        <option value="week">यो हप्ता</option>
+                        <option value="month">यो महिना</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                    <input type="date" id="filter-date" class="input-field" placeholder="मिति">
+                    <input type="date" id="filter-date-end" class="input-field" placeholder="सम्म" style="display:none;">
+                    <button id="clear-filters-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg px-3 py-1.5 text-sm">फिल्टर हटाउनुहोस्</button>
+                    <button id="refresh-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg px-3 py-1.5 text-sm">🔄 रिफ्रेस</button>
+                    <button id="export-excel-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-3 py-1.5 text-sm md:col-span-2">📥 Excel निर्यात</button>
                 </div>
 
-                <div class="overflow-x-auto border rounded-lg" style="max-height:480px; overflow-y:auto;">
+                <div class="overflow-x-auto border rounded-xl" style="max-height:420px; overflow-y:auto;">
                     <table class="w-full" id="dashboard-table">
                         <thead>
                             <tr>
@@ -197,7 +435,7 @@
                         <tbody id="dashboard-tbody"></tbody>
                     </table>
                 </div>
-                <div class="flex justify-between items-center mt-3 text-sm text-gray-600">
+                <div class="flex justify-between items-center mt-2 text-sm text-gray-600">
                     <span id="pagination-info"></span>
                     <div class="flex gap-2">
                         <button id="prev-page-btn" class="action-btn bg-gray-200 hover:bg-gray-300">← अघिल्लो</button>
@@ -208,10 +446,28 @@
             </div>
         </div>
 
-        <div id="form-section" class="grid grid-cols-1 lg:grid-cols-2 gap-8 print-container">
+        <!-- ===== 📝 FORM SECTION ===== -->
+        <div id="form-section" class="grid grid-cols-1 lg:grid-cols-2 gap-8 print-container app-hidden">
             <!-- Input Form Section -->
             <div id="input-form" class="bg-white p-6 rounded-xl shadow-lg no-print">
                 <h2 class="text-2xl font-bold mb-6 border-b pb-3">विवरण भर्नुहोस्</h2>
+
+                <!-- ===== ADMIN SETTINGS: Verifier name & position ===== -->
+                <div class="admin-settings-card">
+                    <span class="text-sm font-bold text-orange-800">⚙️ रुजु गर्ने कर्मचारी (Admin):</span>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div>
+                            <label for="admin-verifier-name">नाम:</label>
+                            <input type="text" id="admin-verifier-name" value="Nabin Chalise" placeholder="Nabin Chalise">
+                        </div>
+                        <div>
+                            <label for="admin-verifier-post">पद:</label>
+                            <input type="text" id="admin-verifier-post" value="MIS Operator" placeholder="MIS Operator">
+                        </div>
+                        <button type="button" id="admin-save-btn">सेभ गर्नुहोस्</button>
+                    </div>
+                </div>
+
                 <form id="detailsForm" class="space-y-6">
                     <!-- Serial Number (auto, from DB sequence) -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
@@ -338,12 +594,18 @@
 
             <!-- Preview Area -->
             <div id="preview-area" class="bg-white p-8 md:p-12 rounded-xl shadow-lg leading-relaxed">
+                <!-- Compact print header + auto date/time (hidden on screen) -->
+                <div class="print-header-compact">
+                    सामाजिक सुरक्षा परिचयपत्र नवीकरण
+                </div>
+                <div class="print-date-time" id="print-datetime"></div>
+
                 <div class="text-center mb-6">
                     <h2 class="font-bold">अनुसूची- २</h2>
                     <p>(दफा ४ को उपदफा (१) सँग सम्बन्धित )</p>
                 </div>
                 <div class="text-right mb-6">
-                    <p>सि.नं.: <span id="preview-serial" class="placeholder">--</span></p>
+                    <p>सि.नं.: <span id="preview-serial" class="placeholder preview-serial-large">--</span></p>
                     <p>मिति: <span id="preview-year" class="placeholder">२०&nbsp;&nbsp;</span>/<span id="preview-month" class="placeholder">&nbsp;&nbsp;</span>/<span id="preview-day" class="placeholder">&nbsp;&nbsp;</span> गते</p>
                 </div>
 
@@ -396,14 +658,18 @@
                     </div>
                 </div>
 
+                <!-- ===== UPDATED: कार्यालयको प्रयोजनको लागि — auto serial, auto date, admin verifier ===== -->
                 <div class="border-t pt-4">
                     <h4 class="font-bold underline mb-2">कार्यालयको प्रयोजनको लागि</h4>
                      <div class="grid grid-cols-2 gap-x-8 gap-y-2">
-                        <p>दर्ता नं.:- ....................................</p>
-                        <p>रुजु गर्ने कर्मचारीको नाम थर: ....................................</p>
-                        <p>पदः ....................................</p>
+                        <!-- दर्ता नं. auto from serial_no -->
+                        <p>दर्ता नं.:- <span id="preview-registration-no" class="placeholder">--</span></p>
+                        <!-- रुजु गर्ने कर्मचारी from admin settings -->
+                        <p>रुजु गर्ने कर्मचारीको नाम थर: <span id="preview-verifier-name" class="font-bold">Nabin Chalise</span></p>
+                        <p>पदः <span id="preview-verifier-post" class="font-bold">MIS Operator</span></p>
                         <p>दस्तखतः- ....................................</p>
-                        <p>मितिः ....................................</p>
+                        <!-- मिति auto from form (bs year/month/day) -->
+                        <p>मितिः <span id="preview-office-date" class="placeholder">--</span></p>
                     </div>
                 </div>
             </div>
@@ -521,11 +787,111 @@
         });
 
         /* =======================================================
-           ============ नयाँ थपिएका FEATURES (Login, ==============
-           ============ Supabase, Dashboard, Excel) ================
+           ===== ADMIN SETTINGS: Verifier name & position =====
+           ======================================================= */
+        const ADMIN_VERIFIER_NAME_KEY = 'ssrn_verifier_name';
+        const ADMIN_VERIFIER_POST_KEY = 'ssrn_verifier_post';
+        const DEFAULT_VERIFIER_NAME = 'Nabin Chalise';
+        const DEFAULT_VERIFIER_POST = 'MIS Operator';
+
+        const adminVerifierNameInput = document.getElementById('admin-verifier-name');
+        const adminVerifierPostInput = document.getElementById('admin-verifier-post');
+        const adminSaveBtn = document.getElementById('admin-save-btn');
+        const previewVerifierName = document.getElementById('preview-verifier-name');
+        const previewVerifierPost = document.getElementById('preview-verifier-post');
+
+        function loadAdminVerifierSettings() {
+            const savedName = localStorage.getItem(ADMIN_VERIFIER_NAME_KEY);
+            const savedPost = localStorage.getItem(ADMIN_VERIFIER_POST_KEY);
+            const name = savedName || DEFAULT_VERIFIER_NAME;
+            const post = savedPost || DEFAULT_VERIFIER_POST;
+            adminVerifierNameInput.value = name;
+            adminVerifierPostInput.value = post;
+            previewVerifierName.textContent = name;
+            previewVerifierPost.textContent = post;
+        }
+
+        function saveAdminVerifierSettings() {
+            const name = adminVerifierNameInput.value.trim() || DEFAULT_VERIFIER_NAME;
+            const post = adminVerifierPostInput.value.trim() || DEFAULT_VERIFIER_POST;
+            localStorage.setItem(ADMIN_VERIFIER_NAME_KEY, name);
+            localStorage.setItem(ADMIN_VERIFIER_POST_KEY, post);
+            previewVerifierName.textContent = name;
+            previewVerifierPost.textContent = post;
+            showToast('रुजु गर्ने कर्मचारीको विवरण सेभ भयो', 'success');
+        }
+
+        adminSaveBtn.addEventListener('click', saveAdminVerifierSettings);
+
+        // Load on startup
+        loadAdminVerifierSettings();
+
+        /* =======================================================
+           ===== AUTO UPDATE PREVIEW: registration no & office date =====
+           ======================================================= */
+        function updateRegistrationAndOfficeDate() {
+            // Registration number = serial number from hidden input or preview-serial
+            const serialHidden = document.getElementById('serial-number').value;
+            const serialPreview = document.getElementById('preview-serial');
+            const regNoSpan = document.getElementById('preview-registration-no');
+
+            let serialText = '';
+            if (serialHidden && serialHidden.trim() !== '') {
+                serialText = toNepaliNumber(serialHidden);
+            } else if (serialPreview && !serialPreview.classList.contains('placeholder') && serialPreview.textContent !== '--') {
+                serialText = serialPreview.textContent;
+            }
+
+            if (serialText) {
+                regNoSpan.textContent = serialText;
+                regNoSpan.classList.remove('placeholder');
+            } else {
+                regNoSpan.textContent = '--';
+                regNoSpan.classList.add('placeholder');
+            }
+
+            // Office date = from bs year/month/day inputs
+            const year = document.getElementById('year').value.trim();
+            const month = document.getElementById('month').value.trim();
+            const day = document.getElementById('day').value.trim();
+            const officeDateSpan = document.getElementById('preview-office-date');
+
+            if (year || month || day) {
+                const parts = [
+                    year ? toNepaliNumber(year) : '....',
+                    month ? toNepaliNumber(month) : '..',
+                    day ? toNepaliNumber(day) : '..'
+                ];
+                officeDateSpan.textContent = parts.join(' / ');
+                officeDateSpan.classList.remove('placeholder');
+            } else {
+                officeDateSpan.textContent = '--';
+                officeDateSpan.classList.add('placeholder');
+            }
+        }
+
+        // Observe changes to year/month/day & serial-number inputs
+        document.getElementById('year').addEventListener('input', updateRegistrationAndOfficeDate);
+        document.getElementById('month').addEventListener('input', updateRegistrationAndOfficeDate);
+        document.getElementById('day').addEventListener('input', updateRegistrationAndOfficeDate);
+        document.getElementById('serial-number').addEventListener('change', updateRegistrationAndOfficeDate);
+
+        // Also update when preview-serial changes (from fillFormFromRecord / save)
+        const previewSerialObserver = new MutationObserver(() => {
+            updateRegistrationAndOfficeDate();
+        });
+        previewSerialObserver.observe(document.getElementById('preview-serial'), {
+            childList: true, characterData: true, subtree: true, attributes: true
+        });
+
+        // Also call after page load & form reset
+        window.addEventListener('load', updateRegistrationAndOfficeDate);
+
+        /* =======================================================
+           ============ Supabase & App Logic ======================
            ======================================================= */
 
-        // ---------- Supabase Setup ----------
+        // ---------- Supabase Setup (unchanged) ----------
         const SUPABASE_URL = 'https://kbyfvqkfcxqgjjtfvvxf.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -553,14 +919,34 @@
         const loginForm = document.getElementById('loginForm');
         const loginError = document.getElementById('login-error');
 
+        // Auto refresh interval (will be set once logged in)
+        let autoRefreshInterval = null;
+
         function checkSession() {
             if (sessionStorage.getItem('ssrn_logged_in') === 'true') {
                 loginOverlay.classList.add('app-hidden');
                 appContent.classList.remove('app-hidden');
+                // Dashboard is default: show dashboard tab active, form hidden
+                tabDashboardBtn.classList.add('active');
+                tabFormBtn.classList.remove('active');
+                dashboardSection.classList.remove('app-hidden');
+                formSection.classList.add('app-hidden');
                 loadDashboardData();
+                // Start auto refresh (every 45 seconds)
+                if (!autoRefreshInterval) {
+                    autoRefreshInterval = setInterval(() => {
+                        if (!dashboardSection.classList.contains('app-hidden')) {
+                            loadDashboardData(true); // silent refresh
+                        }
+                    }, 45000);
+                }
             } else {
                 loginOverlay.classList.remove('app-hidden');
                 appContent.classList.add('app-hidden');
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                }
             }
         }
 
@@ -580,6 +966,7 @@
 
         document.getElementById('logout-btn').addEventListener('click', () => {
             sessionStorage.removeItem('ssrn_logged_in');
+            if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
             checkSession();
         });
 
@@ -594,6 +981,8 @@
             tabDashboardBtn.classList.remove('active');
             formSection.classList.remove('app-hidden');
             dashboardSection.classList.add('app-hidden');
+            // update preview after form shows
+            setTimeout(updateRegistrationAndOfficeDate, 50);
         });
         tabDashboardBtn.addEventListener('click', () => {
             tabDashboardBtn.classList.add('active');
@@ -639,6 +1028,9 @@
             }
             needsGuardianCheckbox.checked = !!record.needs_guardian;
             guardianFormSection.style.display = record.needs_guardian ? 'block' : 'none';
+
+            // Update auto fields
+            updateRegistrationAndOfficeDate();
         }
 
         function resetForm() {
@@ -650,15 +1042,44 @@
             document.querySelectorAll('#detailsForm input[type="text"]').forEach(el => el.dispatchEvent(new Event('input')));
             document.getElementById('preview-serial').textContent = '--';
             document.getElementById('preview-serial').classList.add('placeholder');
+            // Reset auto fields
+            updateRegistrationAndOfficeDate();
         }
 
         document.getElementById('new-entry-btn').addEventListener('click', resetForm);
 
-        // ---------- Save (Insert / Update) ----------
+        // ---------- Duplicate check helper (uses allRecords) ----------
+        function checkDuplicate(socialId, nationalId, excludeRecordId) {
+            const duplicates = [];
+            if (!socialId && !nationalId) return duplicates;
+            allRecords.forEach(r => {
+                if (excludeRecordId && String(r.id) === String(excludeRecordId)) return;
+                if (socialId && r.social_id === socialId) {
+                    duplicates.push(`सामाजिक सुरक्षा परिचयपत्र नं. ${toNepaliNumber(socialId)} पहिले नै दर्ता छ (सि.नं. ${toNepaliNumber(r.serial_no)})`);
+                }
+                if (nationalId && r.national_id === nationalId) {
+                    duplicates.push(`राष्ट्रिय परिचयपत्र नं. ${toNepaliNumber(nationalId)} पहिले नै दर्ता छ (सि.नं. ${toNepaliNumber(r.serial_no)})`);
+                }
+            });
+            return duplicates;
+        }
+
+        // ---------- Save (Insert / Update) with duplicate warning ----------
         document.getElementById('save-btn').addEventListener('click', async () => {
             const saveBtn = document.getElementById('save-btn');
             const recordId = document.getElementById('record-id').value;
             const payload = collectFormData();
+
+            // Duplicate check before save
+            const duplicates = checkDuplicate(payload.social_id, payload.national_id, recordId);
+            if (duplicates.length > 0) {
+                const msg = '⚠️ निम्न विवरण पहिले नै दर्ता छ:\n\n' + duplicates.join('\n') +
+                            '\n\nके तपाईं यो रेकर्ड जसरी पनि सेभ गर्न चाहनुहुन्छ?';
+                if (!confirm(msg)) {
+                    return;
+                }
+                showToast('डुप्लिकेट रेकर्ड सेभ गरिँदैछ...', 'info');
+            }
 
             saveBtn.disabled = true;
             saveBtn.textContent = 'सेभ हुँदैछ...';
@@ -685,7 +1106,10 @@
                     document.getElementById('preview-serial').classList.remove('placeholder');
                     showToast(`सफलतापूर्वक सेभ भयो (सि.नं. ${toNepaliNumber(data.serial_no)})`, 'success');
                 }
-                loadDashboardData();
+                // Update auto fields after save
+                updateRegistrationAndOfficeDate();
+                // Refresh dashboard data silently
+                loadDashboardData(true);
             } catch (err) {
                 console.error(err);
                 showToast('सेभ गर्दा त्रुटि भयो: ' + (err.message || ''), 'error');
@@ -700,8 +1124,10 @@
         let filteredRecords = [];
         let currentPage = 1;
         const PAGE_SIZE = 15;
+        let wardChartInstance = null;
+        let trendChartInstance = null;
 
-        async function loadDashboardData() {
+        async function loadDashboardData(silent = false) {
             try {
                 const { data, error } = await supabaseClient
                     .from(TABLE_NAME)
@@ -709,11 +1135,19 @@
                     .order('serial_no', { ascending: true });
                 if (error) throw error;
                 allRecords = data || [];
-                applyFilters();
+                applyFilters(); // this also calls renderTable and updates stats/charts
                 updateStats();
+                renderWardStats();
+                renderCharts();
+                // Update last updated time
+                document.getElementById('last-updated-time').textContent = new Date().toLocaleString('ne-NP', { hour12: false });
+                document.getElementById('record-count-badge').textContent = `कुल: ${toNepaliNumber(allRecords.length)}`;
+                if (!silent) {
+                    // optionally show toast on manual refresh, already handled by button
+                }
             } catch (err) {
                 console.error(err);
-                showToast('डाटा लोड गर्दा त्रुटि भयो: ' + (err.message || ''), 'error');
+                if (!silent) showToast('डाटा लोड गर्दा त्रुटि भयो: ' + (err.message || ''), 'error');
             }
         }
 
@@ -734,13 +1168,146 @@
             );
         }
 
+        // ---------- Ward-wise Stats ----------
+        function renderWardStats() {
+            const container = document.getElementById('ward-stats-grid');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const wardCounts = {};
+            for (let w = 1; w <= 11; w++) wardCounts[w] = 0;
+            allRecords.forEach(r => {
+                const wn = parseInt(r.ward_no, 10);
+                if (wn >= 1 && wn <= 11) wardCounts[wn] = (wardCounts[wn] || 0) + 1;
+            });
+
+            const maxCount = Math.max(1, ...Object.values(wardCounts));
+
+            for (let w = 1; w <= 11; w++) {
+                const count = wardCounts[w] || 0;
+                const pct = Math.round((count / maxCount) * 100);
+                const card = document.createElement('div');
+                card.className = 'ward-card';
+                card.innerHTML = `
+                    <div class="ward-number">वडा ${toNepaliNumber(w)}</div>
+                    <div class="ward-count">${toNepaliNumber(count)}</div>
+                    <div class="ward-label">आवेदन</div>
+                    <div class="ward-bar"><div class="ward-bar-fill" style="width:${pct}%"></div></div>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        // ---------- Charts ----------
+        function renderCharts() {
+            // Ward chart (bar)
+            const wardCtx = document.getElementById('wardChart').getContext('2d');
+            if (wardChartInstance) wardChartInstance.destroy();
+            const wardCounts = {};
+            for (let w = 1; w <= 11; w++) wardCounts[w] = 0;
+            allRecords.forEach(r => {
+                const wn = parseInt(r.ward_no, 10);
+                if (wn >= 1 && wn <= 11) wardCounts[wn] = (wardCounts[wn] || 0) + 1;
+            });
+            wardChartInstance = new Chart(wardCtx, {
+                type: 'bar',
+                data: {
+                    labels: Array.from({length:11}, (_,i)=> `वडा ${toNepaliNumber(i+1)}`),
+                    datasets: [{
+                        label: 'आवेदन संख्या',
+                        data: Object.values(wardCounts),
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgba(37, 99, 235, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1, color: '#475569' } },
+                        x: { ticks: { color: '#475569', font: { size: 9 } } }
+                    }
+                }
+            });
+
+            // Trend chart (line) – last 14 days
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            if (trendChartInstance) trendChartInstance.destroy();
+
+            const days = [];
+            const counts = [];
+            for (let i = 13; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dateStr = d.toISOString().slice(0, 10);
+                days.push(d.toLocaleDateString('ne-NP', { month: 'short', day: 'numeric' }));
+                counts.push(allRecords.filter(r => (r.created_at || '').slice(0, 10) === dateStr).length);
+            }
+
+            trendChartInstance = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'दैनिक नवीकरण',
+                        data: counts,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#7c3aed'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1, color: '#475569' } },
+                        x: { ticks: { color: '#475569', font: { size: 9 } } }
+                    }
+                }
+            });
+        }
+
         function applyFilters() {
             const search = document.getElementById('search-box').value.trim().toLowerCase();
             const ward = document.getElementById('filter-ward').value.trim().toLowerCase();
             const gender = document.getElementById('filter-gender').value;
             const group = document.getElementById('filter-group').value;
             const guardian = document.getElementById('filter-guardian').value;
-            const dateFilter = document.getElementById('filter-date').value;
+            
+            // Date filtering with presets and range
+            const datePreset = document.getElementById('date-preset-filter').value;
+            const dateStart = document.getElementById('filter-date').value;
+            const dateEnd = document.getElementById('filter-date-end').value;
+
+            let startDate = null, endDate = null;
+
+            if (datePreset === 'today') {
+                startDate = new Date().toISOString().slice(0, 10);
+                endDate = startDate;
+            } else if (datePreset === 'week') {
+                const now = new Date();
+                const firstDay = new Date(now.setDate(now.getDate() - now.getDay() + 1)); // Monday
+                startDate = firstDay.toISOString().slice(0, 10);
+                endDate = new Date().toISOString().slice(0, 10);
+            } else if (datePreset === 'month') {
+                const now = new Date();
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
+            } else if (datePreset === 'custom') {
+                startDate = dateStart || null;
+                endDate = dateEnd || null;
+            } else {
+                // no preset, but maybe manual date fields
+                startDate = dateStart || null;
+                endDate = dateEnd || null;
+            }
 
             filteredRecords = allRecords.filter(r => {
                 if (search) {
@@ -754,7 +1321,12 @@
                 if (group && r.target_group !== group) return false;
                 if (guardian === 'yes' && !r.needs_guardian) return false;
                 if (guardian === 'no' && r.needs_guardian) return false;
-                if (dateFilter && (r.created_at || '').slice(0, 10) !== dateFilter) return false;
+                
+                // Date filter
+                const recordDate = (r.created_at || '').slice(0, 10);
+                if (startDate && recordDate < startDate) return false;
+                if (endDate && recordDate > endDate) return false;
+                
                 return true;
             });
             currentPage = 1;
@@ -789,7 +1361,6 @@
                         <button class="action-btn bg-blue-100 text-blue-700 view-btn" data-id="${r.id}">हेर्नुहोस्</button>
                         <button class="action-btn bg-yellow-100 text-yellow-800 edit-btn" data-id="${r.id}">सम्पादन</button>
                         <button class="action-btn bg-purple-100 text-purple-700 clone-btn" data-id="${r.id}">क्लोन गर्नुहोस्</button>
-                        <button class="action-btn bg-red-100 text-red-700 delete-btn" data-id="${r.id}">मेटाउनुहोस्</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -806,8 +1377,6 @@
                 btn.addEventListener('click', () => viewOrEditRecord(btn.dataset.id, true)));
             tbody.querySelectorAll('.clone-btn').forEach(btn =>
                 btn.addEventListener('click', () => cloneRecord(btn.dataset.id)));
-            tbody.querySelectorAll('.delete-btn').forEach(btn =>
-                btn.addEventListener('click', () => deleteRecord(btn.dataset.id)));
         }
 
         function viewOrEditRecord(id, switchToForm) {
@@ -822,34 +1391,19 @@
             }
         }
 
-        // --- Clone Function: fills form with record data but resets ID and serial ---
         function cloneRecord(id) {
             const record = allRecords.find(r => String(r.id) === String(id));
             if (!record) return;
-            // Fill the form with the record data
             fillFormFromRecord(record);
-            // Reset ID and serial so it saves as a new record
             document.getElementById('record-id').value = '';
             document.getElementById('serial-number').value = '';
             document.getElementById('serial-display').textContent = 'नयाँ (सेभ गर्दा स्वतः तयार हुनेछ)';
             document.getElementById('preview-serial').textContent = '--';
             document.getElementById('preview-serial').classList.add('placeholder');
-            // Switch to form tab
             tabFormBtn.click();
             showToast('क्लोन गरियो - सेभ गर्दा नयाँ सिरियल नम्बर आउनेछ', 'info');
-        }
-
-        async function deleteRecord(id) {
-            if (!confirm('के तपाईं यो रेकर्ड मेटाउन निश्चित हुनुहुन्छ?')) return;
-            try {
-                const { error } = await supabaseClient.from(TABLE_NAME).delete().eq('id', id);
-                if (error) throw error;
-                showToast('रेकर्ड मेटाइयो', 'success');
-                loadDashboardData();
-            } catch (err) {
-                console.error(err);
-                showToast('मेटाउँदा त्रुटि भयो: ' + (err.message || ''), 'error');
-            }
+            // update auto fields after clearing serial
+            updateRegistrationAndOfficeDate();
         }
 
         // ---------- Filters / Search / Pagination wiring ----------
@@ -859,6 +1413,24 @@
         document.getElementById('filter-group').addEventListener('change', applyFilters);
         document.getElementById('filter-guardian').addEventListener('change', applyFilters);
         document.getElementById('filter-date').addEventListener('change', applyFilters);
+        document.getElementById('filter-date-end').addEventListener('change', applyFilters);
+        document.getElementById('date-preset-filter').addEventListener('change', (e) => {
+            const val = e.target.value;
+            const startInput = document.getElementById('filter-date');
+            const endInput = document.getElementById('filter-date-end');
+            if (val === 'custom') {
+                startInput.style.display = 'block';
+                endInput.style.display = 'block';
+                startInput.value = '';
+                endInput.value = '';
+            } else {
+                startInput.style.display = 'block';
+                endInput.style.display = 'none';
+                startInput.value = '';
+                endInput.value = '';
+            }
+            applyFilters();
+        });
         document.getElementById('clear-filters-btn').addEventListener('click', () => {
             document.getElementById('search-box').value = '';
             document.getElementById('filter-ward').value = '';
@@ -866,6 +1438,9 @@
             document.getElementById('filter-group').value = '';
             document.getElementById('filter-guardian').value = '';
             document.getElementById('filter-date').value = '';
+            document.getElementById('filter-date-end').value = '';
+            document.getElementById('date-preset-filter').value = '';
+            document.getElementById('filter-date-end').style.display = 'none';
             applyFilters();
         });
         document.getElementById('refresh-btn').addEventListener('click', () => {
@@ -880,14 +1455,14 @@
             if (currentPage < totalPages) { currentPage++; renderTable(); }
         });
 
-        // ---------- Excel Export (robust, handles 32767-char limit, Nepali unicode) ----------
+        // ---------- Excel Export (unchanged) ----------
         document.getElementById('export-excel-btn').addEventListener('click', () => {
             if (filteredRecords.length === 0) {
                 showToast('निर्यात गर्न डाटा छैन', 'error');
                 return;
             }
 
-            const MAX_CELL_LEN = 32000; // safety margin below Excel's 32767 limit
+            const MAX_CELL_LEN = 32000;
             const safeCell = (val) => {
                 if (val === null || val === undefined) return '';
                 let str = String(val);
@@ -930,10 +1505,19 @@
             }
         });
 
+        // ---------- Print date/time injection on print ----------
+        window.addEventListener('beforeprint', () => {
+            const printDate = new Date().toLocaleString('ne-NP', { hour12: false });
+            document.getElementById('print-datetime').textContent = 'प्रिन्ट मिति/समय: ' + printDate;
+            // Ensure auto fields are up to date before printing
+            updateRegistrationAndOfficeDate();
+        });
+
         // ---------- Init ----------
         checkSession();
 
     </script>
 
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"cf5153463d15490bb52e4fdbdb29adaf","r":1,"spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>
