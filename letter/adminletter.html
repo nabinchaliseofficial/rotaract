@@ -518,6 +518,161 @@
 
         #printContainer.active { display: block; }
 
+        /* ─── QR VERIFICATION BUTTON & MODAL ────────────────────────────────── */
+        .btn-icon.qr-verify {
+            background: linear-gradient(135deg, var(--magenta) 0%, var(--magenta-dark) 100%);
+            color: var(--white);
+            box-shadow: 0 2px 8px var(--magenta-glow);
+        }
+        .btn-icon.qr-verify:hover {
+            filter: brightness(1.08);
+            box-shadow: 0 4px 14px var(--magenta-glow);
+        }
+
+        .qr-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 30, 48, 0.55);
+            backdrop-filter: blur(3px);
+            z-index: 100000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .qr-modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .qr-modal {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            width: 100%;
+            max-width: 420px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .qr-modal-header {
+            background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+            color: var(--white);
+            padding: 1.2rem 1.5rem;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            border-bottom: 4px solid var(--magenta);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.8rem;
+        }
+
+        .qr-modal-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .qr-modal-close {
+            background: rgba(255,255,255,0.12);
+            border: none;
+            color: var(--white);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background var(--transition);
+            flex-shrink: 0;
+        }
+        .qr-modal-close:hover { background: rgba(255,255,255,0.25); }
+
+        .qr-modal-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .qr-modal-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--success-bg);
+            color: var(--success);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.35rem 1rem;
+            border-radius: 40px;
+        }
+
+        .qr-modal-code-wrap {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 180px;
+            height: 180px;
+        }
+        .qr-modal-code-wrap img, .qr-modal-code-wrap canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .qr-modal-details {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .qr-modal-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.55rem 0.9rem;
+            background: var(--gray-100);
+            border-radius: var(--radius-sm);
+        }
+
+        .qr-modal-row .qr-row-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--gray-500);
+        }
+
+        .qr-modal-row .qr-row-value {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--blue-dark);
+            text-align: right;
+            word-break: break-word;
+        }
+
+        .qr-modal-url {
+            width: 100%;
+            font-size: 0.7rem;
+            color: var(--gray-500);
+            word-break: break-all;
+            text-align: center;
+            background: var(--gray-100);
+            padding: 0.6rem 0.8rem;
+            border-radius: var(--radius-sm);
+        }
+
         #printContent {
             font-family: 'Noto Sans Devanagari', 'Inter', 'Mangal', 'Arial Unicode MS', serif;
             line-height: 1.2 !important;
@@ -634,6 +789,19 @@
         #printContent .print-signature .sign-club { font-size: 0.85rem; color: var(--gray-500); }
         #printContent .print-signature div { margin: 0 !important; padding: 0 !important; }
 
+        /* LHE print-only dual signature row (left: International Chair, right: President) */
+        #printContent .print-signature.lhe-dual {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: flex-start !important;
+            text-align: center;
+            gap: 1rem;
+        }
+        #printContent .print-signature.lhe-dual .sign-block {
+            flex: 1 1 50%;
+            text-align: center;
+        }
+
         #printContent .print-verification {
             margin-top: 0.3rem !important;
             padding-top: 0.2rem !important;
@@ -742,6 +910,16 @@
             
             #printContent .print-verification .qr-container {
                 border: 1px solid #ddd !important;
+            }
+
+            #printContent .print-signature.lhe-dual {
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                width: 100% !important;
+            }
+            #printContent .print-signature.lhe-dual .sign-block {
+                width: 48% !important;
             }
             
             .no-print, .no-print * {
@@ -1326,7 +1504,7 @@
                         </div>
                         <div class="field">
                             <label>International Chair Signature URL</label>
-                            <input type="text" id="lheChairSig" value="anilsign.jpg" />
+                            <input type="text" id="lheChairSig" value="/anilsign.png" />
                         </div>
                         <div class="field">
                             <label>Sign Place</label>
@@ -1395,6 +1573,43 @@
     <!-- ═══ PRINT CONTAINER ═══ -->
     <div id="printContainer">
         <div id="printContent"></div>
+    </div>
+
+    <!-- ═══ QR VERIFICATION MODAL (LHE only) ═══ -->
+    <div class="qr-modal-overlay no-print" id="qrModalOverlay">
+        <div class="qr-modal">
+            <div class="qr-modal-header">
+                <h3>🔍 QR Verification</h3>
+                <button type="button" class="qr-modal-close" id="qrModalCloseBtn" title="बन्द गर्नुहोस्">✕</button>
+            </div>
+            <div class="qr-modal-body">
+                <span class="qr-modal-status" id="qrModalStatus">✅ प्रमाणित / Verified</span>
+                <div class="qr-modal-code-wrap" id="qrModalCodeWrap"></div>
+                <div class="qr-modal-details">
+                    <div class="qr-modal-row">
+                        <span class="qr-row-label">Verification ID</span>
+                        <span class="qr-row-value" id="qrModalVerificationId">—</span>
+                    </div>
+                    <div class="qr-modal-row">
+                        <span class="qr-row-label">Document Ref</span>
+                        <span class="qr-row-value" id="qrModalRefNo">—</span>
+                    </div>
+                    <div class="qr-modal-row">
+                        <span class="qr-row-label">Document Type</span>
+                        <span class="qr-row-value" id="qrModalDocType">📨 LHE</span>
+                    </div>
+                    <div class="qr-modal-row">
+                        <span class="qr-row-label">Fiscal Year</span>
+                        <span class="qr-row-value" id="qrModalFiscalYear">—</span>
+                    </div>
+                    <div class="qr-modal-row">
+                        <span class="qr-row-label">Recipient Club</span>
+                        <span class="qr-row-value" id="qrModalRecipient">—</span>
+                    </div>
+                </div>
+                <div class="qr-modal-url" id="qrModalUrl">—</div>
+            </div>
+        </div>
     </div>
 
     <!-- ═══ TOAST CONTAINER ═══ -->
@@ -1667,6 +1882,9 @@
 
                 // Set default filter for documents
                 currentDocTypeFilter = 'lhe';
+
+                // ✅ Delete is Admin-only — ensure no delete affordance is visible for LHE role
+                if (docDeleteBtn) docDeleteBtn.style.display = 'none';
             }
 
             // ─── Utility ──────────────────────────────────────────────────────────
@@ -2055,7 +2273,7 @@
 
                     setDocFormData(data);
                     docFormTitle.textContent = '✏️ कागजात सम्पादन गर्नुहोस्';
-                    docDeleteBtn.style.display = data.doc_type === 'lhe' ? 'inline-flex' : 'none';
+                    docDeleteBtn.style.display = (data.doc_type === 'lhe' && currentRole === 'admin') ? 'inline-flex' : 'none';
                     docFormContainer.style.display = 'block';
                     docFormContainer.scrollIntoView({ behavior: 'smooth' });
                 } catch (err) {
@@ -2106,6 +2324,13 @@
 
             async function deleteDoc(id) {
                 try {
+                    // ✅ Delete is Admin-only. LHE role can never delete, even via direct
+                    // function invocation (defense in depth alongside the hidden button).
+                    if (currentRole !== 'admin') {
+                        showToast('⛔ Delete गर्ने अनुमति केवल Admin लाई मात्र छ।', 'error');
+                        return;
+                    }
+
                     const { data: doc, error: fetchError } = await supabaseClient
                         .from('rotaract_verify')
                         .select('doc_type')
@@ -2113,12 +2338,6 @@
                         .single();
 
                     if (fetchError) throw fetchError;
-
-                    // ✅ LHE user can only delete LHE docs
-                    if (currentRole === 'lhe' && (!doc || doc.doc_type !== 'lhe')) {
-                        showToast('⛔ तपाईंले LHE कागजात मात्र मेट्न पाउनुहुन्छ।', 'error');
-                        return;
-                    }
 
                     if (!doc || doc.doc_type !== 'lhe') {
                         showToast('⛔ Letter र 📢 सूचना delete गर्न मिल्दैन। LHE मात्र delete गर्न मिल्छ।', 'error');
@@ -2176,7 +2395,7 @@
                     const bodyText = data.body ||
                         `Dear ${data.recipient_name || 'President'},
 
-On behalf of ${data.club || 'Rotaract Club of Galkot Baglung'}, I extend our heartfelt congratulations and best wishes to you and your Board of Directors for a successful Rotary Year ${data.rotary_year || '2026-27'}. May your tenure be filled with impactful service, inspiring leadership, and meaningful achievements.
+On behalf of ${data.club || 'Rotaract Club of Galkot Baglung'}, We extend our heartfelt congratulations and best wishes to you and your Board of Directors for a successful Rotary Year ${data.rotary_year || '2026-27'}. May your tenure be filled with impactful service, inspiring leadership, and meaningful achievements.
 
 Since our charter on 23 April 2021, our club has remained committed to community service, youth empowerment, leadership development, and fellowship. We sincerely appreciate the contributions of ${data.recipient_club_name || 'your club'} to the Rotaract movement.
 
@@ -2192,7 +2411,7 @@ Thank you!`;
                             <span class="to-address-content">${recipientDisplay}</span>
                         </div>
                         <div class="print-subject" style="font-size:${fsSubj};color:var(--blue-dark);text-align:center;background:var(--gray-100);padding:0.15rem 1.2rem !important;border-radius:12px;border-left:4px solid var(--magenta);">
-                            📌 विषय: Letterhead Exchange
+                            📌 SUB: Letterhead Exchange
                         </div>
                         <div class="print-body" style="white-space:pre-wrap;font-size:${fsBody};text-align:${alignment};">
                             ${escapeHtml(data.body || bodyText)}
@@ -2223,12 +2442,28 @@ Thank you!`;
                     </div>
                     <div class="print-meta" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;color:var(--gray-700);">
                         <span style="font-size:${fsFY};">
-                            आ.व. ${escapeHtml(data.fiscal_year || '—')}
+                            FY. ${escapeHtml(data.fiscal_year || '—')}
                             <span style="font-size:${fsRef};margin-left:0.3rem;">(${refDisplay})</span>
                         </span>
                         <span style="font-size:${fsDt};white-space:nowrap;">${isLHE ? 'Date' : 'मिति'}: ${dateFormatted}</span>
                     </div>
                     ${contentHtml}
+                    ${isLHE ? `
+                    <div class="print-signature lhe-dual" style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;text-align:center;">
+                        <div class="sign-block" style="flex:1 1 50%;text-align:center;">
+                            <img src="/anilsign.png" alt="International Chair Sign" class="sign-img" style="height:40px;width:auto;display:inline-block;">
+                            <div class="sign-name" style="font-weight:600;letter-spacing:1px;">Rtr. Anil Shrestha</div>
+                            <div class="sign-designation" style="font-size:0.8rem;color:var(--gray-500);">International Chair</div>
+                            <div class="sign-club" style="font-size:0.8rem;color:var(--gray-500);">Rotaract Club of Galkot Baglung</div>
+                        </div>
+                        <div class="sign-block" style="flex:1 1 50%;text-align:center;">
+                            <img src="/presidentsign.png" alt="President Sign" class="sign-img" style="height:40px;width:auto;display:inline-block;">
+                            <div class="sign-name" style="font-weight:600;letter-spacing:1px;">Rtr. Nabin Chalise</div>
+                            <div class="sign-designation" style="font-size:0.8rem;color:var(--gray-500);">President RY 2026-27</div>
+                            <div class="sign-club" style="font-size:0.8rem;color:var(--gray-500);">Rotaract Club of Galkot Baglung</div>
+                        </div>
+                    </div>
+                    ` : `
                     <div class="print-signature" style="text-align:center;">
                         <div style="text-align:center;">
                             <img src="/presidentsign.png" alt="President Sign" class="sign-img" style="height:40px;width:auto;display:inline-block;">
@@ -2238,6 +2473,7 @@ Thank you!`;
                             <div class="sign-club" style="font-size:0.8rem;color:var(--gray-500);">${escapeHtml(data.club || 'रोटर्याक्ट क्लब, गलकोट बागलुङ')}</div>
                         </div>
                     </div>
+                    `}
                     <div class="print-verification" style="display:flex;flex-direction:column;align-items:center;gap:0.05rem;">
                         <div class="verify-label" style="font-size:0.7rem;color:var(--gray-400);letter-spacing:0.5px;text-transform:uppercase;">🔍 स्क्यान गर्नुहोस् • Scan to Verify</div>
                         <div class="qr-container" style="width:120px;height:120px;background:var(--white);border:1px solid var(--gray-200);border-radius:12px;display:flex;align-items:center;justify-content:center;padding:6px;" id="qrContainer"></div>
@@ -2343,7 +2579,8 @@ Thank you!`;
                                     <button class="btn-icon edit" data-id="${doc.id}" title="सम्पादन">✏️</button>
                                     <button class="btn-icon clone" data-id="${doc.id}" title="प्रतिलिपि बनाउनुहोस् (Clone)">📄</button>
                                     <button class="btn-icon print" data-id="${doc.id}" title="प्रिन्ट">🖨️</button>
-                                    ${docType === 'lhe' ? `<button class="btn-icon delete" data-id="${doc.id}" title="LHE मेट्नुहोस्">🗑️</button>` : ''}
+                                    ${docType === 'lhe' ? `<button class="btn-icon qr-verify" data-id="${doc.id}" title="QR Verification">📱</button>` : ''}
+                                    ${(docType === 'lhe' && currentRole === 'admin') ? `<button class="btn-icon delete" data-id="${doc.id}" title="LHE मेट्नुहोस्">🗑️</button>` : ''}
                                 </div>
                             </td>
                         </tr>`;
@@ -2366,7 +2603,70 @@ Thank you!`;
                         }
                     });
                 });
+                docTableBody.querySelectorAll('.qr-verify').forEach(btn => {
+                    btn.addEventListener('click', function() { openQrVerificationModal(this.dataset.id); });
+                });
             }
+
+            // ─── QR Verification Modal (LHE only) ──────────────────────────────────
+            async function openQrVerificationModal(id) {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('rotaract_verify')
+                        .select('*')
+                        .eq('id', id)
+                        .single();
+                    if (error) throw error;
+
+                    if (data.doc_type !== 'lhe') {
+                        showToast('⛔ QR Verification LHE कागजातका लागि मात्र उपलब्ध छ।', 'error');
+                        return;
+                    }
+
+                    const vid = data.verification_id || generateVerificationId(data.fiscal_year, data.ref_no);
+                    const qrUrl = `https://galkotbaglung.vercel.app/letter/verify.html?vid=${encodeURIComponent(vid)}`;
+
+                    document.getElementById('qrModalVerificationId').textContent = vid;
+                    document.getElementById('qrModalRefNo').textContent = `LHE-${vid.slice(0, 8)}`;
+                    document.getElementById('qrModalDocType').textContent = '📨 LHE (Letterhead Exchange)';
+                    document.getElementById('qrModalFiscalYear').textContent = data.fiscal_year || '—';
+                    document.getElementById('qrModalRecipient').textContent = data.recipient_club_name || data.recipient_name || '—';
+                    document.getElementById('qrModalUrl').textContent = qrUrl;
+                    document.getElementById('qrModalStatus').textContent = '✅ प्रमाणित / Verified';
+
+                    const codeWrap = document.getElementById('qrModalCodeWrap');
+                    codeWrap.innerHTML = '';
+                    if (typeof QRCode !== 'undefined') {
+                        try {
+                            new QRCode(codeWrap, {
+                                text: qrUrl,
+                                width: 160,
+                                height: 160,
+                                colorDark: '#0B1E30',
+                                colorLight: '#FFFFFF',
+                                correctLevel: QRCode.CorrectLevel.H
+                            });
+                        } catch (e) {
+                            console.warn('QR modal generation error:', e);
+                            codeWrap.innerHTML = '<div style="font-size:11px;text-align:center;padding:10px;">QR</div>';
+                        }
+                    }
+
+                    document.getElementById('qrModalOverlay').classList.add('active');
+                } catch (err) {
+                    console.error('QR modal error:', err);
+                    showToast('⚠️ QR Verification लोड गर्न असफल', 'error');
+                }
+            }
+
+            function closeQrVerificationModal() {
+                document.getElementById('qrModalOverlay').classList.remove('active');
+            }
+
+            document.getElementById('qrModalCloseBtn').addEventListener('click', closeQrVerificationModal);
+            document.getElementById('qrModalOverlay').addEventListener('click', function(e) {
+                if (e.target === this) closeQrVerificationModal();
+            });
 
             // ─── Load documents ──────────────────────────────────────────────────
             async function loadDocuments() {
