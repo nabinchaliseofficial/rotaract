@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rotaract Club - Admin Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js">
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
     <style>
         /* ─── Same styles as before ────────────────────────────────────────────── */
         :root {
@@ -128,15 +127,8 @@
         }
 
         @keyframes pulse-dot {
-            0%,
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-            50% {
-                opacity: 0.4;
-                transform: scale(0.8);
-            }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
         }
 
         .header-magenta-accent {
@@ -171,14 +163,8 @@
             gap: 0.5rem;
         }
 
-        .admin-tabs button:hover {
-            color: var(--gray-700);
-        }
-
-        .admin-tabs button.active {
-            color: var(--magenta);
-            border-bottom-color: var(--magenta);
-        }
+        .admin-tabs button:hover { color: var(--gray-700); }
+        .admin-tabs button.active { color: var(--magenta); border-bottom-color: var(--magenta); }
 
         /* ─── Stats ───────────────────────────────────────────────────────── */
         .stats-dash {
@@ -199,9 +185,7 @@
             color: var(--blue-dark);
         }
 
-        .stat-item .stat-number .accent {
-            color: var(--magenta);
-        }
+        .stat-item .stat-number .accent { color: var(--magenta); }
 
         .stat-item .stat-label {
             font-size: 0.6rem;
@@ -214,25 +198,12 @@
         }
 
         /* ─── Tab Content ────────────────────────────────────────────────── */
-        .tab-content {
-            display: none;
-            padding: 1.5rem;
-        }
-
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
+        .tab-content { display: none; padding: 1.5rem; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* ─── Forms ──────────────────────────────────────────────────────── */
@@ -242,9 +213,7 @@
             gap: 0.8rem 1.2rem;
         }
 
-        .form-grid .full {
-            grid-column: 1 / -1;
-        }
+        .form-grid .full { grid-column: 1 / -1; }
 
         .form-grid .field {
             display: flex;
@@ -319,56 +288,18 @@
             box-shadow: var(--shadow-btn);
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 28px rgba(217, 27, 92, 0.35);
-        }
-
-        .btn-secondary {
-            background: var(--gray-200);
-            color: var(--gray-600);
-        }
-
-        .btn-secondary:hover {
-            background: var(--gray-300);
-        }
-
-        .btn-danger {
-            background: var(--error-bg);
-            color: var(--error);
-            border: 1px solid #FADCD7;
-        }
-
-        .btn-danger:hover {
-            background: #FDE0DC;
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: var(--white);
-        }
-
-        .btn-success:hover {
-            opacity: 0.9;
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
-        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(217, 27, 92, 0.35); }
+        .btn-secondary { background: var(--gray-200); color: var(--gray-600); }
+        .btn-secondary:hover { background: var(--gray-300); }
+        .btn-danger { background: var(--error-bg); color: var(--error); border: 1px solid #FADCD7; }
+        .btn-danger:hover { background: #FDE0DC; }
+        .btn-success { background: var(--success); color: var(--white); }
+        .btn-success:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
 
         /* ─── LHE Form fields ───────────────────────────────────────────── */
-        .lhe-fields {
-            display: none;
-            border-top: 2px dashed var(--gray-200);
-            padding-top: 1rem;
-            margin-top: 0.5rem;
-        }
-
-        .lhe-fields.visible {
-            display: block;
-        }
+        .lhe-fields { display: none; border-top: 2px dashed var(--gray-200); padding-top: 1rem; margin-top: 0.5rem; }
+        .lhe-fields.visible { display: block; }
 
         .lhe-fields .form-section-title {
             grid-column: 1 / -1;
@@ -391,11 +322,7 @@
             margin-top: 1rem;
         }
 
-        .table-wrap table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.8rem;
-        }
+        .table-wrap table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
 
         .table-wrap table thead {
             background: var(--gray-100);
@@ -420,13 +347,8 @@
             vertical-align: middle;
         }
 
-        .table-wrap table tbody tr:hover {
-            background: var(--gray-100);
-        }
-
-        .table-wrap table tbody tr:last-child td {
-            border-bottom: none;
-        }
+        .table-wrap table tbody tr:hover { background: var(--gray-100); }
+        .table-wrap table tbody tr:last-child td { border-bottom: none; }
 
         .status-badge {
             display: inline-block;
@@ -437,32 +359,11 @@
             text-transform: uppercase;
         }
 
-        .status-badge.active,
-        .status-badge.approved {
-            background: var(--success-bg);
-            color: var(--success);
-        }
-
-        .status-badge.pending {
-            background: #FFF3CD;
-            color: #856404;
-        }
-
-        .status-badge.archived,
-        .status-badge.rejected {
-            background: var(--gray-200);
-            color: var(--gray-500);
-        }
-
-        .status-badge.lhe {
-            background: #E8F0FE;
-            color: var(--blue-mid);
-        }
-
-        .status-badge.suchana {
-            background: #F3E8FF;
-            color: #7C3AED;
-        }
+        .status-badge.active, .status-badge.approved { background: var(--success-bg); color: var(--success); }
+        .status-badge.pending { background: #FFF3CD; color: #856404; }
+        .status-badge.archived, .status-badge.rejected { background: var(--gray-200); color: var(--gray-500); }
+        .status-badge.lhe { background: #E8F0FE; color: var(--blue-mid); }
+        .status-badge.suchana { background: #F3E8FF; color: #7C3AED; }
 
         .doc-type-badge {
             display: inline-block;
@@ -472,26 +373,11 @@
             font-weight: 600;
         }
 
-        .doc-type-badge.letter {
-            background: #E5E7EB;
-            color: #4B5563;
-        }
+        .doc-type-badge.letter { background: #E5E7EB; color: #4B5563; }
+        .doc-type-badge.suchana { background: #F3E8FF; color: #7C3AED; }
+        .doc-type-badge.lhe { background: #E8F0FE; color: var(--blue-mid); }
 
-        .doc-type-badge.suchana {
-            background: #F3E8FF;
-            color: #7C3AED;
-        }
-
-        .doc-type-badge.lhe {
-            background: #E8F0FE;
-            color: var(--blue-mid);
-        }
-
-        .actions {
-            display: flex;
-            gap: 0.3rem;
-            flex-wrap: wrap;
-        }
+        .actions { display: flex; gap: 0.3rem; flex-wrap: wrap; }
 
         .btn-icon {
             padding: 0.2rem 0.5rem;
@@ -504,42 +390,14 @@
             color: var(--gray-500);
         }
 
-        .btn-icon:hover {
-            background: var(--gray-200);
-            color: var(--gray-700);
-        }
+        .btn-icon:hover { background: var(--gray-200); color: var(--gray-700); }
+        .btn-icon.edit:hover { background: var(--magenta-light); color: var(--magenta); }
+        .btn-icon.delete:hover { background: var(--error-bg); color: var(--error); }
+        .btn-icon.print:hover { background: #E8F0FE; color: var(--blue-mid); }
+        .btn-icon.clone:hover { background: #E6F7EE; color: #1DAA61; }
 
-        .btn-icon.edit:hover {
-            background: var(--magenta-light);
-            color: var(--magenta);
-        }
-
-        .btn-icon.delete:hover {
-            background: var(--error-bg);
-            color: var(--error);
-        }
-
-        .btn-icon.print:hover {
-            background: #E8F0FE;
-            color: var(--blue-mid);
-        }
-
-        .btn-icon.clone:hover {
-            background: #E6F7EE;
-            color: #1DAA61;
-        }
-
-        .no-records {
-            text-align: center;
-            padding: 2rem 1rem;
-            color: var(--gray-400);
-        }
-
-        .no-records .icon-big {
-            font-size: 2.5rem;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
+        .no-records { text-align: center; padding: 2rem 1rem; color: var(--gray-400); }
+        .no-records .icon-big { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
 
         /* ─── Search ──────────────────────────────────────────────────────── */
         .toolbar {
@@ -562,9 +420,7 @@
             transition: border var(--transition);
         }
 
-        .search-box:focus-within {
-            border-color: var(--magenta);
-        }
+        .search-box:focus-within { border-color: var(--magenta); }
 
         .search-box input {
             border: none;
@@ -577,16 +433,9 @@
             color: var(--gray-700);
         }
 
-        .search-box .search-icon {
-            color: var(--gray-400);
-            font-size: 0.9rem;
-        }
+        .search-box .search-icon { color: var(--gray-400); font-size: 0.9rem; }
 
-        .filter-tabs {
-            display: flex;
-            gap: 0.3rem;
-            flex-wrap: wrap;
-        }
+        .filter-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; }
 
         .filter-tabs button {
             padding: 0.3rem 1rem;
@@ -600,16 +449,8 @@
             transition: all var(--transition);
         }
 
-        .filter-tabs button:hover {
-            border-color: var(--magenta);
-            color: var(--magenta);
-        }
-
-        .filter-tabs button.active {
-            background: var(--magenta);
-            color: var(--white);
-            border-color: var(--magenta);
-        }
+        .filter-tabs button:hover { border-color: var(--magenta); color: var(--magenta); }
+        .filter-tabs button.active { background: var(--magenta); color: var(--white); border-color: var(--magenta); }
 
         /* ─── Toast ───────────────────────────────────────────────────────── */
         .toast-container {
@@ -638,23 +479,12 @@
             gap: 0.6rem;
             background: var(--white);
             border-left: 4px solid;
-            color: var(--ink);
+            color: var(--gray-700);
         }
 
-        .toast.success {
-            border-color: var(--success);
-            color: var(--success);
-        }
-
-        .toast.error {
-            border-color: var(--error);
-            color: var(--error);
-        }
-
-        .toast.info {
-            border-color: var(--blue-mid);
-            color: var(--blue-mid);
-        }
+        .toast.success { border-color: var(--success); color: var(--success); }
+        .toast.error { border-color: var(--error); color: var(--error); }
+        .toast.info { border-color: var(--blue-mid); color: var(--blue-mid); }
 
         .toast .toast-close {
             margin-left: auto;
@@ -667,14 +497,8 @@
         }
 
         @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* ─── PRINT LAYOUT FIXES ─── ULTRA COMPACT ────────────────────────────── */
@@ -692,9 +516,7 @@
             margin: 0;
         }
 
-        #printContainer.active {
-            display: block;
-        }
+        #printContainer.active { display: block; }
 
         #printContent {
             font-family: 'Noto Sans Devanagari', 'Inter', 'Mangal', 'Arial Unicode MS', serif;
@@ -708,7 +530,6 @@
             width: 100%;
         }
 
-        /* Reset all margins and paddings for all print elements */
         #printContent * {
             margin-top: 0 !important;
             margin-bottom: 0 !important;
@@ -716,7 +537,6 @@
             padding-bottom: 0 !important;
         }
 
-        /* To Address - strict left alignment with no indentation */
         #printContent .print-to {
             white-space: pre-wrap !important;
             text-align: left !important;
@@ -752,15 +572,8 @@
             margin-bottom: 0.2rem !important;
         }
 
-        #printContent .print-header .club-name {
-            font-weight: 700;
-            color: var(--blue-dark);
-        }
-
-        #printContent .print-header .club-address {
-            font-size: 0.9rem;
-            color: var(--gray-600);
-        }
+        #printContent .print-header .club-name { font-weight: 700; color: var(--blue-dark); }
+        #printContent .print-header .club-address { font-size: 0.9rem; color: var(--gray-600); }
 
         #printContent .print-meta {
             display: flex;
@@ -772,9 +585,7 @@
             line-height: 1.2 !important;
         }
 
-        #printContent .print-meta .meta-label {
-            color: var(--gray-600);
-        }
+        #printContent .print-meta .meta-label { color: var(--gray-600); }
 
         #printContent .print-subject {
             font-weight: 600;
@@ -818,25 +629,10 @@
             display: inline-block;
         }
 
-        #printContent .print-signature .sign-name {
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-
-        #printContent .print-signature .sign-designation {
-            font-size: 0.85rem;
-            color: var(--gray-500);
-        }
-
-        #printContent .print-signature .sign-club {
-            font-size: 0.85rem;
-            color: var(--gray-500);
-        }
-
-        #printContent .print-signature div {
-            margin: 0 !important;
-            padding: 0 !important;
-        }
+        #printContent .print-signature .sign-name { font-weight: 600; letter-spacing: 1px; }
+        #printContent .print-signature .sign-designation { font-size: 0.85rem; color: var(--gray-500); }
+        #printContent .print-signature .sign-club { font-size: 0.85rem; color: var(--gray-500); }
+        #printContent .print-signature div { margin: 0 !important; padding: 0 !important; }
 
         #printContent .print-verification {
             margin-top: 0.3rem !important;
@@ -905,15 +701,8 @@
         }
 
         @media print {
-            /* Hide everything except print container */
-            body * {
-                visibility: hidden !important;
-            }
-            
-            #printContainer,
-            #printContainer * {
-                visibility: visible !important;
-            }
+            body * { visibility: hidden !important; }
+            #printContainer, #printContainer * { visibility: visible !important; }
             
             #printContainer {
                 display: block !important;
@@ -955,28 +744,18 @@
                 border: 1px solid #ddd !important;
             }
             
-            /* Hide all no-print elements */
-            .no-print,
-            .no-print * {
+            .no-print, .no-print * {
                 display: none !important;
                 visibility: hidden !important;
             }
             
-            /* Ensure admin panel header/footer doesn't appear */
-            .app-header,
-            .app-footer,
-            .admin-tabs,
-            .stats-dash,
-            .toolbar,
-            .pagination-bar,
-            .table-wrap,
-            .login-overlay,
+            .app-header, .app-footer, .admin-tabs, .stats-dash,
+            .toolbar, .pagination-bar, .table-wrap, .login-overlay,
             .toast-container {
                 display: none !important;
                 visibility: hidden !important;
             }
 
-            /* Override any default browser spacing */
             p, div, br {
                 margin: 0 !important;
                 padding: 0 !important;
@@ -985,20 +764,12 @@
         }
 
         /* ─── Margin styles for screen ──────────────────────────────────── */
-        .margin-normal #printContent {
-            padding: 0.5rem 1rem;
-        }
-        .margin-narrow #printContent {
-            padding: 0.2rem 0.5rem;
-        }
-        .margin-wide #printContent {
-            padding: 1rem 2rem;
-        }
+        .margin-normal #printContent { padding: 0.5rem 1rem; }
+        .margin-narrow #printContent { padding: 0.2rem 0.5rem; }
+        .margin-wide #printContent { padding: 1rem 2rem; }
 
         /* ─── Hidden ──────────────────────────────────────────────────────── */
-        .hidden {
-            display: none !important;
-        }
+        .hidden { display: none !important; }
 
         /* ─── Pagination ──────────────────────────────────────────────────── */
         .pagination-bar {
@@ -1012,11 +783,7 @@
             color: var(--gray-600);
         }
 
-        .pagination-controls {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+        .pagination-controls { display: flex; align-items: center; gap: 0.5rem; }
 
         .pagination-controls select {
             padding: 0.3rem 0.5rem;
@@ -1026,22 +793,11 @@
             font-size: 0.75rem;
         }
 
-        .pagination-controls .btn-icon:disabled {
-            opacity: 0.35;
-            cursor: not-allowed;
-        }
-
-        .status-badge.archived {
-            background: var(--gray-200);
-            color: var(--gray-600);
-        }
+        .pagination-controls .btn-icon:disabled { opacity: 0.35; cursor: not-allowed; }
+        .status-badge.archived { background: var(--gray-200); color: var(--gray-600); }
 
         /* ─── Font-size selector ─────────────────────────────────────────────────── */
-        .field-with-size {
-            display: flex;
-            flex-direction: column;
-            gap: 0.3rem;
-        }
+        .field-with-size { display: flex; flex-direction: column; gap: 0.3rem; }
         .field-with-size .field-header {
             display: flex;
             align-items: center;
@@ -1093,11 +849,7 @@
             border-color: var(--magenta);
             box-shadow: 0 0 0 3px var(--magenta-glow);
         }
-        .field-with-size textarea {
-            resize: vertical;
-            min-height: 80px;
-            line-height: 1.6;
-        }
+        .field-with-size textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 
         /* ─── Login Modal ─────────────────────────────────────────────────── */
         .login-overlay {
@@ -1111,9 +863,7 @@
             padding: 1.5rem;
         }
 
-        .login-overlay.hidden {
-            display: none !important;
-        }
+        .login-overlay.hidden { display: none !important; }
 
         .login-card {
             background: var(--white);
@@ -1134,23 +884,9 @@
             margin-bottom: 0.8rem;
         }
 
-        .login-card h2 {
-            font-size: 1.1rem;
-            color: var(--blue-dark);
-            margin-bottom: 0.2rem;
-        }
-
-        .login-card .login-sub {
-            font-size: 0.75rem;
-            color: var(--gray-500);
-            margin-bottom: 1.4rem;
-        }
-
-        .login-card .field {
-            text-align: left;
-            margin-bottom: 1rem;
-        }
-
+        .login-card h2 { font-size: 1.1rem; color: var(--blue-dark); margin-bottom: 0.2rem; }
+        .login-card .login-sub { font-size: 0.75rem; color: var(--gray-500); margin-bottom: 1.4rem; }
+        .login-card .field { text-align: left; margin-bottom: 1rem; }
         .login-card .field label {
             display: block;
             font-size: 0.72rem;
@@ -1158,7 +894,6 @@
             color: var(--gray-600);
             margin-bottom: 0.35rem;
         }
-
         .login-card .field input {
             width: 100%;
             padding: 0.7rem 0.9rem;
@@ -1168,17 +903,12 @@
             font-size: 0.9rem;
             transition: border-color var(--transition);
         }
-
         .login-card .field input:focus {
             outline: none;
             border-color: var(--magenta);
             box-shadow: 0 0 0 3px var(--magenta-glow);
         }
-
-        .login-card .field input.invalid {
-            border-color: var(--error);
-        }
-
+        .login-card .field input.invalid { border-color: var(--error); }
         .login-card .login-error {
             display: none;
             background: var(--error-bg);
@@ -1190,11 +920,7 @@
             margin-bottom: 1rem;
             text-align: left;
         }
-
-        .login-card .login-error.visible {
-            display: block;
-        }
-
+        .login-card .login-error.visible { display: block; }
         .login-card .btn-login {
             width: 100%;
             padding: 0.8rem;
@@ -1209,22 +935,12 @@
             box-shadow: var(--shadow-btn);
             transition: all var(--transition);
         }
-
         .login-card .btn-login:hover:not(:disabled) {
             background: var(--magenta-dark);
             transform: translateY(-1px);
         }
-
-        .login-card .btn-login:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .app.app-locked {
-            filter: blur(4px);
-            pointer-events: none;
-            user-select: none;
-        }
+        .login-card .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
+        .app.app-locked { filter: blur(4px); pointer-events: none; user-select: none; }
 
         /* ─── Footer ──────────────────────────────────────────────────────── */
         .app-footer {
@@ -1247,9 +963,7 @@
                 flex-direction: column;
                 align-items: stretch;
             }
-            .app-header .badge-wrap {
-                margin-left: 0;
-            }
+            .app-header .badge-wrap { margin-left: 0; }
             .admin-tabs {
                 padding: 0 0.5rem;
                 overflow-x: auto;
@@ -1259,25 +973,12 @@
                 font-size: 0.75rem;
                 white-space: nowrap;
             }
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            .form-grid .full {
-                grid-column: 1;
-            }
-            .toolbar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .search-box {
-                flex: none;
-            }
-            .tab-content {
-                padding: 1rem;
-            }
-            .stats-dash {
-                grid-template-columns: repeat(2, 1fr);
-            }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-grid .full { grid-column: 1; }
+            .toolbar { flex-direction: column; align-items: stretch; }
+            .search-box { flex: none; }
+            .tab-content { padding: 1rem; }
+            .stats-dash { grid-template-columns: repeat(2, 1fr); }
             .toast-container {
                 right: 0.5rem;
                 bottom: 0.5rem;
@@ -1295,7 +996,7 @@
 </head>
 <body>
 
-    <!-- ═══ LOGIN MODAL (auto popup, blocks access until admin auth) ═══ -->
+    <!-- ═══ LOGIN MODAL ═══ -->
     <div class="login-overlay hidden no-print" id="loginOverlay">
         <div class="login-card">
             <img src="rotaract.jpg" alt="Rotaract Logo" class="login-logo" onerror="this.style.display='none'" />
@@ -1323,15 +1024,14 @@
             <div class="logo-wrap">
                 <img src="rotaract.jpg" alt="Rotaract Logo" class="logo-img" onerror="this.style.display='none'" />
                 <div class="club-info">
-                    <h1>ROTARACT CLUB, GALKOT BAGLUNG
-</h1>
-                    <div class="sub">RI District 3292 • Nepal • Admin Panel</div>
+                    <h1>ROTARACT CLUB, GALKOT BAGLUNG</h1>
+                    <div class="sub" id="headerSub">RI District 3292 • Nepal • Admin Panel</div>
                 </div>
             </div>
             <div class="badge-wrap">
                 <div class="badge">
                     <span class="live-dot"></span>
-                    <span>लाइभ • प्रमाणित</span>
+                    <span id="headerBadgeText">लाइभ • प्रमाणित</span>
                 </div>
                 <a href="index.html" style="color:rgba(255,255,255,0.7);font-size:0.7rem;text-decoration:none;border:1px solid rgba(255,255,255,0.15);padding:0.2rem 1rem;border-radius:30px;">🏠 गृह पृष्ठ</a>
                 <button id="logoutBtn" style="color:rgba(255,255,255,0.7);font-size:0.7rem;text-decoration:none;border:1px solid rgba(255,255,255,0.15);padding:0.2rem 1rem;border-radius:30px;background:none;cursor:pointer;">🚪 Logout</button>
@@ -1392,7 +1092,7 @@
                     <input type="hidden" id="docType" value="letter" />
 
                     <!-- Document Type Selector -->
-                    <div class="field full">
+                    <div class="field full" id="docTypeField">
                         <label>कागजात प्रकार</label>
                         <select id="docTypeSelect">
                             <option value="letter">📝 पत्र (Letter)</option>
@@ -1402,7 +1102,6 @@
                     </div>
 
                     <!-- Common Fields with Font Size Controls -->
-                    <!-- 1) Fiscal Year with font-size selector -->
                     <div class="field field-with-size">
                         <div class="field-header">
                             <label for="docFiscalYear">आ.व.</label>
@@ -1425,7 +1124,6 @@
                         <input type="text" id="docFiscalYear" placeholder="जस्तै: 026/027" value="026/027" />
                     </div>
 
-                    <!-- 2) Reference Number with font-size selector -->
                     <div class="field field-with-size">
                         <div class="field-header">
                             <label for="docRefNo">दर्ता नम्बर / Ref</label>
@@ -1448,7 +1146,6 @@
                         <input type="text" id="docRefNo" placeholder="स्वत: जनरेट हुन्छ" readonly />
                     </div>
 
-                    <!-- 3) Date with font-size selector -->
                     <div class="field field-with-size">
                         <div class="field-header">
                             <label for="docDate">मिति</label>
@@ -1471,13 +1168,11 @@
                         <input type="date" id="docDate" />
                     </div>
 
-                    <!-- 4) Letter Type -->
                     <div class="field">
                         <label>प्रकार</label>
                         <input type="text" id="docLetterType" placeholder="जस्तै: निवेदन, सूचना" value="निवेदन" />
                     </div>
 
-                    <!-- 5) To Address with font-size selector -->
                     <div class="field full field-with-size">
                         <div class="field-header">
                             <label for="docToAddress">प्रति (To Address)</label>
@@ -1500,7 +1195,6 @@
                         <textarea id="docToAddress" placeholder="जस्तै: श्री गलकोट नगरपालिका, गलकोट, बागलुङ" rows="3"></textarea>
                     </div>
 
-                    <!-- 6) Subject with font-size selector -->
                     <div class="field full field-with-size">
                         <div class="field-header">
                             <label for="docSubject">विषय (Subject)</label>
@@ -1523,7 +1217,6 @@
                         <input type="text" id="docSubject" placeholder="कागजातको विषय" />
                     </div>
 
-                    <!-- 7) Body with font-size selector -->
                     <div class="field full field-with-size">
                         <div class="field-header">
                             <label for="docBody">सामग्री (Body)</label>
@@ -1699,7 +1392,7 @@
 
     </div>
 
-    <!-- ═══ PRINT CONTAINER (Hidden, shown only for print) ═══ -->
+    <!-- ═══ PRINT CONTAINER ═══ -->
     <div id="printContainer">
         <div id="printContent"></div>
     </div>
@@ -1717,6 +1410,7 @@
 
             let supabaseClient = null;
             let currentUser = null;
+            let currentRole = null; // 'admin' | 'lhe'
             let qrGenerated = false;
 
             try {
@@ -1735,6 +1429,7 @@
             const docFormTitle = document.getElementById('docFormTitle');
             const docEditId = document.getElementById('docEditId');
             const docTypeSelect = document.getElementById('docTypeSelect');
+            const docTypeField = document.getElementById('docTypeField');
             const docType = document.getElementById('docType');
             const docFiscalYear = document.getElementById('docFiscalYear');
             const docRefNo = document.getElementById('docRefNo');
@@ -1791,6 +1486,9 @@
             // Print elements
             const printContainer = document.getElementById('printContainer');
             const printContent = document.getElementById('printContent');
+
+            const headerSub = document.getElementById('headerSub');
+            const headerBadgeText = document.getElementById('headerBadgeText');
 
             let currentFilterType = 'all';
             let currentDocTypeFilter = 'all';
@@ -1864,13 +1562,17 @@
                         .eq('user_id', session.user.id)
                         .single();
 
-                    if (roleErr || !roleRow || roleRow.role !== 'admin' || roleRow.status !== 'active') {
+                    // ✅ admin वा lhe दुवै role allowed
+                    if (roleErr || !roleRow || !['admin', 'lhe'].includes(roleRow.role) || roleRow.status !== 'active') {
                         await supabaseClient.auth.signOut();
                         currentUser = null;
-                        if (!silent) showLoginError('⛔ यो खाता admin अनुमति प्राप्त छैन वा निष्क्रिय छ।');
+                        currentRole = null;
+                        if (!silent) showLoginError('⛔ यो खाता admin/LHE अनुमति प्राप्त छैन वा निष्क्रिय छ।');
                         showLoginModal();
                         return false;
                     }
+
+                    currentRole = roleRow.role;
                     hideLoginModal();
                     return true;
                 } catch (e) {
@@ -1904,7 +1606,7 @@
                         showToast('✅ स्वागत छ, लगइन सफल भयो।', 'success');
                         await startApp();
                     } else if (!loginError.classList.contains('visible')) {
-                        showLoginError('⛔ यो खाता admin अनुमति प्राप्त छैन वा निष्क्रिय छ।');
+                        showLoginError('⛔ यो खाता admin/LHE अनुमति प्राप्त छैन वा निष्क्रिय छ।');
                     }
                 } catch (err) {
                     console.error('Login error:', err);
@@ -1918,7 +1620,10 @@
             document.getElementById('logoutBtn').addEventListener('click', async () => {
                 if (supabaseClient) await supabaseClient.auth.signOut();
                 currentUser = null;
+                currentRole = null;
                 showLoginModal();
+                // Reset UI to default (safe reload)
+                setTimeout(() => location.reload(), 200);
             });
 
             if (supabaseClient) {
@@ -1927,6 +1632,41 @@
                         showLoginModal();
                     }
                 });
+            }
+
+            // ─── Role-based UI ──────────────────────────────────────────────────────
+            function applyRoleBasedUI() {
+                if (currentRole !== 'lhe') return;
+
+                // Header text changes
+                if (headerSub) headerSub.textContent = 'RI District 3292 • Nepal • LHE Panel';
+                if (headerBadgeText) headerBadgeText.textContent = 'LHE • प्रमाणित';
+
+                // Admin tabs: show only LHE
+                document.querySelectorAll('.admin-tabs button').forEach(b => {
+                    if (b.dataset.tab !== 'lhe') b.style.display = 'none';
+                    else b.classList.add('active');
+                    if (b.dataset.tab === 'all') b.classList.remove('active');
+                });
+
+                // Filter tabs: show only LHE
+                document.querySelectorAll('.filter-tabs button').forEach(b => {
+                    if (b.dataset.filter !== 'lhe') b.style.display = 'none';
+                    else b.classList.add('active');
+                    if (b.dataset.filter === 'all') b.classList.remove('active');
+                });
+
+                // Doc type selector: only LHE
+                docTypeSelect.innerHTML = '<option value="lhe">📨 LHE (Letterhead Exchange)</option>';
+                docTypeSelect.value = 'lhe';
+                docType.value = 'lhe';
+                toggleLHEFields(true);
+
+                // Hide the entire doc type selector field (since only LHE is possible)
+                if (docTypeField) docTypeField.style.display = 'none';
+
+                // Set default filter for documents
+                currentDocTypeFilter = 'lhe';
             }
 
             // ─── Utility ──────────────────────────────────────────────────────────
@@ -1975,6 +1715,14 @@
             }
 
             docTypeSelect.addEventListener('change', async function() {
+                // Prevent LHE users from changing type
+                if (currentRole === 'lhe') {
+                    this.value = 'lhe';
+                    docType.value = 'lhe';
+                    toggleLHEFields(true);
+                    return;
+                }
+
                 const type = this.value;
                 docType.value = type;
                 toggleLHEFields(type === 'lhe');
@@ -2006,12 +1754,19 @@
                 if (!supabaseClient || !fiscal) return `${prefix}001`;
 
                 try {
-                    const { data, error } = await supabaseClient
+                    let query = supabaseClient
                         .from('rotaract_verify')
                         .select('ref_no')
                         .eq('fiscal_year', fiscal.trim())
                         .in('doc_type', ['letter', 'lhe'])
                         .not('ref_no', 'is', null);
+
+                    // For LHE user, only count LHE refs
+                    if (currentRole === 'lhe') {
+                        query = query.eq('doc_type', 'lhe');
+                    }
+
+                    const { data, error } = await query;
                     if (error) throw error;
 
                     let maxNum = 0;
@@ -2132,7 +1887,16 @@
                 docEditId.value = '';
                 docFormTitle.textContent = 'नयाँ कागजात सिर्जना गर्नुहोस्';
                 docDeleteBtn.style.display = 'none';
-                const type = docTypeSelect.value || 'letter';
+
+                // LHE user: always LHE type
+                const type = (currentRole === 'lhe') ? 'lhe' : (docTypeSelect.value || 'letter');
+
+                if (currentRole === 'lhe') {
+                    docTypeSelect.value = 'lhe';
+                    docType.value = 'lhe';
+                    toggleLHEFields(true);
+                }
+
                 const fy = docFiscalYear.value.trim() || '026/027';
                 const nextRef = await getNextRefNo(fy, type);
 
@@ -2167,6 +1931,12 @@
                 e.preventDefault();
                 const data = getDocFormData();
                 const isEdit = !!docEditId.value;
+
+                // ✅ LHE user can only save LHE docs
+                if (currentRole === 'lhe' && data.doc_type !== 'lhe') {
+                    showToast('⛔ तपाईंले LHE कागजात मात्र सिर्जना/सम्पादन गर्न पाउनुहुन्छ।', 'error');
+                    return;
+                }
 
                 if (!data.fiscal_year || !data.ref_no || !data.date || !data.to_address || !data.subject || !data.body) {
                     showToast('कृपया सबै आवश्यक फिल्ड भर्नुहोस्।', 'error');
@@ -2276,6 +2046,13 @@
                         .eq('id', id)
                         .single();
                     if (error) throw error;
+
+                    // ✅ LHE user can only edit LHE docs
+                    if (currentRole === 'lhe' && data.doc_type !== 'lhe') {
+                        showToast('⛔ तपाईंले LHE कागजात मात्र सम्पादन गर्न पाउनुहुन्छ।', 'error');
+                        return;
+                    }
+
                     setDocFormData(data);
                     docFormTitle.textContent = '✏️ कागजात सम्पादन गर्नुहोस्';
                     docDeleteBtn.style.display = data.doc_type === 'lhe' ? 'inline-flex' : 'none';
@@ -2295,6 +2072,12 @@
                         .eq('id', id)
                         .single();
                     if (error) throw error;
+
+                    // ✅ LHE user can only clone LHE docs
+                    if (currentRole === 'lhe' && data.doc_type !== 'lhe') {
+                        showToast('⛔ तपाईंले LHE कागजात मात्र प्रतिलिपि गर्न पाउनुहुन्छ।', 'error');
+                        return;
+                    }
 
                     const type = data.doc_type || 'letter';
                     const fy = data.fiscal_year || docFiscalYear.value.trim() || '026/027';
@@ -2323,7 +2106,6 @@
 
             async function deleteDoc(id) {
                 try {
-                    // केवल LHE कागजातलाई मात्र delete गर्न अनुमति
                     const { data: doc, error: fetchError } = await supabaseClient
                         .from('rotaract_verify')
                         .select('doc_type')
@@ -2331,6 +2113,12 @@
                         .single();
 
                     if (fetchError) throw fetchError;
+
+                    // ✅ LHE user can only delete LHE docs
+                    if (currentRole === 'lhe' && (!doc || doc.doc_type !== 'lhe')) {
+                        showToast('⛔ तपाईंले LHE कागजात मात्र मेट्न पाउनुहुन्छ।', 'error');
+                        return;
+                    }
 
                     if (!doc || doc.doc_type !== 'lhe') {
                         showToast('⛔ Letter र 📢 सूचना delete गर्न मिल्दैन। LHE मात्र delete गर्न मिल्छ।', 'error');
@@ -2362,7 +2150,6 @@
                 const vid = data.verification_id || generateVerificationId(data.fiscal_year, data.ref_no);
                 const qrUrl = `https://galkotbaglung.vercel.app/letter/verify.html?vid=${encodeURIComponent(vid)}`;
 
-                // Use saved font sizes (convert px to pt for print)
                 const convertToPt = (val) => {
                     if (val && val.endsWith('px')) {
                         return parseInt(val) + 'pt';
@@ -2380,7 +2167,6 @@
 
                 let contentHtml = '';
 
-                // Format the To Address content - preserving user's exact line breaks
                 const toAddressContent = escapeHtml(data.to_address || '');
                 const recipientDisplay = isLHE ? 
                     `${escapeHtml(data.recipient_name || '—')}, President, RY ${escapeHtml(data.rotary_year || '2026-27')}, ${escapeHtml(data.recipient_club_name || '—')}` :
@@ -2473,6 +2259,12 @@ Thank you!`;
                         .eq('id', id)
                         .single();
                     if (error) throw error;
+
+                    // LHE user can only print LHE docs
+                    if (currentRole === 'lhe' && data.doc_type !== 'lhe') {
+                        showToast('⛔ तपाईंले LHE कागजात मात्र प्रिन्ट गर्न पाउनुहुन्छ।', 'error');
+                        return;
+                    }
 
                     const htmlContent = generatePrintContent(data);
                     printContent.innerHTML = htmlContent;
@@ -2590,7 +2382,10 @@ Thank you!`;
                         );
                     }
 
-                    if (currentDocTypeFilter !== 'all') {
+                    // ✅ Role-based filtering
+                    if (currentRole === 'lhe') {
+                        query = query.eq('doc_type', 'lhe');
+                    } else if (currentDocTypeFilter !== 'all') {
                         query = query.eq('doc_type', currentDocTypeFilter);
                     }
 
@@ -2608,7 +2403,11 @@ Thank you!`;
             async function loadStats() {
                 if (!supabaseClient) return;
                 try {
-                    const { data, error } = await supabaseClient.from('rotaract_verify').select('*');
+                    let query = supabaseClient.from('rotaract_verify').select('*');
+                    if (currentRole === 'lhe') {
+                        query = query.eq('doc_type', 'lhe');
+                    }
+                    const { data, error } = await query;
                     if (error) throw error;
 
                     const total = data.length;
@@ -2726,11 +2525,15 @@ Thank you!`;
                 if (appStarted) return;
                 appStarted = true;
 
+                applyRoleBasedUI(); // ✅ Role-based UI
+
                 const today = new Date().toISOString().split('T')[0];
                 docDate.value = today;
 
+                // Default doc type for ref generation
+                const defaultType = (currentRole === 'lhe') ? 'lhe' : 'letter';
                 const fy = docFiscalYear.value.trim() || '026/027';
-                const nextRef = await getNextRefNo(fy, 'letter');
+                const nextRef = await getNextRefNo(fy, defaultType);
                 docRefNo.value = nextRef;
                 docVerificationId.value = generateVerificationId(fy, nextRef);
 
@@ -2742,7 +2545,7 @@ Thank you!`;
                 applyFontSize(docBody, fsBody.value);
 
                 await Promise.all([loadDocuments(), loadStats()]);
-                console.log('✅ Admin Panel v2.0 — Direct Print optimized — ready.');
+                console.log('✅ Admin Panel v2.0 — Role-based access — ready.');
             }
 
             async function init() {
@@ -2759,8 +2562,7 @@ Thank you!`;
         })();
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
 </body>
 </html>
