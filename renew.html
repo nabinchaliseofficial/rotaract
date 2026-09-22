@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ne">
 <head>
@@ -290,8 +289,8 @@
             <p class="text-center text-gray-500 mb-6 text-sm">सामाजिक सुरक्षा नवीकरण प्रणाली</p>
             <form id="loginForm" class="space-y-4">
                 <div>
-                    <label class="font-semibold text-gray-700">प्रयोगकर्ता आईडी</label>
-                    <input type="text" id="login-id" class="input-field" autocomplete="username" required>
+                    <label class="font-semibold text-gray-700">इमेल</label>
+                    <input type="email" id="login-id" class="input-field" autocomplete="username" required>
                 </div>
                 <div>
                     <label class="font-semibold text-gray-700">पासवर्ड</label>
@@ -911,63 +910,131 @@
             }, 3000);
         }
 
-        // ---------- Login ----------
-        const LOGIN_ID = '1111';
-        const LOGIN_PASS = '2222';
+        // ---------- Login (Supabase Auth + user_roles check) ----------
+        const REQUIRED_ROLE = 'municipality';
         const loginOverlay = document.getElementById('login-overlay');
         const appContent = document.getElementById('app-content');
         const loginForm = document.getElementById('loginForm');
         const loginError = document.getElementById('login-error');
+        const loginSubmitBtn = loginForm.querySelector('button[type="submit"]');
 
         // Auto refresh interval (will be set once logged in)
         let autoRefreshInterval = null;
+        let authListenerBound = false;
 
-        function checkSession() {
-            if (sessionStorage.getItem('ssrn_logged_in') === 'true') {
-                loginOverlay.classList.add('app-hidden');
-                appContent.classList.remove('app-hidden');
-                // Dashboard is default: show dashboard tab active, form hidden
-                tabDashboardBtn.classList.add('active');
-                tabFormBtn.classList.remove('active');
-                dashboardSection.classList.remove('app-hidden');
-                formSection.classList.add('app-hidden');
-                loadDashboardData();
-                // Start auto refresh (every 45 seconds)
-                if (!autoRefreshInterval) {
-                    autoRefreshInterval = setInterval(() => {
-                        if (!dashboardSection.classList.contains('app-hidden')) {
-                            loadDashboardData(true); // silent refresh
-                        }
-                    }, 45000);
+        // Checks user_roles table: role must be 'municipality' AND status must be 'active'
+        async function verifyMunicipalityAccess(user) {
+            if (!user) return false;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('user_roles')
+                    .select('role, status')
+                    .eq('user_id', user.id)
+                    .maybeSingle();
+                if (error) {
+                    console.error('user_roles lookup error:', error);
+                    return false;
                 }
-            } else {
-                loginOverlay.classList.remove('app-hidden');
-                appContent.classList.add('app-hidden');
-                if (autoRefreshInterval) {
-                    clearInterval(autoRefreshInterval);
-                    autoRefreshInterval = null;
-                }
+                if (!data) return false;
+                return data.role === REQUIRED_ROLE && data.status === 'active';
+            } catch (err) {
+                console.error('verifyMunicipalityAccess error:', err);
+                return false;
             }
         }
 
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const id = document.getElementById('login-id').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
-            if (id === LOGIN_ID && pass === LOGIN_PASS) {
-                sessionStorage.setItem('ssrn_logged_in', 'true');
-                loginError.textContent = '';
-                checkSession();
-                showToast('सफलतापूर्वक लगइन भयो', 'success');
+        function showApp() {
+            loginOverlay.classList.add('app-hidden');
+            appContent.classList.remove('app-hidden');
+            // Dashboard is default: show dashboard tab active, form hidden
+            tabDashboardBtn.classList.add('active');
+            tabFormBtn.classList.remove('active');
+            dashboardSection.classList.remove('app-hidden');
+            formSection.classList.add('app-hidden');
+            loadDashboardData();
+            // Start auto refresh (every 45 seconds)
+            if (!autoRefreshInterval) {
+                autoRefreshInterval = setInterval(() => {
+                    if (!dashboardSection.classList.contains('app-hidden')) {
+                        loadDashboardData(true); // silent refresh
+                    }
+                }, 45000);
+            }
+        }
+
+        function showLogin(message) {
+            loginOverlay.classList.remove('app-hidden');
+            appContent.classList.add('app-hidden');
+            loginError.textContent = message || '';
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+
+        async function checkSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session && session.user) {
+                const allowed = await verifyMunicipalityAccess(session.user);
+                if (allowed) {
+                    showApp();
+                } else {
+                    await supabaseClient.auth.signOut();
+                    showLogin('तपाईंको खातालाई यो प्रणालीमा पहुँचको अनुमति छैन (role=municipality, status=active आवश्यक)।');
+                }
             } else {
-                loginError.textContent = 'आईडी वा पासवर्ड मिलेन।';
+                showLogin();
+            }
+
+            // Bind auth state listener only once
+            if (!authListenerBound) {
+                authListenerBound = true;
+                supabaseClient.auth.onAuthStateChange((event) => {
+                    if (event === 'SIGNED_OUT') {
+                        showLogin();
+                    }
+                });
+            }
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-id').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+            loginError.textContent = '';
+            loginSubmitBtn.disabled = true;
+            const originalBtnText = loginSubmitBtn.textContent;
+            loginSubmitBtn.textContent = 'लगइन हुँदैछ...';
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password: pass
+                });
+                if (error) {
+                    loginError.textContent = 'इमेल वा पासवर्ड मिलेन।';
+                    return;
+                }
+                const allowed = await verifyMunicipalityAccess(data.user);
+                if (!allowed) {
+                    await supabaseClient.auth.signOut();
+                    loginError.textContent = 'तपाईंको खातालाई यो प्रणालीमा पहुँचको अनुमति छैन।';
+                    return;
+                }
+                showApp();
+                showToast('सफलतापूर्वक लगइन भयो', 'success');
+            } catch (err) {
+                console.error('Login error:', err);
+                loginError.textContent = 'लगइन गर्दा त्रुटि भयो। फेरि प्रयास गर्नुहोस्।';
+            } finally {
+                loginSubmitBtn.disabled = false;
+                loginSubmitBtn.textContent = originalBtnText;
             }
         });
 
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            sessionStorage.removeItem('ssrn_logged_in');
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await supabaseClient.auth.signOut();
             if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
-            checkSession();
+            showLogin();
         });
 
         // ---------- Tabs ----------
