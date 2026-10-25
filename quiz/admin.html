@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rotaract Quiz Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--text:#172033;--muted:#6c7687;--brand:#0b6b57;--line:#e3e7ed}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}.wrap{max-width:1200px;margin:auto;padding:18px}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 8px 25px #14213d0a}.hidden{display:none!important}
+input,textarea,select{width:100%;padding:11px;border:1px solid #d7dde6;border-radius:10px;font-size:14px}label{display:block;font-weight:800;margin:11px 0 5px}
+button{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}.primary{background:var(--brand);color:white}.secondary{background:#eaf0f4}.danger{background:#ffe6e6;color:#b42318}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.nav{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.nav button.active{background:var(--brand);color:#fff}
+table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}small,.muted{color:var(--muted)}
+.q{border:1px solid var(--line);padding:14px;border-radius:14px;margin:10px 0}.preview{width:100%;max-width:420px;border:1px solid var(--line);border-radius:14px}
+#banner{display:block;width:100%;max-width:540px;margin:auto}
+@media(max-width:700px){.grid,.grid3{grid-template-columns:1fr}.wrap{padding:10px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section id="login" class="card" style="max-width:430px;margin:70px auto">
+<h1>🏆 Rotaract Quiz Admin</h1><p class="muted">Admin login uses Supabase Auth + user_roles.</p>
+<label>Email</label><input id="loginEmail" type="email">
+<label>Password</label><input id="loginPass" type="password">
+<button class="primary" style="width:100%;margin-top:12px" onclick="login()">Login</button><p id="loginMsg" class="muted"></p>
+</section>
+
+<section id="app" class="hidden">
+<div class="row"><div><h1>🏆 Rotaract Quiz Admin</h1><small id="who"></small></div><button class="secondary" onclick="logout()">Logout</button></div>
+<div class="nav">
+<button onclick="tab('dashboard')" id="n-dashboard">Dashboard</button><button onclick="tab('create')" id="n-create">Create Quiz</button>
+<button onclick="tab('quizzes')" id="n-quizzes">Manage Quizzes</button><button onclick="tab('questions')" id="n-questions">Questions</button>
+<button onclick="tab('participants')" id="n-participants">Participants</button><button onclick="tab('results')" id="n-results">Results</button><button onclick="tab('design')" id="n-design">Banner + QR</button>
+</div>
+
+<div id="dashboard" class="tab card"></div>
+
+<div id="create" class="tab card hidden">
+<h2 id="createTitle">Create Quiz</h2><input type="hidden" id="editId">
+<div class="grid">
+<div><label>Quiz Title *</label><input id="title"></div><div><label>Date *</label><input id="date" type="date"></div>
+<div><label>Start Time *</label><input id="start" type="time"></div><div><label>End Time *</label><input id="end" type="time"></div>
+<div><label>Duration (minutes)</label><input id="duration" type="number" value="30"></div><div><label>Max Participants</label><input id="max" type="number"></div>
+</div><label>Description</label><textarea id="desc" rows="3"></textarea>
+<div class="row" style="margin-top:12px"><button class="primary" onclick="saveQuiz()">Save Quiz</button><button class="secondary" onclick="newQuiz()">Clear</button></div>
+<p id="saveMsg" class="muted"></p>
+</div>
+
+<div id="quizzes" class="tab card hidden"><h2>Manage Quizzes</h2><div style="overflow:auto"><table><thead><tr><th>Title</th><th>Date</th><th>Time</th><th>Status</th><th>Actions</th></tr></thead><tbody id="quizRows"></tbody></table></div></div>
+
+<div id="questions" class="tab card hidden">
+<div class="row"><h2>Questions</h2><button class="secondary" onclick="addQ()">+ Add Question</button></div>
+<select id="questionQuiz" onchange="loadQuestions()"></select><div id="questionList"></div>
+<button class="primary" onclick="saveQuestions()">Save Questions</button><p id="qMsg" class="muted"></p>
+</div>
+
+<div id="participants" class="tab card hidden"><h2>Participants</h2><select id="participantQuiz" onchange="loadParticipants()"></select><div style="overflow:auto"><table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Organization</th><th>Code</th></tr></thead><tbody id="participantRows"></tbody></table></div></div>
+
+<div id="results" class="tab card hidden"><h2>Results</h2><select id="resultQuiz" onchange="loadResults()"></select><div style="overflow:auto"><table><thead><tr><th>Rank</th><th>Name</th><th>Organization</th><th>Score</th><th>Time</th></tr></thead><tbody id="resultRows"></tbody></table></div></div>
+
+<div id="design" class="tab card hidden">
+<div class="row"><h2>Social Banner + QR</h2><select id="designQuiz" onchange="renderDesign()"></select></div>
+<canvas id="banner" width="1080" height="1350" class="preview"></canvas>
+<div class="row" style="margin-top:12px"><button class="primary" onclick="downloadBanner()">Download Banner PNG</button><button class="secondary" onclick="downloadQR()">Download QR PNG</button></div>
+<div id="qr" style="display:flex;justify-content:center;margin:15px"></div>
+<p class="muted">QR opens <code>index.html?quiz=QUIZ_ID</code>. Outside the fixed live time it shows “not live”.</p>
+</div>
+</section>
+</div>
+
+<script>
+const SUPABASE_URL="https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
+const SUPABASE_KEY="sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let quizzes=[],selectedId=null,design=null,questions=[];
+
+const $=id=>document.getElementById(id);
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function tab(id){document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));$(id).classList.remove("hidden");document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));$("n-"+id).classList.add("active");if(id==="quizzes")load();if(id==="questions")loadQuestionSelectors();if(id==="participants")loadParticipantSelectors();if(id==="results")loadResultSelectors();if(id==="design")loadDesignSelectors()}
+async function login(){
+ $("loginMsg").textContent="Signing in…";
+ const {data,error}=await sb.auth.signInWithPassword({email:$("loginEmail").value,password:$("loginPass").value});
+ if(error){$("loginMsg").textContent=error.message;return}
+ const {data:r,error:re}=await sb.from("user_roles").select("full_name,email,role,status").eq("user_id",data.user.id).maybeSingle();
+ if(re||!r||String(r.role).toLowerCase()!=="admin"||String(r.status).toLowerCase()!=="active"){await sb.auth.signOut();$("loginMsg").textContent="No active admin role assigned.";return}
+ $("who").textContent=r.full_name||r.email||data.user.email;$("login").classList.add("hidden");$("app").classList.remove("hidden");tab("dashboard");load();
+}
+async function logout(){await sb.auth.signOut();location.reload()}
+async function load(){
+ const {data}=await sb.from("quiz_quizzes").select("*").order("created_at",{ascending:false});quizzes=data||[];
+ $("dashboard").innerHTML=`<h2>Dashboard</h2><div class="grid3"><div class="card"><b>${quizzes.length}</b><small>Total Quizzes</small></div><div class="card"><b>${quizzes.filter(q=>q.status==="published").length}</b><small>Published</small></div><div class="card"><b>${quizzes.filter(q=>q.status==="draft").length}</b><small>Draft</small></div></div><p class="muted">Set title, Nepal date/time and questions. Publishing makes the QR live automatically during the configured window.</p>`;
+ renderRows();
+}
+function renderRows(){
+ $("quizRows").innerHTML=quizzes.map(q=>`<tr><td><b>${esc(q.title)}</b></td><td>${q.quiz_date}</td><td>${q.start_time}–${q.end_time}</td><td>${q.status}</td><td>
+ <button class="secondary" onclick="editQuiz('${q.id}')">Edit</button>
+ <button class="secondary" onclick="openQuestions('${q.id}')">Questions</button>
+ <button class="secondary" onclick="openDesign('${q.id}')">Banner/QR</button>
+ <button class="${q.status==="published"?"danger":"primary"}" onclick="togglePublish('${q.id}','${q.status}')">${q.status==="published"?"Unpublish":"Publish"}</button>
+ </td></tr>`).join("");
+}
+function newQuiz(){$("editId").value="";["title","date","start","end","desc"].forEach(x=>$(x).value="");$("duration").value=30;$("max").value="";$("createTitle").textContent="Create Quiz"}
+async function editQuiz(id){let q=quizzes.find(x=>x.id===id);if(!q)return;tab("create");$("editId").value=id;$("createTitle").textContent="Edit Quiz";$("title").value=q.title;$("date").value=q.quiz_date;$("start").value=q.start_time.slice(0,5);$("end").value=q.end_time.slice(0,5);$("duration").value=q.duration_minutes;$("max").value=q.max_participants||"";$("desc").value=q.description||""}
+async function saveQuiz(){
+ const obj={title:$("title").value.trim(),quiz_date:$("date").value,start_time:$("start").value,end_time:$("end").value,duration_minutes:+$("duration").value||30,max_participants:$("max").value?+$("max").value:null,description:$("desc").value.trim()};
+ if(!obj.title||!obj.quiz_date||!obj.start_time||!obj.end_time){$("saveMsg").textContent="Title, date, start and end time are required.";return}
+ let res=$("editId").value?await sb.from("quiz_quizzes").update(obj).eq("id",$("editId").value):await sb.from("quiz_quizzes").insert(obj);
+ if(res.error){$("saveMsg").textContent=res.error.message;return}$("saveMsg").textContent="Saved.";await load();tab("quizzes");
+}
+async function togglePublish(id,status){let r=await sb.from("quiz_quizzes").update({status:status==="published"?"draft":"published"}).eq("id",id);if(r.error)alert(r.error.message);else load()}
+function fillSelect(id,include=false){$(id).innerHTML=(include?'<option value="">Select quiz</option>':"")+quizzes.map(q=>`<option value="${q.id}">${esc(q.title)} — ${q.quiz_date}</option>`).join("")}
+function loadQuestionSelectors(){fillSelect("questionQuiz");if(selectedId)$("questionQuiz").value=selectedId;loadQuestions()}
+function loadParticipantSelectors(){fillSelect("participantQuiz");loadParticipants()}
+function loadResultSelectors(){fillSelect("resultQuiz");loadResults()}
+function loadDesignSelectors(){fillSelect("designQuiz");if(selectedId)$("designQuiz").value=selectedId;renderDesign()}
+function openQuestions(id){selectedId=id;tab("questions");loadQuestionSelectors();$("questionQuiz").value=id;loadQuestions()}
+function openDesign(id){selectedId=id;tab("design");loadDesignSelectors();$("designQuiz").value=id;renderDesign()}
+async function loadQuestions(){
+ let id=$("questionQuiz").value;if(!id){$("questionList").innerHTML="";return}
+ let {data,error}=await sb.from("quiz_questions").select("*").eq("quiz_id",id).order("question_no");if(error){$("qMsg").textContent=error.message;return}
+ questions=data||[];renderQuestions();
+}
+function renderQuestions(){
+ $("questionList").innerHTML=questions.map((q,i)=>`<div class="q">
+ <div class="row"><b>Question ${i+1}</b><button class="danger" onclick="questions.splice(${i},1);renderQuestions()">Remove</button></div>
+ <label>Question</label><textarea class="qt" data-i="${i}" rows="2">${esc(q.question_text)}</textarea>
+ <div class="grid2 grid"><div><label>A</label><input class="oa" data-i="${i}" value="${esc(q.option_a)}"></div><div><label>B</label><input class="ob" data-i="${i}" value="${esc(q.option_b)}"></div><div><label>C</label><input class="oc" data-i="${i}" value="${esc(q.option_c)}"></div><div><label>D</label><input class="od" data-i="${i}" value="${esc(q.option_d)}"></div></div>
+ <div class="grid3"><div><label>Correct</label><select class="co" data-i="${i}">${["A","B","C","D"].map(x=>`<option ${q.correct_option===x?"selected":""}>${x}</option>`).join("")}</select></div><div><label>Points</label><input class="pt" data-i="${i}" type="number" value="${q.points||1}"></div></div>
+ </div>`).join("");
+}
+function addQ(){questions.push({question_text:"",option_a:"",option_b:"",option_c:"",option_d:"",correct_option:"A",points:1});renderQuestions()}
+async function saveQuestions(){
+ const id=$("questionQuiz").value;if(!id)return;
+ const rows=[...document.querySelectorAll(".qt")].map((el,i)=>({quiz_id:id,question_no:i+1,question_text:el.value.trim(),option_a:$(`.oa[data-i="${i}"]`).value.trim(),option_b:$(`.ob[data-i="${i}"]`).value.trim(),option_c:$(`.oc[data-i="${i}"]`).value.trim(),option_d:$(`.od[data-i="${i}"]`).value.trim(),correct_option:$(`.co[data-i="${i}"]`).value,points:+$(`.pt[data-i="${i}"]`).value||1}));
+ if(rows.some(x=>!x.question_text||!x.option_a||!x.option_b||!x.option_c||!x.option_d)){ $("qMsg").textContent="Every question and all four options are required.";return}
+ let d=await sb.from("quiz_questions").delete().eq("quiz_id",id);if(d.error){$("qMsg").textContent=d.error.message;return}
+ let ins=rows.length?await sb.from("quiz_questions").insert(rows):{error:null};if(ins.error){$("qMsg").textContent=ins.error.message;return}
+ $("qMsg").textContent=`Saved ${rows.length} questions.`;await loadQuestions();
+}
+async function loadParticipants(){let id=$("participantQuiz").value;if(!id){$("participantRows").innerHTML="";return}let {data}=await sb.from("quiz_participants").select("full_name,email,phone,organization,registration_code").eq("quiz_id",id).order("registered_at",{ascending:false});$("participantRows").innerHTML=(data||[]).map(p=>`<tr><td>${esc(p.full_name)}</td><td>${esc(p.email||"")}</td><td>${esc(p.phone||"")}</td><td>${esc(p.organization||"")}</td><td><code>${esc(p.registration_code)}</code></td></tr>`).join("")}
+async function loadResults(){let id=$("resultQuiz").value;if(!id){$("resultRows").innerHTML="";return}let {data}=await sb.rpc("quiz_leaderboard",{p_quiz_id:id});$("resultRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.rank}</td><td>${esc(x.full_name)}</td><td>${esc(x.organization||"")}</td><td>${x.score}/${x.total_points}</td><td>${fmt(x.time_taken_seconds)}</td></tr>`).join("")}
+function fmt(s){s=+s||0;return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+function quizURL(q){return location.href.replace(/admin\.html.*$/,"index.html")+"?quiz="+q.id}
+function renderDesign(){
+ const id=$("designQuiz").value;if(!id)return;design=quizzes.find(q=>q.id===id);if(!design)return;
+ $("qr").innerHTML="";new QRCode($("qr"),{text:quizURL(design),width:210,height:210,colorDark:"#111827",colorLight:"#ffffff"});
+ const c=$("banner"),x=c.getContext("2d");x.clearRect(0,0,1080,1350);
+ const g=x.createLinearGradient(0,0,1080,1350);g.addColorStop(0,"#073b33");g.addColorStop(1,"#0b6b57");x.fillStyle=g;x.fillRect(0,0,1080,1350);
+ x.fillStyle="#fff";x.textAlign="center";x.font="bold 64px Arial";x.fillText("ROTARACT QUIZ",540,120);
+ x.font="bold 82px Arial";wrapText(x,design.title,540,245,900,95);
+ x.font="bold 42px Arial";x.fillText(formatDate(design.quiz_date),540,470);x.fillText(`${design.start_time.slice(0,5)} – ${design.end_time.slice(0,5)} (Nepal Time)`,540,530);
+ x.font="bold 34px Arial";x.fillText(`${design.duration_minutes} MINUTES • NO NEGATIVE MARKING`,540,590);
+ x.fillStyle="#fff";x.fillRect(330,650,420,420);
+ // QR drawn from DOM canvas/image after QRCode render
+ const qrCanvas=$("qr").querySelector("canvas"), qrImg=$("qr").querySelector("img");
+ if(qrCanvas)x.drawImage(qrCanvas,330,650,420,420);else if(qrImg){qrImg.onload=()=>{x.drawImage(qrImg,330,650,420,420)}}
+ x.fillStyle="#fff";x.font="bold 40px Arial";x.fillText("SCAN TO JOIN",540,1135);x.font="30px Arial";x.fillText("Register → Start → Answer → See Live Ranking",540,1190);x.font="24px Arial";x.fillText("QR is active only during the configured quiz time.",540,1245);
+}
+function wrapText(ctx,text,x,y,maxWidth,lineHeight){let words=String(text).split(" "),line="";for(let n=0;n<words.length;n++){let test=line+words[n]+" ";if(ctx.measureText(test).width>maxWidth&&n>0){ctx.fillText(line.trim(),x,y);line=words[n]+" ";y+=lineHeight}else line=test}ctx.fillText(line.trim(),x,y)}
+function formatDate(s){return new Date(s+"T00:00:00").toLocaleDateString("en-NP",{year:"numeric",month:"long",day:"numeric"})}
+function downloadBanner(){let a=document.createElement("a");a.download=(design?.title||"rotaract-quiz").replace(/\s+/g,"-")+".png";a.href=$("banner").toDataURL("image/png");a.click()}
+function downloadQR(){let canvas=$("qr").querySelector("canvas");if(!canvas)return;let a=document.createElement("a");a.download="quiz-qr.png";a.href=canvas.toDataURL("image/png");a.click()}
+newQuiz();
+</script>
+</body>
+</html>

@@ -304,20 +304,6 @@
             color: #d32f2f;
             font-size: 0.9rem;
         }
-        .font-size-item .btn-sm {
-            padding: 4px 10px;
-            font-size: 0.8rem;
-            border: none;
-            border-radius: 4px;
-            background: #d32f2f;
-            color: white;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .font-size-item .btn-sm:hover {
-            background: #b71c1c;
-            transform: scale(1.05);
-        }
         .global-scale-control {
             display: flex;
             align-items: center;
@@ -442,7 +428,14 @@
             align-items: center;
             margin-bottom: 8px;
         }
-        .agenda-editor-row input {
+        .agenda-editor-row .agenda-drag-handle {
+            cursor: grab;
+            color: #999;
+            font-size: 1.2rem;
+            padding: 0 4px;
+            user-select: none;
+        }
+        .agenda-editor-row .agenda-input {
             flex: 1;
             padding: 8px 12px;
             border: 2px solid #e0e0e0;
@@ -450,9 +443,26 @@
             font-size: 0.95rem;
             background: #fafafa;
         }
-        .agenda-editor-row input:focus {
+        .agenda-editor-row .agenda-input:focus {
             border-color: #d32f2f;
             outline: none;
+            background: #fff;
+        }
+        .agenda-editor-row .agenda-move-btn {
+            flex-shrink: 0;
+            background: #1565c0;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 36px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+        .agenda-editor-row .agenda-move-btn:hover {
+            background: #0d47a1;
+            transform: scale(1.05);
         }
         .agenda-editor-row .remove-agenda-btn {
             flex-shrink: 0;
@@ -702,8 +712,6 @@
 
             <h2>✏️ Banner Update Form</h2>
 
-            <!-- Live Preview Panel REMOVED -->
-
             <input type="hidden" id="recordId" value="1">
 
             <!-- Font Size Controls -->
@@ -764,8 +772,11 @@
             <!-- ===== AGENDA EDITOR ===== -->
             <div class="font-size-section">
                 <h3>📋 Agenda Editor</h3>
+                <p style="text-align:center; color:#666; font-size:0.9rem; margin-bottom:12px;">
+                    परिवर्तन गर्दा स्वतः सेभ हुन्छ — banner मा तुरुन्तै देखिन्छ। सबै खाली भए "📋 कार्यसूची" title लुक्नेछ।
+                </p>
                 <div id="agendaEditorContainer"></div>
-                <button type="button" class="btn btn-secondary" style="width:auto; margin-top:8px; padding:8px 18px;" onclick="addAgendaRow()">➕ नयाँ Agenda थप्नुहोस्</button>
+                <button type="button" class="btn btn-secondary" style="width:auto; margin-top:8px; padding:8px 18px;" onclick="addAgendaRow(); markAgendaDirty();">➕ नयाँ Agenda थप्नुहोस्</button>
             </div>
 
             <!-- ===== PROGRAM START TIME ===== -->
@@ -1141,28 +1152,80 @@
         }
 
         // ============================================================
-        // ===== AGENDA EDITOR =====
+        // ===== AGENDA EDITOR (auto-save, add/edit/move/delete) =====
         // ============================================================
-        let agendaItems = [];
+        let __agendaSaveTimeout = null;
+        let __agendaDirty = false;
 
         function addAgendaRow(text = '') {
             const container = document.getElementById('agendaEditorContainer');
             const row = document.createElement('div');
             row.className = 'agenda-editor-row';
-            row.innerHTML = `
-                <input type="text" placeholder="Agenda item..." value="${text.replace(/"/g, '&quot;')}" class="agenda-input">
-                <button type="button" class="remove-agenda-btn" onclick="removeAgendaRow(this)">✕</button>
-            `;
+
+            const handle = document.createElement('span');
+            handle.className = 'agenda-drag-handle';
+            handle.textContent = '☰';
+            handle.title = 'माथि/तल सार्न';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'agenda-input';
+            input.placeholder = 'Agenda item...';
+            input.value = text;
+            input.addEventListener('input', markAgendaDirty);
+
+            const upBtn = document.createElement('button');
+            upBtn.type = 'button';
+            upBtn.className = 'agenda-move-btn';
+            upBtn.textContent = '▲';
+            upBtn.title = 'माथि सार्नुहोस्';
+            upBtn.onclick = () => moveAgendaRow(row, -1);
+
+            const downBtn = document.createElement('button');
+            downBtn.type = 'button';
+            downBtn.className = 'agenda-move-btn';
+            downBtn.textContent = '▼';
+            downBtn.title = 'तल सार्नुहोस्';
+            downBtn.onclick = () => moveAgendaRow(row, 1);
+
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'remove-agenda-btn';
+            delBtn.textContent = '🗑️';
+            delBtn.title = 'यो agenda हटाउनुहोस्';
+            delBtn.onclick = () => removeAgendaRow(delBtn);
+
+            row.appendChild(handle);
+            row.appendChild(input);
+            row.appendChild(upBtn);
+            row.appendChild(downBtn);
+            row.appendChild(delBtn);
             container.appendChild(row);
+        }
+
+        function moveAgendaRow(row, direction) {
+            const container = document.getElementById('agendaEditorContainer');
+            const rows = Array.from(container.children);
+            const idx = rows.indexOf(row);
+            const target = idx + direction;
+            if (target < 0 || target >= rows.length) return;
+            if (direction < 0) {
+                container.insertBefore(row, rows[target]);
+            } else {
+                container.insertBefore(rows[target], row);
+            }
+            markAgendaDirty();
         }
 
         function removeAgendaRow(btn) {
             const row = btn.closest('.agenda-editor-row');
-            if (document.querySelectorAll('.agenda-editor-row').length > 1) {
+            const container = document.getElementById('agendaEditorContainer');
+            if (container.children.length > 1) {
                 row.remove();
             } else {
                 row.querySelector('.agenda-input').value = '';
             }
+            markAgendaDirty();
         }
 
         function collectAgendaItems() {
@@ -1182,6 +1245,48 @@
                 addAgendaRow('');
             } else {
                 items.forEach(item => addAgendaRow(item));
+            }
+            markAgendaClean();
+        }
+
+        function markAgendaDirty() {
+            __agendaDirty = true;
+            clearTimeout(__agendaSaveTimeout);
+            __agendaSaveTimeout = setTimeout(saveAgendaLive, 800);
+        }
+
+        function markAgendaClean() {
+            __agendaDirty = false;
+            clearTimeout(__agendaSaveTimeout);
+        }
+
+        async function saveAgendaLive() {
+            if (!__agendaDirty) return;
+            const recordId = document.getElementById('recordId').value;
+            if (!recordId) return;
+
+            const items = collectAgendaItems();
+            const msgEl = document.getElementById('updateMsg');
+
+            const { error } = await supabaseClient
+                .from('banner_settings')
+                .update({
+                    agenda: items,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', recordId);
+
+            if (error) {
+                if (msgEl) {
+                    msgEl.innerText = '❌ Agenda सेभ असफल: ' + error.message;
+                    msgEl.className = 'msg error';
+                }
+            } else {
+                __agendaDirty = false;
+                if (msgEl) {
+                    msgEl.innerText = '✅ Agenda लाइभ अपडेट भयो (banner मा refresh नगरी देखिन्छ)';
+                    msgEl.className = 'msg success';
+                }
             }
         }
 
@@ -1605,7 +1710,6 @@
             msgEl.innerText = "✅ " + (typeLabels[type] || type) + " लाइभ ब्यानरमा पठाइयो!";
             msgEl.className = "msg success";
 
-            // Reset the trigger in DB after a moment
             setTimeout(() => {
                 supabaseClient
                     .from('banner_settings')
@@ -1717,15 +1821,10 @@
         // ============================================================
         // ===== LOGIN LOCKOUT MODULE (invalid attempt limiting) =====
         // ============================================================
-        // Client-side rate limiting. Note: this raises the bar against casual
-        // brute-forcing from the login UI, but a determined attacker can clear
-        // localStorage or call the API directly. It is NOT a substitute for
-        // server-side protection (e.g. Supabase Auth's own rate limits) —
-        // it's a defense-in-depth layer on top of that.
         const LoginLockout = (function () {
             const STORAGE_KEY = 'admin_login_lockout';
             const MAX_ATTEMPTS = 5;
-            const LOCKOUT_MS = 5 * 60 * 1000; // 5 minutes
+            const LOCKOUT_MS = 5 * 60 * 1000;
 
             function read() {
                 try {
@@ -1752,7 +1851,7 @@
             function recordFailure() {
                 const state = read();
                 if (state.lockUntil && state.lockUntil < Date.now()) {
-                    state.count = 0; // previous lockout expired, start fresh
+                    state.count = 0;
                 }
                 state.count = (state.count || 0) + 1;
                 if (state.count >= MAX_ATTEMPTS) {
@@ -1889,7 +1988,7 @@
                     scrolling_notice: 'कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।',
                     scrolling_notice_enabled: true,
                     agenda: [],
-                    program_start_time: ''
+                    program_start_time: null
                 };
                 await supabaseClient.from('banner_settings').insert(defaultData);
                 loadSavedData();
@@ -2007,7 +2106,8 @@
                 scrolling_notice: item.scrolling_notice || 'कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।',
                 scrolling_notice_enabled: item.scrolling_notice_enabled !== false,
                 agenda: item.agenda || [],
-                program_start_time: item.program_start_time || ''
+                // FIX: empty string "" is invalid for a `time` column — use null instead
+                program_start_time: item.program_start_time ? item.program_start_time : null
             };
 
             const { error } = await supabaseClient.from('banner_settings').insert(clone);
@@ -2218,14 +2318,9 @@
             const dateFontSize = parseFloat(document.getElementById('dateFontSize').value) || 1.6;
             const timeFontSize = parseFloat(document.getElementById('timeFontSize').value) || 1.6;
 
-            // ===== SCROLLING NOTICE =====
             const noticeText = document.getElementById('noticeText').value.trim();
-            const noticeEnabled = document.getElementById('noticeToggle').classList.contains('active');
+            const noticeEnabledNow = document.getElementById('noticeToggle').classList.contains('active');
 
-            // ===== AGENDA =====
-            const agendaItems = collectAgendaItems();
-
-            // ===== PROGRAM START TIME =====
             const programStartTime = document.getElementById('programStartTime').value;
 
             const msgEl = document.getElementById('updateMsg');
@@ -2239,7 +2334,6 @@
             msgEl.innerText = "⏳ सेभ हुँदैछ...";
             msgEl.className = "msg info";
 
-            // Upload PDFs
             let presentationUrls;
             try {
                 presentationUrls = await collectPresentationPdfs();
@@ -2249,7 +2343,6 @@
                 return;
             }
 
-            // Upload background
             const bgFile = document.getElementById('bgFile').files[0];
             let bgUrl = document.getElementById('bgUrlDisplay').textContent.replace('✅ ', '');
             if (bgUrl === 'कुनै छैन') bgUrl = '';
@@ -2267,7 +2360,6 @@
                 }
             }
 
-            // Upload logo
             const logoFile = document.getElementById('logoFile').files[0];
             let logoUrl = document.getElementById('logoUrlDisplay').textContent.replace('✅ ', '');
             if (logoUrl === 'कुनै छैन') logoUrl = '';
@@ -2285,7 +2377,6 @@
                 }
             }
 
-            // Update database
             const { error } = await supabaseClient
                 .from('banner_settings')
                 .update({
@@ -2306,9 +2397,9 @@
                     background_url: bgUrl,
                     logo_url: logoUrl,
                     scrolling_notice: noticeText || 'कृपया आफ्नो मोबाइल फोन Silent Mode मा राख्नुहोस्।',
-                    scrolling_notice_enabled: noticeEnabled,
-                    agenda: agendaItems,
-                    program_start_time: programStartTime,
+                    scrolling_notice_enabled: noticeEnabledNow,
+                    // NOTE: agenda is auto-saved separately (saveAgendaLive), not here
+                    program_start_time: programStartTime || null,
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', recordId);
@@ -2319,7 +2410,6 @@
                 return;
             }
 
-            // Sync date/time to all other banners
             const { error: syncError } = await supabaseClient
                 .from('banner_settings')
                 .update({
@@ -2357,7 +2447,7 @@
             const { error } = await supabaseClient
                 .from('banner_settings')
                 .update({
-                    program_start_time: programStartTime,
+                    program_start_time: programStartTime || null,
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', recordId);
@@ -2407,7 +2497,7 @@
         }
 
         // ============================================================
-        // ===== LOCAL IMAGE PREVIEW (no save required) =====
+        // ===== LOCAL IMAGE PREVIEW =====
         // ============================================================
         function wireLocalImagePreview(fileInputId, previewImgId) {
             document.getElementById(fileInputId).addEventListener('change', function (e) {
@@ -2425,7 +2515,7 @@
         wireLocalImagePreview('bgFile', 'bgPreview');
         wireLocalImagePreview('logoFile', 'logoPreview');
 
-        // Event listeners for date/time update
+        // Date/time change listeners
         document.getElementById('nepaliHour').addEventListener('change', updateNepaliDateDisplay);
         document.getElementById('nepaliMinute').addEventListener('change', updateNepaliDateDisplay);
         document.getElementById('nepaliPeriod').addEventListener('change', updateNepaliDateDisplay);
@@ -2434,7 +2524,7 @@
         document.getElementById('nepaliYear').addEventListener('change', updateNepaliDateDisplay);
         document.getElementById('nepaliWeekday').addEventListener('change', updateNepaliDateDisplay);
 
-        // Program Start Time -> save immediately on change (realtime countdown)
+        // Program Start Time -> save immediately on change
         document.getElementById('programStartTime').addEventListener('change', saveProgramStartTimeLive);
 
         // Notice Text -> debounced live save while typing, and immediate save on blur
