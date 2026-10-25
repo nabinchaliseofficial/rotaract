@@ -15,6 +15,18 @@ button{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:poin
 table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}small,.muted{color:var(--muted)}
 .q{border:1px solid var(--line);padding:14px;border-radius:14px;margin:10px 0}.preview{width:100%;max-width:420px;border:1px solid var(--line);border-radius:14px}
 #banner{display:block;width:100%;max-width:540px;margin:auto}
+.modal{position:fixed;inset:0;background:#0b1220aa;display:flex;align-items:flex-start;justify-content:center;padding:24px;z-index:1000;overflow:auto}
+.modal .box{background:#fff;border-radius:16px;max-width:900px;width:100%;padding:18px;box-shadow:0 20px 60px #0005}
+.modal h3{margin:0 0 6px}
+.qrow{border:1px solid var(--line);border-radius:12px;padding:12px;margin:8px 0}
+.qrow .opt{padding:6px 10px;border-radius:8px;border:1px solid var(--line);margin:4px 0;font-size:13px}
+.opt.correct{background:#e7f7ef;border-color:#9fdcbf;font-weight:700}
+.opt.chosen{background:#eef4ff;border-color:#b7c9ff}
+.opt.wrong{background:#ffecec;border-color:#f5b5b5}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:800;margin-left:6px}
+.badge.ok{background:#e7f7ef;color:#0b6b57}
+.badge.no{background:#ffecec;color:#b42318}
+.badge.na{background:#eef0f3;color:#555}
 @media(max-width:700px){.grid,.grid3{grid-template-columns:1fr}.wrap{padding:10px}}
 </style>
 </head>
@@ -42,8 +54,22 @@ table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px so
 <div class="grid">
 <div><label>Quiz Title *</label><input id="title"></div><div><label>Date *</label><input id="date" type="date"></div>
 <div><label>Start Time *</label><input id="start" type="time"></div><div><label>End Time *</label><input id="end" type="time"></div>
-<div><label>Duration (minutes)</label><input id="duration" type="number" value="30"></div><div><label>Max Participants</label><input id="max" type="number"></div>
-</div><label>Description</label><textarea id="desc" rows="3"></textarea>
+<div><label>Quiz Window Duration (minutes)</label><input id="duration" type="number" value="30"></div><div><label>Time After Start per Participant (minutes) *</label><input id="attemptDuration" type="number" value="30"></div>
+<div><label>Max Participants</label><input id="max" type="number"></div>
+</div>
+<p class="muted" style="margin-top:6px">⏱ <b>Time after start</b>: Each participant gets this many minutes once they click "Start". Quiz also closes at End Time.</p>
+<div class="grid3">
+<div><label>Passing Score (%)</label><input id="passing" type="number" min="0" max="100" placeholder="e.g. 60"></div>
+<div><label>Negative Marking (per wrong)</label><input id="negative" type="number" step="0.01" min="0" value="0"></div>
+<div><label>Shuffle Questions</label><select id="shuffle"><option value="false">No</option><option value="true">Yes</option></select></div>
+</div>
+<div class="grid3">
+<div><label>Show Live Ranking</label><select id="liveRanking"><option value="true">Yes</option><option value="false">No</option></select></div>
+<div><label>Show Correct Answers After Submit</label><select id="showAnswers"><option value="true">Yes</option><option value="false">No</option></select></div>
+<div><label>Allow Retake</label><select id="retake"><option value="false">No</option><option value="true">Yes</option></select></div>
+</div>
+<label>Description</label><textarea id="desc" rows="3"></textarea>
+<label>Instructions (shown to participants before start)</label><textarea id="instructions" rows="3" placeholder="e.g. Do not refresh the page. Each question has one correct answer."></textarea>
 <div class="row" style="margin-top:12px"><button class="primary" onclick="saveQuiz()">Save Quiz</button><button class="secondary" onclick="newQuiz()">Clear</button></div>
 <p id="saveMsg" class="muted"></p>
 </div>
@@ -58,7 +84,7 @@ table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px so
 
 <div id="participants" class="tab card hidden"><div class="row"><h2>Participants</h2><input id="participantSearch" class="searchbox" placeholder="Search name, email, mobile or code…" oninput="loadParticipants()"></div><select id="participantQuiz" onchange="loadParticipants()"></select><p class="muted">Search registered participants and copy their entry code. Delete is available for admin use.</p><div style="overflow:auto"><table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Organization</th><th>Entry Code</th><th>Actions</th></tr></thead><tbody id="participantRows"></tbody></table></div></div>
 
-<div id="results" class="tab card hidden"><h2>Results</h2><select id="resultQuiz" onchange="loadResults()"></select><div style="overflow:auto"><table><thead><tr><th>Rank</th><th>Name</th><th>Organization</th><th>Score</th><th>Time</th></tr></thead><tbody id="resultRows"></tbody></table></div></div>
+<div id="results" class="tab card hidden"><h2>Results</h2><select id="resultQuiz" onchange="loadResults()"></select><div style="overflow:auto"><table><thead><tr><th>Rank</th><th>Name</th><th>Organization</th><th>Score</th><th>Time</th><th>Participated Questions</th></tr></thead><tbody id="resultRows"></tbody></table></div></div>
 
 <div id="design" class="tab card hidden">
 <div class="row"><h2>Social Banner + QR</h2><select id="designQuiz" onchange="renderDesign()"></select></div>
@@ -68,6 +94,13 @@ table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px so
 <p class="muted">QR opens <code>index.html?quiz=QUIZ_ID</code>. Outside the fixed live time it shows “not live”.</p>
 </div>
 </section>
+</div>
+
+<div id="historyModal" class="modal hidden">
+  <div class="box">
+    <div class="row"><div><h3 id="hmTitle">Participant History</h3><small id="hmSub" class="muted"></small></div><button class="secondary" onclick="closeHistory()">Close</button></div>
+    <div id="hmBody" style="margin-top:10px"></div>
+  </div>
 </div>
 
 <script>
@@ -93,24 +126,41 @@ async function load(){
  const stats=await Promise.all(quizzes.map(async q=>{const [p,a]=await Promise.all([sb.from("quiz_participants").select("id",{count:"exact",head:true}).eq("quiz_id",q.id),sb.from("quiz_attempts").select("id",{count:"exact",head:true}).eq("quiz_id",q.id).in("result_status",["in_progress","submitted","expired"])]);return {id:q.id,registered:p.count||0,participated:a.count||0}}));
  const totalReg=stats.reduce((n,x)=>n+x.registered,0),totalPart=stats.reduce((n,x)=>n+x.participated,0),active=quizzes.filter(q=>q.status==="published");
  const next=active[0];
- $("dashboard").innerHTML=`<div class="quizhero"><small>ROTARACT CLUB • QUIZ MANAGEMENT</small><h2 style="font-size:28px;margin:8px 0">Welcome to your Quiz Dashboard 👋</h2><p style="margin:0">Track registration, participation, schedules and results from one place.</p>${next?`<p style="margin-top:16px"><b>📌 ${esc(next.title)}</b><br><small>📅 ${esc(next.quiz_date)} &nbsp; · &nbsp; 🕒 ${esc(String(next.start_time).slice(0,5))}–${esc(String(next.end_time).slice(0,5))} Nepal Time</small></p>`:`<p><small>No published quiz currently. Publish a quiz to show it on the public index page.</small></p>`}</div><div class="grid3"><div class="metric"><b>${quizzes.length}</b><small>Total Quizzes</small></div><div class="metric"><b>${active.length}</b><small>Published Quizzes</small></div><div class="metric"><b>${totalReg}</b><small>Participants Registered</small></div><div class="metric"><b>${totalPart}</b><small>Participants Started / Submitted</small></div><div class="metric"><b>${quizzes.filter(q=>q.status==="draft").length}</b><small>Draft Quizzes</small></div><div class="metric"><b>${quizzes.filter(q=>q.status==="closed").length}</b><small>Closed Quizzes</small></div></div><h2 style="margin-top:24px">Quiz Overview</h2><div style="overflow:auto"><table><thead><tr><th>Quiz</th><th>Date & Time</th><th>Status</th><th>Registered</th><th>Participated</th><th>Actions</th></tr></thead><tbody>${quizzes.map(q=>{const st=stats.find(x=>x.id===q.id)||{registered:0,participated:0};return `<tr><td><b>${esc(q.title)}</b></td><td>${esc(q.quiz_date)}<br><small>${esc(String(q.start_time).slice(0,5))}–${esc(String(q.end_time).slice(0,5))}</small></td><td>${esc(q.status)}</td><td>${st.registered}</td><td>${st.participated}</td><td><button class="secondary" onclick="openDesign('${q.id}')">QR</button> <button class="secondary" onclick="openQuestions('${q.id}')">Questions</button></td></tr>`}).join("")}</tbody></table></div><p class="muted">Public index auto-refreshes and lists published quizzes with a registration QR code.</p>`;
+ $("dashboard").innerHTML=`<div class="quizhero"><small>ROTARACT CLUB • QUIZ MANAGEMENT</small><h2 style="font-size:28px;margin:8px 0">Welcome to your Quiz Dashboard 👋</h2><p style="margin:0">Track registration, participation, schedules and results from one place.</p>${next?`<p style="margin-top:16px"><b>📌 ${esc(next.title)}</b><br><small>📅 ${esc(next.quiz_date)} &nbsp; · &nbsp; 🕒 ${esc(String(next.start_time).slice(0,5))}–${esc(String(next.end_time).slice(0,5))} Nepal Time &nbsp; · &nbsp; ⏱ ${next.attempt_duration_minutes??next.duration_minutes} min/attempt</small></p>`:`<p><small>No published quiz currently. Publish a quiz to show it on the public index page.</small></p>`}</div><div class="grid3"><div class="metric"><b>${quizzes.length}</b><small>Total Quizzes</small></div><div class="metric"><b>${active.length}</b><small>Published Quizzes</small></div><div class="metric"><b>${totalReg}</b><small>Participants Registered</small></div><div class="metric"><b>${totalPart}</b><small>Attempts (started / submitted)</small></div><div class="metric"><b>${quizzes.filter(q=>q.status==="draft").length}</b><small>Draft Quizzes</small></div><div class="metric"><b>${quizzes.filter(q=>q.status==="closed").length}</b><small>Closed Quizzes</small></div></div><h2 style="margin-top:24px">Quiz Overview</h2><div style="overflow:auto"><table><thead><tr><th>Quiz</th><th>Date & Time</th><th>Status</th><th>Registered</th><th>Participated</th><th>Actions</th></tr></thead><tbody>${quizzes.map(q=>{const st=stats.find(x=>x.id===q.id)||{registered:0,participated:0};return `<tr><td><b>${esc(q.title)}</b></td><td>${esc(q.quiz_date)}<br><small>${esc(String(q.start_time).slice(0,5))}–${esc(String(q.end_time).slice(0,5))}</small><br><small>⏱ ${q.attempt_duration_minutes??q.duration_minutes} min/attempt</small></td><td>${esc(q.status)}</td><td>${st.registered}</td><td>${st.participated}</td><td><button class="secondary" onclick="openDesign('${q.id}')">QR</button> <button class="secondary" onclick="openQuestions('${q.id}')">Questions</button></td></tr>`}).join("")}</tbody></table></div><p class="muted">Public index auto-refreshes and lists published quizzes with a registration QR code.</p>`;
  renderRows();
 }
 function renderRows(){
- $("quizRows").innerHTML=quizzes.map(q=>`<tr><td><b>${esc(q.title)}</b></td><td>${q.quiz_date}</td><td>${q.start_time}–${q.end_time}</td><td>${q.status}</td><td>
+ $("quizRows").innerHTML=quizzes.map(q=>`<tr><td><b>${esc(q.title)}</b></td><td>${q.quiz_date}</td><td>${String(q.start_time).slice(0,5)}–${String(q.end_time).slice(0,5)}<br><small>⏱ ${q.attempt_duration_minutes??q.duration_minutes} min per attempt</small></td><td>${q.status}</td><td>
  <button class="secondary" onclick="editQuiz('${q.id}')">Edit</button>
+ <button class="secondary" onclick="cloneQuiz('${q.id}')">Clone</button>
  <button class="secondary" onclick="openQuestions('${q.id}')">Questions</button>
  <button class="secondary" onclick="openDesign('${q.id}')">Banner/QR</button>
  <button class="${q.status==="published"?"danger":"primary"}" onclick="togglePublish('${q.id}','${q.status}')">${q.status==="published"?"Unpublish":"Publish"}</button> <button class="danger" onclick="deleteQuiz('${q.id}')">Delete</button>
  </td></tr>`).join("");
 }
-function newQuiz(){$("editId").value="";["title","date","start","end","desc"].forEach(x=>$(x).value="");$("duration").value=30;$("max").value="";$("createTitle").textContent="Create Quiz"}
-async function editQuiz(id){let q=quizzes.find(x=>x.id===id);if(!q)return;tab("create");$("editId").value=id;$("createTitle").textContent="Edit Quiz";$("title").value=q.title;$("date").value=q.quiz_date;$("start").value=q.start_time.slice(0,5);$("end").value=q.end_time.slice(0,5);$("duration").value=q.duration_minutes;$("max").value=q.max_participants||"";$("desc").value=q.description||""}
+function newQuiz(){$("editId").value="";["title","date","start","end","desc","instructions","passing","negative"].forEach(x=>$(x).value="");$("duration").value=30;$("attemptDuration").value=30;$("max").value="";$("shuffle").value="false";$("liveRanking").value="true";$("showAnswers").value="true";$("retake").value="false";$("createTitle").textContent="Create Quiz"}
+async function editQuiz(id){let q=quizzes.find(x=>x.id===id);if(!q)return;tab("create");$("editId").value=id;$("createTitle").textContent="Edit Quiz";$("title").value=q.title;$("date").value=q.quiz_date;$("start").value=q.start_time.slice(0,5);$("end").value=q.end_time.slice(0,5);$("duration").value=q.duration_minutes;$("attemptDuration").value=q.attempt_duration_minutes??q.duration_minutes??30;$("max").value=q.max_participants||"";$("desc").value=q.description||"";$("instructions").value=q.instructions||"";$("passing").value=q.passing_score??"";$("negative").value=q.negative_marking??0;$("shuffle").value=String(!!q.shuffle_questions);$("liveRanking").value=String(q.show_live_ranking!==false);$("showAnswers").value=String(q.show_correct_answers!==false);$("retake").value=String(!!q.allow_retake)}
 async function saveQuiz(){
- const obj={title:$("title").value.trim(),quiz_date:$("date").value,start_time:$("start").value,end_time:$("end").value,duration_minutes:+$("duration").value||30,max_participants:$("max").value?+$("max").value:null,description:$("desc").value.trim()};
+ const obj={title:$("title").value.trim(),quiz_date:$("date").value,start_time:$("start").value,end_time:$("end").value,duration_minutes:+$("duration").value||30,attempt_duration_minutes:+$("attemptDuration").value||30,max_participants:$("max").value?+$("max").value:null,description:$("desc").value.trim(),instructions:$("instructions").value.trim(),passing_score:$("passing").value?+$("passing").value:null,negative_marking:+$("negative").value||0,shuffle_questions:$("shuffle").value==="true",show_live_ranking:$("liveRanking").value==="true",show_correct_answers:$("showAnswers").value==="true",allow_retake:$("retake").value==="true"};
  if(!obj.title||!obj.quiz_date||!obj.start_time||!obj.end_time){$("saveMsg").textContent="Title, date, start and end time are required.";return}
  let res=$("editId").value?await sb.from("quiz_quizzes").update(obj).eq("id",$("editId").value):await sb.from("quiz_quizzes").insert(obj);
  if(res.error){$("saveMsg").textContent=res.error.message;return}$("saveMsg").textContent="Saved.";await load();tab("quizzes");
+}
+async function cloneQuiz(id){
+ const src=quizzes.find(x=>x.id===id);if(!src)return;
+ if(!confirm(`Clone quiz “${src.title}”?\nQuestions will also be copied. New quiz will be saved as Draft.`))return;
+ const {id:_,created_at:__,status:___,...rest}=src;
+ const clone={...rest,title:src.title+" (Copy)",status:"draft",quiz_date:src.quiz_date,start_time:src.start_time,end_time:src.end_time};
+ const {data:newQuiz,error:qErr}=await sb.from("quiz_quizzes").insert(clone).select().single();
+ if(qErr||!newQuiz){alert("Clone failed: "+(qErr?.message||"unknown error"));return}
+ const {data:srcQs,error:qsErr}=await sb.from("quiz_questions").select("question_no,question_text,option_a,option_b,option_c,option_d,correct_option,points").eq("quiz_id",id).order("question_no");
+ if(qsErr){alert("Quiz cloned but questions failed: "+qsErr.message);await load();return}
+ if(srcQs&&srcQs.length){
+  const rows=srcQs.map(q=>({...q,quiz_id:newQuiz.id}));
+  const {error:insErr}=await sb.from("quiz_questions").insert(rows);
+  if(insErr){alert("Quiz cloned but questions failed: "+insErr.message);await load();return}
+ }
+ await load();tab("quizzes");alert(`Cloned “${src.title}” → “${newQuiz.title}” with ${srcQs?.length||0} questions.`);
 }
 async function togglePublish(id,status){let r=await sb.from("quiz_quizzes").update({status:status==="published"?"draft":"published"}).eq("id",id);if(r.error)alert(r.error.message);else load()}
 function fillSelect(id,include=false){$(id).innerHTML=(include?'<option value="">Select quiz</option>':"")+quizzes.map(q=>`<option value="${q.id}">${esc(q.title)} — ${q.quiz_date}</option>`).join("")}
@@ -142,11 +192,132 @@ async function saveQuestions(){
  let ins=rows.length?await sb.from("quiz_questions").insert(rows):{error:null};if(ins.error){$("qMsg").textContent=ins.error.message;return}
  $("qMsg").textContent=`Saved ${rows.length} questions.`;await loadQuestions();
 }
-async function loadParticipants(){let id=$("participantQuiz").value;if(!id){$("participantRows").innerHTML="";return}let {data,error}=await sb.from("quiz_participants").select("id,full_name,email,phone,organization,registration_code,registered_at").eq("quiz_id",id).order("registered_at",{ascending:false});if(error){$("participantRows").innerHTML=`<tr><td colspan="6">${esc(error.message)}</td></tr>`;return}const term=($("participantSearch").value||"").trim().toLowerCase();const rows=(data||[]).filter(p=>[p.full_name,p.email,p.phone,p.organization,p.registration_code].some(v=>String(v||"").toLowerCase().includes(term)));$("participantRows").innerHTML=rows.map(p=>`<tr><td><b>${esc(p.full_name)}</b></td><td>${esc(p.email||"")}</td><td>${esc(p.phone||"")}</td><td>${esc(p.organization||"")}</td><td><code>${esc(p.registration_code)}</code></td><td><button class="secondary" onclick="copyCode('${esc(p.registration_code)}')">Copy Code</button> <button class="danger" onclick="deleteParticipant('${p.id}')">Delete</button></td></tr>`).join("")||'<tr><td colspan="6">No matching participants.</td></tr>'}
+async function loadParticipants(){let id=$("participantQuiz").value;if(!id){$("participantRows").innerHTML="";return}let {data,error}=await sb.from("quiz_participants").select("id,full_name,email,phone,organization,registration_code,registered_at").eq("quiz_id",id).order("registered_at",{ascending:false});if(error){$("participantRows").innerHTML=`<tr><td colspan="6">${esc(error.message)}</td></tr>`;return}const term=($("participantSearch").value||"").trim().toLowerCase();const rows=(data||[]).filter(p=>[p.full_name,p.email,p.phone,p.organization,p.registration_code].some(v=>String(v||"").toLowerCase().includes(term)));$("participantRows").innerHTML=rows.map(p=>`<tr><td><b>${esc(p.full_name||p.email||"Unknown")}</b></td><td>${esc(p.email||"")}</td><td>${esc(p.phone||"")}</td><td>${esc(p.organization||"")}</td><td><code>${esc(p.registration_code)}</code></td><td><button class="secondary" onclick="copyCode('${esc(p.registration_code)}')">Copy Code</button> <button class="danger" onclick="deleteParticipant('${p.id}')">Delete</button></td></tr>`).join("")||'<tr><td colspan="6">No matching participants.</td></tr>'}
 async function copyCode(code){try{await navigator.clipboard.writeText(code);alert("Registration code copied: "+code)}catch(e){prompt("Copy registration code:",code)}}
 async function deleteParticipant(id){if(!confirm("Delete this participant and their quiz attempt? This cannot be undone."))return;const{error}=await sb.from("quiz_participants").delete().eq("id",id);if(error){alert(error.message);return}await loadParticipants();await load()}
 async function deleteQuiz(id){const q=quizzes.find(x=>x.id===id);if(!q||!confirm(`Delete quiz “${q.title}” and all its questions, registrations and results? This cannot be undone.`))return;const{error}=await sb.from("quiz_quizzes").delete().eq("id",id);if(error){alert(error.message);return}if(selectedId===id)selectedId=null;await load();loadParticipantSelectors();alert("Quiz deleted.")}
-async function loadResults(){let id=$("resultQuiz").value;if(!id){$("resultRows").innerHTML="";return}let {data}=await sb.rpc("quiz_leaderboard",{p_quiz_id:id});$("resultRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.rank}</td><td>${esc(x.full_name)}</td><td>${esc(x.organization||"")}</td><td>${x.score}/${x.total_points}</td><td>${fmt(x.time_taken_seconds)}</td></tr>`).join("")}
+
+async function loadResults(){
+ let id=$("resultQuiz").value;
+ if(!id){$("resultRows").innerHTML="";return}
+ const {data:participants}=await sb.from("quiz_participants")
+   .select("id,full_name,email,organization,registration_code")
+   .eq("quiz_id",id);
+ const {data:attempts}=await sb.from("quiz_attempts")
+   .select("id,participant_id,total_score,total_points,time_taken_seconds,result_status,submitted_at,started_at")
+   .eq("quiz_id",id)
+   .in("result_status",["submitted","expired"]);
+ const pMap=new Map((participants||[]).map(p=>[p.id,p]));
+ let rows=(attempts||[]).map(a=>{
+   const p=pMap.get(a.participant_id)||{};
+   return {
+     participant_id:a.participant_id,
+     name: p.full_name||p.email||"Unknown",
+     organization: p.organization||"",
+     score: a.total_score ?? 0,
+     total: a.total_points ?? 0,
+     time: a.time_taken_seconds,
+     status: a.result_status,
+   };
+ }).sort((a,b)=>(b.score-a.score)||((a.time||0)-(b.time||0)));
+ rows.forEach((r,i)=>r.rank=i+1);
+ let {data:lb,error:lbErr}=await sb.rpc("quiz_leaderboard",{p_quiz_id:id});
+ if(!lbErr && lb && lb.length){
+   rows=lb.map(x=>{
+     const pid=x.participant_id||x.id||null;
+     const p=pMap.get(pid)||{};
+     return {
+       participant_id:pid,
+       name: x.full_name || x.name || p.full_name || p.email || "Unknown",
+       organization: x.organization || p.organization || "",
+       score: Number(x.score ?? x.total_score ?? 0),
+       total: Number(x.total_points ?? 0),
+       time: x.time_taken_seconds,
+       status: "submitted",
+       rank: x.rank
+     };
+   });
+   rows.sort((a,b)=>Number(a.rank||9999)-Number(b.rank||9999));
+ }
+ if(!rows.length){$("resultRows").innerHTML='<tr><td colspan="6">No submitted attempts yet.</td></tr>';return;}
+ $("resultRows").innerHTML=rows.map(r=>`
+   <tr>
+     <td>${r.rank??""}</td>
+     <td><b>${esc(r.name)}</b>${r.status?`<br><small>${esc(r.status)}</small>`:""}</td>
+     <td>${esc(r.organization||"")}</td>
+     <td><b style="color:#0b6b57;font-size:15px">${esc(r.score)}</b> <span class="muted">/ ${esc(r.total)}</span></td>
+     <td>${fmt(r.time)}</td>
+     <td>
+       <button class="secondary" onclick="openHistory('${id}','${r.participant_id||""}')">Preview</button>
+     </td>
+   </tr>
+ `).join("");
+}
+
+async function openHistory(quizId, participantId){
+ $("historyModal").classList.remove("hidden");
+ $("hmTitle").textContent="Participant Question History";
+ $("hmSub").textContent="Loading…";
+ $("hmBody").innerHTML="";
+ if(!participantId){ $("hmSub").textContent="No participant id."; return; }
+ const {data:pArr}=await sb.from("quiz_participants").select("full_name,email,organization,registration_code").eq("id",participantId).limit(1);
+ const p=(pArr&&pArr[0])||{};
+ $("hmTitle").textContent = (p.full_name||p.email||"Participant") + " — Question History";
+ $("hmSub").textContent = [p.organization, p.registration_code].filter(Boolean).join(" • ");
+ const {data:aArr}=await sb.from("quiz_attempts").select("*").eq("quiz_id",quizId).eq("participant_id",participantId).order("started_at",{ascending:false}).limit(1);
+ const attempt=(aArr&&aArr[0])||null;
+ const {data:qs}=await sb.from("quiz_questions").select("id,question_no,question_text,option_a,option_b,option_c,option_d,correct_option,points").eq("quiz_id",quizId).order("question_no");
+ const qList=qs||[];
+ let answers=null;
+ if(attempt){
+   const tries=[
+     ()=>sb.from("quiz_answers").select("*").eq("attempt_id",attempt.id),
+     ()=>sb.from("quiz_responses").select("*").eq("attempt_id",attempt.id),
+     ()=>sb.from("quiz_attempt_answers").select("*").eq("attempt_id",attempt.id),
+   ];
+   for(const fn of tries){
+     const r=await fn();
+     if(!r.error){ answers=r.data||[]; break; }
+   }
+ }
+ const ansByQ=new Map();
+ (answers||[]).forEach(a=>{const qid=a.question_id||a.question_no||a.qid;ansByQ.set(qid,a);});
+ const totalAwarded = attempt?.total_score ?? 0;
+ const totalPossible = attempt?.total_points ?? qList.reduce((n,q)=>n+(q.points||1),0);
+ $("hmSub").textContent = `${p.full_name||p.email||""} • Score ${totalAwarded}/${totalPossible} • ${attempt?.result_status||"no attempt"}`;
+ let html="";
+ if(!qList.length){ html='<p class="muted">No questions in this quiz.</p>'; }
+ else {
+   qList.forEach((q,idx)=>{
+     let a=ansByQ.get(q.id)||ansByQ.get(q.question_no);
+     const chosen=(a?.selected_option||a?.chosen_option||a?.answer_option||a?.selected_answer||"").toString().toUpperCase();
+     const correct=(q.correct_option||"").toString().toUpperCase();
+     const isCorrect = chosen && chosen===correct;
+     const notAnswered = !chosen;
+     const pointsEarned = a?.points_earned ?? a?.points_awarded ?? (isCorrect? (q.points||1):0);
+     let badge="";
+     if(notAnswered) badge='<span class="badge na">Not answered</span>';
+     else if(isCorrect) badge='<span class="badge ok">Correct</span>';
+     else badge='<span class="badge no">Wrong</span>';
+     const optHtml=["A","B","C","D"].map(letter=>{
+       const text=q["option_"+letter.toLowerCase()]||"";
+       const cls=["opt"];
+       if(letter===correct) cls.push("correct");
+       if(letter===chosen) cls.push("chosen");
+       if(letter===chosen && chosen!==correct) cls.push("wrong");
+       return `<div class="${cls.join(" ")}"><b>${letter}.</b> ${esc(text)} ${letter===chosen?'<small>← your answer</small>':''} ${letter===correct?'<small>✓ correct</small>':''}</div>`;
+     }).join("");
+     html += `<div class="qrow">
+       <div class="row"><b>Q${idx+1}.</b> <span>${esc(q.question_text)} ${badge}</span><span><b>${pointsEarned}</b>/${q.points||1} pts</span></div>
+       ${optHtml}
+     </div>`;
+   });
+   if(!answers) html += `<p class="muted" style="margin-top:10px">Answer-level details not found (no quiz_answers/quiz_responses rows). Only question list shown.</p>`;
+ }
+ $("hmBody").innerHTML=html;
+}
+function closeHistory(){ $("historyModal").classList.add("hidden"); $("hmBody").innerHTML=""; }
+
 function fmt(s){s=+s||0;return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
 function quizURL(q){return location.href.replace(/admin\.html.*$/,"index.html")+"?quiz="+q.id}
 function renderDesign(){
@@ -157,9 +328,8 @@ function renderDesign(){
  x.fillStyle="#fff";x.textAlign="center";x.font="bold 64px Arial";x.fillText("ROTARACT QUIZ",540,120);
  x.font="bold 82px Arial";wrapText(x,design.title,540,245,900,95);
  x.font="bold 42px Arial";x.fillText(formatDate(design.quiz_date),540,470);x.fillText(`${design.start_time.slice(0,5)} – ${design.end_time.slice(0,5)} (Nepal Time)`,540,530);
- x.font="bold 34px Arial";x.fillText(`${design.duration_minutes} MINUTES • NO NEGATIVE MARKING`,540,590);
+ x.font="bold 34px Arial";x.fillText(`${design.attempt_duration_minutes??design.duration_minutes} MINUTES PER ATTEMPT • NO NEGATIVE MARKING`,540,590);
  x.fillStyle="#fff";x.fillRect(330,650,420,420);
- // QR drawn from DOM canvas/image after QRCode render
  const qrCanvas=$("qr").querySelector("canvas"), qrImg=$("qr").querySelector("img");
  if(qrCanvas)x.drawImage(qrCanvas,330,650,420,420);else if(qrImg){qrImg.onload=()=>{x.drawImage(qrImg,330,650,420,420)}}
  x.fillStyle="#fff";x.font="bold 40px Arial";x.fillText("SCAN TO JOIN",540,1135);x.font="30px Arial";x.fillText("Register → Start → Answer → See Live Ranking",540,1190);x.font="24px Arial";x.fillText("QR is active only during the configured quiz time.",540,1245);

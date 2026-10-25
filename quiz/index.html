@@ -2,66 +2,620 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Rotaract Quiz</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
-:root{--bg:#f3f7fb;--card:#fff;--text:#152033;--muted:#687386;--brand:#0b6b57;--line:#e5e9f0;--good:#087f5b;--bad:#c92a2a}*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#f1f7f5,#f4f6ff);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text)}.wrap{max-width:850px;margin:auto;padding:18px}.top{text-align:center;padding:18px 0 10px}.logo{font-size:38px}.top h1{margin:5px 0;font-size:30px}.muted{color:var(--muted)}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:21px;margin:14px 0;box-shadow:0 12px 35px #14213d0b}.badge{display:inline-flex;padding:7px 11px;border-radius:999px;background:#e8f7f1;color:var(--good);font-weight:800;font-size:12px}h2,h3{margin-top:0}label{display:block;font-weight:700;margin:13px 0 6px}input,select{width:100%;padding:13px;border:1px solid #d8dee8;border-radius:12px;font-size:16px;background:white}button{border:0;border-radius:13px;padding:13px 16px;font-weight:800;font-size:15px;cursor:pointer}.primary{background:var(--brand);color:white;width:100%}.secondary{background:#edf2f7;color:#233044}.danger{background:#ffe9e9;color:var(--bad)}.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.timer{font-size:26px;font-weight:900}.progress{height:8px;background:#e8edf3;border-radius:99px;overflow:hidden}.bar{height:100%;background:var(--brand);width:0}.option{display:block;width:100%;text-align:left;background:#f8fafc;border:1px solid var(--line);margin:10px 0;padding:15px;border-radius:14px}.option:hover{border-color:var(--brand)}.option b{margin-right:7px}.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.place{padding:12px;text-align:center;background:#f8fafc;border-radius:14px}.place strong{display:block;font-size:20px}table{width:100%;border-collapse:collapse}td,th{padding:10px 7px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}.notice{padding:14px;border-radius:14px;background:#fff8df}.hidden{display:none!important}.center{text-align:center}.small{font-size:13px}.quiz-tile{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}.qr{width:120px;height:120px;background:white;padding:5px;border-radius:12px}.code{font-size:20px;letter-spacing:1.5px;font-weight:900;background:#f1f5f9;padding:12px;border-radius:12px;display:inline-block}@media(max-width:600px){.quiz-tile{grid-template-columns:1fr}.qr{width:150px;height:150px}.top h1{font-size:25px}}
+:root{--bg:#f3f7fb;--card:#fff;--text:#152033;--muted:#687386;--brand:#0b6b57;--line:#e5e9f0;--good:#087f5b;--bad:#c92a2a}*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#f1f7f5,#f4f6ff);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text)}.wrap{max-width:850px;margin:auto;padding:18px}.top{text-align:center;padding:18px 0 10px}.logo{font-size:38px}.top h1{margin:5px 0;font-size:30px}.muted{color:var(--muted)}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:21px;margin:14px 0;box-shadow:0 12px 35px #14213d0b}.badge{display:inline-flex;padding:7px 11px;border-radius:999px;background:#e8f7f1;color:var(--good);font-weight:800;font-size:12px}h2,h3{margin-top:0}label{display:block;font-weight:700;margin:13px 0 6px}input,select{width:100%;padding:13px;border:1px solid #d8dee8;border-radius:12px;font-size:16px;background:white}button{border:0;border-radius:13px;padding:13px 16px;font-weight:800;font-size:15px;cursor:pointer}.primary{background:var(--brand);color:white;width:100%}.secondary{background:#edf2f7;color:#233044}.danger{background:#ffe9e9;color:var(--bad)}.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.timer{font-size:26px;font-weight:900;transition:all .2s}.timer.warning30{font-size:34px;color:#d97706;text-shadow:0 0 12px #f59e0b55}.timer.warning20{color:#dc2626;animation:timerPulse .55s infinite alternate}.timer.warning20:nth-child(odd){transform:scale(1.12)}@keyframes timerPulse{from{transform:scale(1);text-shadow:0 0 2px #ef444455}to{transform:scale(1.22);text-shadow:0 0 16px #ef4444aa}}.option.correct{background:#dcfce7!important;border-color:#16a34a!important;color:#166534}.option.incorrect{background:#fee2e2!important;border-color:#dc2626!important;color:#991b1b}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.stat{background:#f1f5f9;border-radius:13px;padding:12px;text-align:center}.stat strong{display:block;font-size:21px}.progress{height:8px;background:#e8edf3;border-radius:99px;overflow:hidden}.bar{height:100%;background:var(--brand);width:0}.option{display:block;width:100%;text-align:left;background:#f8fafc;border:1px solid var(--line);margin:10px 0;padding:15px;border-radius:14px}.option:hover{border-color:var(--brand)}.option b{margin-right:7px}.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.place{padding:12px;text-align:center;background:#f8fafc;border-radius:14px;box-shadow:0 2px 6px rgba(0,0,0,0.05)}.place strong{display:block;font-size:20px;margin-bottom:4px}table{width:100%;border-collapse:collapse}td,th{padding:10px 7px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}.notice{padding:14px;border-radius:14px;background:#fff8df}.hidden{display:none!important}.center{text-align:center}.small{font-size:13px}.quiz-tile{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}.qr{width:120px;height:120px;background:white;padding:5px;border-radius:12px}.code{font-size:20px;letter-spacing:1.5px;font-weight:900;background:#f1f5f9;padding:12px;border-radius:12px;display:inline-block}@media(max-width:600px){.wrap{padding:10px}.card{padding:15px;border-radius:16px;margin:10px 0}.quiz-tile{grid-template-columns:1fr}.qr{width:150px;height:150px}.top h1{font-size:24px;line-height:1.2}.logo{font-size:30px}.stats{grid-template-columns:1fr}.podium{grid-template-columns:1fr}.place{display:grid;grid-template-columns:1fr;gap:4px}.option{padding:16px 13px;font-size:16px;line-height:1.4;min-height:52px}input,select,button{font-size:16px;min-height:46px}.row{align-items:flex-start}.timer.warning30{font-size:30px}table{min-width:420px}td,th{padding:9px 6px;font-size:13px}}
+#celebration{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;display:none}
+#celebration.show{display:block}
+.balloon{position:absolute;bottom:-120px;width:56px;height:72px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;animation:floatUp 3.2s ease-in forwards;opacity:0}
+.balloon::after{content:"";position:absolute;bottom:-34px;left:50%;width:2px;height:34px;background:#94a3b8;transform:translateX(-50%)}
+@keyframes floatUp{0%{transform:translateY(0) scale(.6);opacity:0}15%{opacity:1}100%{transform:translateY(-115vh) scale(1.05);opacity:0}}
+.confetti{position:absolute;width:10px;height:14px;top:-20px;animation:confFall 2.8s linear forwards}
+@keyframes confFall{to{transform:translateY(115vh) rotate(720deg);opacity:0}}
+#startPopup{position:fixed;inset:0;background:#0b1220dd;display:none;align-items:center;justify-content:center;z-index:10000;padding:20px}
+#startPopup.show{display:flex}
+#startPopup .popupBox{background:linear-gradient(135deg,#073b33,#0b6b57);color:#fff;border-radius:24px;padding:36px 28px;max-width:420px;width:100%;text-align:center;box-shadow:0 30px 80px #000a;animation:popIn .35s ease-out}
+@keyframes popIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+#startPopup h2{margin:0 0 8px;font-size:24px}
+#startPopup .bigCount{font-size:88px;font-weight:900;color:#ffe08a;line-height:1;margin:14px 0;text-shadow:0 0 24px #f59e0baa;animation:pulseBig .5s ease-in-out infinite alternate}
+@keyframes pulseBig{from{transform:scale(1)}to{transform:scale(1.08)}}
+#startPopup .subtle{color:#d5eee6;font-size:14px;margin-top:8px}
 </style></head><body><div class="wrap"><div class="top"><div class="logo">🏆</div><h1 id="title">Rotaract Quiz</h1><div id="subtitle" class="muted">Loading published quizzes…</div></div>
-<section id="statusCard" class="card center"><div id="statusBadge" class="badge">CHECKING</div><h2 id="statusTitle">Please wait</h2><p id="statusText" class="muted"></p><div id="countdown" class="timer"></div><button id="soundBtn" class="secondary" onclick="enableSound()">🔊 Enable quiz sounds</button></section>
+<section id="statusCard" class="card center"><div id="statusBadge" class="badge">CHECKING</div><h2 id="statusTitle">Please wait</h2><p id="statusText" class="muted"></p><div id="countdown" class="timer"></div></section>
 <section id="quizList" class="hidden"></section>
-<section id="registerCard" class="card hidden"><h2>📝 Register for this Quiz</h2><p class="muted">Register now, even before the start time. Your personal entry code will be shown below. Keep it safe.</p><label>Full Name *</label><input id="name" autocomplete="name"><label>Email *</label><input id="email" type="email" autocomplete="email"><label>Mobile Number *</label><input id="phone" type="tel" autocomplete="tel"><label>Organization / Club</label><input id="org"><label>Member Type</label><select id="member"><option value="">Select</option><option>Rotaractor</option><option>Rotarian</option><option>Guest</option><option>Other</option></select><button class="primary" onclick="registerUser()">Register & Get Entry Code</button><p id="regMsg" class="small muted"></p><div id="savedCodeBox" class="notice hidden"><b>✅ You are registered!</b><p>Your entry code:</p><div class="code" id="savedCode"></div><p class="small">Use this code at quiz start. This device will remember your registration until the quiz ends.</p><button class="secondary" onclick="copySavedCode()">Copy My Code</button></div></section>
+<section id="registerCard" class="card hidden"><h2 id="registerHeading">📝 Register for this Quiz</h2><p class="muted">Register now, even before the start time. Your personal entry code will be shown below. Keep it safe.</p><label>Full Name *</label><input id="name" autocomplete="name"><label>Email *</label><input id="email" type="email" autocomplete="email"><label>Mobile Number *</label><input id="phone" type="tel" autocomplete="tel"><label>Organization / Club</label><input id="org"><label>Member Type</label><select id="member"><option value="">Select</option><option>Rotaractor</option><option>Rotarian</option><option>Guest</option><option>Other</option></select><button class="primary" onclick="registerUser()">Register & Get Entry Code</button><p id="regMsg" class="small muted"></p><div id="savedCodeBox" class="notice hidden"><b>✅ You are registered!</b><p>Your entry code:</p><div class="code" id="savedCode"></div><p class="small">Use this code at quiz start. This device will remember your registration until the quiz ends.</p><button class="secondary" onclick="copySavedCode()">Copy My Code</button></div></section>
 <section id="entryCard" class="card hidden"><h2>🔐 Enter Registration Code</h2><p class="muted">You must enter the code given at registration before starting the quiz.</p><label>Registration Code</label><input id="entryCode" autocomplete="one-time-code" placeholder="RAC-XXXXXXXXXX" style="text-transform:uppercase"><button class="primary" onclick="enterQuiz()">Verify Code & Start Quiz 🚀</button><p id="entryMsg" class="small muted"></p></section>
-<section id="quizCard" class="card hidden"><div class="row"><span id="qCount" class="badge"></span><span id="timer" class="timer">00:00</span></div><div class="progress" style="margin:14px 0"><div id="bar" class="bar"></div></div><h2 id="question"></h2><div id="options"></div><button id="submitBtn" class="secondary" onclick="submitQuiz()">Submit Quiz</button></section>
-<section id="resultCard" class="card hidden center"><h2>🎉 Quiz Completed</h2><div id="result"></div></section>
-<section id="boardCard" class="card hidden"><div class="row"><h2>Live Leaderboard</h2><span class="badge">REALTIME</span></div><div id="podium" class="podium"></div><div style="overflow:auto;margin-top:12px"><table><thead><tr><th>#</th><th>Participant</th><th>Score</th><th>Time</th></tr></thead><tbody id="board"></tbody></table></div></section>
-</div><script>
-const SUPABASE_URL="https://kbyfvqkfcxqgjjtfvvxf.supabase.co",SUPABASE_KEY="sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);let quizId=new URLSearchParams(location.search).get("quiz"),quiz=null,questions=[],answers={},current=0,attempt=null,serverOffset=0,deadline=null,clock=null,statusInterval=null,soundCtx=null,startedSoundFor="",warnedSoundFor="",participant=null;
-const $=id=>document.getElementById(id);function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}function localNow(){return Date.now()+serverOffset}function fmt(sec){sec=Math.max(0,Math.floor(sec));return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0")}async function syncServer(){let{data,error}=await sb.rpc("quiz_server_time");if(!error&&data)serverOffset=new Date(data).getTime()-Date.now()}
-function enableSound(){try{soundCtx=soundCtx||new(window.AudioContext||window.webkitAudioContext)();soundCtx.resume();beep(660,.12);$("soundBtn").textContent="🔊 Sound enabled"}catch(e){$("soundBtn").textContent="Sound unavailable in this browser"}}function beep(freq=880,duration=.22){try{if(!soundCtx)soundCtx=new(window.AudioContext||window.webkitAudioContext)();if(soundCtx.state==="suspended")soundCtx.resume();const o=soundCtx.createOscillator(),g=soundCtx.createGain();o.type="sine";o.frequency.value=freq;g.gain.setValueAtTime(.001,soundCtx.currentTime);g.gain.exponentialRampToValueAtTime(.18,soundCtx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.001,soundCtx.currentTime+duration);o.connect(g);g.connect(soundCtx.destination);o.start();o.stop(soundCtx.currentTime+duration+.03)}catch(e){}}
-function hideAll(){["registerCard","entryCard","quizCard","resultCard","boardCard","quizList"].forEach(x=>$(x).classList.add("hidden"))}async function loadQuiz(){await syncServer();if(!quizId){await loadPublishedList();return}let{data,error}=await sb.rpc("quiz_public_info",{p_quiz_id:quizId});if(error||!data?.length){$("statusTitle").textContent="Quiz not found";$("statusText").textContent=error?.message||"Invalid quiz link.";return}quiz=data[0];$("title").textContent=quiz.title;$("subtitle").textContent=quiz.description||"Rotaract Quiz";await restoreLocalRegistration();renderStatus();statusInterval=setInterval(async()=>{await syncServer();renderStatus()},1000);setInterval(async()=>{if(!attempt){const fresh=await sb.rpc("quiz_public_info",{p_quiz_id:quizId});if(fresh.data?.length){quiz=fresh.data[0];$("title").textContent=quiz.title;$("subtitle").textContent=quiz.description||"Rotaract Quiz";renderStatus()}}},15000);}
-async function loadPublishedList(){let{data,error}=await sb.from("quiz_quizzes").select("id,title,description,quiz_date,start_time,end_time,duration_minutes,status").eq("status","published").order("quiz_date",{ascending:true});if(error){$("statusTitle").textContent="Unable to load quizzes";$("statusText").textContent=error.message;return}$("statusTitle").textContent=data?.length?"Published Rotaract Quizzes":"No published quizzes yet";$("statusText").textContent="This page refreshes automatically to show newly published quizzes.";$("quizList").classList.remove("hidden");$("quizList").innerHTML=(data||[]).map(q=>`<article class="card quiz-tile"><div><span class="badge">${esc(q.status.toUpperCase())}</span><h2>${esc(q.title)}</h2><p>${esc(q.description||"Rotaract Quiz")}</p><p><b>📅 ${esc(q.quiz_date)}</b><br>🕒 ${esc(String(q.start_time).slice(0,5))} – ${esc(String(q.end_time).slice(0,5))} (Nepal Time)<br>⏱ ${q.duration_minutes} minutes</p><a href="?quiz=${q.id}"><button class="primary">Register / Open Quiz</button></a></div><div><div id="qr-${q.id}" class="qr"></div><small>Scan QR to register</small></div></article>`).join("");setTimeout(()=>{(data||[]).forEach(q=>{let el=$("qr-"+q.id);if(el)new QRCode(el,{text:new URL("?quiz="+q.id,location.href).href,width:140,height:140})})},50);setTimeout(()=>location.reload(),60000)}
+<section id="quizCard" class="card hidden"><div class="row"><span id="qCount" class="badge"></span><span id="timer" class="timer">00:00</span></div><div class="progress" style="margin:14px 0"><div id="bar" class="bar"></div></div><h2 id="question"></h2><div id="options"></div></section>
+
+<!-- Final Screen: Score + Leaderboard in one place -->
+<section id="finalCard" class="card hidden">
+  <div id="finalScoreBox" class="center" style="margin-bottom: 30px;"></div>
+  
+  <div class="row" style="border-top: 2px solid var(--line); padding-top: 20px;">
+    <h2>Live Leaderboard</h2><span class="badge">REALTIME</span>
+  </div>
+  <div id="podium" class="podium"></div>
+  <div id="boardStats" class="stats">
+    <div class="stat"><strong id="totalParticipants">—</strong><span class="small">Registered participants</span></div>
+    <div class="stat"><strong id="completedCount">—</strong><span class="small">Completed</span></div>
+    <div class="stat"><strong id="averageScore">—</strong><span class="small">Average marks</span></div>
+  </div>
+  <p class="small muted">Live rankings refresh automatically. Marks are shown as score / total possible marks.</p>
+  <div style="overflow:auto;margin-top:12px">
+    <table>
+      <thead><tr><th>#</th><th>Participant</th><th>Score</th><th>Time</th></tr></thead>
+      <tbody id="board"></tbody>
+    </table>
+  </div>
+</section>
+
+</div>
+<div id="celebration"></div>
+
+<div id="startPopup">
+  <div class="popupBox">
+    <h2>🎬 Quiz is starting!</h2>
+    <div class="bigCount" id="popupCount">3</div>
+    <div class="subtle" id="popupSub">Get ready… the quiz will open automatically.</div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL="https://kbyfvqkfcxqgjjtfvvxf.supabase.co",SUPABASE_KEY="sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let quizId=new URLSearchParams(location.search).get("quiz"),quiz=null,questions=[],answers={},current=0,attempt=null,serverOffset=0,deadline=null,clock=null,statusInterval=null,soundCtx=null,startedSoundFor="",warnedSoundFor="",participant=null,answeredCurrent=false,autoSubmitBusy=false,lastTimerTone="",registeredOnDevice=false,autoStartBusy=false,autoStartedForKey="",preStartInterval=null,preStartDoneFor="",startPopupTimer=null,startPopupShown=false;
+
+const $=id=>document.getElementById(id);
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function localNow(){return Date.now()+serverOffset}
+function fmt(sec){sec=Math.max(0,Math.floor(sec));return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0")}
+async function syncServer(){let{data,error}=await sb.rpc("quiz_server_time");if(!error&&data)serverOffset=new Date(data).getTime()-Date.now()}
+
+document.addEventListener('click', function initAudioOnce() {
+  if(!soundCtx) { try { soundCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} }
+  if(soundCtx && soundCtx.state === "suspended") soundCtx.resume();
+  document.removeEventListener('click', initAudioOnce);
+}, { once: true });
+
+function beep(freq=880,duration=.22){try{if(!soundCtx)soundCtx=new(window.AudioContext||window.webkitAudioContext)();if(soundCtx.state==="suspended")soundCtx.resume();const o=soundCtx.createOscillator(),g=soundCtx.createGain();o.type="sine";o.frequency.value=freq;g.gain.setValueAtTime(.001,soundCtx.currentTime);g.gain.exponentialRampToValueAtTime(.18,soundCtx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.001,soundCtx.currentTime+duration);o.connect(g);g.connect(soundCtx.destination);o.start();o.stop(soundCtx.currentTime+duration+.03)}catch(e){}}
+function longBeep(){try{if(!soundCtx)soundCtx=new(window.AudioContext||window.webkitAudioContext)();if(soundCtx.state==="suspended")soundCtx.resume();const o=soundCtx.createOscillator(),g=soundCtx.createGain();o.type="sine";o.frequency.value=1040;g.gain.setValueAtTime(.001,soundCtx.currentTime);g.gain.exponentialRampToValueAtTime(.25,soundCtx.currentTime+.03);g.gain.exponentialRampToValueAtTime(.001,soundCtx.currentTime+1.2);o.connect(g);g.connect(soundCtx.destination);o.start();o.stop(soundCtx.currentTime+1.25)}catch(e){}}
+function hideAll(){["registerCard","entryCard","quizCard","finalCard","quizList"].forEach(x=>$(x).classList.add("hidden"))}
+function celebrate(){const c=$("celebration");if(!c)return;c.innerHTML="";c.classList.add("show");const colors=["#ef4444","#f59e0b","#10b981","#3b82f6","#8b5cf6","#ec4899","#14b8a6","#f97316"];for(let i=0;i<18;i++){const b=document.createElement("div");b.className="balloon";const col=colors[i%colors.length];b.style.background=`radial-gradient(circle at 30% 30%, #ffffffcc, ${col})`;b.style.left=(Math.random()*90+5)+"vw";b.style.animationDelay=(Math.random()*0.9)+"s";b.style.animationDuration=(2.6+Math.random()*1.4)+"s";c.appendChild(b)}for(let i=0;i<40;i++){const p=document.createElement("div");p.className="confetti";p.style.background=colors[Math.floor(Math.random()*colors.length)];p.style.left=(Math.random()*100)+"vw";p.style.animationDelay=(Math.random()*1.2)+"s";p.style.transform=`rotate(${Math.random()*360}deg)`;c.appendChild(p)}setTimeout(()=>{c.classList.remove("show");c.innerHTML=""},4200)}
+
+function showStartPopup(callback){
+  if(startPopupShown){return;}
+  startPopupShown=true;
+  const pop=$("startPopup"),cnt=$("popupCount"),sub=$("popupSub");
+  pop.classList.add("show");
+  if(sub)sub.textContent="Get ready… the quiz will open automatically.";
+  let n=3;
+  cnt.textContent=String(n);
+  beep(880,.15);
+  clearInterval(startPopupTimer);
+  startPopupTimer=setInterval(()=>{
+    n--;
+    if(n>0){
+      cnt.textContent=String(n);
+      beep(880,.15);
+    }else{
+      cnt.textContent="GO!";
+      longBeep();
+      clearInterval(startPopupTimer);
+      setTimeout(()=>{
+        pop.classList.remove("show");
+        if(typeof callback==="function")callback();
+      },500);
+    }
+  },1000);
+}
+
+function showStartError(msg){
+  console.error("START ERROR:", msg);
+  startPopupShown=false;
+  const pop=$("startPopup");
+  if(pop)pop.classList.remove("show");
+  hideAll();
+  $("statusCard").classList.remove("hidden");
+  $("statusBadge").textContent="ERROR";
+  $("statusTitle").textContent="Could not start quiz";
+  $("statusText").textContent=msg;
+  $("countdown").textContent="";
+  if(!document.getElementById("retryStartBtn")){
+    const btn=document.createElement("button");
+    btn.id="retryStartBtn";
+    btn.className="primary";
+    btn.style.marginTop="14px";
+    btn.textContent="🔄 Retry Starting Quiz";
+    btn.onclick=()=>{
+      btn.remove();
+      startPopupShown=false;
+      autoStartedForKey="";
+      autoStartBusy=false;
+      renderStatus();
+    };
+    $("statusCard").appendChild(btn);
+  }
+  setTimeout(()=>alert("Quiz start error:\n\n"+msg+"\n\nPlease screenshot this and contact the organizer."), 120);
+}
+
+async function loadQuiz(){
+  await syncServer();
+  if(!quizId){await loadPublishedList();return}
+  let{data,error}=await sb.rpc("quiz_public_info",{p_quiz_id:quizId});
+  if(error||!data?.length){
+    $("statusTitle").textContent="Quiz not found";
+    $("statusText").textContent=error?.message||"Invalid quiz link.";
+    return;
+  }
+  quiz=data[0];
+  $("title").textContent=quiz.title;
+  $("subtitle").textContent=quiz.description||"Rotaract Quiz";
+  await restoreLocalRegistration();
+  renderStatus();
+  statusInterval=setInterval(async()=>{await syncServer();renderStatus()},1000);
+  setInterval(async()=>{
+    if(!attempt){
+      const fresh=await sb.rpc("quiz_public_info",{p_quiz_id:quizId});
+      if(fresh.data?.length){
+        quiz=fresh.data[0];
+        $("title").textContent=quiz.title;
+        $("subtitle").textContent=quiz.description||"Rotaract Quiz";
+        renderStatus();
+      }
+    }
+  },15000);
+}
+
+async function loadPublishedList(){
+  let{data,error}=await sb.from("quiz_quizzes").select("id,title,description,quiz_date,start_time,end_time,duration_minutes,status").eq("status","published").order("quiz_date",{ascending:true});
+  if(error){$("statusTitle").textContent="Unable to load quizzes";$("statusText").textContent=error.message;return}
+  $("statusTitle").textContent=data?.length?"Published Rotaract Quizzes":"No published quizzes yet";
+  $("statusText").textContent="This page refreshes automatically to show newly published quizzes.";
+  $("quizList").classList.remove("hidden");
+  $("quizList").innerHTML=(data||[]).map(q=>`<article class="card quiz-tile"><div><span class="badge">${esc(q.status.toUpperCase())}</span><h2>${esc(q.title)}</h2><p>${esc(q.description||"Rotaract Quiz")}</p><p><b>📅 ${esc(q.quiz_date)}</b><br>🕒 ${esc(String(q.start_time).slice(0,5))} – ${esc(String(q.end_time).slice(0,5))} (Nepal Time)<br>⏱ ${q.duration_minutes} minutes</p><a href="?quiz=${q.id}"><button class="primary">Register / Open Quiz</button></a></div><div><div id="qr-${q.id}" class="qr"></div><small>Scan QR to register</small></div></article>`).join("");
+  setTimeout(()=>{(data||[]).forEach(q=>{let el=$("qr-"+q.id);if(el)new QRCode(el,{text:new URL("?quiz="+q.id,location.href).href,width:140,height:140})})},50);
+  setTimeout(()=>location.reload(),60000);
+}
+
 function lockRegistration(){["name","email","phone","org","member"].forEach(id=>$(id).disabled=true);const b=$("registerCard").querySelector("button.primary");if(b)b.disabled=true}
-async function restoreLocalRegistration(){const raw=localStorage.getItem("quiz_registration_"+quizId);if(!raw)return;try{participant=JSON.parse(raw);$("name").value=participant.full_name||"";$("email").value=participant.email||"";$("phone").value=participant.phone||"";$("org").value=participant.organization||"";$("member").value=participant.member_type||"";$("savedCode").textContent=participant.registration_code||"";$("savedCodeBox").classList.remove("hidden");lockRegistration();}catch(e){}}
-function renderStatus(){if(!quiz)return;const now=localNow(),start=new Date(quiz.starts_at).getTime(),end=new Date(quiz.ends_at).getTime(),key=quiz.id+"|"+start;if(quiz.status==="published"&&now>=start&&now<end&&startedSoundFor!==key){startedSoundFor=key;beep(1040,.45);setTimeout(()=>beep(1310,.55),260)}if(quiz.status!=="published"){$("statusBadge").textContent="NOT LIVE";$("statusTitle").textContent="Quiz is not published";$("statusText").textContent="The organizer has not published this quiz yet.";hideAll();return}if(now<start){const left=Math.ceil((start-now)/1000);$("statusBadge").textContent="REGISTRATION OPEN";$("statusTitle").textContent="You can register now";$("statusText").textContent="Quiz starts at "+new Date(quiz.starts_at).toLocaleString("en-NP",{timeZone:"Asia/Kathmandu"})+". At T−60 seconds you will hear a warning beep; at start time a different beep will play.";$("countdown").textContent=fmt(left);$("registerCard").classList.remove("hidden");$("entryCard").classList.add("hidden");if(participant){$("savedCodeBox").classList.remove("hidden");$("regMsg").textContent="You are registered on this device. Do not register again."}if(left<=60&&left>0&&warnedSoundFor!==key){warnedSoundFor=key;beep(740,.35);setTimeout(()=>beep(740,.35),420)}return}if(now>=end){$("statusBadge").textContent="ENDED";$("statusTitle").textContent="Quiz has ended";$("statusText").textContent="Registration and participation for this quiz are closed.";$("countdown").textContent="00:00";$("registerCard").classList.add("hidden");$("entryCard").classList.add("hidden");return}$("statusBadge").textContent="QUIZ LIVE";$("statusTitle").textContent="Enter your code to start";$("statusText").textContent="Only a registered participant with a valid code can begin. Each registration can start one attempt.";$("countdown").textContent=fmt((end-now)/1000);$("registerCard").classList.remove("hidden");$("entryCard").classList.remove("hidden");$("boardCard").classList.remove("hidden");if(participant){$("entryCode").value=participant.registration_code||"";$("savedCodeBox").classList.remove("hidden")}loadBoard()}
-async function registerUser(){enableSound();if(participant){$("regMsg").textContent="You are already registered on this device. Use your existing code.";return}const name=$("name").value.trim(),email=$("email").value.trim().toLowerCase(),phone=$("phone").value.trim();if(!name||!email||!phone){$("regMsg").textContent="Full name, email and mobile number are required.";return}if(!/^\S+@\S+\.\S+$/.test(email)){ $("regMsg").textContent="Enter a valid email address.";return}$("regMsg").textContent="Registering…";const{data,error}=await sb.rpc("quiz_register",{p_quiz_id:quizId,p_full_name:name,p_email:email,p_phone:phone,p_organization:$("org").value.trim()||null,p_member_type:$("member").value||null});if(error){$("regMsg").textContent=error.message;return}const got=await sb.rpc("quiz_get_participant",{p_code:data[0].registration_code});const saved=got.data?.[0];participant=saved?{participant_id:saved.id,registration_code:saved.registration_code,full_name:saved.full_name,email:saved.email,phone:saved.phone,organization:saved.organization,member_type:saved.member_type}:{participant_id:data[0].participant_id,registration_code:data[0].registration_code,full_name:name,email,phone,organization:$("org").value.trim(),member_type:$("member").value};localStorage.setItem("quiz_registration_"+quizId,JSON.stringify(participant));lockRegistration();$("savedCode").textContent=participant.registration_code;$("savedCodeBox").classList.remove("hidden");$("regMsg").textContent="You are registered! Save your code and enter it when the quiz starts.";$("entryCode").value=participant.registration_code;}
-async function copySavedCode(){if(participant?.registration_code){try{await navigator.clipboard.writeText(participant.registration_code);$("regMsg").textContent="Registration code copied."}catch(e){$("regMsg").textContent="Your code is: "+participant.registration_code}}}
-async function enterQuiz(){
- const code=$("entryCode").value.trim().toUpperCase();
- if(!code){$("entryMsg").textContent="Enter your registration code.";return}
- enableSound();const btn=$("entryCard").querySelector("button.primary");if(btn)btn.disabled=true;
- $("entryMsg").textContent="Checking code…";
- try{
-  const {data,error}=await sb.rpc("quiz_get_participant",{p_code:code});
-  if(error)throw error;
-  const p=Array.isArray(data)?data[0]:data;
-  if(!p){$("entryMsg").textContent="Invalid registration code. Please check the code and try again.";return}
-  if(String(p.quiz_id).toLowerCase()!==String(quizId).toLowerCase()){$("entryMsg").textContent="This code is for a different quiz.";return}
-  participant={participant_id:p.id,registration_code:p.registration_code,full_name:p.full_name||"",email:p.email||"",phone:p.phone||"",organization:p.organization||"",member_type:p.member_type||""};
+
+async function restoreLocalRegistration(){
+  const raw=localStorage.getItem("quiz_registration_"+quizId);
+  if(!raw)return;
+  try{
+    participant=JSON.parse(raw);
+    registeredOnDevice=true;
+    $("name").value=participant.full_name||"";
+    $("email").value=participant.email||"";
+    $("phone").value=participant.phone||"";
+    $("org").value=participant.organization||"";
+    $("member").value=participant.member_type||"";
+    $("savedCode").textContent=participant.registration_code||"";
+    $("savedCodeBox").classList.remove("hidden");
+    lockRegistration();
+  }catch(e){}
+}
+
+function renderRegisterCard(){
+  if(registeredOnDevice&&participant){
+    $("registerHeading").textContent="✅ You are registered!";
+    $("regMsg").textContent="You are registered on this device. Your code is ready below.";
+    $("savedCodeBox").classList.remove("hidden");
+    $("savedCode").textContent=participant.registration_code||"";
+    $("registerCard").querySelectorAll("label,input,select").forEach(el=>{if(!$("savedCodeBox").contains(el))el.classList.add("hidden")});
+    $("registerCard").querySelector("button.primary").classList.add("hidden");
+  }else{
+    $("registerHeading").textContent="📝 Register for this Quiz";
+    $("savedCodeBox").classList.add("hidden");
+    $("registerCard").querySelectorAll("label,input,select").forEach(el=>el.classList.remove("hidden"));
+    $("registerCard").querySelector("button.primary").classList.remove("hidden");
+    $("regMsg").textContent="";
+  }
+}
+
+async function verifyParticipantInDb(){
+  if(!participant?.registration_code)return false;
+  try{
+    const{data,error}=await sb.rpc("quiz_get_participant",{p_code:participant.registration_code});
+    if(error)return false;
+    const p=Array.isArray(data)?data[0]:data;
+    if(!p||String(p.quiz_id).toLowerCase()!==String(quizId).toLowerCase()){
+      localStorage.removeItem("quiz_registration_"+quizId);
+      localStorage.removeItem("quiz_submitted_"+quizId+"_"+(participant?.registration_code||""));
+      participant=null;registeredOnDevice=false;
+      return false;
+    }
+    return true;
+  }catch(e){return false}
+}
+
+async function tryAutoStart(){
+  if(!quiz||!registeredOnDevice||!participant?.registration_code)return;
+  if(attempt||autoStartBusy)return;
+  const now=localNow(),start=new Date(quiz.starts_at).getTime(),end=new Date(quiz.ends_at).getTime();
+  if(quiz.status!=="published"||now<start||now>=end)return;
+  const key=quiz.id+"|"+start;
+  if(autoStartedForKey===key)return;
+  const usedKey="quiz_submitted_"+quizId+"_"+(participant.registration_code||"");
+  if(localStorage.getItem(usedKey)==="1")return;
+  autoStartBusy=true;autoStartedForKey=key;
+  try{
+    const p=await verifyParticipantInDb();
+    if(!p){
+      autoStartBusy=false;autoStartedForKey="";
+      renderStatus();
+      return;
+    }
+    showStartPopup(async()=>{
+      try{
+        await startAttempt(participant.participant_id);
+      }catch(e){
+        console.error("[tryAutoStart] startAttempt error:",e);
+      }finally{
+        autoStartBusy=false;
+      }
+    });
+  }catch(e){
+    console.error("[tryAutoStart] prep error:",e);
+    showStartError(e?.message||String(e));
+    autoStartedForKey="";
+    autoStartBusy=false;
+  }
+}
+
+function startPreStartCountdown(){
+  if(!quiz)return;
+  const start=new Date(quiz.starts_at).getTime(),key=quiz.id+"|"+start;
+  if(preStartDoneFor===key)return;
+  clearInterval(preStartInterval);lastTimerTone="";
+  preStartInterval=setInterval(()=>{
+    const left=Math.ceil((start-localNow())/1000);
+    const cd=$("countdown");
+    if(!cd)return;
+    if(left>10){cd.textContent=fmt(left);cd.classList.remove("warning30","warning20");return;}
+    if(left>0){
+      cd.textContent=fmt(left);
+      cd.classList.remove("warning20");
+      cd.classList.add("warning30");
+      if(left!==Number(lastTimerTone)){lastTimerTone=String(left);beep(740,.18);}
+      return;
+    }
+    cd.textContent="00:00";
+    cd.classList.remove("warning30","warning20");
+    clearInterval(preStartInterval);
+    if(preStartDoneFor!==key){preStartDoneFor=key;longBeep();}
+  },250);
+}
+
+function renderStatus(){
+  if(!quiz)return;
+  const now=localNow(),start=new Date(quiz.starts_at).getTime(),end=new Date(quiz.ends_at).getTime(),key=quiz.id+"|"+start;
+
+  if(attempt&&questions.length){
+    hideAll();$("statusCard").classList.add("hidden");$("quizCard").classList.remove("hidden");
+    return;
+  }
+  if(quiz.status==="published"&&now>=start&&now<end&&startedSoundFor!==key){
+    startedSoundFor=key;beep(1040,.45);setTimeout(()=>beep(1310,.55),260);
+  }
+  if(quiz.status!=="published"){
+    $("statusBadge").textContent="NOT LIVE";
+    $("statusTitle").textContent="Quiz is not published";
+    $("statusText").textContent="The organizer has not published this quiz yet.";
+    hideAll();return;
+  }
+  if(now<start){
+    const left=Math.ceil((start-now)/1000);
+    $("statusBadge").textContent="REGISTRATION OPEN";
+    $("statusTitle").textContent=registeredOnDevice?"✅ You are registered!":"You can register now";
+    const attMin=quiz.attempt_duration_minutes||quiz.duration_minutes||30;
+    $("statusText").textContent=registeredOnDevice
+      ? "Your quiz will start automatically. Get ready — the countdown below will beep every second for the last 10 seconds. You will get "+attMin+" minutes once you start."
+      : "Quiz starts at "+new Date(quiz.starts_at).toLocaleString("en-NP",{timeZone:"Asia/Kathmandu"})+". Register now to get your entry code. Each attempt gets "+attMin+" minutes after starting.";
+    $("countdown").textContent=fmt(left);
+    if(registeredOnDevice){
+      $("registerCard").classList.remove("hidden");
+      renderRegisterCard();
+      $("entryCard").classList.add("hidden");
+      $("finalCard").classList.add("hidden");
+      if(left<=10)startPreStartCountdown();else{$("countdown").classList.remove("warning30","warning20");}
+    }else{
+      $("registerCard").classList.remove("hidden");
+      $("entryCard").classList.add("hidden");
+      $("finalCard").classList.add("hidden");
+      renderRegisterCard();
+      $("countdown").classList.remove("warning30","warning20");
+      if(participant){$("entryCode").value=participant.registration_code||""}
+    }
+    return;
+  }
+  if(now>=end){
+    $("statusBadge").textContent="ENDED";
+    $("statusTitle").textContent="Quiz has ended";
+    $("statusText").textContent="Registration and participation for this quiz are closed.";
+    $("countdown").textContent="00:00";
+    $("registerCard").classList.add("hidden");
+    $("entryCard").classList.add("hidden");
+    return;
+  }
+  if(!participant){
+    $("statusBadge").textContent="QUIZ LIVE";
+    $("statusTitle").textContent="Quiz is live";
+    const attMin=quiz.attempt_duration_minutes||quiz.duration_minutes||30;
+    $("statusText").textContent="You have "+attMin+" minutes once you start.";
+    $("countdown").textContent=fmt((end-now)/1000);
+    $("registerCard").classList.remove("hidden");
+    $("entryCard").classList.add("hidden");
+    $("finalCard").classList.add("hidden");
+    renderRegisterCard();
+  }else{
+    $("statusCard").classList.add("hidden");
+    $("registerCard").classList.add("hidden");
+    $("entryCard").classList.add("hidden");
+    $("finalCard").classList.add("hidden");
+    const usedKey="quiz_submitted_"+quizId+"_"+(participant.registration_code||"");
+    if(localStorage.getItem(usedKey)==="1"){showExisting();return;}
+    tryAutoStart();
+  }
+}
+
+async function registerUser(){
+  if(participant){$("regMsg").textContent="You are already registered on this device. Use your existing code.";return}
+  const name=$("name").value.trim(),email=$("email").value.trim().toLowerCase(),phone=$("phone").value.trim();
+  if(!name||!email||!phone){$("regMsg").textContent="Full name, email and mobile number are required.";return}
+  if(!/^\S+@\S+\.\S+$/.test(email)){ $("regMsg").textContent="Enter a valid email address.";return}
+  $("regMsg").textContent="Registering…";
+  const{data,error}=await sb.rpc("quiz_register",{p_quiz_id:quizId,p_full_name:name,p_email:email,p_phone:phone,p_organization:$("org").value.trim()||null,p_member_type:$("member").value||null});
+  if(error){$("regMsg").textContent=error.message;return}
+  const got=await sb.rpc("quiz_get_participant",{p_code:data[0].registration_code});
+  const saved=got.data?.[0];
+  participant=saved?{participant_id:saved.id,registration_code:saved.registration_code,full_name:saved.full_name,email:saved.email,phone:saved.phone,organization:saved.organization,member_type:saved.member_type}:{participant_id:data[0].participant_id,registration_code:data[0].registration_code,full_name:name,email,phone,organization:$("org").value.trim(),member_type:$("member").value};
+  registeredOnDevice=true;
   localStorage.setItem("quiz_registration_"+quizId,JSON.stringify(participant));
-  await startAttempt(p.id);
- }catch(e){console.error("Verify/start quiz error:",e);$("entryMsg").textContent="Could not verify/start quiz: "+(e?.message||String(e));}
- finally{if(btn)btn.disabled=false;}
+  lockRegistration();
+  renderRegisterCard();
+  $("savedCode").textContent=participant.registration_code;
+  $("savedCodeBox").classList.remove("hidden");
+  $("entryCode").value=participant.registration_code;
+  if(quiz){
+    const now=localNow(),start=new Date(quiz.starts_at).getTime(),end=new Date(quiz.ends_at).getTime();
+    if(quiz.status==="published"&&now>=start&&now<end){tryAutoStart();}
+    else if(now<start){renderStatus();}
+  }
 }
+
+async function copySavedCode(){
+  if(participant?.registration_code){
+    try{await navigator.clipboard.writeText(participant.registration_code);$("regMsg").textContent="Registration code copied."}
+    catch(e){$("regMsg").textContent="Your code is: "+participant.registration_code}
+  }
+}
+
+async function enterQuiz(){
+  const code=$("entryCode").value.trim().toUpperCase();
+  if(!code){$("entryMsg").textContent="Enter your registration code.";return}
+  const btn=$("entryCard").querySelector("button.primary");
+  if(btn)btn.disabled=true;
+  $("entryMsg").textContent="Checking code…";
+  try{
+    const {data,error}=await sb.rpc("quiz_get_participant",{p_code:code});
+    if(error)throw error;
+    const p=Array.isArray(data)?data[0]:data;
+    if(!p){$("entryMsg").textContent="Invalid registration code. Please check the code and try again.";if(btn)btn.disabled=false;return}
+    if(String(p.quiz_id).toLowerCase()!==String(quizId).toLowerCase()){$("entryMsg").textContent="This code is for a different quiz.";if(btn)btn.disabled=false;return}
+    participant={participant_id:p.id,registration_code:p.registration_code,full_name:p.full_name||"",email:p.email||"",phone:p.phone||"",organization:p.organization||"",member_type:p.member_type||""};
+    localStorage.setItem("quiz_registration_"+quizId,JSON.stringify(participant));
+    showStartPopup(async()=>{
+      try{ await startAttempt(p.id); }
+      catch(e){ console.error(e); }
+      finally{ if(btn)btn.disabled=false; }
+    });
+  }catch(e){
+    console.error("Verify/start quiz error:",e);
+    $("entryMsg").textContent="Could not verify/start quiz: "+(e?.message||String(e));
+    if(btn)btn.disabled=false;
+  }
+}
+
 async function startAttempt(pid){
- $("entryMsg").textContent="Code verified. Starting quiz…";
- const {data,error}=await sb.rpc("quiz_start_attempt_by_code",{p_quiz_id:quizId,p_code:participant?.registration_code||$("entryCode").value.trim().toUpperCase()});
- if(error)throw error;
- const a=Array.isArray(data)?data[0]:data;
- if(!a)throw new Error("The server returned an empty response while starting the quiz.");
- if(a.success===false){if(a.status==="already_submitted"){await showExisting();return}throw new Error(a.message||a.error||a.status||"The server refused to start this attempt.")}
- if(a.status==="already_submitted"||a.already_submitted){await showExisting();return}
- attempt=a;
- const endCandidates=[a.ends_at,a.deadline,quiz?.ends_at].filter(Boolean).map(v=>new Date(v).getTime()).filter(Number.isFinite);
- if(a.started_at&&quiz?.duration_minutes){endCandidates.push(new Date(a.started_at).getTime()+Number(quiz.duration_minutes)*60000)}
- if(!endCandidates.length)throw new Error("No valid quiz deadline was returned. Please ask the organizer to check the quiz start function.");
- deadline=Math.min(...endCandidates);
- if(deadline<=localNow()){throw new Error("The quiz time has ended. Please contact the organizer.")}
- const q=await sb.rpc("quiz_questions_public",{p_quiz_id:quizId});
- if(q.error)throw q.error;
- if(!q.data?.length)throw new Error("No questions are configured for this quiz.");
- questions=q.data;answers={};current=0;hideAll();$("quizCard").classList.remove("hidden");renderQuestion();startClock();
+  const usedKey="quiz_submitted_"+quizId+"_"+(participant?.registration_code||"");
+  if(localStorage.getItem(usedKey)==="1"){await showExisting();return}
+
+  try{
+    const {data,error}=await sb.rpc("quiz_start_attempt_by_code",{
+      p_quiz_id:quizId,
+      p_code:participant?.registration_code||$("entryCode").value.trim().toUpperCase()
+    });
+
+    if(error)throw new Error("Start RPC failed: "+error.message);
+
+    const a=Array.isArray(data)?data[0]:data;
+    if(!a)throw new Error("Server returned empty response when starting quiz.");
+    if(a.success===false){
+      if(a.status==="already_submitted"){await showExisting();return;}
+      throw new Error(a.message||a.error||a.status||"Server refused to start attempt.");
+    }
+    if(a.status==="already_submitted"||a.already_submitted){await showExisting();return;}
+
+    attempt=a;
+
+    const endCandidates=[a.ends_at,a.deadline,quiz?.ends_at]
+      .filter(Boolean)
+      .map(v=>new Date(v).getTime())
+      .filter(Number.isFinite);
+
+    const attemptMin=quiz?.attempt_duration_minutes||quiz?.duration_minutes||30;
+    if(a.started_at&&attemptMin){
+      endCandidates.push(new Date(a.started_at).getTime()+Number(attemptMin)*60000);
+    }
+    if(!endCandidates.length)throw new Error("No valid quiz deadline returned. Check quiz start function.");
+    deadline=Math.min(...endCandidates);
+
+    if(deadline<=localNow())throw new Error("Quiz time has ended. Contact organizer.");
+
+    const q=await sb.rpc("quiz_questions_public",{p_quiz_id:quizId});
+    if(q.error)throw new Error("Failed to load questions: "+q.error.message);
+    if(!q.data?.length)throw new Error("No questions configured for this quiz.");
+
+    questions=q.data;
+    answers={};
+    current=0;
+
+    hideAll();
+    $("statusCard").classList.add("hidden");
+    $("registerCard").classList.add("hidden");
+    $("entryCard").classList.add("hidden");
+    $("finalCard").classList.add("hidden");
+    $("quizCard").classList.remove("hidden");
+
+    renderQuestion();
+    startClock();
+  }catch(e){
+    console.error("[startAttempt] Exception:",e);
+    showStartError(e?.message||String(e));
+    throw e;
+  }
 }
-function renderQuestion(){const q=questions[current];$("qCount").textContent=`Question ${current+1} / ${questions.length}`;$("question").textContent=q.question_text;$("bar").style.width=((current+1)/questions.length*100)+"%";$("options").innerHTML=["A","B","C","D"].map(k=>`<button class="option" onclick="answer('${k}')"><b>${k}</b>${esc(q["option_"+k.toLowerCase()])}</button>`).join("")}
-function answer(k){answers[questions[current].question_no]=k;if(current<questions.length-1){current++;renderQuestion()}else submitQuiz()}function startClock(){clearInterval(clock);clock=setInterval(()=>{let left=(deadline-localNow())/1000;$("timer").textContent=fmt(left);if(left<=0){clearInterval(clock);submitQuiz(true)}},250)}
-async function submitQuiz(auto=false){if(!attempt)return;clearInterval(clock);$("submitBtn").disabled=true;const{data,error}=await sb.rpc("quiz_submit_attempt",{p_attempt_id:attempt.attempt_id,p_answers:answers});if(error){$("submitBtn").disabled=false;alert(error.message);return}const result=Array.isArray(data)?data[0]:data;if(!result){$("submitBtn").disabled=false;alert("The server returned no quiz result.");return}hideAll();$("resultCard").classList.remove("hidden");$("boardCard").classList.remove("hidden");$("result").innerHTML=`<h3>${esc(result.score)} / ${esc(result.total_points)}</h3><p>Rank: <b>#${result.rank||"-"}</b></p><p>Correct: ${result.correct_answers} · Wrong: ${result.wrong_answers} · Unanswered: ${result.unanswered}</p><p>Time: ${fmt(result.time_taken_seconds)}</p>${auto?'<p class="notice">Time ended. Your quiz was auto-submitted.</p>':''}`;loadBoard()}
-async function showExisting(){hideAll();$("resultCard").classList.remove("hidden");$("result").innerHTML="<p>You have already completed this quiz. One attempt per registration is allowed.</p>";$("boardCard").classList.remove("hidden");loadBoard()}
-async function loadBoard(){if(!quizId)return;const{data}=await sb.rpc("quiz_leaderboard",{p_quiz_id:quizId});if(!data)return;$("podium").innerHTML=[1,2,3].map(r=>{let x=data.find(a=>a.rank===r);return `<div class="place"><strong>${r===1?"🥇":r===2?"🥈":"🥉"}</strong>${x?esc(x.full_name):"—"}<br><b>${x?x.score:"—"}</b></div>`}).join("");$("board").innerHTML=data.map(x=>`<tr><td>${x.rank}</td><td>${esc(x.full_name)}<div class="small muted">${esc(x.organization||"")}</div></td><td>${x.score}/${x.total_points}</td><td>${fmt(x.time_taken_seconds)}</td></tr>`).join("")}
-sb.channel("quiz-live-board").on("postgres_changes",{event:"*",schema:"public",table:"quiz_leaderboard"},loadBoard).subscribe();loadQuiz();
+
+function renderQuestion(){
+  answeredCurrent=false;
+  const q=questions[current];
+  $("qCount").textContent=`Question ${current+1} / ${questions.length}`;
+  $("question").textContent=q.question_text;
+  $("bar").style.width=((current+1)/questions.length*100)+"%";
+  $("options").innerHTML=["A","B","C","D"]
+    .filter(k=>q["option_"+k.toLowerCase()]!=null&&q["option_"+k.toLowerCase()]!=="")
+    .map(k=>`<button class="option" data-choice="${k}" onclick="answer('${k}')"><b>${k}</b>${esc(q["option_"+k.toLowerCase()])}</button>`)
+    .join("");
+}
+
+function answer(k){
+  if(answeredCurrent||autoSubmitBusy)return;
+  answeredCurrent=true;
+  answers[questions[current].question_no]=k;
+  const q=questions[current];
+  const correct=String(q.correct_answer||q.answer_key||q.correct_option||"").toUpperCase();
+  
+  document.querySelectorAll("#options .option").forEach(b=>{
+    b.disabled=true;
+    if(correct){
+      if(b.dataset.choice===correct)b.classList.add("correct");
+      if(b.dataset.choice===k&&k!==correct)b.classList.add("incorrect");
+    }else if(b.dataset.choice===k){
+      b.style.borderColor="var(--brand)";
+    }
+  });
+  beep(correct?(k===correct?1040:240):760,.16);
+
+  const isLast=current===questions.length-1;
+  if(isLast){
+    celebrate();
+    setTimeout(()=>{
+      document.querySelectorAll("#options .option").forEach(b=>b.classList.add("hidden"));
+      if(!document.getElementById("submitBtn")) {
+        const btn=document.createElement("button");
+        btn.id = "submitBtn";
+        btn.className="primary";
+        btn.style.marginTop="14px";
+        btn.textContent="✅ Submit Quiz";
+        btn.onclick=()=>submitQuiz(false);
+        $("options").appendChild(btn);
+      }
+    },500);
+    return;
+  }
+  setTimeout(()=>{current++;renderQuestion()},220);
+}
+
+function startClock(){
+  clearInterval(clock);
+  clock=setInterval(()=>{
+    let left=(deadline-localNow())/1000;
+    const t=$("timer");
+    t.textContent=fmt(left);
+    t.classList.remove("warning30","warning20");
+    if(left<=30&&left>20)t.classList.add("warning30");
+    if(left<=20&&left>0)t.classList.add("warning20");
+    const tone=left<=10?"10":left<=20?"20":left<=30?"30":"";
+    if(tone&&tone!==lastTimerTone){lastTimerTone=tone;beep(tone==="10"?980:tone==="20"?720:520,.12)}
+    if(left>30)lastTimerTone="";
+    if(left<=0){clearInterval(clock);submitQuiz(true)}
+  },250);
+}
+
+async function submitQuiz(auto=false){
+  if(!attempt||autoSubmitBusy)return;
+  autoSubmitBusy=true;
+  clearInterval(clock);
+  const{data,error}=await sb.rpc("quiz_submit_attempt",{p_attempt_id:attempt.attempt_id,p_answers:answers});
+  if(error){autoSubmitBusy=false;alert("Submit Error: "+error.message);return}
+  const result=Array.isArray(data)?data[0]:data;
+  if(!result){autoSubmitBusy=false;alert("The server returned no quiz result.");return}
+  
+  if(participant?.registration_code)localStorage.setItem("quiz_submitted_"+quizId+"_"+participant.registration_code,"1");
+  
+  hideAll();
+  $("statusCard").classList.add("hidden");
+  $("quizCard").classList.add("hidden");
+  $("finalCard").classList.remove("hidden");
+  
+  $("finalScoreBox").innerHTML=`
+    <div style="background:#e8f7f1; border:1px solid #0b6b57; border-radius:14px; padding:20px; box-shadow:0 4px 12px rgba(11,107,87,0.1);">
+      <p style="margin:0 0 10px; font-size:16px; color:#555; font-weight:600;">Your Final Score</p>
+      <h1 style="margin:0; font-size:46px; color:#0b6b57; font-weight:900; line-height:1;">${result.total_score??0} <span style="font-size:24px; color:#687386;">/ ${result.total_points??0}</span></h1>
+    </div>
+  `;
+  
+  autoSubmitBusy=false;
+  if(!auto)celebrate();
+  
+  await loadBoard();
+}
+
+async function showExisting(){
+  hideAll();
+  $("statusCard").classList.add("hidden");
+  $("finalCard").classList.remove("hidden");
+  
+  const{data}=await sb.rpc("quiz_leaderboard",{p_quiz_id:quizId});
+  const myScore=(data||[]).find(x=>x.registration_code===participant?.registration_code);
+  
+  let scoreHtml="<p>You have already completed this quiz.</p>";
+  if(myScore){
+    scoreHtml=`
+      <div style="background:#e8f7f1; border:1px solid #0b6b57; border-radius:14px; padding:20px; box-shadow:0 4px 12px rgba(11,107,87,0.1);">
+        <p style="margin:0 0 10px; font-size:16px; color:#555; font-weight:600;">Your Score</p>
+        <h1 style="margin:0; font-size:46px; color:#0b6b57; font-weight:900; line-height:1;">${myScore.score} <span style="font-size:24px; color:#687386;">/ ${myScore.total_points}</span></h1>
+        <p style="margin:10px 0 0; font-size:16px; color:#0b6b57; font-weight:800;">Rank: #${myScore.rank}</p>
+      </div>
+    `;
+  }
+  
+  $("finalScoreBox").innerHTML=scoreHtml;
+  await loadBoard();
+}
+
+async function loadBoard(){
+  if(!quizId)return;
+  const{data,error}=await sb.rpc("quiz_leaderboard",{p_quiz_id:quizId});
+  if(error){console.warn("Leaderboard refresh:",error.message);return}
+  const rows=Array.isArray(data)?data:[];
+  const ranked=rows.slice().sort((a,b)=>Number(a.rank||999999)-Number(b.rank||999999));
+  
+  $("podium").innerHTML=[1,2,3].map(r=>{
+    let x=ranked.find(a=>Number(a.rank)===r)||ranked[r-1];
+    return `<div class="place"><strong>${r===1?"🥇 FIRST":r===2?"🥈 SECOND":"🥉 THIRD"}</strong><div><b>${x?esc(x.full_name):"—"}</b></div><div class="small muted">${x?esc(x.organization||""):""}</div><div><b>${x?esc(x.score)+" / "+esc(x.total_points):"—"}</b></div></div>`;
+  }).join("");
+  
+  $("board").innerHTML=ranked.map((x,i)=>`<tr><td>${x.rank||i+1}</td><td><b>${esc(x.full_name)}</b><div class="small muted">${esc(x.organization||"")}</div></td><td><b>${esc(x.score)} / ${esc(x.total_points)}</b></td><td>${fmt(x.time_taken_seconds)}</td></tr>`).join("");
+  
+  $("completedCount").textContent=ranked.length;
+  const possible=ranked.reduce((n,x)=>n+Number(x.total_points||0),0),earned=ranked.reduce((n,x)=>n+Number(x.score||0),0);
+  $("averageScore").textContent=ranked.length?`${(earned/ranked.length).toFixed(1)} / ${(possible/ranked.length).toFixed(1)}`:"—";
+  const{count}=await sb.from("quiz_participants").select("id",{count:"exact",head:true}).eq("quiz_id",quizId);
+  $("totalParticipants").textContent=count??(ranked.length?ranked.length:"—");
+}
+
+sb.channel("quiz-live-board").on("postgres_changes",{event:"*",schema:"public",table:"quiz_attempts"},loadBoard).subscribe();
+setInterval(loadBoard,10000);
+setInterval(async()=>{if(quizId&&registeredOnDevice&&participant){await verifyParticipantInDb();renderStatus();}},20000);
+loadQuiz();
 </script></body></html>
