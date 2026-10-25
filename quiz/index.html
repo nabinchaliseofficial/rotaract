@@ -37,212 +37,91 @@ input:focus,select:focus{outline:none;border-color:#0b8f70;box-shadow:0 0 0 3px 
 @media(max-width:600px){.wrap{padding:9px}.top{padding-top:12px}.card{padding:16px}}
 
 /* =====================================================================
-   PREMIUM UI LAYER — presentation only.
-   Navy / emerald / white with restrained gold. No selectors, IDs or
-   classes that JavaScript depends on are renamed or removed.
+   ADMIN-MATCHED PREMIUM THEME — colors/presentation only.
    ===================================================================== */
 :root{
   --navy:#0a1f3d;--navy2:#143866;
   --em:#0a7d5e;--em-d:#065f47;
   --gold:#b8913b;--gold-d:#8a6a1c;--gold-l:#f1e2b4;
-  --ink:#102039;--muted:#586377;--line:#dbe3ec;--paper:#f4f6f9;
-  --brand:#0a7d5e;--good:#065f47;--bad:#b42323;
-  --r:18px;
+  --ink:#102039;--paper:#f4f6f9;
+  --brand:#0a7d5e;--good:#065f47;--text:#102039;--muted:#586377;--line:#dbe3ec;
   --shadow:0 1px 2px rgba(10,31,61,.05),0 10px 30px rgba(10,31,61,.07);
-  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
   --serif:Georgia,"Iowan Old Style","Palatino Linotype",serif;
 }
-html{-webkit-text-size-adjust:100%}
-body{
-  background:var(--paper);color:var(--ink);line-height:1.5;
-  font-family:Inter,"Segoe UI",system-ui,-apple-system,Roboto,"Noto Sans","Noto Sans Devanagari",sans-serif;
-}
-body::before{opacity:.07}
-.wrap{max-width:880px;padding:clamp(12px,2.4vw,28px)}
-.muted{color:var(--muted)}
-.small{font-size:13px}
+body{background:var(--paper);color:var(--ink)}
+body::before{background-image:linear-gradient(#f4f6f9ee,#f4f6f9ee),url("/rotaract.jpg");opacity:.14}
+h1,h2,h3{color:var(--navy)}
 
-/* ---------- Hero header ---------- */
+/* Header */
 .top{
-  position:relative;overflow:hidden;margin:4px 0 8px;
-  padding:clamp(22px,4vw,34px) 20px clamp(24px,4vw,36px);
-  border-radius:24px;color:#fff;
-  background:linear-gradient(160deg,var(--navy) 0,var(--navy2) 100%);
-  box-shadow:var(--shadow);
+  padding:clamp(18px,3vw,28px) 16px;margin:6px 0 14px;border-radius:20px;
+  background:linear-gradient(160deg,var(--navy),var(--navy2));
+  border-bottom:4px solid var(--gold);box-shadow:var(--shadow);
 }
-.top::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:linear-gradient(90deg,var(--gold),var(--gold-l),var(--gold))}
-.logo{
-  width:88px;height:88px;margin:0 auto 12px;border-radius:50%;
-  font-size:0;line-height:0;
-  background:var(--navy2) url("/rotaract.jpg") center/cover no-repeat;
-  border:3px solid var(--gold);box-shadow:0 8px 22px rgba(0,0,0,.35);
-}
-.top h1{
-  margin:4px 0 4px;color:#fff;font-family:var(--serif);font-weight:700;
-  font-size:clamp(24px,5.2vw,34px);line-height:1.2;letter-spacing:-.01em;
-}
-.top .muted{color:#cfdcf0;font-size:clamp(14px,2.4vw,16px)}
+.top h1{color:#fff;font-family:var(--serif)}
+.top .muted,#subtitle{color:#cfdcf0}
 
-/* ---------- Cards ---------- */
-.card{
-  background:#fff;border:1px solid var(--line);border-radius:var(--r);
-  padding:clamp(18px,3vw,28px);margin:16px 0;box-shadow:var(--shadow);
-}
-.card h2{margin:0 0 8px;color:var(--navy);font-size:clamp(19px,3.4vw,23px);line-height:1.25;letter-spacing:-.01em}
-.card p{margin-top:0}
-#yearlyWinners{border-top:4px solid var(--gold)}
-#yearlyWinners h2,#finalHeading{font-family:var(--serif)}
-#statusCard{border-top:4px solid var(--gold);padding-top:clamp(22px,3.4vw,30px)}
-#statusTitle{margin-top:12px}
-#registerCard{border-top:4px solid var(--em)}
-#entryCard{border-top:4px solid var(--gold)}
-#quizCard{border-top:4px solid var(--em);padding:clamp(18px,3.6vw,34px)}
-#finalCard{border-top:4px solid var(--gold)}
+/* Cards */
+.card{border:1px solid var(--line);box-shadow:var(--shadow)}
+#statusCard,#registerCard,#entryCard,#quizCard,#finalCard,#yearlyWinners{border-top:4px solid var(--em)}
+#yearlyWinners{border-top-color:var(--gold)}
+.card h2{color:var(--navy)}
 
-/* ---------- Badges & timers ---------- */
-.badge{
-  background:#e3f4ee;color:var(--em-d);border:1px solid #bfe3d6;
-  padding:6px 12px;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
-}
-.timer{font-variant-numeric:tabular-nums;letter-spacing:.02em;color:var(--navy)}
-#quizCard .timer{padding:4px 14px;border-radius:12px;background:#f1f5f9;border:1px solid var(--line)}
-#qCount{background:var(--navy);color:#fff;border-color:var(--navy)}
+/* Badges, notice, code */
+.badge{background:#e3f4ee;color:var(--em-d)}
+.notice{background:#fff8e6;border-left:4px solid var(--gold);color:var(--ink)}
+.code{background:#eef2f7;color:var(--navy);border:1px solid var(--line)}
 
-/* ---------- Forms ---------- */
-label{margin:16px 0 6px;color:var(--navy);font-size:13px;font-weight:700;letter-spacing:.01em}
-input,select{
-  min-height:48px;padding:12px 14px;border:1.5px solid #cdd7e3;border-radius:12px;
-  background:#fff;color:var(--ink);font-family:inherit;
-}
-select{
-  -webkit-appearance:none;appearance:none;padding-right:40px;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path d='M1 1l6 6 6-6' fill='none' stroke='%230a1f3d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-  background-repeat:no-repeat;background-position:right 14px center;
-}
-input::placeholder{color:#8392a8}
+/* Forms */
+label{color:var(--navy)}
+input,select{border:1.5px solid #cdd7e3;color:var(--ink)}
 input:focus,select:focus{border-color:var(--em);box-shadow:0 0 0 4px rgba(10,125,94,.16)}
-input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
-input:disabled,select:disabled{background:#f1f4f8;color:var(--muted)}
-#entryCode{font-family:var(--mono);font-size:20px;font-weight:700;letter-spacing:.12em;text-align:center}
-#entryCode::placeholder{letter-spacing:.06em;font-weight:500}
-#regMsg,#entryMsg{min-height:1.4em;margin:12px 0 0;font-weight:600}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 
-/* ---------- Buttons ---------- */
-button{font-family:inherit;min-height:46px;border-radius:12px;letter-spacing:.01em}
-.primary{background:var(--em);color:#fff;box-shadow:0 4px 14px rgba(6,95,71,.28);margin-top:6px}
+/* Buttons */
+.primary{background:var(--em);color:#fff;box-shadow:0 3px 10px rgba(6,95,71,.25)}
 .primary:hover{background:var(--em-d);filter:none}
-.primary:active{transform:translateY(0)}
-.primary:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
 .secondary{background:#eef2f7;color:var(--navy);border:1px solid var(--line)}
-.secondary:hover{background:#e4eaf2;filter:none}
-button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.secondary:hover{background:#e3e9f1;filter:none}
+.danger{background:#fdeceb;color:#a4231a;border:1px solid #f4c7c3}
 
-/* ---------- Registration confirmation ---------- */
-.notice{background:#fbf6e6;border:1px solid #ecdba4;color:#44350c;border-radius:14px;padding:16px}
-.notice p{margin:6px 0}
-.code{
-  font-family:var(--mono);font-size:20px;font-weight:800;letter-spacing:.14em;color:var(--navy);
-  background:#fff;border:2px dashed var(--gold);padding:12px 18px;border-radius:12px;
-  user-select:all;-webkit-user-select:all;word-break:break-all;
-}
+/* Quiz screen */
+.timer{color:var(--navy)}
+.timer.warning30{color:#d97706}
+.timer.warning20{color:#dc2626}
+.progress{background:#e3e9f1}
+.bar{background:linear-gradient(90deg,var(--em),var(--gold))}
+.option{background:#fcfdfe;border:1.5px solid var(--line);color:var(--ink)}
+.option:hover{background:#eef8f4;border-color:var(--em)}
+.option b{color:var(--em-d)}
+.option.correct{background:#e3f4ee!important;border-color:var(--em)!important;color:var(--em-d)}
+.option.incorrect{background:#fdeceb!important;border-color:#c92a2a!important;color:#a4231a}
 
-/* ---------- Upcoming / live quiz tiles ---------- */
-.quiz-tile{border-left:6px solid var(--em);gap:clamp(14px,3vw,28px)}
-.quiz-tile h2{margin:10px 0 6px}
-.quiz-tile p{margin:6px 0;color:var(--ink)}
-.quiz-tile a{display:block;margin-top:14px;text-decoration:none}
-.quiz-tile small{display:block;margin-top:8px;color:var(--muted);text-align:center}
-.qr{
-  width:156px;height:156px;padding:8px;margin-inline:auto;display:grid;place-items:center;overflow:hidden;
-  background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
-}
-.qr img,.qr canvas{max-width:100%;height:auto}
-
-/* ---------- Progress & question ---------- */
-.progress{height:10px;background:#e6ebf2;margin:14px 0 18px!important}
-.bar{background:linear-gradient(90deg,var(--em),#19a47f);transition:width .35s ease}
-#question{margin:4px 0 16px;color:var(--navy);font-size:clamp(19px,3.8vw,25px);line-height:1.4;letter-spacing:-.005em}
-
-.option{
-  display:flex;align-items:flex-start;gap:14px;width:100%;text-align:left;
-  min-height:58px;margin:10px 0;padding:12px 16px;
-  background:#fff;color:var(--ink);border:1.5px solid var(--line);border-radius:14px;
-  font-size:16px;font-weight:600;line-height:1.45;box-shadow:0 1px 2px rgba(10,31,61,.04);
-}
-.option b{
-  flex:0 0 auto;display:inline-grid;place-items:center;width:34px;height:34px;margin:0;
-  border-radius:10px;background:var(--navy);color:#fff;font-size:14px;font-weight:800;
-}
-.option:hover:not(:disabled){border-color:var(--em);background:#f1faf6;transform:none}
-.option:disabled{cursor:default;opacity:1}
-.option:disabled:hover{background:#fff;border-color:var(--line);transform:none}
-.option.correct b{background:#15803d}
-.option.incorrect b{background:#b91c1c}
-
-/* ---------- Podium (yearly winners + live leaderboard) ---------- */
-.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end;margin:16px 0 6px}
-.place{
-  padding:14px 10px;text-align:center;word-break:break-word;
-  background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
-}
-.place strong{display:block;margin-bottom:6px;color:var(--navy);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
-.place b{display:block;color:var(--ink);font-size:16px;line-height:1.3}
-.place span{display:block;margin-top:4px;color:var(--muted);font-size:13px}
-.podium .place:nth-child(1){order:2;padding-top:28px;padding-bottom:24px;border-top:4px solid var(--gold);background:linear-gradient(180deg,#fff8e1,#fff 70%)}
-.podium .place:nth-child(2){order:1;padding-top:20px;padding-bottom:16px;border-top:4px solid #8e9bb0}
-.podium .place:nth-child(3){order:3;border-top:4px solid #b27a3c}
-.podium .place:only-child{order:0;grid-column:1/-1;padding:18px;border-top:4px solid var(--line);background:#fff;color:var(--muted)}
-
-/* ---------- Leaderboard table & stats ---------- */
-table{border-collapse:separate;border-spacing:0;width:100%}
-th{
-  background:#eef2f7;color:var(--navy);font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
-  padding:11px 10px;border-bottom:1px solid var(--line);
-}
-th:first-child{border-top-left-radius:10px}th:last-child{border-top-right-radius:10px}
-td{padding:12px 10px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
-#board tr:hover{background:#f6faf8}
-#board td:first-child{width:46px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--muted)}
-#board tr:nth-child(-n+3) td:first-child{color:var(--gold-d)}
-#board td:nth-child(3),#board td:nth-child(4){font-variant-numeric:tabular-nums;white-space:nowrap}
-.stat{background:#f4f6f9;border:1px solid var(--line);border-radius:14px}
+/* Podium / stats / table */
+.podium .place,.place{background:linear-gradient(180deg,#fbfcfe,#eff3f8);border:1px solid var(--line);border-top:3px solid var(--gold)}
+.place strong{color:var(--gold-d)}
+.place b{color:var(--navy)}
+.stat{background:#fff;border:1px solid var(--line);border-top:3px solid var(--gold)}
 .stat strong{color:var(--navy)}
+th{background:#eef2f7;color:var(--navy);font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+td,th{border-bottom:1px solid var(--line)}
+tbody tr:hover{background:#f6faf8}
 
-/* ---------- Start & submit dialogs ---------- */
-#startPopup,#submitPopup{background:rgba(6,16,32,.82);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+/* Popups */
+#startPopup,#submitPopup{background:rgba(6,16,32,.78)}
 #startPopup .popupBox,#submitPopup .popupBox{
   background:linear-gradient(160deg,var(--navy),var(--navy2));
-  border:1px solid rgba(241,226,180,.4);border-top:5px solid var(--gold);
-  border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,.55);
+  border-bottom:5px solid var(--gold);
 }
-#startPopup .bigCount{color:var(--gold-l);text-shadow:0 0 28px rgba(184,145,59,.55)}
-#startPopup .subtle,#submitPopup .subtle{color:#d4e0f2}
-#submitPopup .primary{background:var(--gold-l);color:var(--navy);box-shadow:0 6px 18px rgba(0,0,0,.3)}
-#submitPopup .primary:hover{background:#fff}
-
-/* ---------- Motion & responsiveness ---------- */
-@media (max-width:760px){
-  .podium{grid-template-columns:1fr}
-  .podium .place:nth-child(n){order:0;padding:14px 12px}
-}
-@media (max-width:600px){
-  .wrap{padding:10px}
-  .top{border-radius:20px;margin-top:0}
-  .logo{width:72px;height:72px}
-  .card{padding:18px 16px;border-radius:16px;margin:12px 0}
-  .option{padding:12px 13px;min-height:56px}
-  .quiz-tile{border-left-width:5px}
-  td,th{padding:10px 7px;font-size:13px}
-}
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
-}
-</style>
-<meta name="theme-color" content="#0a1f3d"></head><body><div class="wrap"><div class="top"><div class="logo" role="img" aria-label="Rotaract Club logo">🏆</div><h1 id="title">Rotaract Monthly Quiz</h1><div id="subtitle" class="muted">Monthly knowledge, fellowship and service</div></div><section id="yearlyWinners" class="card"><h2>🏆 Yearly Winners</h2><p class="muted small">Ranked by the number of different quizzes played using the same mobile number.</p><div id="yearlyPodium" class="podium"><div class="place">Loading winners…</div></div></section>
-<section id="statusCard" class="card center"><div id="statusBadge" class="badge">CHECKING</div><h2 id="statusTitle">Please wait</h2><p id="statusText" class="muted" aria-live="polite"></p><div id="countdown" class="timer"></div></section>
+#startPopup .popupBox h2,#submitPopup .popupBox h2{color:#fff}
+#startPopup .bigCount{color:var(--gold-l);text-shadow:0 0 24px rgba(184,145,59,.6)}
+#startPopup .subtle,#submitPopup .subtle{color:#cfdcf0}
+#submitPopup .primary{background:var(--gold-l);color:var(--navy)}
+</style></head><body><div class="wrap"><div class="top"><div class="logo">🏆</div><h1 id="title">Rotaract Monthly Quiz</h1><div id="subtitle" class="muted">Monthly knowledge, fellowship and service</div></div><section id="yearlyWinners" class="card"><h2>🏆 Yearly Winners</h2><p class="muted small">Ranked by the number of different quizzes played using the same mobile number.</p><div id="yearlyPodium" class="podium"><div class="place">Loading winners…</div></div></section>
+<section id="statusCard" class="card center"><div id="statusBadge" class="badge">CHECKING</div><h2 id="statusTitle">Please wait</h2><p id="statusText" class="muted"></p><div id="countdown" class="timer"></div></section>
 <section id="quizList" class="hidden"></section>
-<section id="registerCard" class="card hidden"><h2 id="registerHeading">📝 Register for this Quiz</h2><p class="muted">Register now, even before the start time. Your personal entry code will be shown below. Keep it safe.</p><label for="name">Full Name *</label><input id="name" autocomplete="name"><label for="email">Email *</label><input id="email" type="email" autocomplete="email"><label for="phone">Mobile Number *</label><input id="phone" type="tel" autocomplete="tel"><label for="org">Organization / Club</label><input id="org"><label for="member">Member Type</label><select id="member"><option value="">Select</option><option>Rotaractor</option><option>Rotarian</option><option>Guest</option><option>Other</option></select><button class="primary" onclick="registerUser()">Register & Get Entry Code</button><p id="regMsg" class="small muted" aria-live="polite"></p><div id="savedCodeBox" class="notice hidden"><b>✅ You are registered!</b><p>Your entry code:</p><div class="code" id="savedCode"></div><p class="small">Use this code at quiz start. This device will remember your registration until the quiz ends.</p><button class="secondary" onclick="copySavedCode()">Copy My Code</button></div></section>
-<section id="entryCard" class="card hidden"><h2>🔐 Enter Registration Code</h2><p class="muted">You must enter the code given at registration before starting the quiz.</p><label for="entryCode">Registration Code</label><input id="entryCode" autocomplete="one-time-code" placeholder="RAC-XXXXXXXXXX" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"><button class="primary" onclick="enterQuiz()">Verify Code & Start Quiz 🚀</button><p id="entryMsg" class="small muted" aria-live="polite"></p></section>
+<section id="registerCard" class="card hidden"><h2 id="registerHeading">📝 Register for this Quiz</h2><p class="muted">Register now, even before the start time. Your personal entry code will be shown below. Keep it safe.</p><label>Full Name *</label><input id="name" autocomplete="name"><label>Email *</label><input id="email" type="email" autocomplete="email"><label>Mobile Number *</label><input id="phone" type="tel" autocomplete="tel"><label>Organization / Club</label><input id="org"><label>Member Type</label><select id="member"><option value="">Select</option><option>Rotaractor</option><option>Rotarian</option><option>Guest</option><option>Other</option></select><button class="primary" onclick="registerUser()">Register & Get Entry Code</button><p id="regMsg" class="small muted"></p><div id="savedCodeBox" class="notice hidden"><b>✅ You are registered!</b><p>Your entry code:</p><div class="code" id="savedCode"></div><p class="small">Use this code at quiz start. This device will remember your registration until the quiz ends.</p><button class="secondary" onclick="copySavedCode()">Copy My Code</button></div></section>
+<section id="entryCard" class="card hidden"><h2>🔐 Enter Registration Code</h2><p class="muted">You must enter the code given at registration before starting the quiz.</p><label>Registration Code</label><input id="entryCode" autocomplete="one-time-code" placeholder="RAC-XXXXXXXXXX" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"><button class="primary" onclick="enterQuiz()">Verify Code & Start Quiz 🚀</button><p id="entryMsg" class="small muted"></p></section>
 <section id="quizCard" class="card hidden"><div class="row"><span id="qCount" class="badge"></span><span id="timer" class="timer">00:00</span></div><div class="progress" style="margin:14px 0"><div id="bar" class="bar"></div></div><h2 id="question"></h2><div id="options"></div></section>
 
 <!-- Final Screen: Leaderboard is top, Score is below -->
@@ -269,7 +148,7 @@ td{padding:12px 10px;border-bottom:1px solid var(--line);font-size:14px;vertical
 
 </div>
 
-<div id="startPopup" role="dialog" aria-modal="true" aria-label="Quiz is starting">
+<div id="startPopup">
   <div class="popupBox">
     <h2>🎬 Quiz is starting!</h2>
     <div class="bigCount" id="popupCount">3</div>
@@ -277,7 +156,7 @@ td{padding:12px 10px;border-bottom:1px solid var(--line);font-size:14px;vertical
   </div>
 </div>
 
-<div id="submitPopup" role="dialog" aria-modal="true" aria-label="Submit quiz">
+<div id="submitPopup">
   <div class="popupBox">
     <h2>🎉 That was the last question!</h2>
     <p class="subtle" id="submitPopupSub">You have answered all questions. Submit now to see your score and the live leaderboard.</p>
@@ -523,7 +402,7 @@ async function showLiveLeaderboardFirst(){
   $("statusCard").classList.add("hidden");
   const box=$("finalScoreBox");
   if(box){
-    box.innerHTML=`<div style="background:#fff8df; border:1px solid #f0c419; border-radius:14px; padding:16px; text-align:left;">
+    box.innerHTML=`<div style="background:#fff8e6; border:1px solid #b8913b; border-left:4px solid #b8913b; border-radius:14px; padding:16px; text-align:left;">
       <b>🟢 Quiz is LIVE</b>
       <p class="small" style="margin:6px 0 0;">This is the live leaderboard. Register or enter your code below to take part.</p>
     </div>`;
@@ -809,6 +688,15 @@ async function submitQuiz(auto=false){
   if(!result){autoSubmitBusy=false;alert("The server returned no quiz result.");return}
   
   if(participant?.registration_code)localStorage.setItem("quiz_submitted_"+quizId+"_"+participant.registration_code,"1");
+
+  // Clear the active quiz state so the 1-second status refresh cannot
+  // reopen the last question after a successful submission.
+  attempt=null;
+  questions=[];
+  answers={};
+  current=0;
+  answeredCurrent=false;
+  autoSubmitBusy=false;
   
   if(liveBoardInterval){clearInterval(liveBoardInterval);liveBoardInterval=null;}
   hideAll();
@@ -839,10 +727,10 @@ async function showExisting(){
   let scoreHtml="<p>You have already completed this quiz.</p>";
   if(myScore){
     scoreHtml=`
-      <div style="background:#e8f7f1; border:1px solid #0b6b57; border-radius:14px; padding:20px; box-shadow:0 4px 12px rgba(11,107,87,0.1);">
-        <p style="margin:0 0 10px; font-size:16px; color:#555; font-weight:600;">Your Score</p>
-        <h1 style="margin:0; font-size:46px; color:#0b6b57; font-weight:900; line-height:1;">${myScore.score} <span style="font-size:24px; color:#687386;">/ ${myScore.total_points}</span></h1>
-        <p style="margin:10px 0 0; font-size:16px; color:#0b6b57; font-weight:800;">Rank: #${myScore.rank}</p>
+      <div style="background:#eef2f7; border:1px solid #0a1f3d; border-top:4px solid #b8913b; border-radius:14px; padding:20px; box-shadow:0 4px 12px rgba(10,31,61,0.1);">
+        <p style="margin:0 0 10px; font-size:16px; color:#586377; font-weight:600;">Your Score</p>
+        <h1 style="margin:0; font-size:46px; color:#0a1f3d; font-weight:900; line-height:1;">${myScore.score} <span style="font-size:24px; color:#586377;">/ ${myScore.total_points}</span></h1>
+        <p style="margin:10px 0 0; font-size:16px; color:#0a7d5e; font-weight:800;">Rank: #${myScore.rank}</p>
       </div>
     `;
   }
