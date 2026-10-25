@@ -281,7 +281,7 @@ div[style*="overflow:auto"] tbody tr:last-child td{border-bottom:0}
 <button onclick="tab('dashboard')" id="n-dashboard">Dashboard</button><button onclick="tab('create')" id="n-create">Create Quiz</button>
 <button onclick="tab('quizzes')" id="n-quizzes">Manage Quizzes</button><button onclick="tab('questions')" id="n-questions">Questions</button>
 <button onclick="tab('participants')" id="n-participants">Participants</button><button onclick="tab('results')" id="n-results">Results</button><button onclick="tab('design')" id="n-design">Banner + QR</button>
-<button onclick="tab('announcement')" id="n-announcement">Announcement</button><button onclick="tab('fullboard')" id="n-fullboard">Fullscreen Board</button>
+<button onclick="tab('announcement')" id="n-announcement">Announcement</button><button onclick="tab('analytics')" id="n-analytics">📊 Analytics</button><button onclick="tab('halloffame')" id="n-halloffame">🏆 Hall of Fame</button><button onclick="tab('fullboard')" id="n-fullboard">Fullscreen Board</button>
 </div>
 
 <div id="dashboard" class="tab card"></div>
@@ -362,6 +362,18 @@ div[style*="overflow:auto"] tbody tr:last-child td{border-bottom:0}
   </ul>
 </div>
 
+<div id="analytics" class="tab card hidden">
+<h2>🧠 Question Analytics & 📈 Participation Trend</h2>
+<select id="analyticsQuiz" onchange="loadAnalytics()"></select>
+<div id="analyticsSummary" class="grid3" style="margin:14px 0"></div>
+<div id="questionAnalytics" style="overflow:auto"></div>
+<h3 style="margin-top:26px">📈 Participation Trend</h3><div id="participationTrend" style="overflow:auto"></div>
+</div>
+<div id="halloffame" class="tab card hidden">
+<h2>🏆 Hall of Fame</h2><p class="muted small">Champions, podium finishes and special achievements across Rotaract Monthly Quiz.</p>
+<div id="hallOfFameBody"></div>
+</div>
+
 <div id="fullboard" class="tab card hidden">
   <div class="row">
     <h2>🖥️ Fullscreen Live Leaderboard</h2>
@@ -400,6 +412,8 @@ function tab(id){
   if(id==="results")loadResultSelectors();
   if(id==="design")loadDesignSelectors();
   if(id==="announcement")loadAnnouncement();
+  if(id==="analytics"){fillSelect("analyticsQuiz",true);loadAnalytics()}
+  if(id==="halloffame")loadHallOfFame();
   if(id==="fullboard")loadFullBoardSelector();
 }
 async function login(){
@@ -808,6 +822,29 @@ async function renderFullBoard(){
     if(f.data)renderFullBoard();
   },4000);
 }
+
+async function loadAnalytics(){
+  const id=$("analyticsQuiz").value;if(!id){$("analyticsSummary").innerHTML="";$("questionAnalytics").innerHTML="";return}
+  const q=quizzes.find(x=>String(x.id)===String(id));const {data:qs}=await sb.from("quiz_questions").select("id,question_no,question_text,option_a,option_b,option_c,option_d,correct_option,points").eq("quiz_id",id).order("question_no");
+  const {data:parts}=await sb.from("quiz_participants").select("registration_code").eq("quiz_id",id);const rows=[];
+  for(const p of (parts||[])){const r=await sb.rpc("quiz_review_by_code",{p_code:p.registration_code,p_quiz_id:id});if(!r.error)rows.push(...(r.data||[]))}
+  const byQ=new Map();(rows||[]).forEach(r=>{const k=String(r.question_no);const z=byQ.get(k)||{attempts:0,correct:0,wrong:0,unanswered:0,chosen:{}};z.attempts++;const c=String(r.chosen_option||"").toUpperCase(),cor=String(r.correct_option||"").toUpperCase();if(!c)z.unanswered++;else if(c===cor)z.correct++;else z.wrong++;if(c)z.chosen[c]=(z.chosen[c]||0)+1;byQ.set(k,z)});
+  const totalAttempts=rows.length, correct=rows.filter(r=>String(r.chosen_option||"").toUpperCase()===String(r.correct_option||"").toUpperCase()&&r.chosen_option).length;
+  $("analyticsSummary").innerHTML=`<div class="metric"><b>${parts?.length||0}</b><small>Registered</small></div><div class="metric"><b>${new Set(rows.map(r=>r.registration_code||r.participant_id||Math.random())).size||0}</b><small>Answer Reviews</small></div><div class="metric"><b>${totalAttempts?Math.round(correct/totalAttempts*100):0}%</b><small>Overall Accuracy</small></div>`;
+  $("questionAnalytics").innerHTML=`<table><thead><tr><th>#</th><th>Question</th><th>Correct %</th><th>Wrong %</th><th>Unanswered</th><th>Most Chosen</th></tr></thead><tbody>${(qs||[]).map(q=>{const z=byQ.get(String(q.question_no))||{attempts:0,correct:0,wrong:0,unanswered:0,chosen:{}};const most=Object.entries(z.chosen).sort((a,b)=>b[1]-a[1])[0];const pct=n=>z.attempts?Math.round(n/z.attempts*100):0;return `<tr><td>${q.question_no}</td><td><b>${esc(q.question_text)}</b></td><td><span class="st st-published">${pct(z.correct)}%</span></td><td>${pct(z.wrong)}%</td><td>${z.unanswered}</td><td>${most?most[0]+" ("+most[1]+")":"—"}</td></tr>`}).join("")}</tbody></table>`;
+  const trend=quizzes.slice().sort((a,b)=>String(a.quiz_date).localeCompare(String(b.quiz_date)));const trendRows=[];for(const x of trend){const [pr,ar]=await Promise.all([sb.from("quiz_participants").select("id",{count:"exact",head:true}).eq("quiz_id",x.id),sb.from("quiz_attempts").select("id",{count:"exact",head:true}).eq("quiz_id",x.id).in("result_status",["submitted","expired"])]);trendRows.push({date:x.quiz_date,title:x.title,registered:pr.count||0,completed:ar.count||0})}
+  $("participationTrend").innerHTML=`<table><thead><tr><th>Date</th><th>Quiz</th><th>Registered</th><th>Completed</th><th>Participation %</th></tr></thead><tbody>${trendRows.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.title)}</td><td>${x.registered}</td><td>${x.completed}</td><td>${x.registered?Math.round(x.completed/x.registered*100):0}%</td></tr>`).join("")}</tbody></table>`;
+}
+
+async function loadHallOfFame(){
+  const body=$("hallOfFameBody");body.innerHTML='<p class="muted">Loading Hall of Fame…</p>';
+  const finished=quizzes.filter(q=>new Date(`${q.quiz_date}T${String(q.end_time).slice(0,8)}+05:45`).getTime()<=Date.now()).sort((a,b)=>String(a.quiz_date).localeCompare(String(b.quiz_date)));
+  const entries=[];
+  for(const q of finished){const r=await sb.rpc("quiz_leaderboard",{p_quiz_id:q.id});(r.data||[]).slice(0,3).forEach(x=>entries.push({date:q.quiz_date,title:q.title,rank:Number(x.rank),name:x.full_name,score:x.score,total:x.total_points,time:x.time_taken_seconds}));}
+  const wins=new Map();entries.filter(x=>x.rank===1).forEach(x=>wins.set(x.name,(wins.get(x.name)||0)+1));const sortedWins=[...wins.entries()].sort((a,b)=>b[1]-a[1]);
+  body.innerHTML=`<div class="grid3"><div class="metric"><b>${entries.filter(x=>x.rank===1).length}</b><small>Quiz Champions</small></div><div class="metric"><b>${entries.filter(x=>x.rank<=3).length}</b><small>Podium Finishes</small></div><div class="metric"><b>${sortedWins[0]?.[1]||0}</b><small>Most Quiz Wins</small></div></div><div class="card" style="margin-top:16px"><h3>👑 Most Wins</h3>${sortedWins.slice(0,10).map((x,i)=>`<p style="display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><b>#${i+1} ${esc(x[0])}</b><span>${x[1]} win${x[1]>1?'s':''}</span></p>`).join("")||'<p class="muted">No completed quiz yet.</p>'}</div><div style="overflow:auto;margin-top:16px"><table><thead><tr><th>Date</th><th>Quiz</th><th>Place</th><th>Participant</th><th>Score</th><th>Time</th><th>Badge</th></tr></thead><tbody>${entries.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.title)}</td><td>${x.rank}</td><td><b>${esc(x.name)}</b></td><td>${esc(x.score)} / ${esc(x.total)}</td><td>${fmt(x.time)}</td><td>${x.rank===1?'🥇 Quiz Champion':x.rank===2?'🥈 Runner-up':'🥉 3rd Place'}</td></tr>`).join("")}</tbody></table></div>`;
+}
+
 function openFullscreenBoard(){
   const el=$("fullboard");
   if(el.requestFullscreen)el.requestFullscreen().catch(()=>{});

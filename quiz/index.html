@@ -63,7 +63,7 @@ h1,h2,h3{color:var(--navy)}
 
 /* Cards */
 .card{border:1px solid var(--line);box-shadow:var(--shadow)}
-#statusCard,#registerCard,#entryCard,#quizCard,#finalCard,#yearlyWinners,#selfServiceCard{border-top:4px solid var(--em)}
+#statusCard,#registerCard,#entryCard,#quizCard,#finalCard,#yearlyWinners{border-top:4px solid var(--em)}
 #yearlyWinners{border-top-color:var(--gold)}
 .card h2{color:var(--navy)}
 
@@ -118,39 +118,58 @@ tbody tr:hover{background:#f6faf8}
 #startPopup .subtle,#submitPopup .subtle{color:#cfdcf0}
 #submitPopup .primary{background:var(--gold-l);color:var(--navy)}
 
-/* Announcement bar */
-#announcementBar{background:#fff8e6;border-left:5px solid var(--gold);border-top:4px solid var(--gold)}
-#announcementBar b{color:var(--navy)}
-
 /* My-row highlight */
 tr.my-row{background:#e3f4ee!important;font-weight:800}
 tr.my-row td{border-bottom-color:#b8e0d0}
 
 /* Review box */
 #reviewBox .option{font-size:14px}
+
+/* Marquee for announcement */
+.marquee-track{
+  display:inline-block;white-space:nowrap;padding-left:100%;
+  animation:marqueeScroll 22s linear infinite;
+  color:#102039;font-weight:600;
+}
+@keyframes marqueeScroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+#announcementBar:hover .marquee-track{animation-play-state:paused}
 </style></head><body><div class="wrap">
 
-<div id="announcementBar" class="card hidden" style="border-left:5px solid #b8913b;background:#fff8e6">
-  <div class="row">
-    <div style="flex:1"><b>📢 Announcement</b><div id="announcementText" class="small" style="margin-top:4px"></div></div>
+<!-- ===== 1. ANNOUNCEMENT (MARQUEE, TOP) ===== -->
+<div id="announcementBar" class="card hidden" style="border-left:5px solid #b8913b;background:#fff8e6;padding:14px 18px;overflow:hidden">
+  <div style="display:flex;align-items:center;gap:12px">
+    <b style="white-space:nowrap;color:#0a1f3d">📢 Announcement</b>
+    <div style="flex:1;overflow:hidden;position:relative">
+      <div id="announcementText" class="marquee-track small"></div>
+    </div>
   </div>
 </div>
 
 <div class="top"><div class="logo">🏆</div><h1 id="title">Rotaract Monthly Quiz</h1><div id="subtitle" class="muted">Monthly knowledge, fellowship and service</div></div>
 
+<!-- ===== HOME TAB NAV ===== -->
+<div class="row" style="justify-content:flex-start;gap:8px;margin:4px 0 10px;flex-wrap:wrap">
+  <button class="secondary" style="min-height:0;padding:10px 16px;background:#eef2f7;color:#0a1f3d;border:1px solid #dbe3ec">🏠 Home</button>
+  <a href="results.html"><button class="secondary" style="min-height:0;padding:10px 16px;background:#eef2f7;color:#0a1f3d;border:1px solid #dbe3ec">🔎 Check Past Results</button></a>
+</div>
+
+<!-- ===== 2. YEARLY WINNERS ===== -->
 <section id="yearlyWinners" class="card"><h2>🏆 Yearly Winners</h2><p class="muted small">Ranked by the number of different quizzes played using the same mobile number.</p><div id="yearlyPodium" class="podium"><div class="place">Loading winners…</div></div></section>
 
+<!-- ===== 3. UPCOMING & LIVE MONTHLY QUIZZES ===== -->
 <section id="statusCard" class="card center"><div id="statusBadge" class="badge">CHECKING</div><h2 id="statusTitle">Please wait</h2><p id="statusText" class="muted"></p><div id="countdown" class="timer"></div></section>
-
 <section id="quizList" class="hidden"></section>
 
+<!-- ===== REGISTRATION ===== -->
 <section id="registerCard" class="card hidden"><h2 id="registerHeading">📝 Register for this Quiz</h2><p class="muted">Register now, even before the start time. Your personal entry code will be shown below. Keep it safe.</p><label>Full Name *</label><input id="name" autocomplete="name"><label>Email *</label><input id="email" type="email" autocomplete="email"><label>Mobile Number *</label><input id="phone" type="tel" autocomplete="tel"><label>Organization / Club</label><input id="org"><label>Member Type</label><select id="member"><option value="">Select</option><option>Rotaractor</option><option>Rotarian</option><option>Guest</option><option>Other</option></select><button class="primary" onclick="registerUser()">Register & Get Entry Code</button><p id="regMsg" class="small muted"></p><div id="savedCodeBox" class="notice hidden"><b>✅ You are registered!</b><p>Your entry code:</p><div class="code" id="savedCode"></div><p class="small">Use this code at quiz start. This device will remember your registration until the quiz ends.</p><button class="secondary" onclick="copySavedCode()">Copy My Code</button></div></section>
 
+<!-- ===== ENTRY ===== -->
 <section id="entryCard" class="card hidden"><h2>🔐 Enter Registration Code</h2><p class="muted">You must enter the code given at registration before starting the quiz.</p><label>Registration Code</label><input id="entryCode" autocomplete="one-time-code" placeholder="RAC-XXXXXXXXXX" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"><button class="primary" onclick="enterQuiz()">Verify Code & Start Quiz 🚀</button><p id="entryMsg" class="small muted"></p></section>
 
+<!-- ===== QUIZ ===== -->
 <section id="quizCard" class="card hidden"><div class="row"><span id="qCount" class="badge"></span><span id="timer" class="timer">00:00</span></div><div class="progress" style="margin:14px 0"><div id="bar" class="bar"></div></div><h2 id="question"></h2><div id="options"></div></section>
 
-<!-- Final Screen: Leaderboard is top, Score is below -->
+<!-- ===== FINAL ===== -->
 <section id="finalCard" class="card hidden">
   <div class="row">
     <h2 id="finalHeading">🎉 Quiz completed!</h2><span class="badge">LIVE LEADERBOARD</span>
@@ -176,28 +195,6 @@ tr.my-row td{border-bottom-color:#b8e0d0}
 
   <div id="finalScoreBox" class="center" style="margin-top: 25px;"></div>
   <div id="reviewBox" class="hidden" style="margin-top:18px"></div>
-</section>
-
-<!-- Self-service: past results + share -->
-<section id="selfServiceCard" class="card">
-  <h2>🔎 Check Past Results & Get Result Card</h2>
-  <p class="muted small">Enter your registration code to see all your past quiz results and download a shareable result card.</p>
-  <label>Registration Code</label>
-  <input id="pastCode" placeholder="RAC-XXXXXXXXXX" style="text-transform:uppercase"
-         oninput="this.value=this.value.toUpperCase()">
-  <div class="row" style="margin-top:10px">
-    <button class="primary" style="width:auto" onclick="lookupPastResults()">Lookup Results</button>
-  </div>
-  <div id="pastResults"></div>
-  <hr style="margin:18px 0;border:0;border-top:1px solid var(--line)">
-  <h3>📤 Share this Quiz</h3>
-  <p class="muted small">Share the quiz link or scan the QR to invite friends.</p>
-  <div class="row" style="margin-top:8px">
-    <button class="secondary" onclick="shareQuizLink()">Share Link (WhatsApp)</button>
-    <button class="secondary" onclick="shareQuizQR()">Share QR</button>
-    <button class="secondary" onclick="downloadQuizQR()">Download QR PNG</button>
-  </div>
-  <div id="shareQR" style="margin-top:12px;display:flex;justify-content:center"></div>
 </section>
 
 </div>
@@ -423,7 +420,6 @@ async function verifyParticipantInDb(){
 }
 
 async function tryAutoStart(){
-  // Deliberately do not auto-start: participants must explicitly verify their code.
   return;
 }
 
@@ -727,6 +723,12 @@ function startClock(){
   },250);
 }
 
+async function canDownloadResultCard(){
+  if(!quiz)return false;
+  const end=new Date(quiz.ends_at||`${quiz.quiz_date}T${String(quiz.end_time).slice(0,8)}+05:45`).getTime();
+  return localNow()>=end;
+}
+
 async function submitQuiz(auto=false){
   if(!attempt||autoSubmitBusy)return;
   autoSubmitBusy=true;
@@ -816,7 +818,7 @@ async function loadBoard(){
 }
 
 /* ============================================================
-   ANNOUNCEMENT BANNER
+   ANNOUNCEMENT BANNER (MARQUEE)
    ============================================================ */
 async function loadAnnouncement(){
   try{
@@ -825,7 +827,9 @@ async function loadAnnouncement(){
     const row=Array.isArray(data)?data[0]:data;
     if(row&&row.is_active&&row.message&&row.message.trim()){
       $("announcementBar").classList.remove("hidden");
-      $("announcementText").textContent=row.message;
+      const el=$("announcementText");
+      el.textContent=row.message;
+      el.innerHTML = esc(row.message) + " &nbsp;&nbsp;•&nbsp;&nbsp; " + esc(row.message) + " &nbsp;&nbsp;•&nbsp;&nbsp; ";
     }else{
       $("announcementBar").classList.add("hidden");
     }
@@ -834,83 +838,7 @@ async function loadAnnouncement(){
 loadAnnouncement();
 
 /* ============================================================
-   SHARE QUIZ (WhatsApp / QR)
-   ============================================================ */
-function currentQuizUrl(){
-  return location.origin+location.pathname+"?quiz="+quizId;
-}
-function shareQuizLink(){
-  if(!quizId){alert("Open a specific quiz first (scan its QR).");return}
-  const url=currentQuizUrl();
-  const title=quiz?.title||"Rotaract Monthly Quiz";
-  const text=`🏆 ${title}\nJoin the quiz here: ${url}`;
-  const wa="https://wa.me/?text="+encodeURIComponent(text);
-  window.open(wa,"_blank");
-}
-function shareQuizQR(){
-  if(!quizId){shareQuizLink();return}
-  const url=currentQuizUrl();
-  if(navigator.share){
-    const c=$("shareQR").querySelector("canvas");
-    if(c&&c.toBlob){
-      c.toBlob(async b=>{
-        const file=new File([b],"quiz-qr.png",{type:"image/png"});
-        try{
-          await navigator.share({title:"Rotaract Quiz QR",text:"Scan to join: "+url,files:[file]});
-        }catch(e){ navigator.share({title:"Rotaract Quiz QR",text:url}).catch(()=>shareQuizLink()); }
-      });
-      return;
-    }
-  }
-  shareQuizLink();
-}
-function downloadQuizQR(){
-  const c=$("shareQR").querySelector("canvas");
-  if(!c){alert("QR not ready yet. Open a specific quiz link first.");return}
-  const a=document.createElement("a");
-  a.download="rotaract-quiz-qr.png";
-  a.href=c.toDataURL("image/png");
-  a.click();
-}
-function buildShareQR(){
-  if(!quizId)return;
-  $("shareQR").innerHTML="";
-  new QRCode($("shareQR"),{text:currentQuizUrl(),width:180,height:180});
-}
-setTimeout(buildShareQR,300);
-
-/* ============================================================
-   PAST RESULTS LOOKUP (by registration code)
-   ============================================================ */
-async function lookupPastResults(){
-  const code=($("pastCode").value||"").trim().toUpperCase();
-  const box=$("pastResults");
-  if(!code){box.innerHTML='<p class="muted small">Enter your registration code.</p>';return}
-  box.innerHTML='<p class="muted small">Loading…</p>';
-  const {data,error}=await sb.rpc("quiz_past_results_by_code",{p_code:code});
-  if(error){box.innerHTML='<p class="muted small">'+esc(error.message)+'</p>';return}
-  const rows=(data||[]).filter(r=>r.result_status);
-  if(!rows.length){box.innerHTML='<p class="muted small">No submitted results found for this code.</p>';return}
-  box.innerHTML=`
-    <h3 style="margin-top:16px">Your Past Results</h3>
-    <div style="overflow:auto">
-      <table><thead><tr><th>Quiz</th><th>Date</th><th>Score</th><th>Rank</th><th>Action</th></tr></thead>
-      <tbody>${rows.map(r=>`
-        <tr>
-          <td><b>${esc(r.quiz_title)}</b></td>
-          <td>${esc(r.quiz_date)}</td>
-          <td><b>${esc(r.score)} / ${esc(r.total_points)}</b></td>
-          <td>#${esc(r.rank)}</td>
-          <td>
-            <button class="secondary" style="min-height:0;padding:8px 10px;margin:2px" onclick="downloadResultCardFor('${esc(code)}','${esc(r.quiz_id)}','${esc(r.quiz_title)}','${esc(r.quiz_date)}')">📥 Card</button>
-            <button class="secondary" style="min-height:0;padding:8px 10px;margin:2px" onclick="viewReview('${esc(code)}','${esc(r.quiz_id)}')">👁 Review</button>
-          </td>
-        </tr>`).join("")}</tbody></table>
-    </div>`;
-}
-
-/* ============================================================
-   ANSWER REVIEW (after submit)
+   REVIEW (after submit) — kept on home final card
    ============================================================ */
 async function openReview(){
   if(!participant?.registration_code){return}
@@ -926,7 +854,7 @@ async function viewReview(code,quizIdToReview){
   if(error){box.innerHTML='<p class="muted small">'+esc(error.message)+'</p>';return}
   const rows=data||[];
   if(!rows.length){box.innerHTML='<p class="muted small">No review available.</p>';return}
-  const show=!!rows[0].show_answers;
+  const show=true;
   box.innerHTML=`
     <h3>Answer Review</h3>
     ${show?'':'<p class="muted small">The organizer has hidden correct answers for this quiz. Your chosen answers are still shown.</p>'}
@@ -950,80 +878,54 @@ async function viewReview(code,quizIdToReview){
 }
 
 /* ============================================================
-   RESULT CARD PNG (for social share)
+   RESULT CARD PNG + SHARE
    ============================================================ */
-async function buildResultCard({name,organization,quizTitle,quizDate,score,total,rank,code}){
-  const W=1080,H=1350;
-  const c=document.createElement("canvas");c.width=W;c.height=H;
-  const x=c.getContext("2d");
-  const g=x.createLinearGradient(0,0,W,H);
-  g.addColorStop(0,"#0a1f3d");g.addColorStop(1,"#0a7d5e");
-  x.fillStyle=g;x.fillRect(0,0,W,H);
-
-  x.strokeStyle="#b8913b";x.lineWidth=12;x.strokeRect(20,20,W-40,H-40);
-  x.fillStyle="#fff";x.textAlign="center";
-  x.font="bold 56px Georgia";x.fillText("ROTARACT MONTHLY QUIZ",W/2,150);
-  x.font="32px Arial";x.fillStyle="#cfdcf0";x.fillText("Result Card",W/2,205);
-
-  x.fillStyle="#f1e2b4";x.font="bold 46px Arial";
-  x.fillText(quizTitle||"",W/2,300);
-  x.font="28px Arial";x.fillStyle="#cfdcf0";
-  x.fillText(quizDate||"",W/2,345);
-
-  x.fillStyle="#fff";x.font="bold 64px Arial";
-  x.fillText(name||"Participant",W/2,470);
-  x.font="28px Arial";x.fillStyle="#cfdcf0";
-  x.fillText(organization||"",W/2,515);
-
-  x.beginPath();x.arc(W/2,760,200,0,Math.PI*2);
-  x.fillStyle="rgba(255,255,255,0.08)";x.fill();
-  x.lineWidth=10;x.strokeStyle="#f1e2b4";x.stroke();
-
-  x.fillStyle="#f1e2b4";x.font="bold 140px Arial";
-  x.fillText(String(score??""),W/2,790);
-  x.font="36px Arial";x.fillStyle="#cfdcf0";
-  x.fillText("/ "+(total??""),W/2,860);
-
-  x.fillStyle="#fff";x.font="bold 46px Arial";
-  x.fillText("Rank #"+(rank??"—"),W/2,1010);
-
-  x.font="24px Arial";x.fillStyle="#cfdcf0";
-  x.fillText("Registration Code: "+(code||""),W/2,1090);
-  x.fillText("Issued by Rotaract Club",W/2,H-90);
-
+async function buildResultCard({name,organization,quizTitle,quizDate,score,total,rank,code,fastest=false,yearChampion=false}){
+  const W=1080,H=1450;
+  const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
+  const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,"#0a1f3d");g.addColorStop(1,"#0a7d5e");x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.strokeStyle="#b8913b";x.lineWidth=12;x.strokeRect(20,20,W-40,H-40);x.strokeStyle="#f1e2b4";x.lineWidth=2;x.strokeRect(46,46,W-92,H-92);
+  x.textAlign="center";x.fillStyle="#fff";x.font="bold 56px Georgia";x.fillText("ROTARACT MONTHLY QUIZ",W/2,125);
+  x.font="bold 34px Georgia";x.fillStyle="#f1e2b4";x.fillText("RAC GALKOT BAGLUNG",W/2,175);
+  x.font="24px Arial";x.fillStyle="#cfdcf0";x.fillText("OFFICIAL RESULT CARD",W/2,215);
+  x.fillStyle="#f1e2b4";x.font="bold 42px Arial";x.fillText(quizTitle||"",W/2,285);
+  x.font="27px Arial";x.fillStyle="#cfdcf0";x.fillText(quizDate||"",W/2,325);
+  x.fillStyle="#fff";x.font="bold 62px Arial";x.fillText(name||"Participant",W/2,430);
+  x.font="27px Arial";x.fillStyle="#cfdcf0";x.fillText(organization||"",W/2,470);
+  x.beginPath();x.arc(W/2,680,190,0,Math.PI*2);x.fillStyle="rgba(255,255,255,.08)";x.fill();x.lineWidth=10;x.strokeStyle="#f1e2b4";x.stroke();
+  x.fillStyle="#f1e2b4";x.font="bold 132px Arial";x.fillText(String(score??""),W/2,710);x.font="34px Arial";x.fillStyle="#cfdcf0";x.fillText("/ "+(total??""),W/2,775);
+  x.fillStyle="#fff";x.font="bold 44px Arial";x.fillText("Rank #"+(rank??"—"),W/2,900);
+  const badges=[];if(Number(rank)===1)badges.push("🥇 Quiz Champion");else if(Number(rank)===2)badges.push("🥈 Runner-up");else if(Number(rank)===3)badges.push("🥉 3rd Place");if(fastest)badges.push("⚡ Fastest Finisher");if(yearChampion)badges.push("👑 Yearly Champion");
+  x.font="bold 25px Arial";x.fillStyle="#f1e2b4";badges.forEach((b,i)=>x.fillText(b,W/2,950+i*42));
+  x.font="22px Arial";x.fillStyle="#cfdcf0";x.fillText("Registration Code: "+(code||""),W/2,1085);
+  // Verification QR
+  const qrHost=document.createElement("div");qrHost.style.position="fixed";qrHost.style.left="-99999px";document.body.appendChild(qrHost);
+  try{new QRCode(qrHost,{text:verificationUrl(code,quizId),width:190,height:190,colorDark:"#0a1f3d",colorLight:"#ffffff"});await new Promise(r=>setTimeout(r,80));const qrc=qrHost.querySelector("canvas")||qrHost.querySelector("img");x.fillStyle="#fff";x.fillRect(W/2-105,1110,210,210);if(qrc){if(qrc.tagName==="IMG"){await new Promise(res=>{if(qrc.complete)res();else qrc.onload=res});x.drawImage(qrc,W/2-95,1120,190,190)}else{x.drawImage(qrc,W/2-95,1120,190,190)}}x.fillStyle="#f1e2b4";x.font="bold 20px Arial";x.fillText("SCAN TO VERIFY",W/2,1350);}finally{qrHost.remove()}
+  x.font="bold 22px Arial";x.fillStyle="#cfdcf0";x.fillText("Certificate Verified via QR",W/2,1390);
   return c;
 }
+
+async function isYearChampion(name){
+  try{const {data}=await sb.rpc("quiz_yearly_winners");const first=(data||[])[0];return !!first&&String(first.full_name||"").trim().toLowerCase()===String(name||"").trim().toLowerCase()}catch(e){return false}
+}
+function verificationUrl(code,qid){return location.origin+location.pathname.replace(/index\.html.*$/,"verify.html")+"?code="+encodeURIComponent(code)+"&quiz="+encodeURIComponent(qid)}
+
 async function downloadResultCard(){
-  if(!participant?.registration_code)return;
+  if(!(await canDownloadResultCard())){alert("📥 Result Card will be available only after the quiz end time.");return}
   const {data}=await sb.rpc("quiz_past_results_by_code",{p_code:participant.registration_code});
   const r=(data||[]).find(x=>String(x.quiz_id)===String(quizId));
-  if(!r){alert("Result not found yet.");return}
-  const c=await buildResultCard({
-    name:r.full_name,organization:r.organization,
-    quizTitle:r.quiz_title,quizDate:r.quiz_date,
-    score:r.score,total:r.total_points,rank:r.rank,code:participant.registration_code
-  });
-  const a=document.createElement("a");
-  a.download="rotaract-result-"+(r.quiz_title||"quiz").replace(/\s+/g,"-")+".png";
-  a.href=c.toDataURL("image/png");a.click();
-}
-async function downloadResultCardFor(code,qid,title,date){
-  const {data}=await sb.rpc("quiz_past_results_by_code",{p_code:code});
-  const r=(data||[]).find(x=>String(x.quiz_id)===String(qid));
   if(!r){alert("Result not found.");return}
-  const c=await buildResultCard({
-    name:r.full_name,organization:r.organization,
-    quizTitle:title,quizDate:date,
-    score:r.score,total:r.total_points,rank:r.rank,code:code
-  });
-  const a=document.createElement("a");
-  a.download="rotaract-result.png";a.href=c.toDataURL("image/png");a.click();
+  const lb=await sb.rpc("quiz_leaderboard",{p_quiz_id:quizId});const rows=lb.data||[];const fastest=rows.length?Number(r.time_taken_seconds||0)===Math.min(...rows.map(x=>Number(x.time_taken_seconds||Infinity))):false;
+  const yearChampion=Number(r.rank)===1&&await isYearChampion(r.full_name);
+  const c=await buildResultCard({name:r.full_name,organization:r.organization,quizTitle:r.quiz_title,quizDate:r.quiz_date,score:r.score,total:r.total_points,rank:r.rank,code:r.registration_code,fastest,yearChampion});
+  const a=document.createElement("a");a.download="rotaract-result-"+(r.quiz_title||"quiz").replace(/\s+/g,"-")+".png";a.href=c.toDataURL("image/png");a.click();
 }
+
 async function shareResult(){
-  if(!participant?.registration_code){shareQuizLink();return}
+  if(!participant?.registration_code){return}
   const {data}=await sb.rpc("quiz_past_results_by_code",{p_code:participant.registration_code});
   const r=(data||[]).find(x=>String(x.quiz_id)===String(quizId));
-  if(!r){shareQuizLink();return}
+  if(!r){return}
   const canvas=await buildResultCard({
     name:r.full_name,organization:r.organization,
     quizTitle:r.quiz_title,quizDate:r.quiz_date,
