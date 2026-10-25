@@ -159,7 +159,7 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px soli
 .grid{gap:6px 20px}
 .grid3{gap:6px 18px}
 #create .row,#questions>button.primary{margin-top:18px}
-#questionQuiz,#participantQuiz,#resultQuiz,#designQuiz{max-width:520px;margin-bottom:8px}
+#questionQuiz,#participantQuiz,#resultQuiz,#designQuiz,#fullBoardQuiz{max-width:520px;margin-bottom:8px}
 #designQuiz{width:min(100%,420px)}
 #participantSearch{min-width:240px}
 
@@ -175,11 +175,11 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
 button:disabled{opacity:.6;cursor:not-allowed;transform:none}
 
 /* ---------- Feedback messages ---------- */
-#loginMsg,#saveMsg,#qMsg{
+#loginMsg,#saveMsg,#qMsg,#annMsgOut{
   margin:14px 0 0;padding:10px 14px;border-radius:10px;font-weight:600;
   background:#eef3fa;border-left:4px solid var(--navy2);color:var(--ink);
 }
-#loginMsg:empty,#saveMsg:empty,#qMsg:empty{display:none}
+#loginMsg:empty,#saveMsg:empty,#qMsg:empty,#annMsgOut:empty{display:none}
 
 /* ---------- Tables ---------- */
 table{border-collapse:separate;border-spacing:0}
@@ -238,6 +238,17 @@ div[style*="overflow:auto"] tbody tr:last-child td{border-bottom:0}
 #qr:empty{display:none!important}
 #design .row:nth-of-type(2){justify-content:center}
 
+/* ---------- Fullscreen board ---------- */
+#fullboard:fullscreen{background:var(--paper);padding:24px;overflow:auto}
+#fullboard:-webkit-full-screen{background:var(--paper);padding:24px;overflow:auto}
+.fb-big{font-size:clamp(16px,1.6vw,22px)!important}
+.fb-title{font-size:clamp(22px,3vw,42px)!important}
+.fb-score{font-size:clamp(30px,4vw,64px)!important}
+#fullBoardWrap .place{padding:20px}
+
+/* ---------- Announcement admin ---------- */
+#announcement textarea{min-height:90px}
+
 /* ---------- Responsive & motion ---------- */
 @media (max-width:700px){
   .wrap{padding:10px}
@@ -270,6 +281,7 @@ div[style*="overflow:auto"] tbody tr:last-child td{border-bottom:0}
 <button onclick="tab('dashboard')" id="n-dashboard">Dashboard</button><button onclick="tab('create')" id="n-create">Create Quiz</button>
 <button onclick="tab('quizzes')" id="n-quizzes">Manage Quizzes</button><button onclick="tab('questions')" id="n-questions">Questions</button>
 <button onclick="tab('participants')" id="n-participants">Participants</button><button onclick="tab('results')" id="n-results">Results</button><button onclick="tab('design')" id="n-design">Banner + QR</button>
+<button onclick="tab('announcement')" id="n-announcement">Announcement</button><button onclick="tab('fullboard')" id="n-fullboard">Fullscreen Board</button>
 </div>
 
 <div id="dashboard" class="tab card"></div>
@@ -323,6 +335,42 @@ div[style*="overflow:auto"] tbody tr:last-child td{border-bottom:0}
 <div id="qr" style="display:flex;justify-content:center;margin:15px"></div>
 <p class="muted">QR opens <code>index.html?quiz=QUIZ_ID</code>. Outside the fixed live time it shows “not live”.</p>
 </div>
+
+<div id="announcement" class="tab card hidden">
+  <h2>📢 Announcement Banner</h2>
+  <p class="muted">Shown at the top of the public index page. Leave message empty or set Active to No to hide it.</p>
+  <label for="annMsg">Message</label>
+  <textarea id="annMsg" rows="3" placeholder="e.g. Quiz 7pm ma start huncha"></textarea>
+  <div class="grid3" style="margin-top:8px">
+    <div><label for="annActive">Active</label>
+      <select id="annActive"><option value="true">Yes</option><option value="false">No</option></select>
+    </div>
+  </div>
+  <div class="row" style="margin-top:12px">
+    <button class="primary" onclick="saveAnnouncement()">Save Announcement</button>
+    <button class="secondary" onclick="loadAnnouncement()">Reload</button>
+  </div>
+  <p id="annMsgOut" class="muted" aria-live="polite"></p>
+  <hr style="margin:20px 0;border:0;border-top:1px solid var(--line)">
+  <h3>Participant Self-Service</h3>
+  <p class="muted small">Participants can now, from the public index page (no login needed):</p>
+  <ul class="muted small">
+    <li>Enter their registration code to look up all past quiz results.</li>
+    <li>Download a social-media-ready result card PNG (name, score, rank).</li>
+    <li>Review their answers after submitting (respects "Show Correct Answers After Submit").</li>
+    <li>Share the quiz link / QR to WhatsApp.</li>
+  </ul>
+</div>
+
+<div id="fullboard" class="tab card hidden">
+  <div class="row">
+    <h2>🖥️ Fullscreen Live Leaderboard</h2>
+    <button class="primary" onclick="openFullscreenBoard()">⛶ Go Fullscreen (Projector)</button>
+  </div>
+  <select id="fullBoardQuiz" onchange="renderFullBoard()"></select>
+  <p class="muted small">Auto-refreshes every 4 seconds. Best used on a projector / large screen.</p>
+  <div id="fullBoardWrap" style="margin-top:16px"></div>
+</div>
 </section>
 </div>
 
@@ -341,7 +389,19 @@ let quizzes=[],selectedId=null,design=null,questions=[];
 
 const $=id=>document.getElementById(id);
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-function tab(id){document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));$(id).classList.remove("hidden");document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));$("n-"+id).classList.add("active");if(id==="quizzes")load();if(id==="questions")loadQuestionSelectors();if(id==="participants")loadParticipantSelectors();if(id==="results")loadResultSelectors();if(id==="design")loadDesignSelectors()}
+function tab(id){
+  document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));
+  $(id).classList.remove("hidden");
+  document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
+  $("n-"+id).classList.add("active");
+  if(id==="quizzes")load();
+  if(id==="questions")loadQuestionSelectors();
+  if(id==="participants")loadParticipantSelectors();
+  if(id==="results")loadResultSelectors();
+  if(id==="design")loadDesignSelectors();
+  if(id==="announcement")loadAnnouncement();
+  if(id==="fullboard")loadFullBoardSelector();
+}
 async function login(){
  $("loginMsg").textContent="Signing in…";
  const {data,error}=await sb.auth.signInWithPassword({email:$("loginEmail").value,password:$("loginPass").value});
@@ -675,6 +735,84 @@ function wrapText(ctx,text,x,y,maxWidth,lineHeight){let words=String(text).split
 function formatDate(s){return new Date(s+"T00:00:00").toLocaleDateString("en-NP",{year:"numeric",month:"long",day:"numeric"})}
 function downloadBanner(){let a=document.createElement("a");a.download=(design?.title||"rotaract-quiz").replace(/\s+/g,"-")+".png";a.href=$("banner").toDataURL("image/png");a.click()}
 function downloadQR(){let canvas=$("qr").querySelector("canvas");if(!canvas)return;let a=document.createElement("a");a.download="quiz-qr.png";a.href=canvas.toDataURL("image/png");a.click()}
+
+/* ============================================================
+   ANNOUNCEMENT BANNER
+   ============================================================ */
+async function loadAnnouncement(){
+  const {data,error}=await sb.from("quiz_announcements")
+    .select("message,is_active").order("updated_at",{ascending:false}).limit(1);
+  if(error){$("annMsgOut").textContent=error.message;return}
+  const row=(data&&data[0])||{};
+  $("annMsg").value=row.message||"";
+  $("annActive").value=String(row.is_active??false);
+  $("annMsgOut").textContent="";
+}
+async function saveAnnouncement(){
+  const msg=$("annMsg").value.trim();
+  const active=$("annActive").value==="true";
+  const {data:existing}=await sb.from("quiz_announcements").select("id").limit(1);
+  let res;
+  if(existing&&existing[0]){
+    res=await sb.from("quiz_announcements")
+      .update({message:msg,is_active:active,updated_at:new Date().toISOString()})
+      .eq("id",existing[0].id);
+  }else{
+    res=await sb.from("quiz_announcements").insert({message:msg,is_active:active});
+  }
+  $("annMsgOut").textContent=res.error?res.error.message:"Saved. Participants will see this on the index page.";
+}
+
+/* ============================================================
+   FULLSCREEN LIVE LEADERBOARD
+   ============================================================ */
+function loadFullBoardSelector(){
+  fillSelect("fullBoardQuiz");
+  if(selectedId)$("fullBoardQuiz").value=selectedId;
+  renderFullBoard();
+}
+let fbInterval=null;
+async function renderFullBoard(){
+  const id=$("fullBoardQuiz").value;
+  if(!id){$("fullBoardWrap").innerHTML="";return}
+  const {data,error}=await sb.rpc("quiz_leaderboard",{p_quiz_id:id});
+  if(error){$("fullBoardWrap").innerHTML='<p class="muted">'+esc(error.message)+'</p>';return}
+  const rows=(data||[]).slice().sort((a,b)=>Number(a.rank||9999)-Number(b.rank||9999));
+  const top=rows.slice(0,3);
+  const others=rows.slice(3);
+  $("fullBoardWrap").innerHTML=`
+    <div class="podium" style="padding-top:10px">
+      ${[0,1,2].map(i=>{
+        const r=top[i];
+        if(!r) return `<div class="pod-slot empty"></div>`;
+        const h=[200,160,130][i];
+        const c=["#f5b301","#b8c2cc","#c47a3b"][i];
+        return `<div class="pod-slot">
+          <div class="pod-label">${["FIRST 🥇","SECOND 🥈","THIRD 🥉"][i]}</div>
+          <div class="pod-name" style="font-size:clamp(16px,1.6vw,22px)">${esc(r.full_name)}</div>
+          <div class="pod-org">${esc(r.organization||"")}</div>
+          <div class="pod-score fb-score">${esc(r.score)} <small>/ ${esc(r.total_points)}</small></div>
+          <div class="pod-bar" style="height:${h}px;background:${c};font-size:clamp(22px,3vw,36px)">#${i+1}</div>
+        </div>`;
+      }).join("")}
+    </div>
+    <div style="overflow:auto;max-height:60vh;border:1px solid var(--line);border-radius:12px;margin-top:16px">
+      <table><thead><tr><th>#</th><th>Participant</th><th>Organization</th><th>Score</th><th>Time</th></tr></thead>
+      <tbody>${others.map(r=>`<tr><td>${r.rank}</td><td><b>${esc(r.full_name)}</b></td><td>${esc(r.organization||"")}</td><td><b style="color:#065f47">${esc(r.score)} / ${esc(r.total_points)}</b></td><td>${fmt(r.time_taken_seconds)}</td></tr>`).join("")||'<tr><td colspan="5" class="muted">No other participants yet.</td></tr>'}</tbody></table>
+    </div>
+    <p class="muted small" style="margin-top:10px">Last updated: ${new Date().toLocaleTimeString()} · Auto-refreshes every 4s</p>`;
+  clearInterval(fbInterval);
+  fbInterval=setInterval(async()=>{
+    if($("fullboard").classList.contains("hidden")){clearInterval(fbInterval);return}
+    const f=await sb.rpc("quiz_leaderboard",{p_quiz_id:id});
+    if(f.data)renderFullBoard();
+  },4000);
+}
+function openFullscreenBoard(){
+  const el=$("fullboard");
+  if(el.requestFullscreen)el.requestFullscreen().catch(()=>{});
+  else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();
+}
 newQuiz();
 </script>
 </body>
