@@ -17,8 +17,6 @@
 #submitPopup h2{margin:0 0 10px;font-size:22px}
 #submitPopup .subtle{color:#d5eee6;font-size:14px;margin:0 0 18px}
 #submitPopup .primary{background:#ffe08a;color:#073b33;font-weight:900}
-
-/* Advanced responsive participant UI */
 body{position:relative;isolation:isolate;background-color:#f4f7fb}body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(#f4f7fbdd,#f4f7fbdd),url("/rotaract.jpg");background-repeat:no-repeat;background-position:center;background-size:min(72vw,620px);opacity:.16}
 :root{--brand:#086b56;--good:#087f5b}
 body{background:radial-gradient(ellipse at 5% 0%,#d9f2e8 0,transparent 36%),radial-gradient(ellipse at 100% 15%,#e4e9ff 0,transparent 32%),#f4f7fb}
@@ -35,10 +33,6 @@ input:focus,select:focus{outline:none;border-color:#0b8f70;box-shadow:0 0 0 3px 
 #registerCard,#entryCard,#quizCard,#finalCard{animation:cardIn .25s ease-out}
 @keyframes cardIn{from{opacity:.65;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:600px){.wrap{padding:9px}.top{padding-top:12px}.card{padding:16px}}
-
-/* =====================================================================
-   ADMIN-MATCHED PREMIUM THEME — colors/presentation only.
-   ===================================================================== */
 :root{
   --navy:#0a1f3d;--navy2:#143866;
   --em:#0a7d5e;--em-d:#065f47;
@@ -51,8 +45,6 @@ input:focus,select:focus{outline:none;border-color:#0b8f70;box-shadow:0 0 0 3px 
 body{background:var(--paper);color:var(--ink)}
 body::before{background-image:linear-gradient(#f4f6f9ee,#f4f6f9ee),url("/rotaract.jpg");opacity:.14}
 h1,h2,h3{color:var(--navy)}
-
-/* Header */
 .top{
   padding:clamp(18px,3vw,28px) 16px;margin:6px 0 14px;border-radius:20px;
   background:linear-gradient(160deg,var(--navy),var(--navy2));
@@ -60,32 +52,22 @@ h1,h2,h3{color:var(--navy)}
 }
 .top h1{color:#fff;font-family:var(--serif)}
 .top .muted,#subtitle{color:#cfdcf0}
-
-/* Cards */
 .card{border:1px solid var(--line);box-shadow:var(--shadow)}
 #statusCard,#registerCard,#entryCard,#quizCard,#finalCard,#yearlyWinners{border-top:4px solid var(--em)}
 #yearlyWinners{border-top-color:var(--gold)}
 .card h2{color:var(--navy)}
-
-/* Badges, notice, code */
 .badge{background:#e3f4ee;color:var(--em-d)}
 .notice{background:#fff8e6;border-left:4px solid var(--gold);color:var(--ink)}
 .code{background:#eef2f7;color:var(--navy);border:1px solid var(--line)}
-
-/* Forms */
 label{color:var(--navy)}
 input,select{border:1.5px solid #cdd7e3;color:var(--ink)}
 input:focus,select:focus{border-color:var(--em);box-shadow:0 0 0 4px rgba(10,125,94,.16)}
 input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-
-/* Buttons */
 .primary{background:var(--em);color:#fff;box-shadow:0 3px 10px rgba(6,95,71,.25)}
 .primary:hover{background:var(--em-d);filter:none}
 .secondary{background:#eef2f7;color:var(--navy);border:1px solid var(--line)}
 .secondary:hover{background:#e3e9f1;filter:none}
 .danger{background:#fdeceb;color:#a4231a;border:1px solid #f4c7c3}
-
-/* Quiz screen */
 .timer{color:var(--navy)}
 .timer.warning30{color:#d97706}
 .timer.warning20{color:#dc2626}
@@ -96,8 +78,6 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid 
 .option b{color:var(--em-d)}
 .option.correct{background:#e3f4ee!important;border-color:var(--em)!important;color:var(--em-d)}
 .option.incorrect{background:#fdeceb!important;border-color:#c92a2a!important;color:#a4231a}
-
-/* Podium / stats / table */
 .podium .place,.place{background:linear-gradient(180deg,#fbfcfe,#eff3f8);border:1px solid var(--line);border-top:3px solid var(--gold)}
 .place strong{color:var(--gold-d)}
 .place b{color:var(--navy)}
@@ -106,8 +86,6 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid 
 th{background:#eef2f7;color:var(--navy);font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
 td,th{border-bottom:1px solid var(--line)}
 tbody tr:hover{background:#f6faf8}
-
-/* Popups */
 #startPopup,#submitPopup{background:rgba(6,16,32,.78)}
 #startPopup .popupBox,#submitPopup .popupBox{
   background:linear-gradient(160deg,var(--navy),var(--navy2));
@@ -117,15 +95,9 @@ tbody tr:hover{background:#f6faf8}
 #startPopup .bigCount{color:var(--gold-l);text-shadow:0 0 24px rgba(184,145,59,.6)}
 #startPopup .subtle,#submitPopup .subtle{color:#cfdcf0}
 #submitPopup .primary{background:var(--gold-l);color:var(--navy)}
-
-/* My-row highlight */
 tr.my-row{background:#e3f4ee!important;font-weight:800}
 tr.my-row td{border-bottom-color:#b8e0d0}
-
-/* Review box */
 #reviewBox .option{font-size:14px}
-
-/* Marquee for announcement */
 .marquee-track{
   display:inline-block;white-space:nowrap;padding-left:100%;
   animation:marqueeScroll 22s linear infinite;
@@ -135,7 +107,6 @@ tr.my-row td{border-bottom-color:#b8e0d0}
 #announcementBar:hover .marquee-track{animation-play-state:paused}
 </style></head><body><div class="wrap">
 
-<!-- ===== 1. ANNOUNCEMENT (MARQUEE, TOP) ===== -->
 <div id="announcementBar" class="card hidden" style="border-left:5px solid #b8913b;background:#fff8e6;padding:14px 18px;overflow:hidden">
   <div style="display:flex;align-items:center;gap:12px">
     <b style="white-space:nowrap;color:#0a1f3d">📢 Announcement</b>
@@ -147,29 +118,22 @@ tr.my-row td{border-bottom-color:#b8e0d0}
 
 <div class="top"><div class="logo">🏆</div><h1 id="title">Rotaract Monthly Quiz</h1><div id="subtitle" class="muted">Monthly knowledge, fellowship and service</div></div>
 
-<!-- ===== HOME TAB NAV ===== -->
 <div class="row" style="justify-content:flex-start;gap:8px;margin:4px 0 10px;flex-wrap:wrap">
   <button class="secondary" style="min-height:0;padding:10px 16px;background:#eef2f7;color:#0a1f3d;border:1px solid #dbe3ec">🏠 Home</button>
   <a href="results.html"><button class="secondary" style="min-height:0;padding:10px 16px;background:#eef2f7;color:#0a1f3d;border:1px solid #dbe3ec">🔎 Check Past Results</button></a>
 </div>
 
-<!-- ===== 2. YEARLY WINNERS ===== -->
 <section id="yearlyWinners" class="card"><h2>🏆 Yearly Winners</h2><p class="muted small">Ranked by the number of different quizzes played using the same mobile number.</p><div id="yearlyPodium" class="podium"><div class="place">Loading winners…</div></div></section>
 
-<!-- ===== 3. UPCOMING & LIVE MONTHLY QUIZZES ===== -->
 <section id="statusCard" class="card center"><div id="statusBadge" class="badge">CHECKING</div><h2 id="statusTitle">Please wait</h2><p id="statusText" class="muted"></p><div id="countdown" class="timer"></div></section>
 <section id="quizList" class="hidden"></section>
 
-<!-- ===== REGISTRATION ===== -->
 <section id="registerCard" class="card hidden"><h2 id="registerHeading">📝 Register for this Quiz</h2><p class="muted">Register now, even before the start time. Your personal entry code will be shown below. Keep it safe.</p><label>Full Name *</label><input id="name" autocomplete="name"><label>Email *</label><input id="email" type="email" autocomplete="email"><label>Mobile Number *</label><input id="phone" type="tel" autocomplete="tel"><label>Organization / Club</label><input id="org"><label>Member Type</label><select id="member"><option value="">Select</option><option>Rotaractor</option><option>Rotarian</option><option>Guest</option><option>Other</option></select><button class="primary" onclick="registerUser()">Register & Get Entry Code</button><p id="regMsg" class="small muted"></p><div id="savedCodeBox" class="notice hidden"><b>✅ You are registered!</b><p>Your entry code:</p><div class="code" id="savedCode"></div><p class="small">Use this code at quiz start. This device will remember your registration until the quiz ends.</p><button class="secondary" onclick="copySavedCode()">Copy My Code</button></div></section>
 
-<!-- ===== ENTRY ===== -->
 <section id="entryCard" class="card hidden"><h2>🔐 Enter Registration Code</h2><p class="muted">You must enter the code given at registration before starting the quiz.</p><label>Registration Code</label><input id="entryCode" autocomplete="one-time-code" placeholder="RAC-XXXXXXXXXX" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"><button class="primary" onclick="enterQuiz()">Verify Code & Start Quiz 🚀</button><p id="entryMsg" class="small muted"></p></section>
 
-<!-- ===== QUIZ ===== -->
 <section id="quizCard" class="card hidden"><div class="row"><span id="qCount" class="badge"></span><span id="timer" class="timer">00:00</span></div><div class="progress" style="margin:14px 0"><div id="bar" class="bar"></div></div><h2 id="question"></h2><div id="options"></div></section>
 
-<!-- ===== FINAL ===== -->
 <section id="finalCard" class="card hidden">
   <div class="row">
     <h2 id="finalHeading">🎉 Quiz completed!</h2><span class="badge">LIVE LEADERBOARD</span>
@@ -526,7 +490,6 @@ async function renderStatus(){
     return;
   }
 
-  // ============ LIVE WINDOW ============
   if(!participant){
     $("statusBadge").textContent="QUIZ LIVE";
     $("statusTitle").textContent="Quiz is live";
@@ -817,9 +780,6 @@ async function loadBoard(){
   $("totalParticipants").textContent=count??(ranked.length?ranked.length:"—");
 }
 
-/* ============================================================
-   ANNOUNCEMENT BANNER (MARQUEE)
-   ============================================================ */
 async function loadAnnouncement(){
   try{
     const {data,error}=await sb.rpc("quiz_get_announcement");
@@ -837,9 +797,6 @@ async function loadAnnouncement(){
 }
 loadAnnouncement();
 
-/* ============================================================
-   REVIEW (after submit) — kept on home final card
-   ============================================================ */
 async function openReview(){
   if(!participant?.registration_code){return}
   await viewReview(participant.registration_code,quizId);
@@ -877,9 +834,6 @@ async function viewReview(code,quizIdToReview){
     }).join("")}</div>`;
 }
 
-/* ============================================================
-   RESULT CARD PNG + SHARE
-   ============================================================ */
 async function buildResultCard({name,organization,quizTitle,quizDate,score,total,rank,code,fastest=false,yearChampion=false}){
   const W=1080,H=1450;
   const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
@@ -898,7 +852,6 @@ async function buildResultCard({name,organization,quizTitle,quizDate,score,total
   const badges=[];if(Number(rank)===1)badges.push("🥇 Quiz Champion");else if(Number(rank)===2)badges.push("🥈 Runner-up");else if(Number(rank)===3)badges.push("🥉 3rd Place");if(fastest)badges.push("⚡ Fastest Finisher");if(yearChampion)badges.push("👑 Yearly Champion");
   x.font="bold 25px Arial";x.fillStyle="#f1e2b4";badges.forEach((b,i)=>x.fillText(b,W/2,950+i*42));
   x.font="22px Arial";x.fillStyle="#cfdcf0";x.fillText("Registration Code: "+(code||""),W/2,1085);
-  // Verification QR
   const qrHost=document.createElement("div");qrHost.style.position="fixed";qrHost.style.left="-99999px";document.body.appendChild(qrHost);
   try{new QRCode(qrHost,{text:verificationUrl(code,quizId),width:190,height:190,colorDark:"#0a1f3d",colorLight:"#ffffff"});await new Promise(r=>setTimeout(r,80));const qrc=qrHost.querySelector("canvas")||qrHost.querySelector("img");x.fillStyle="#fff";x.fillRect(W/2-105,1110,210,210);if(qrc){if(qrc.tagName==="IMG"){await new Promise(res=>{if(qrc.complete)res();else qrc.onload=res});x.drawImage(qrc,W/2-95,1120,190,190)}else{x.drawImage(qrc,W/2-95,1120,190,190)}}x.fillStyle="#f1e2b4";x.font="bold 20px Arial";x.fillText("SCAN TO VERIFY",W/2,1350);}finally{qrHost.remove()}
   x.font="bold 22px Arial";x.fillStyle="#cfdcf0";x.fillText("Certificate Verified via QR",W/2,1390);
@@ -921,7 +874,13 @@ async function downloadResultCard(){
   const a=document.createElement("a");a.download="rotaract-result-"+(r.quiz_title||"quiz").replace(/\s+/g,"-")+".png";a.href=c.toDataURL("image/png");a.click();
 }
 
+/* ========== CHANGED: shareResult() now time-gated ========== */
 async function shareResult(){
+  // ⏱ TIME GATE: same rule as download — only after quiz end
+  if(!(await canDownloadResultCard())){
+    alert("📤 Result share will be available only after the quiz end time.");
+    return;
+  }
   if(!participant?.registration_code){return}
   const {data}=await sb.rpc("quiz_past_results_by_code",{p_code:participant.registration_code});
   const r=(data||[]).find(x=>String(x.quiz_id)===String(quizId));
