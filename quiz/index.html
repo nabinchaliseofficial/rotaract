@@ -1,138 +1,33 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Rotaract Quiz</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Rotaract Quiz</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
-:root{--bg:#f5f7fb;--card:#fff;--text:#152033;--muted:#687386;--brand:#0b6b57;--brand2:#124c3f;--line:#e5e9f0;--good:#087f5b;--bad:#c92a2a}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text)}
-.wrap{max-width:760px;margin:auto;padding:18px}.top{text-align:center;padding:14px 0 10px}.logo{font-size:34px}.top h1{margin:5px 0;font-size:28px}.muted{color:var(--muted)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;margin:14px 0;box-shadow:0 8px 30px #14213d0b}
-.badge{display:inline-flex;padding:7px 11px;border-radius:999px;background:#e8f7f1;color:var(--good);font-weight:800;font-size:12px}
-h2,h3{margin-top:0}label{display:block;font-weight:700;margin:13px 0 6px}input,select{width:100%;padding:13px;border:1px solid #d8dee8;border-radius:12px;font-size:16px;background:white}
-button{border:0;border-radius:13px;padding:13px 16px;font-weight:800;font-size:15px;cursor:pointer}.primary{background:var(--brand);color:white;width:100%}.secondary{background:#edf2f7;color:#233044}.danger{background:#ffe9e9;color:var(--bad)}
-.row{display:flex;gap:10px;align-items:center;justify-content:space-between}.timer{font-size:26px;font-weight:900}.progress{height:8px;background:#e8edf3;border-radius:99px;overflow:hidden}.bar{height:100%;background:var(--brand);width:0}
-.option{display:block;width:100%;text-align:left;background:#f8fafc;border:1px solid var(--line);margin:10px 0;padding:15px;border-radius:14px}.option:hover{border-color:var(--brand)}.option b{margin-right:7px}
-.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.place{padding:12px;text-align:center;background:#f8fafc;border-radius:14px}.place strong{display:block;font-size:20px}
-table{width:100%;border-collapse:collapse}td,th{padding:10px 7px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
-.notice{padding:14px;border-radius:14px;background:#fff8df}.hidden{display:none!important}.center{text-align:center}.small{font-size:13px}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="top"><div class="logo">🏆</div><h1 id="title">Rotaract Quiz</h1><div id="subtitle" class="muted">Loading quiz…</div></div>
-
-  <section id="statusCard" class="card center">
-    <div id="statusBadge" class="badge">CHECKING</div>
-    <h2 id="statusTitle">Please wait</h2>
-    <p id="statusText" class="muted"></p>
-    <div id="countdown" class="timer"></div>
-  </section>
-
-  <section id="registerCard" class="card hidden">
-    <h2>Join Quiz</h2><p class="muted">Register once, then the quiz starts immediately.</p>
-    <label>Full Name *</label><input id="name" autocomplete="name">
-    <label>Email</label><input id="email" type="email" autocomplete="email">
-    <label>Phone</label><input id="phone" autocomplete="tel">
-    <label>Organization / Club</label><input id="org">
-    <label>Member Type</label>
-    <select id="member"><option value="">Select</option><option>Rotaractor</option><option>Roterian</option><option>Guest</option><option>Other</option></select>
-    <button class="primary" onclick="registerAndStart()">Register & Start Quiz 🚀</button>
-    <p id="regMsg" class="small muted"></p>
-  </section>
-
-  <section id="quizCard" class="card hidden">
-    <div class="row"><span id="qCount" class="badge"></span><span id="timer" class="timer">00:00</span></div>
-    <div class="progress" style="margin:14px 0"><div id="bar" class="bar"></div></div>
-    <h2 id="question"></h2>
-    <div id="options"></div>
-    <button id="submitBtn" class="secondary" onclick="submitQuiz()">Submit Quiz</button>
-  </section>
-
-  <section id="resultCard" class="card hidden center">
-    <h2>🎉 Quiz Completed</h2>
-    <div id="result"></div>
-  </section>
-
-  <section id="boardCard" class="card hidden">
-    <div class="row"><h2>Live Leaderboard</h2><span class="badge">REALTIME</span></div>
-    <div id="podium" class="podium"></div>
-    <div style="overflow:auto;margin-top:12px"><table><thead><tr><th>#</th><th>Participant</th><th>Score</th><th>Time</th></tr></thead><tbody id="board"></tbody></table></div>
-  </section>
-</div>
-
-<script>
-const SUPABASE_URL="https://kbyfvqkfcxqgjjtfvvxf.supabase.co";
-const SUPABASE_KEY="sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const quizId=new URLSearchParams(location.search).get("quiz");
-let quiz=null, questions=[], answers={}, current=0, attempt=null, serverOffset=0, deadline=null, clock=null;
-
-const $=id=>document.getElementById(id);
-function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-function localNow(){return Date.now()+serverOffset}
-function fmt(sec){sec=Math.max(0,Math.floor(sec));return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0")}
-async function syncServer(){let {data,error}=await sb.rpc("quiz_server_time");if(!error&&data)serverOffset=new Date(data).getTime()-Date.now()}
-async function loadQuiz(){
- if(!quizId){$("statusTitle").textContent="Invalid quiz link";$("statusText").textContent="Please scan the correct QR code.";return}
- await syncServer();
- let {data,error}=await sb.rpc("quiz_public_info",{p_quiz_id:quizId});
- if(error||!data?.length){$("statusTitle").textContent="Quiz not found";$("statusText").textContent=error?.message||"Invalid quiz.";return}
- quiz=data[0];$("title").textContent=quiz.title;$("subtitle").textContent=quiz.description||"Rotaract Quiz";
- renderStatus(); setInterval(renderStatus,1000);
-}
-function renderStatus(){
- const now=localNow(), start=new Date(quiz.starts_at).getTime(), end=new Date(quiz.ends_at).getTime();
- if(quiz.status!=="published"){ $("statusBadge").textContent="NOT LIVE";$("statusTitle").textContent="Quiz is not live";$("statusText").textContent="The organizer has not published this quiz yet.";hideAll();return}
- if(now<start){$("statusBadge").textContent="NOT LIVE";$("statusTitle").textContent="Quiz starts soon";$("statusText").textContent="Starts at "+new Date(quiz.starts_at).toLocaleString("en-NP",{timeZone:"Asia/Kathmandu"});$("countdown").textContent=fmt((start-now)/1000);$("registerCard").classList.add("hidden");return}
- if(now>=end){$("statusBadge").textContent="ENDED";$("statusTitle").textContent="Quiz has ended";$("statusText").textContent="This quiz is no longer accepting participants."; $("registerCard").classList.add("hidden");return}
- $("statusBadge").textContent="LIVE • SERVER SYNCED";$("statusTitle").textContent="Quiz is live!";$("statusText").textContent="Register below to start. Late joiners get the remaining quiz time.";$("countdown").textContent=fmt((end-now)/1000);$("registerCard").classList.remove("hidden");$("boardCard").classList.remove("hidden");loadBoard();
-}
-function hideAll(){["registerCard","quizCard","resultCard"].forEach(x=>$(x).classList.add("hidden"))}
-async function registerAndStart(){
- const name=$("name").value.trim(); if(!name){$("regMsg").textContent="Full name is required.";return}
- $("regMsg").textContent="Registering…";
- const {data,error}=await sb.rpc("quiz_register",{p_quiz_id:quizId,p_full_name:name,p_email:$("email").value.trim()||null,p_phone:$("phone").value.trim()||null,p_organization:$("org").value.trim()||null,p_member_type:$("member").value||null});
- if(error){$("regMsg").textContent=error.message;return}
- localStorage.setItem("quiz_participant_"+quizId,data[0].registration_code);
- await startAttempt(data[0].participant_id);
-}
-async function startAttempt(pid){
- const {data,error}=await sb.rpc("quiz_start_attempt",{p_participant_id:pid});
- if(error){$("regMsg").textContent=error.message;return}
- attempt=data[0];deadline=new Date(attempt.deadline).getTime();
- if(attempt.already_submitted){await showExisting(pid);return}
- let q=await sb.rpc("quiz_questions_public",{p_quiz_id:quizId});
- if(q.error||!q.data?.length){$("regMsg").textContent=q.error?.message||"No questions configured.";return}
- questions=q.data;answers={};current=0;
- $("registerCard").classList.add("hidden");$("quizCard").classList.remove("hidden");renderQuestion();startClock();
-}
-function renderQuestion(){
- const q=questions[current];$("qCount").textContent=`Question ${current+1} / ${questions.length}`;$("question").textContent=q.question_text;
- $("bar").style.width=((current+1)/questions.length*100)+"%";
- $("options").innerHTML=["A","B","C","D"].map(k=>`<button class="option" onclick="answer('${k}')"><b>${k}</b>${esc(q["option_"+k.toLowerCase()])}</button>`).join("");
-}
-function answer(k){answers[questions[current].question_no]=k;if(current<questions.length-1){current++;renderQuestion()}else submitQuiz()}
-function startClock(){clearInterval(clock);clock=setInterval(()=>{let left=(deadline-localNow())/1000;$("timer").textContent=fmt(left);if(left<=0){clearInterval(clock);submitQuiz(true)}},250)}
-async function submitQuiz(auto=false){
- if(!attempt)return;
- clearInterval(clock);$("submitBtn").disabled=true;
- const {data,error}=await sb.rpc("quiz_submit_attempt",{p_attempt_id:attempt.attempt_id,p_answers:answers});
- if(error){$("submitBtn").disabled=false;alert(error.message);return}
- hideAll();$("resultCard").classList.remove("hidden");$("boardCard").classList.remove("hidden");
- $("result").innerHTML=`<h3>${esc(data[0].score)} / ${esc(data[0].total_points)}</h3><p>Rank: <b>#${data[0].rank||"-"}</b></p><p>Correct: ${data[0].correct_answers} · Wrong: ${data[0].wrong_answers} · Unanswered: ${data[0].unanswered}</p><p>Time: ${fmt(data[0].time_taken_seconds)}</p>${auto?'<p class="notice">Time ended. Your quiz was auto-submitted.</p>':''}`;
- loadBoard();
-}
-async function showExisting(pid){$("registerCard").classList.add("hidden");$("resultCard").classList.remove("hidden");$("result").innerHTML="<p>You have already completed this quiz.</p>";$("boardCard").classList.remove("hidden");loadBoard()}
-async function loadBoard(){
- const {data}=await sb.rpc("quiz_leaderboard",{p_quiz_id:quizId});if(!data)return;
- $("podium").innerHTML=[1,2,3].map(r=>{let x=data.find(a=>a.rank===r);return `<div class="place"><strong>${r===1?"🥇":r===2?"🥈":"🥉"}</strong>${x?esc(x.full_name):"—"}<br><b>${x?x.score:"—"}</b></div>`}).join("");
- $("board").innerHTML=data.map(x=>`<tr><td>${x.rank}</td><td>${esc(x.full_name)}<div class="small muted">${esc(x.organization||"")}</div></td><td>${x.score}/${x.total_points}</td><td>${fmt(x.time_taken_seconds)}</td></tr>`).join("");
-}
-sb.channel("quiz-live-board").on("postgres_changes",{event:"*",schema:"public",table:"quiz_leaderboard",filter:`quiz_id=eq.${quizId}`},loadBoard).subscribe();
-loadQuiz();
-</script>
-</body>
-</html>
+:root{--bg:#f3f7fb;--card:#fff;--text:#152033;--muted:#687386;--brand:#0b6b57;--line:#e5e9f0;--good:#087f5b;--bad:#c92a2a}*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#f1f7f5,#f4f6ff);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text)}.wrap{max-width:850px;margin:auto;padding:18px}.top{text-align:center;padding:18px 0 10px}.logo{font-size:38px}.top h1{margin:5px 0;font-size:30px}.muted{color:var(--muted)}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:21px;margin:14px 0;box-shadow:0 12px 35px #14213d0b}.badge{display:inline-flex;padding:7px 11px;border-radius:999px;background:#e8f7f1;color:var(--good);font-weight:800;font-size:12px}h2,h3{margin-top:0}label{display:block;font-weight:700;margin:13px 0 6px}input,select{width:100%;padding:13px;border:1px solid #d8dee8;border-radius:12px;font-size:16px;background:white}button{border:0;border-radius:13px;padding:13px 16px;font-weight:800;font-size:15px;cursor:pointer}.primary{background:var(--brand);color:white;width:100%}.secondary{background:#edf2f7;color:#233044}.danger{background:#ffe9e9;color:var(--bad)}.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.timer{font-size:26px;font-weight:900}.progress{height:8px;background:#e8edf3;border-radius:99px;overflow:hidden}.bar{height:100%;background:var(--brand);width:0}.option{display:block;width:100%;text-align:left;background:#f8fafc;border:1px solid var(--line);margin:10px 0;padding:15px;border-radius:14px}.option:hover{border-color:var(--brand)}.option b{margin-right:7px}.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.place{padding:12px;text-align:center;background:#f8fafc;border-radius:14px}.place strong{display:block;font-size:20px}table{width:100%;border-collapse:collapse}td,th{padding:10px 7px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}.notice{padding:14px;border-radius:14px;background:#fff8df}.hidden{display:none!important}.center{text-align:center}.small{font-size:13px}.quiz-tile{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}.qr{width:120px;height:120px;background:white;padding:5px;border-radius:12px}.code{font-size:20px;letter-spacing:1.5px;font-weight:900;background:#f1f5f9;padding:12px;border-radius:12px;display:inline-block}@media(max-width:600px){.quiz-tile{grid-template-columns:1fr}.qr{width:150px;height:150px}.top h1{font-size:25px}}
+</style></head><body><div class="wrap"><div class="top"><div class="logo">🏆</div><h1 id="title">Rotaract Quiz</h1><div id="subtitle" class="muted">Loading published quizzes…</div></div>
+<section id="statusCard" class="card center"><div id="statusBadge" class="badge">CHECKING</div><h2 id="statusTitle">Please wait</h2><p id="statusText" class="muted"></p><div id="countdown" class="timer"></div><button id="soundBtn" class="secondary" onclick="enableSound()">🔊 Enable quiz sounds</button></section>
+<section id="quizList" class="hidden"></section>
+<section id="registerCard" class="card hidden"><h2>📝 Register for this Quiz</h2><p class="muted">Register now, even before the start time. Your personal entry code will be shown below. Keep it safe.</p><label>Full Name *</label><input id="name" autocomplete="name"><label>Email *</label><input id="email" type="email" autocomplete="email"><label>Mobile Number *</label><input id="phone" type="tel" autocomplete="tel"><label>Organization / Club</label><input id="org"><label>Member Type</label><select id="member"><option value="">Select</option><option>Rotaractor</option><option>Rotarian</option><option>Guest</option><option>Other</option></select><button class="primary" onclick="registerUser()">Register & Get Entry Code</button><p id="regMsg" class="small muted"></p><div id="savedCodeBox" class="notice hidden"><b>✅ You are registered!</b><p>Your entry code:</p><div class="code" id="savedCode"></div><p class="small">Use this code at quiz start. This device will remember your registration until the quiz ends.</p><button class="secondary" onclick="copySavedCode()">Copy My Code</button></div></section>
+<section id="entryCard" class="card hidden"><h2>🔐 Enter Registration Code</h2><p class="muted">You must enter the code given at registration before starting the quiz.</p><label>Registration Code</label><input id="entryCode" autocomplete="one-time-code" placeholder="RAC-XXXXXXXXXX" style="text-transform:uppercase"><button class="primary" onclick="enterQuiz()">Verify Code & Start Quiz 🚀</button><p id="entryMsg" class="small muted"></p></section>
+<section id="quizCard" class="card hidden"><div class="row"><span id="qCount" class="badge"></span><span id="timer" class="timer">00:00</span></div><div class="progress" style="margin:14px 0"><div id="bar" class="bar"></div></div><h2 id="question"></h2><div id="options"></div><button id="submitBtn" class="secondary" onclick="submitQuiz()">Submit Quiz</button></section>
+<section id="resultCard" class="card hidden center"><h2>🎉 Quiz Completed</h2><div id="result"></div></section>
+<section id="boardCard" class="card hidden"><div class="row"><h2>Live Leaderboard</h2><span class="badge">REALTIME</span></div><div id="podium" class="podium"></div><div style="overflow:auto;margin-top:12px"><table><thead><tr><th>#</th><th>Participant</th><th>Score</th><th>Time</th></tr></thead><tbody id="board"></tbody></table></div></section>
+</div><script>
+const SUPABASE_URL="https://kbyfvqkfcxqgjjtfvvxf.supabase.co",SUPABASE_KEY="sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);let quizId=new URLSearchParams(location.search).get("quiz"),quiz=null,questions=[],answers={},current=0,attempt=null,serverOffset=0,deadline=null,clock=null,statusInterval=null,soundCtx=null,startedSoundFor="",warnedSoundFor="",participant=null;
+const $=id=>document.getElementById(id);function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}function localNow(){return Date.now()+serverOffset}function fmt(sec){sec=Math.max(0,Math.floor(sec));return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0")}async function syncServer(){let{data,error}=await sb.rpc("quiz_server_time");if(!error&&data)serverOffset=new Date(data).getTime()-Date.now()}
+function enableSound(){try{soundCtx=soundCtx||new(window.AudioContext||window.webkitAudioContext)();soundCtx.resume();beep(660,.12);$("soundBtn").textContent="🔊 Sound enabled"}catch(e){$("soundBtn").textContent="Sound unavailable in this browser"}}function beep(freq=880,duration=.22){try{if(!soundCtx)soundCtx=new(window.AudioContext||window.webkitAudioContext)();if(soundCtx.state==="suspended")soundCtx.resume();const o=soundCtx.createOscillator(),g=soundCtx.createGain();o.type="sine";o.frequency.value=freq;g.gain.setValueAtTime(.001,soundCtx.currentTime);g.gain.exponentialRampToValueAtTime(.18,soundCtx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.001,soundCtx.currentTime+duration);o.connect(g);g.connect(soundCtx.destination);o.start();o.stop(soundCtx.currentTime+duration+.03)}catch(e){}}
+function hideAll(){["registerCard","entryCard","quizCard","resultCard","boardCard","quizList"].forEach(x=>$(x).classList.add("hidden"))}async function loadQuiz(){await syncServer();if(!quizId){await loadPublishedList();return}let{data,error}=await sb.rpc("quiz_public_info",{p_quiz_id:quizId});if(error||!data?.length){$("statusTitle").textContent="Quiz not found";$("statusText").textContent=error?.message||"Invalid quiz link.";return}quiz=data[0];$("title").textContent=quiz.title;$("subtitle").textContent=quiz.description||"Rotaract Quiz";await restoreLocalRegistration();renderStatus();statusInterval=setInterval(async()=>{await syncServer();renderStatus()},1000);setInterval(async()=>{if(!attempt){const fresh=await sb.rpc("quiz_public_info",{p_quiz_id:quizId});if(fresh.data?.length){quiz=fresh.data[0];$("title").textContent=quiz.title;$("subtitle").textContent=quiz.description||"Rotaract Quiz";renderStatus()}}},15000);}
+async function loadPublishedList(){let{data,error}=await sb.from("quiz_quizzes").select("id,title,description,quiz_date,start_time,end_time,duration_minutes,status").eq("status","published").order("quiz_date",{ascending:true});if(error){$("statusTitle").textContent="Unable to load quizzes";$("statusText").textContent=error.message;return}$("statusTitle").textContent=data?.length?"Published Rotaract Quizzes":"No published quizzes yet";$("statusText").textContent="This page refreshes automatically to show newly published quizzes.";$("quizList").classList.remove("hidden");$("quizList").innerHTML=(data||[]).map(q=>`<article class="card quiz-tile"><div><span class="badge">${esc(q.status.toUpperCase())}</span><h2>${esc(q.title)}</h2><p>${esc(q.description||"Rotaract Quiz")}</p><p><b>📅 ${esc(q.quiz_date)}</b><br>🕒 ${esc(String(q.start_time).slice(0,5))} – ${esc(String(q.end_time).slice(0,5))} (Nepal Time)<br>⏱ ${q.duration_minutes} minutes</p><a href="?quiz=${q.id}"><button class="primary">Register / Open Quiz</button></a></div><div><div id="qr-${q.id}" class="qr"></div><small>Scan QR to register</small></div></article>`).join("");setTimeout(()=>{(data||[]).forEach(q=>{let el=$("qr-"+q.id);if(el)new QRCode(el,{text:new URL("?quiz="+q.id,location.href).href,width:140,height:140})})},50);setTimeout(()=>location.reload(),60000)}
+function lockRegistration(){["name","email","phone","org","member"].forEach(id=>$(id).disabled=true);const b=$("registerCard").querySelector("button.primary");if(b)b.disabled=true}
+async function restoreLocalRegistration(){const raw=localStorage.getItem("quiz_registration_"+quizId);if(!raw)return;try{participant=JSON.parse(raw);$("name").value=participant.full_name||"";$("email").value=participant.email||"";$("phone").value=participant.phone||"";$("org").value=participant.organization||"";$("member").value=participant.member_type||"";$("savedCode").textContent=participant.registration_code||"";$("savedCodeBox").classList.remove("hidden");lockRegistration();}catch(e){}}
+function renderStatus(){if(!quiz)return;const now=localNow(),start=new Date(quiz.starts_at).getTime(),end=new Date(quiz.ends_at).getTime(),key=quiz.id+"|"+start;if(quiz.status==="published"&&now>=start&&now<end&&startedSoundFor!==key){startedSoundFor=key;beep(1040,.45);setTimeout(()=>beep(1310,.55),260)}if(quiz.status!=="published"){$("statusBadge").textContent="NOT LIVE";$("statusTitle").textContent="Quiz is not published";$("statusText").textContent="The organizer has not published this quiz yet.";hideAll();return}if(now<start){const left=Math.ceil((start-now)/1000);$("statusBadge").textContent="REGISTRATION OPEN";$("statusTitle").textContent="You can register now";$("statusText").textContent="Quiz starts at "+new Date(quiz.starts_at).toLocaleString("en-NP",{timeZone:"Asia/Kathmandu"})+". At T−60 seconds you will hear a warning beep; at start time a different beep will play.";$("countdown").textContent=fmt(left);$("registerCard").classList.remove("hidden");$("entryCard").classList.add("hidden");if(participant){$("savedCodeBox").classList.remove("hidden");$("regMsg").textContent="You are registered on this device. Do not register again."}if(left<=60&&left>0&&warnedSoundFor!==key){warnedSoundFor=key;beep(740,.35);setTimeout(()=>beep(740,.35),420)}return}if(now>=end){$("statusBadge").textContent="ENDED";$("statusTitle").textContent="Quiz has ended";$("statusText").textContent="Registration and participation for this quiz are closed.";$("countdown").textContent="00:00";$("registerCard").classList.add("hidden");$("entryCard").classList.add("hidden");return}$("statusBadge").textContent="QUIZ LIVE";$("statusTitle").textContent="Enter your code to start";$("statusText").textContent="Only a registered participant with a valid code can begin. Each registration can start one attempt.";$("countdown").textContent=fmt((end-now)/1000);$("registerCard").classList.remove("hidden");$("entryCard").classList.remove("hidden");$("boardCard").classList.remove("hidden");if(participant){$("entryCode").value=participant.registration_code||"";$("savedCodeBox").classList.remove("hidden")}loadBoard()}
+async function registerUser(){enableSound();if(participant){$("regMsg").textContent="You are already registered on this device. Use your existing code.";return}const name=$("name").value.trim(),email=$("email").value.trim().toLowerCase(),phone=$("phone").value.trim();if(!name||!email||!phone){$("regMsg").textContent="Full name, email and mobile number are required.";return}if(!/^\S+@\S+\.\S+$/.test(email)){ $("regMsg").textContent="Enter a valid email address.";return}$("regMsg").textContent="Registering…";const{data,error}=await sb.rpc("quiz_register",{p_quiz_id:quizId,p_full_name:name,p_email:email,p_phone:phone,p_organization:$("org").value.trim()||null,p_member_type:$("member").value||null});if(error){$("regMsg").textContent=error.message;return}const got=await sb.rpc("quiz_get_participant",{p_code:data[0].registration_code});const saved=got.data?.[0];participant=saved?{participant_id:saved.id,registration_code:saved.registration_code,full_name:saved.full_name,email:saved.email,phone:saved.phone,organization:saved.organization,member_type:saved.member_type}:{participant_id:data[0].participant_id,registration_code:data[0].registration_code,full_name:name,email,phone,organization:$("org").value.trim(),member_type:$("member").value};localStorage.setItem("quiz_registration_"+quizId,JSON.stringify(participant));lockRegistration();$("savedCode").textContent=participant.registration_code;$("savedCodeBox").classList.remove("hidden");$("regMsg").textContent="You are registered! Save your code and enter it when the quiz starts.";$("entryCode").value=participant.registration_code;}
+async function copySavedCode(){if(participant?.registration_code){try{await navigator.clipboard.writeText(participant.registration_code);$("regMsg").textContent="Registration code copied."}catch(e){$("regMsg").textContent="Your code is: "+participant.registration_code}}}
+async function enterQuiz(){const code=$("entryCode").value.trim().toUpperCase();if(!code){$("entryMsg").textContent="Enter your registration code.";return}enableSound();$("entryMsg").textContent="Checking code…";const{data,error}=await sb.rpc("quiz_get_participant",{p_code:code});if(error||!data?.length){$("entryMsg").textContent=error?.message||"Invalid registration code.";return}const p=data[0];if(p.quiz_id!==quizId){$("entryMsg").textContent="This code is for a different quiz.";return}participant={participant_id:p.id,registration_code:p.registration_code,full_name:p.full_name,email:p.email,phone:p.phone,organization:p.organization,member_type:p.member_type};localStorage.setItem("quiz_registration_"+quizId,JSON.stringify(participant));await startAttempt(p.id)}
+async function startAttempt(pid){const{data,error}=await sb.rpc("quiz_start_attempt_by_code",{p_quiz_id:quizId,p_code:participant?.registration_code||$("entryCode").value.trim().toUpperCase()});if(error){$("entryMsg").textContent=error.message;return}attempt=data[0];deadline=new Date(attempt.deadline).getTime();if(attempt.already_submitted){await showExisting();return}let q=await sb.rpc("quiz_questions_public",{p_quiz_id:quizId});if(q.error||!q.data?.length){$("entryMsg").textContent=q.error?.message||"No questions configured.";return}questions=q.data;answers={};current=0;hideAll();$("quizCard").classList.remove("hidden");renderQuestion();startClock()}
+function renderQuestion(){const q=questions[current];$("qCount").textContent=`Question ${current+1} / ${questions.length}`;$("question").textContent=q.question_text;$("bar").style.width=((current+1)/questions.length*100)+"%";$("options").innerHTML=["A","B","C","D"].map(k=>`<button class="option" onclick="answer('${k}')"><b>${k}</b>${esc(q["option_"+k.toLowerCase()])}</button>`).join("")}
+function answer(k){answers[questions[current].question_no]=k;if(current<questions.length-1){current++;renderQuestion()}else submitQuiz()}function startClock(){clearInterval(clock);clock=setInterval(()=>{let left=(deadline-localNow())/1000;$("timer").textContent=fmt(left);if(left<=0){clearInterval(clock);submitQuiz(true)}},250)}
+async function submitQuiz(auto=false){if(!attempt)return;clearInterval(clock);$("submitBtn").disabled=true;const{data,error}=await sb.rpc("quiz_submit_attempt",{p_attempt_id:attempt.attempt_id,p_answers:answers});if(error){$("submitBtn").disabled=false;alert(error.message);return}hideAll();$("resultCard").classList.remove("hidden");$("boardCard").classList.remove("hidden");$("result").innerHTML=`<h3>${esc(data[0].score)} / ${esc(data[0].total_points)}</h3><p>Rank: <b>#${data[0].rank||"-"}</b></p><p>Correct: ${data[0].correct_answers} · Wrong: ${data[0].wrong_answers} · Unanswered: ${data[0].unanswered}</p><p>Time: ${fmt(data[0].time_taken_seconds)}</p>${auto?'<p class="notice">Time ended. Your quiz was auto-submitted.</p>':''}`;loadBoard()}
+async function showExisting(){hideAll();$("resultCard").classList.remove("hidden");$("result").innerHTML="<p>You have already completed this quiz. One attempt per registration is allowed.</p>";$("boardCard").classList.remove("hidden");loadBoard()}
+async function loadBoard(){if(!quizId)return;const{data}=await sb.rpc("quiz_leaderboard",{p_quiz_id:quizId});if(!data)return;$("podium").innerHTML=[1,2,3].map(r=>{let x=data.find(a=>a.rank===r);return `<div class="place"><strong>${r===1?"🥇":r===2?"🥈":"🥉"}</strong>${x?esc(x.full_name):"—"}<br><b>${x?x.score:"—"}</b></div>`}).join("");$("board").innerHTML=data.map(x=>`<tr><td>${x.rank}</td><td>${esc(x.full_name)}<div class="small muted">${esc(x.organization||"")}</div></td><td>${x.score}/${x.total_points}</td><td>${fmt(x.time_taken_seconds)}</td></tr>`).join("")}
+sb.channel("quiz-live-board").on("postgres_changes",{event:"*",schema:"public",table:"quiz_leaderboard"},loadBoard).subscribe();loadQuiz();
+</script></body></html>

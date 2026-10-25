@@ -6,9 +6,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
-:root{--bg:#f4f6f9;--card:#fff;--text:#172033;--muted:#6c7687;--brand:#0b6b57;--line:#e3e7ed}
+:root{--bg:#eef4f7;--card:#fff;--text:#172033;--muted:#6c7687;--brand:#0b6b57;--line:#e3e7ed}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}.wrap{max-width:1200px;margin:auto;padding:18px}
-.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 8px 25px #14213d0a}.hidden{display:none!important}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 8px 25px #14213d0a}.metric{background:linear-gradient(135deg,#fff,#f0faf7);border:1px solid #dceee7;border-radius:18px;padding:20px}.metric b{display:block;font-size:30px;color:var(--brand)}.metric small{font-weight:800}.quizhero{padding:20px;border-radius:18px;background:linear-gradient(120deg,#073b33,#0b6b57);color:#fff;margin:12px 0}.quizhero small{color:#d5eee6}.searchbox{max-width:440px}.hidden{display:none!important}
 input,textarea,select{width:100%;padding:11px;border:1px solid #d7dde6;border-radius:10px;font-size:14px}label{display:block;font-weight:800;margin:11px 0 5px}
 button{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}.primary{background:var(--brand);color:white}.secondary{background:#eaf0f4}.danger{background:#ffe6e6;color:#b42318}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.nav{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.nav button.active{background:var(--brand);color:#fff}
@@ -56,7 +56,7 @@ table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px so
 <button class="primary" onclick="saveQuestions()">Save Questions</button><p id="qMsg" class="muted"></p>
 </div>
 
-<div id="participants" class="tab card hidden"><h2>Participants</h2><select id="participantQuiz" onchange="loadParticipants()"></select><div style="overflow:auto"><table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Organization</th><th>Code</th></tr></thead><tbody id="participantRows"></tbody></table></div></div>
+<div id="participants" class="tab card hidden"><div class="row"><h2>Participants</h2><input id="participantSearch" class="searchbox" placeholder="Search name, email, mobile or code…" oninput="loadParticipants()"></div><select id="participantQuiz" onchange="loadParticipants()"></select><p class="muted">Search registered participants and copy their entry code. Delete is available for admin use.</p><div style="overflow:auto"><table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Organization</th><th>Entry Code</th><th>Actions</th></tr></thead><tbody id="participantRows"></tbody></table></div></div>
 
 <div id="results" class="tab card hidden"><h2>Results</h2><select id="resultQuiz" onchange="loadResults()"></select><div style="overflow:auto"><table><thead><tr><th>Rank</th><th>Name</th><th>Organization</th><th>Score</th><th>Time</th></tr></thead><tbody id="resultRows"></tbody></table></div></div>
 
@@ -89,8 +89,11 @@ async function login(){
 }
 async function logout(){await sb.auth.signOut();location.reload()}
 async function load(){
- const {data}=await sb.from("quiz_quizzes").select("*").order("created_at",{ascending:false});quizzes=data||[];
- $("dashboard").innerHTML=`<h2>Dashboard</h2><div class="grid3"><div class="card"><b>${quizzes.length}</b><small>Total Quizzes</small></div><div class="card"><b>${quizzes.filter(q=>q.status==="published").length}</b><small>Published</small></div><div class="card"><b>${quizzes.filter(q=>q.status==="draft").length}</b><small>Draft</small></div></div><p class="muted">Set title, Nepal date/time and questions. Publishing makes the QR live automatically during the configured window.</p>`;
+ const {data,error}=await sb.from("quiz_quizzes").select("*").order("created_at",{ascending:false});if(error){console.error(error);return}quizzes=data||[];
+ const stats=await Promise.all(quizzes.map(async q=>{const [p,a]=await Promise.all([sb.from("quiz_participants").select("id",{count:"exact",head:true}).eq("quiz_id",q.id),sb.from("quiz_attempts").select("id",{count:"exact",head:true}).eq("quiz_id",q.id).in("result_status",["in_progress","submitted","expired"])]);return {id:q.id,registered:p.count||0,participated:a.count||0}}));
+ const totalReg=stats.reduce((n,x)=>n+x.registered,0),totalPart=stats.reduce((n,x)=>n+x.participated,0),active=quizzes.filter(q=>q.status==="published");
+ const next=active[0];
+ $("dashboard").innerHTML=`<div class="quizhero"><small>ROTARACT CLUB • QUIZ MANAGEMENT</small><h2 style="font-size:28px;margin:8px 0">Welcome to your Quiz Dashboard 👋</h2><p style="margin:0">Track registration, participation, schedules and results from one place.</p>${next?`<p style="margin-top:16px"><b>📌 ${esc(next.title)}</b><br><small>📅 ${esc(next.quiz_date)} &nbsp; · &nbsp; 🕒 ${esc(String(next.start_time).slice(0,5))}–${esc(String(next.end_time).slice(0,5))} Nepal Time</small></p>`:`<p><small>No published quiz currently. Publish a quiz to show it on the public index page.</small></p>`}</div><div class="grid3"><div class="metric"><b>${quizzes.length}</b><small>Total Quizzes</small></div><div class="metric"><b>${active.length}</b><small>Published Quizzes</small></div><div class="metric"><b>${totalReg}</b><small>Participants Registered</small></div><div class="metric"><b>${totalPart}</b><small>Participants Started / Submitted</small></div><div class="metric"><b>${quizzes.filter(q=>q.status==="draft").length}</b><small>Draft Quizzes</small></div><div class="metric"><b>${quizzes.filter(q=>q.status==="closed").length}</b><small>Closed Quizzes</small></div></div><h2 style="margin-top:24px">Quiz Overview</h2><div style="overflow:auto"><table><thead><tr><th>Quiz</th><th>Date & Time</th><th>Status</th><th>Registered</th><th>Participated</th><th>Actions</th></tr></thead><tbody>${quizzes.map(q=>{const st=stats.find(x=>x.id===q.id)||{registered:0,participated:0};return `<tr><td><b>${esc(q.title)}</b></td><td>${esc(q.quiz_date)}<br><small>${esc(String(q.start_time).slice(0,5))}–${esc(String(q.end_time).slice(0,5))}</small></td><td>${esc(q.status)}</td><td>${st.registered}</td><td>${st.participated}</td><td><button class="secondary" onclick="openDesign('${q.id}')">QR</button> <button class="secondary" onclick="openQuestions('${q.id}')">Questions</button></td></tr>`}).join("")}</tbody></table></div><p class="muted">Public index auto-refreshes and lists published quizzes with a registration QR code.</p>`;
  renderRows();
 }
 function renderRows(){
@@ -98,7 +101,7 @@ function renderRows(){
  <button class="secondary" onclick="editQuiz('${q.id}')">Edit</button>
  <button class="secondary" onclick="openQuestions('${q.id}')">Questions</button>
  <button class="secondary" onclick="openDesign('${q.id}')">Banner/QR</button>
- <button class="${q.status==="published"?"danger":"primary"}" onclick="togglePublish('${q.id}','${q.status}')">${q.status==="published"?"Unpublish":"Publish"}</button>
+ <button class="${q.status==="published"?"danger":"primary"}" onclick="togglePublish('${q.id}','${q.status}')">${q.status==="published"?"Unpublish":"Publish"}</button> <button class="danger" onclick="deleteQuiz('${q.id}')">Delete</button>
  </td></tr>`).join("");
 }
 function newQuiz(){$("editId").value="";["title","date","start","end","desc"].forEach(x=>$(x).value="");$("duration").value=30;$("max").value="";$("createTitle").textContent="Create Quiz"}
@@ -112,7 +115,7 @@ async function saveQuiz(){
 async function togglePublish(id,status){let r=await sb.from("quiz_quizzes").update({status:status==="published"?"draft":"published"}).eq("id",id);if(r.error)alert(r.error.message);else load()}
 function fillSelect(id,include=false){$(id).innerHTML=(include?'<option value="">Select quiz</option>':"")+quizzes.map(q=>`<option value="${q.id}">${esc(q.title)} — ${q.quiz_date}</option>`).join("")}
 function loadQuestionSelectors(){fillSelect("questionQuiz");if(selectedId)$("questionQuiz").value=selectedId;loadQuestions()}
-function loadParticipantSelectors(){fillSelect("participantQuiz");loadParticipants()}
+function loadParticipantSelectors(){fillSelect("participantQuiz",true);loadParticipants()}
 function loadResultSelectors(){fillSelect("resultQuiz");loadResults()}
 function loadDesignSelectors(){fillSelect("designQuiz");if(selectedId)$("designQuiz").value=selectedId;renderDesign()}
 function openQuestions(id){selectedId=id;tab("questions");loadQuestionSelectors();$("questionQuiz").value=id;loadQuestions()}
@@ -139,7 +142,10 @@ async function saveQuestions(){
  let ins=rows.length?await sb.from("quiz_questions").insert(rows):{error:null};if(ins.error){$("qMsg").textContent=ins.error.message;return}
  $("qMsg").textContent=`Saved ${rows.length} questions.`;await loadQuestions();
 }
-async function loadParticipants(){let id=$("participantQuiz").value;if(!id){$("participantRows").innerHTML="";return}let {data}=await sb.from("quiz_participants").select("full_name,email,phone,organization,registration_code").eq("quiz_id",id).order("registered_at",{ascending:false});$("participantRows").innerHTML=(data||[]).map(p=>`<tr><td>${esc(p.full_name)}</td><td>${esc(p.email||"")}</td><td>${esc(p.phone||"")}</td><td>${esc(p.organization||"")}</td><td><code>${esc(p.registration_code)}</code></td></tr>`).join("")}
+async function loadParticipants(){let id=$("participantQuiz").value;if(!id){$("participantRows").innerHTML="";return}let {data,error}=await sb.from("quiz_participants").select("id,full_name,email,phone,organization,registration_code,registered_at").eq("quiz_id",id).order("registered_at",{ascending:false});if(error){$("participantRows").innerHTML=`<tr><td colspan="6">${esc(error.message)}</td></tr>`;return}const term=($("participantSearch").value||"").trim().toLowerCase();const rows=(data||[]).filter(p=>[p.full_name,p.email,p.phone,p.organization,p.registration_code].some(v=>String(v||"").toLowerCase().includes(term)));$("participantRows").innerHTML=rows.map(p=>`<tr><td><b>${esc(p.full_name)}</b></td><td>${esc(p.email||"")}</td><td>${esc(p.phone||"")}</td><td>${esc(p.organization||"")}</td><td><code>${esc(p.registration_code)}</code></td><td><button class="secondary" onclick="copyCode('${esc(p.registration_code)}')">Copy Code</button> <button class="danger" onclick="deleteParticipant('${p.id}')">Delete</button></td></tr>`).join("")||'<tr><td colspan="6">No matching participants.</td></tr>'}
+async function copyCode(code){try{await navigator.clipboard.writeText(code);alert("Registration code copied: "+code)}catch(e){prompt("Copy registration code:",code)}}
+async function deleteParticipant(id){if(!confirm("Delete this participant and their quiz attempt? This cannot be undone."))return;const{error}=await sb.from("quiz_participants").delete().eq("id",id);if(error){alert(error.message);return}await loadParticipants();await load()}
+async function deleteQuiz(id){const q=quizzes.find(x=>x.id===id);if(!q||!confirm(`Delete quiz “${q.title}” and all its questions, registrations and results? This cannot be undone.`))return;const{error}=await sb.from("quiz_quizzes").delete().eq("id",id);if(error){alert(error.message);return}if(selectedId===id)selectedId=null;await load();loadParticipantSelectors();alert("Quiz deleted.")}
 async function loadResults(){let id=$("resultQuiz").value;if(!id){$("resultRows").innerHTML="";return}let {data}=await sb.rpc("quiz_leaderboard",{p_quiz_id:id});$("resultRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.rank}</td><td>${esc(x.full_name)}</td><td>${esc(x.organization||"")}</td><td>${x.score}/${x.total_points}</td><td>${fmt(x.time_taken_seconds)}</td></tr>`).join("")}
 function fmt(s){s=+s||0;return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
 function quizURL(q){return location.href.replace(/admin\.html.*$/,"index.html")+"?quiz="+q.id}
