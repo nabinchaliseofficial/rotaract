@@ -610,67 +610,95 @@ async function loadResults(){
  `).join("");
 }
 
+/* ============================================================
+   openHistory() — rewritten to mirror results.html's Review UI.
+   Uses the same quiz_review_by_code RPC (no DB changes).
+   ============================================================ */
 async function openHistory(quizId, participantId){
- $("historyModal").classList.remove("hidden");
- $("hmTitle").textContent="Participant Question History";
- $("hmSub").textContent="Loading…";
- $("hmBody").innerHTML="";
- if(!participantId){ $("hmSub").textContent="No participant id."; return; }
- const {data:pArr}=await sb.from("quiz_participants").select("full_name,email,organization,registration_code").eq("id",participantId).limit(1);
- const p=(pArr&&pArr[0])||{};
- $("hmTitle").textContent = (p.full_name||p.email||"Participant") + " — Question History";
- $("hmSub").textContent = [p.organization, p.registration_code].filter(Boolean).join(" • ");
- const {data:aArr}=await sb.from("quiz_attempts").select("*").eq("quiz_id",quizId).eq("participant_id",participantId).order("started_at",{ascending:false}).limit(1);
- const attempt=(aArr&&aArr[0])||null;
- const {data:qs}=await sb.from("quiz_questions").select("id,question_no,question_text,option_a,option_b,option_c,option_d,correct_option,points").eq("quiz_id",quizId).order("question_no");
- const qList=qs||[];
- let answers=null;
- if(attempt){
-   const tries=[
-     ()=>sb.from("quiz_answers").select("*").eq("attempt_id",attempt.id),
-     ()=>sb.from("quiz_responses").select("*").eq("attempt_id",attempt.id),
-     ()=>sb.from("quiz_attempt_answers").select("*").eq("attempt_id",attempt.id),
-   ];
-   for(const fn of tries){
-     const r=await fn();
-     if(!r.error){ answers=r.data||[]; break; }
-   }
- }
- const ansByQ=new Map();
- (answers||[]).forEach(a=>{const qid=a.question_id||a.question_no||a.qid;ansByQ.set(qid,a);});
- const totalAwarded = attempt?.total_score ?? 0;
- const totalPossible = attempt?.total_points ?? qList.reduce((n,q)=>n+(q.points||1),0);
- $("hmSub").textContent = `${p.full_name||p.email||""} • Score ${totalAwarded}/${totalPossible} • ${attempt?.result_status||"no attempt"}`;
- let html="";
- if(!qList.length){ html='<p class="muted">No questions in this quiz.</p>'; }
- else {
-   qList.forEach((q,idx)=>{
-     let a=ansByQ.get(q.id)||ansByQ.get(q.question_no);
-     const chosen=(a?.selected_option||a?.chosen_option||a?.answer_option||a?.selected_answer||"").toString().toUpperCase();
-     const correct=(q.correct_option||"").toString().toUpperCase();
-     const isCorrect = chosen && chosen===correct;
-     const notAnswered = !chosen;
-     const pointsEarned = a?.points_earned ?? a?.points_awarded ?? (isCorrect? (q.points||1):0);
-     let badge="";
-     if(notAnswered) badge='<span class="badge na">Not answered</span>';
-     else if(isCorrect) badge='<span class="badge ok">Correct</span>';
-     else badge='<span class="badge no">Wrong</span>';
-     const optHtml=["A","B","C","D"].map(letter=>{
-       const text=q["option_"+letter.toLowerCase()]||"";
-       const cls=["opt"];
-       if(letter===correct) cls.push("correct");
-       if(letter===chosen) cls.push("chosen");
-       if(letter===chosen && chosen!==correct) cls.push("wrong");
-       return `<div class="${cls.join(" ")}"><b>${letter}.</b> ${esc(text)} ${letter===chosen?'<small>← your answer</small>':''} ${letter===correct?'<small>✓ correct</small>':''}</div>`;
-     }).join("");
-     html += `<div class="qrow">
-       <div class="row"><b>Q${idx+1}.</b> <span>${esc(q.question_text)} ${badge}</span><span><b>${pointsEarned}</b>/${q.points||1} pts</span></div>
-       ${optHtml}
-     </div>`;
-   });
-   if(!answers) html += `<p class="muted" style="margin-top:10px">Answer-level details not found (no quiz_answers/quiz_responses rows). Only question list shown.</p>`;
- }
- $("hmBody").innerHTML=html;
+  $("historyModal").classList.remove("hidden");
+  $("hmTitle").textContent="Participant Question History";
+  $("hmSub").textContent="Loading…";
+  $("hmBody").innerHTML="";
+  if(!participantId){ $("hmSub").textContent="No participant id."; return; }
+
+  // Get participant's registration code (needed for the same RPC results.html uses)
+  const {data:pArr}=await sb.from("quiz_participants")
+    .select("full_name,email,organization,registration_code")
+    .eq("id",participantId).limit(1);
+  const p=(pArr&&pArr[0])||{};
+  const code=p.registration_code;
+
+  $("hmTitle").textContent = (p.full_name||p.email||"Participant") + " — Question History";
+  $("hmSub").textContent = [p.organization, code].filter(Boolean).join(" • ");
+
+  if(!code){
+    $("hmSub").textContent = "No registration code for this participant.";
+    return;
+  }
+
+  // Same RPC used by results.html → same review data
+  const {data,error}=await sb.rpc("quiz_review_by_code",{p_code:code,p_quiz_id:quizId});
+  if(error){ $("hmBody").innerHTML='<p class="muted">'+esc(error.message)+'</p>'; return; }
+  const rows=data||[];
+  if(!rows.length){ $("hmBody").innerHTML='<p class="muted">No review available.</p>'; return; }
+
+  // Recompute score from the review rows (same logic as results.html)
+  const totalScore = rows.reduce((n,r)=>{
+    const chosen=(r.chosen_option||"").toUpperCase();
+    const correct=(r.correct_option||"").toUpperCase();
+    return n + (chosen && chosen===correct ? Number(r.points||1) : 0);
+  },0);
+  const totalPossible = rows.reduce((n,r)=>n+Number(r.points||1),0);
+
+  $("hmSub").textContent =
+    `${p.full_name||p.email||""} • Score ${totalScore}/${totalPossible}` +
+    (p.organization ? ` • ${p.organization}` : "");
+
+  $("hmBody").innerHTML = rows.map(r=>{
+    const chosen=(r.chosen_option||"").toUpperCase();
+    const correct=(r.correct_option||"").toUpperCase();
+    const unanswered=!chosen;
+    const isCorrect=!unanswered && chosen===correct;
+
+    const badge = unanswered
+      ? '<span class="badge na">Not answered</span>'
+      : isCorrect
+        ? '<span class="badge ok">✓ Correct</span>'
+        : '<span class="badge no">✗ Wrong</span>';
+
+    const opt=(L,T)=>{
+      let cls="opt";
+      let label="";
+      if(L===correct){
+        cls+=" correct";
+        label='<small style="color:#065f47;font-weight:800">✓ Correct Answer</small>';
+      }
+      if(L===chosen && L!==correct){
+        cls+=" wrong";
+        label='<small style="color:#a4231a;font-weight:800">✗ Your Answer</small>';
+      }
+      if(L===chosen && L===correct){
+        label='<small style="color:#065f47;font-weight:800">✓ Your Answer — Correct</small>';
+      }
+      return `<div class="${cls}"><b>${L}.</b> ${esc(T)} ${label}</div>`;
+    };
+
+    return `<div class="qrow">
+      <div class="row" style="align-items:flex-start;margin-bottom:6px">
+        <b>Q${r.question_no}. ${esc(r.question_text)}</b>
+        ${badge}
+      </div>
+      ${opt("A",r.option_a||"")}
+      ${opt("B",r.option_b||"")}
+      ${opt("C",r.option_c||"")}
+      ${opt("D",r.option_d||"")}
+      ${unanswered
+        ? '<div class="small" style="margin-top:8px;color:#64748b;font-weight:700">⚪ Not answered.</div>'
+        : isCorrect
+          ? '<div class="small" style="margin-top:8px;color:#065f47;font-weight:700">🎯 Correct option selected.</div>'
+          : '<div class="small" style="margin-top:8px;color:#a4231a;font-weight:700">💡 The green option is the correct answer.</div>'}
+    </div>`;
+  }).join("");
 }
 function closeHistory(){ $("historyModal").classList.add("hidden"); $("hmBody").innerHTML=""; }
 
