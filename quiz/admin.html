@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Rotaract Quiz Admin</title>
+<title>Rotaract Monthly Quiz Admin</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
@@ -27,20 +27,245 @@ table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px so
 .badge.ok{background:#e7f7ef;color:#0b6b57}
 .badge.no{background:#ffecec;color:#b42318}
 .badge.na{background:#eef0f3;color:#555}
-@media(max-width:700px){.grid,.grid3{grid-template-columns:1fr}.wrap{padding:10px}}
+/* Top-3 podium */
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:14px;margin:12px 0 22px}
+.pod-slot{flex:0 0 200px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.pod-slot.empty{opacity:0}
+.pod-label{font-weight:900;font-size:13px;letter-spacing:.5px;color:#0b6b57}
+.pod-name{font-weight:800;margin-top:4px;font-size:15px;line-height:1.2}
+.pod-org{font-size:12px;color:#6c7687;min-height:16px}
+.pod-score{font-weight:900;color:#0b6b57;margin:6px 0 8px;font-size:18px}
+.pod-bar{width:100%;border-radius:12px 12px 0 0;display:flex;align-items:flex-end;justify-content:center;color:#fff;font-weight:900;padding-bottom:8px;box-shadow:inset 0 -6px 0 #0002}
+@media(max-width:700px){.grid,.grid3{grid-template-columns:1fr}.wrap{padding:10px}.podium{flex-wrap:wrap}.pod-slot{flex:1 1 45%}}
+
+/* Advanced responsive polish (presentation only; authentication logic untouched) */
+:root{--brand:#086b56;--brand2:#0b8f70;--line:#dfe7ec}
+body{background:radial-gradient(ellipse at top left,#e0f4ed 0,transparent 38%),linear-gradient(135deg,#f3f7fa,#eef3f8)}
+.wrap{max-width:1320px;padding:clamp(12px,2vw,28px)}
+.card,.metric{box-shadow:0 12px 32px rgba(20,40,60,.055);transition:box-shadow .18s ease,transform .18s ease}
+.metric:hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(11,107,87,.10)}
+button{transition:filter .15s ease,transform .15s ease}
+button:hover{filter:brightness(.97);transform:translateY(-1px)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #0b8f7044;outline-offset:2px}
+input,textarea,select{background:#fff;transition:border-color .15s,box-shadow .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--brand2);box-shadow:0 0 0 3px #0b8f7018;outline:none}
+.nav{position:sticky;top:0;z-index:20;background:#eef4f7eF;backdrop-filter:blur(12px);padding:9px;border:1px solid #dfe7ec;border-radius:14px}
+.nav button{flex:1 1 auto}
+table{min-width:640px}
+th{background:#f5f8fa;color:#455366;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+td,th{padding:12px 10px}
+tbody tr:hover{background:#f7fbf9}
+.quizhero{background:radial-gradient(circle at 90% 10%,#ffffff25,transparent 30%),linear-gradient(120deg,#073b33,#0b6b57 65%,#0b8f70)}
+@media(max-width:700px){.nav{position:static}.nav button{flex:1 1 42%}.card{padding:14px}.wrap{padding:10px}table{min-width:620px}}
+
+/* =====================================================================
+   PREMIUM UI LAYER — presentation only.
+   Authentication, role checks and every data call are untouched.
+   ===================================================================== */
+:root{
+  --navy:#0a1f3d;--navy2:#143866;
+  --em:#0a7d5e;--em-d:#065f47;
+  --gold:#b8913b;--gold-d:#8a6a1c;--gold-l:#f1e2b4;
+  --ink:#102039;--text:#102039;--muted:#586377;--line:#dbe3ec;--paper:#f4f6f9;
+  --brand:#0a7d5e;--brand2:#0a7d5e;
+  --shadow:0 1px 2px rgba(10,31,61,.05),0 10px 30px rgba(10,31,61,.07);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --serif:Georgia,"Iowan Old Style","Palatino Linotype",serif;
+}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--paper);color:var(--ink);line-height:1.5;
+  font-family:Inter,"Segoe UI",system-ui,-apple-system,Roboto,"Noto Sans",sans-serif;
+}
+.wrap{max-width:1280px;padding:clamp(12px,2.2vw,28px)}
+.muted,small{color:var(--muted)}
+h1,h2,h3{color:var(--navy)}
+code{font-family:var(--mono);font-weight:700;font-size:12.5px;background:#eef2f7;border:1px solid var(--line);padding:3px 7px;border-radius:6px;color:var(--navy)}
+
+/* ---------- Login ---------- */
+#login{
+  max-width:430px;padding:clamp(22px,4vw,32px);border-top:5px solid var(--gold);border-radius:22px;
+  margin-top:clamp(24px,8vh,70px)!important;
+}
+#login::before{
+  content:"";display:block;width:80px;height:80px;margin:0 auto 10px;border-radius:50%;
+  background:var(--navy) url("/rotaract.jpg") center/cover no-repeat;border:3px solid var(--gold);
+  box-shadow:0 8px 20px rgba(10,31,61,.25);
+}
+#login h1{margin:6px 0 4px;text-align:center;font-family:var(--serif);font-size:clamp(20px,5vw,24px);line-height:1.25}
+#login>.muted:first-of-type{text-align:center;margin-top:0}
+#login .primary{margin-top:16px!important}
+
+/* ---------- App header ---------- */
+#app>.row{
+  margin-bottom:12px;padding:clamp(14px,2.4vw,20px) clamp(16px,3vw,26px);border-radius:20px;
+  background:linear-gradient(160deg,var(--navy),var(--navy2));border-bottom:4px solid var(--gold);box-shadow:var(--shadow);
+}
+#app>.row h1{margin:0;color:#fff;font-family:var(--serif);font-size:clamp(18px,3vw,26px);line-height:1.25}
+#app>.row h1::before{
+  content:"";display:inline-block;width:40px;height:40px;margin-right:12px;vertical-align:middle;border-radius:50%;
+  background:#fff url("/rotaract.jpg") center/cover no-repeat;border:2px solid var(--gold);
+}
+#app>.row small{display:block;margin-top:4px;color:#cfdcf0}
+#app>.row .secondary{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.35)}
+#app>.row .secondary:hover{background:rgba(255,255,255,.22)}
+
+/* ---------- Navigation ---------- */
+.nav{
+  flex-wrap:nowrap;overflow-x:auto;gap:6px;margin:12px 0;padding:8px;scrollbar-width:thin;
+  background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);
+}
+.nav button{flex:0 0 auto;white-space:nowrap;min-height:42px;padding:10px 16px;background:transparent;color:var(--navy);font-size:14px}
+.nav button:hover{background:#eef2f7;filter:none}
+.nav button.active{background:var(--navy);color:#fff;box-shadow:inset 0 -3px 0 var(--gold)}
+
+/* ---------- Cards, panels, headings ---------- */
+.card{border:1px solid var(--line);border-radius:18px;padding:clamp(16px,2.6vw,28px);margin:14px 0;box-shadow:var(--shadow)}
+.tab.card{border-top:4px solid var(--em)}
+.card h2{margin:0 0 12px;font-size:clamp(18px,2.4vw,22px);line-height:1.25}
+#app .row>h2{margin:0}
+#app .row{gap:12px}
+
+/* ---------- Dashboard ---------- */
+.quizhero{
+  padding:clamp(18px,3vw,30px);border-radius:18px;border-bottom:4px solid var(--gold);
+  background:linear-gradient(160deg,var(--navy),var(--navy2));color:#fff;
+}
+.quizhero small{color:#cfdcf0;letter-spacing:.08em}
+.quizhero h2{margin:8px 0!important;color:#fff;font-family:var(--serif);font-size:clamp(22px,3.8vw,30px)!important}
+.quizhero b{color:var(--gold-l)}
+.metric{background:#fff;border:1px solid var(--line);border-top:3px solid var(--gold);border-radius:16px;padding:18px 20px}
+.metric b{color:var(--navy);font-size:clamp(26px,4vw,34px);line-height:1.1;font-variant-numeric:tabular-nums}
+.metric small{display:block;margin-top:6px;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.metric:hover{transform:none}
+@media (max-width:980px){#dashboard .grid3{grid-template-columns:repeat(2,1fr)}}
+#dashboard .grid3{gap:14px;margin-bottom:6px}
+
+/* ---------- Forms ---------- */
+label{margin:14px 0 6px;color:var(--navy);font-size:13px;font-weight:700;letter-spacing:.01em}
+input,textarea,select{
+  min-height:44px;padding:10px 13px;border:1.5px solid #cdd7e3;border-radius:11px;background:#fff;color:var(--ink);font-family:inherit;
+}
+textarea{resize:vertical;line-height:1.5}
+select{
+  -webkit-appearance:none;appearance:none;padding-right:40px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path d='M1 1l6 6 6-6' fill='none' stroke='%230a1f3d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat:no-repeat;background-position:right 14px center;
+}
+input[readonly]{background:#f1f4f8;color:var(--muted)}
+input::placeholder,textarea::placeholder{color:#8392a8}
+input:focus,textarea:focus,select:focus{border-color:var(--em);box-shadow:0 0 0 4px rgba(10,125,94,.16);outline:none}
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
+.grid{gap:6px 20px}
+.grid3{gap:6px 18px}
+#create .row,#questions>button.primary{margin-top:18px}
+#questionQuiz,#participantQuiz,#resultQuiz,#designQuiz{max-width:520px;margin-bottom:8px}
+#designQuiz{width:min(100%,420px)}
+#participantSearch{min-width:240px}
+
+/* ---------- Buttons ---------- */
+button{font-family:inherit;min-height:42px;border-radius:11px;letter-spacing:.01em}
+.primary{background:var(--em);color:#fff;box-shadow:0 3px 10px rgba(6,95,71,.25)}
+.primary:hover{background:var(--em-d);filter:none}
+.secondary{background:#eef2f7;color:var(--navy);border:1px solid var(--line)}
+.secondary:hover{background:#e3e9f1;filter:none}
+.danger{background:#fdeceb;color:#a4231a;border:1px solid #f4c7c3}
+.danger:hover{background:#fadbd8;filter:none}
+button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+/* ---------- Feedback messages ---------- */
+#loginMsg,#saveMsg,#qMsg{
+  margin:14px 0 0;padding:10px 14px;border-radius:10px;font-weight:600;
+  background:#eef3fa;border-left:4px solid var(--navy2);color:var(--ink);
+}
+#loginMsg:empty,#saveMsg:empty,#qMsg:empty{display:none}
+
+/* ---------- Tables ---------- */
+table{border-collapse:separate;border-spacing:0}
+th{
+  background:#eef2f7;color:var(--navy);font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+  padding:12px 12px;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+th:first-child{border-top-left-radius:10px}th:last-child{border-top-right-radius:10px}
+td{padding:12px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:13.5px}
+tbody tr:hover{background:#f6faf8}
+td .primary,td .secondary,td .danger{min-height:36px;padding:7px 12px;margin:2px 4px 2px 0;font-size:12.5px;box-shadow:none}
+div[style*="overflow:auto"]{border:1px solid var(--line);border-radius:12px;-webkit-overflow-scrolling:touch}
+div[style*="overflow:auto"] table{margin:0}
+div[style*="overflow:auto"] tbody tr:last-child td{border-bottom:0}
+#participants>.row{margin-bottom:8px}
+@media (pointer:coarse){td .primary,td .secondary,td .danger{min-height:44px}}
+
+/* Status chips */
+.st{display:inline-flex;align-items:center;gap:6px;padding:3px 11px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.st::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.st-published{background:#e3f4ee;color:var(--em-d)}
+.st-draft{background:#fff3d1;color:#7a5800}
+.st-closed{background:#e8ecf2;color:#475466}
+
+/* ---------- Question editor ---------- */
+.q{background:#fcfdfe;border:1px solid var(--line);border-left:5px solid var(--em);border-radius:14px;padding:clamp(14px,2.4vw,20px);margin:14px 0}
+.q>.row b{color:var(--navy);font-size:15px}
+.q .grid{margin-top:2px}
+
+/* ---------- Results podium ---------- */
+.podium{
+  gap:clamp(8px,2vw,16px);margin:6px 0 20px;padding:20px 10px 0;overflow:hidden;
+  background:linear-gradient(180deg,#fbfcfe,#eff3f8);border:1px solid var(--line);border-radius:16px;
+}
+.pod-slot{flex:1 1 0;max-width:220px;min-width:0}
+.pod-label{color:var(--gold-d);font-size:12px}
+.pod-name{color:var(--navy);word-break:break-word}
+.pod-score{color:var(--em-d)}
+.pod-bar{border-radius:12px 12px 0 0;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+@media (max-width:700px){.pod-slot{flex:1 1 30%}}
+
+/* ---------- Participant history modal ---------- */
+.modal{background:rgba(6,16,32,.72);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);padding:clamp(8px,3vw,32px)}
+.modal .box{padding:0;border-radius:20px;border-top:5px solid var(--gold);overflow:hidden}
+.modal .box>.row{position:sticky;top:0;z-index:2;padding:16px 20px;background:#fff;border-bottom:1px solid var(--line)}
+.modal h3{margin:0 0 4px;font-family:var(--serif);font-size:clamp(17px,3vw,20px)}
+#hmBody{padding:6px 20px 20px}
+.qrow{background:#fff;border-radius:14px;padding:14px 16px}
+.qrow>.row{align-items:flex-start;margin-bottom:6px}
+.qrow .opt{padding:8px 12px;border-radius:10px}
+.badge{padding:3px 10px;font-size:11px;letter-spacing:.04em}
+
+/* ---------- Banner & QR ---------- */
+#banner{border-radius:14px;box-shadow:0 14px 40px rgba(10,31,61,.25)}
+#qr{padding:14px;background:#fff;border:1px solid var(--line);border-radius:16px;width:fit-content;max-width:100%;margin-left:auto!important;margin-right:auto!important}
+#qr:empty{display:none!important}
+#design .row:nth-of-type(2){justify-content:center}
+
+/* ---------- Responsive & motion ---------- */
+@media (max-width:700px){
+  .wrap{padding:10px}
+  #app>.row h1::before{width:34px;height:34px;margin-right:10px}
+  .nav{position:static}
+  .nav button{flex:0 0 auto}
+  .card{padding:16px 14px}
+  #participantSearch{min-width:0;width:100%}
+  .modal .box>.row{padding:14px}
+  #hmBody{padding:4px 14px 16px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
 </style>
+<meta name="theme-color" content="#0a1f3d">
 </head>
 <body>
 <div class="wrap">
 <section id="login" class="card" style="max-width:430px;margin:70px auto">
-<h1>🏆 Rotaract Quiz Admin</h1><p class="muted">Admin login uses Supabase Auth + user_roles.</p>
-<label>Email</label><input id="loginEmail" type="email">
-<label>Password</label><input id="loginPass" type="password">
-<button class="primary" style="width:100%;margin-top:12px" onclick="login()">Login</button><p id="loginMsg" class="muted"></p>
+<h1>🏆 Rotaract Monthly Quiz Admin</h1><p class="muted">Admin login uses Supabase Auth + user_roles.</p>
+<label for="loginEmail">Email</label><input id="loginEmail" type="email">
+<label for="loginPass">Password</label><input id="loginPass" type="password">
+<button class="primary" style="width:100%;margin-top:12px" onclick="login()">Login</button><p id="loginMsg" class="muted" aria-live="polite"></p>
 </section>
 
 <section id="app" class="hidden">
-<div class="row"><div><h1>🏆 Rotaract Quiz Admin</h1><small id="who"></small></div><button class="secondary" onclick="logout()">Logout</button></div>
+<div class="row"><div><h1>🏆 Rotaract Monthly Quiz Admin</h1><small id="who"></small></div><button class="secondary" onclick="logout()">Logout</button></div>
 <div class="nav">
 <button onclick="tab('dashboard')" id="n-dashboard">Dashboard</button><button onclick="tab('create')" id="n-create">Create Quiz</button>
 <button onclick="tab('quizzes')" id="n-quizzes">Manage Quizzes</button><button onclick="tab('questions')" id="n-questions">Questions</button>
@@ -52,26 +277,26 @@ table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px so
 <div id="create" class="tab card hidden">
 <h2 id="createTitle">Create Quiz</h2><input type="hidden" id="editId">
 <div class="grid">
-<div><label>Quiz Title *</label><input id="title"></div><div><label>Date *</label><input id="date" type="date"></div>
-<div><label>Start Time *</label><input id="start" type="time"></div><div><label>End Time *</label><input id="end" type="time"></div>
-<div><label>Quiz Window Duration (minutes)</label><input id="duration" type="number" value="30"></div><div><label>Time After Start per Participant (minutes) *</label><input id="attemptDuration" type="number" value="30"></div>
-<div><label>Max Participants</label><input id="max" type="number"></div>
+<div><label for="title">Quiz Title *</label><input id="title"></div><div><label for="date">Date *</label><input id="date" type="date"></div>
+<div><label for="start">Start Time *</label><input id="start" type="time"></div><div><label for="end">End Time *</label><input id="end" type="time"></div>
+<div><label for="duration">Quiz Window Duration (minutes)</label><input id="duration" type="number" value="30" readonly></div><div><label for="attemptDuration">Time After Start per Participant (minutes) *</label><input id="attemptDuration" type="number" value="30"></div>
+<div><label for="max">Max Participants</label><input id="max" type="number"></div>
 </div>
 <p class="muted" style="margin-top:6px">⏱ <b>Time after start</b>: Each participant gets this many minutes once they click "Start". Quiz also closes at End Time.</p>
 <div class="grid3">
-<div><label>Passing Score (%)</label><input id="passing" type="number" min="0" max="100" placeholder="e.g. 60"></div>
-<div><label>Negative Marking (per wrong)</label><input id="negative" type="number" step="0.01" min="0" value="0"></div>
-<div><label>Shuffle Questions</label><select id="shuffle"><option value="false">No</option><option value="true">Yes</option></select></div>
+<div><label for="passing">Passing Score (%)</label><input id="passing" type="number" min="0" max="100" placeholder="e.g. 60"></div>
+<div><label for="negative">Negative Marking (per wrong)</label><input id="negative" type="number" step="0.01" min="0" value="0"></div>
+<div><label for="shuffle">Shuffle Questions</label><select id="shuffle"><option value="false">No</option><option value="true">Yes</option></select></div>
 </div>
 <div class="grid3">
-<div><label>Show Live Ranking</label><select id="liveRanking"><option value="true">Yes</option><option value="false">No</option></select></div>
-<div><label>Show Correct Answers After Submit</label><select id="showAnswers"><option value="true">Yes</option><option value="false">No</option></select></div>
-<div><label>Allow Retake</label><select id="retake"><option value="false">No</option><option value="true">Yes</option></select></div>
+<div><label for="liveRanking">Show Live Ranking</label><select id="liveRanking"><option value="true">Yes</option><option value="false">No</option></select></div>
+<div><label for="showAnswers">Show Correct Answers After Submit</label><select id="showAnswers"><option value="true">Yes</option><option value="false">No</option></select></div>
+<div><label for="retake">Allow Retake</label><select id="retake"><option value="false">No</option><option value="true">Yes</option></select></div>
 </div>
-<label>Description</label><textarea id="desc" rows="3"></textarea>
-<label>Instructions (shown to participants before start)</label><textarea id="instructions" rows="3" placeholder="e.g. Do not refresh the page. Each question has one correct answer."></textarea>
+<label for="desc">Description</label><textarea id="desc" rows="3"></textarea>
+<label for="instructions">Instructions (shown to participants before start)</label><textarea id="instructions" rows="3" placeholder="e.g. Do not refresh the page. Each question has one correct answer."></textarea>
 <div class="row" style="margin-top:12px"><button class="primary" onclick="saveQuiz()">Save Quiz</button><button class="secondary" onclick="newQuiz()">Clear</button></div>
-<p id="saveMsg" class="muted"></p>
+<p id="saveMsg" class="muted" aria-live="polite"></p>
 </div>
 
 <div id="quizzes" class="tab card hidden"><h2>Manage Quizzes</h2><div style="overflow:auto"><table><thead><tr><th>Title</th><th>Date</th><th>Time</th><th>Status</th><th>Actions</th></tr></thead><tbody id="quizRows"></tbody></table></div></div>
@@ -79,12 +304,17 @@ table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px so
 <div id="questions" class="tab card hidden">
 <div class="row"><h2>Questions</h2><button class="secondary" onclick="addQ()">+ Add Question</button></div>
 <select id="questionQuiz" onchange="loadQuestions()"></select><div id="questionList"></div>
-<button class="primary" onclick="saveQuestions()">Save Questions</button><p id="qMsg" class="muted"></p>
+<button class="primary" onclick="saveQuestions()">Save Questions</button><p id="qMsg" class="muted" aria-live="polite"></p>
 </div>
 
 <div id="participants" class="tab card hidden"><div class="row"><h2>Participants</h2><input id="participantSearch" class="searchbox" placeholder="Search name, email, mobile or code…" oninput="loadParticipants()"></div><select id="participantQuiz" onchange="loadParticipants()"></select><p class="muted">Search registered participants and copy their entry code. Delete is available for admin use.</p><div style="overflow:auto"><table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Organization</th><th>Entry Code</th><th>Actions</th></tr></thead><tbody id="participantRows"></tbody></table></div></div>
 
-<div id="results" class="tab card hidden"><h2>Results</h2><select id="resultQuiz" onchange="loadResults()"></select><div style="overflow:auto"><table><thead><tr><th>Rank</th><th>Name</th><th>Organization</th><th>Score</th><th>Time</th><th>Participated Questions</th></tr></thead><tbody id="resultRows"></tbody></table></div></div>
+<div id="results" class="tab card hidden">
+<h2>Results</h2>
+<div id="top3" style="margin-bottom:18px"></div>
+<select id="resultQuiz" onchange="loadResults()"></select>
+<div style="overflow:auto"><table><thead><tr><th>Rank</th><th>Name</th><th>Organization</th><th>Score</th><th>Time</th><th>Participated Questions</th></tr></thead><tbody id="resultRows"></tbody></table></div>
+</div>
 
 <div id="design" class="tab card hidden">
 <div class="row"><h2>Social Banner + QR</h2><select id="designQuiz" onchange="renderDesign()"></select></div>
@@ -96,7 +326,7 @@ table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px so
 </section>
 </div>
 
-<div id="historyModal" class="modal hidden">
+<div id="historyModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="hmTitle">
   <div class="box">
     <div class="row"><div><h3 id="hmTitle">Participant History</h3><small id="hmSub" class="muted"></small></div><button class="secondary" onclick="closeHistory()">Close</button></div>
     <div id="hmBody" style="margin-top:10px"></div>
@@ -126,11 +356,11 @@ async function load(){
  const stats=await Promise.all(quizzes.map(async q=>{const [p,a]=await Promise.all([sb.from("quiz_participants").select("id",{count:"exact",head:true}).eq("quiz_id",q.id),sb.from("quiz_attempts").select("id",{count:"exact",head:true}).eq("quiz_id",q.id).in("result_status",["in_progress","submitted","expired"])]);return {id:q.id,registered:p.count||0,participated:a.count||0}}));
  const totalReg=stats.reduce((n,x)=>n+x.registered,0),totalPart=stats.reduce((n,x)=>n+x.participated,0),active=quizzes.filter(q=>q.status==="published");
  const next=active[0];
- $("dashboard").innerHTML=`<div class="quizhero"><small>ROTARACT CLUB • QUIZ MANAGEMENT</small><h2 style="font-size:28px;margin:8px 0">Welcome to your Quiz Dashboard 👋</h2><p style="margin:0">Track registration, participation, schedules and results from one place.</p>${next?`<p style="margin-top:16px"><b>📌 ${esc(next.title)}</b><br><small>📅 ${esc(next.quiz_date)} &nbsp; · &nbsp; 🕒 ${esc(String(next.start_time).slice(0,5))}–${esc(String(next.end_time).slice(0,5))} Nepal Time &nbsp; · &nbsp; ⏱ ${next.attempt_duration_minutes??next.duration_minutes} min/attempt</small></p>`:`<p><small>No published quiz currently. Publish a quiz to show it on the public index page.</small></p>`}</div><div class="grid3"><div class="metric"><b>${quizzes.length}</b><small>Total Quizzes</small></div><div class="metric"><b>${active.length}</b><small>Published Quizzes</small></div><div class="metric"><b>${totalReg}</b><small>Participants Registered</small></div><div class="metric"><b>${totalPart}</b><small>Attempts (started / submitted)</small></div><div class="metric"><b>${quizzes.filter(q=>q.status==="draft").length}</b><small>Draft Quizzes</small></div><div class="metric"><b>${quizzes.filter(q=>q.status==="closed").length}</b><small>Closed Quizzes</small></div></div><h2 style="margin-top:24px">Quiz Overview</h2><div style="overflow:auto"><table><thead><tr><th>Quiz</th><th>Date & Time</th><th>Status</th><th>Registered</th><th>Participated</th><th>Actions</th></tr></thead><tbody>${quizzes.map(q=>{const st=stats.find(x=>x.id===q.id)||{registered:0,participated:0};return `<tr><td><b>${esc(q.title)}</b></td><td>${esc(q.quiz_date)}<br><small>${esc(String(q.start_time).slice(0,5))}–${esc(String(q.end_time).slice(0,5))}</small><br><small>⏱ ${q.attempt_duration_minutes??q.duration_minutes} min/attempt</small></td><td>${esc(q.status)}</td><td>${st.registered}</td><td>${st.participated}</td><td><button class="secondary" onclick="openDesign('${q.id}')">QR</button> <button class="secondary" onclick="openQuestions('${q.id}')">Questions</button></td></tr>`}).join("")}</tbody></table></div><p class="muted">Public index auto-refreshes and lists published quizzes with a registration QR code.</p>`;
+ $("dashboard").innerHTML=`<div class="quizhero"><small>ROTARACT CLUB • QUIZ MANAGEMENT</small><h2 style="font-size:28px;margin:8px 0">Welcome to your Quiz Dashboard 👋</h2><p style="margin:0">Track registration, participation, schedules and results from one place.</p>${next?`<p style="margin-top:16px"><b>📌 ${esc(next.title)}</b><br><small>📅 ${esc(next.quiz_date)} &nbsp; · &nbsp; 🕒 ${esc(String(next.start_time).slice(0,5))}–${esc(String(next.end_time).slice(0,5))} Nepal Time &nbsp; · &nbsp; ⏱ ${next.attempt_duration_minutes??next.duration_minutes} min/attempt</small></p>`:`<p><small>No published quiz currently. Publish a quiz to show it on the public index page.</small></p>`}</div><div class="grid3"><div class="metric"><b>${quizzes.length}</b><small>Total Quizzes</small></div><div class="metric"><b>${active.length}</b><small>Published Quizzes</small></div><div class="metric"><b>${totalReg}</b><small>Participants Registered</small></div><div class="metric"><b>${totalPart}</b><small>Attempts (started / submitted)</small></div><div class="metric"><b>${quizzes.filter(q=>q.status==="draft").length}</b><small>Draft Quizzes</small></div><div class="metric"><b>${quizzes.filter(q=>q.status==="closed").length}</b><small>Closed Quizzes</small></div></div><h2 style="margin-top:24px">Quiz Overview</h2><div style="overflow:auto"><table><thead><tr><th>Quiz</th><th>Date & Time</th><th>Status</th><th>Registered</th><th>Participated</th><th>Actions</th></tr></thead><tbody>${quizzes.map(q=>{const st=stats.find(x=>x.id===q.id)||{registered:0,participated:0};return `<tr><td><b>${esc(q.title)}</b></td><td>${esc(q.quiz_date)}<br><small>${esc(String(q.start_time).slice(0,5))}–${esc(String(q.end_time).slice(0,5))}</small><br><small>⏱ ${q.attempt_duration_minutes??q.duration_minutes} min/attempt</small></td><td><span class="st st-${esc(q.status)}">${esc(q.status)}</span></td><td>${st.registered}</td><td>${st.participated}</td><td><button class="secondary" onclick="openDesign('${q.id}')">QR</button> <button class="secondary" onclick="openQuestions('${q.id}')">Questions</button></td></tr>`}).join("")}</tbody></table></div><p class="muted">Public index auto-refreshes and lists published quizzes with a registration QR code.</p>`;
  renderRows();
 }
 function renderRows(){
- $("quizRows").innerHTML=quizzes.map(q=>`<tr><td><b>${esc(q.title)}</b></td><td>${q.quiz_date}</td><td>${String(q.start_time).slice(0,5)}–${String(q.end_time).slice(0,5)}<br><small>⏱ ${q.attempt_duration_minutes??q.duration_minutes} min per attempt</small></td><td>${q.status}</td><td>
+ $("quizRows").innerHTML=quizzes.map(q=>`<tr><td><b>${esc(q.title)}</b></td><td>${q.quiz_date}</td><td>${String(q.start_time).slice(0,5)}–${String(q.end_time).slice(0,5)}<br><small>⏱ ${q.attempt_duration_minutes??q.duration_minutes} min per attempt</small></td><td><span class="st st-${esc(q.status)}">${esc(q.status)}</span></td><td>
  <button class="secondary" onclick="editQuiz('${q.id}')">Edit</button>
  <button class="secondary" onclick="cloneQuiz('${q.id}')">Clone</button>
  <button class="secondary" onclick="openQuestions('${q.id}')">Questions</button>
@@ -138,8 +368,39 @@ function renderRows(){
  <button class="${q.status==="published"?"danger":"primary"}" onclick="togglePublish('${q.id}','${q.status}')">${q.status==="published"?"Unpublish":"Publish"}</button> <button class="danger" onclick="deleteQuiz('${q.id}')">Delete</button>
  </td></tr>`).join("");
 }
-function newQuiz(){$("editId").value="";["title","date","start","end","desc","instructions","passing","negative"].forEach(x=>$(x).value="");$("duration").value=30;$("attemptDuration").value=30;$("max").value="";$("shuffle").value="false";$("liveRanking").value="true";$("showAnswers").value="true";$("retake").value="false";$("createTitle").textContent="Create Quiz"}
-async function editQuiz(id){let q=quizzes.find(x=>x.id===id);if(!q)return;tab("create");$("editId").value=id;$("createTitle").textContent="Edit Quiz";$("title").value=q.title;$("date").value=q.quiz_date;$("start").value=q.start_time.slice(0,5);$("end").value=q.end_time.slice(0,5);$("duration").value=q.duration_minutes;$("attemptDuration").value=q.attempt_duration_minutes??q.duration_minutes??30;$("max").value=q.max_participants||"";$("desc").value=q.description||"";$("instructions").value=q.instructions||"";$("passing").value=q.passing_score??"";$("negative").value=q.negative_marking??0;$("shuffle").value=String(!!q.shuffle_questions);$("liveRanking").value=String(q.show_live_ranking!==false);$("showAnswers").value=String(q.show_correct_answers!==false);$("retake").value=String(!!q.allow_retake)}
+
+/* ---------- auto duration from start/end ---------- */
+function minutesBetween(startHHMM, endHHMM){
+  if(!startHHMM || !endHHMM) return null;
+  const [sh,sm]=startHHMM.split(":").map(Number);
+  const [eh,em]=endHHMM.split(":").map(Number);
+  let a=sh*60+sm, b=eh*60+em;
+  if(b<a) b+=24*60; // overnight
+  return b-a;
+}
+function recalcDurations(){
+  const win = minutesBetween($("start").value, $("end").value);
+  if(win!==null && win>0){
+    $("duration").value = win;
+    const per = +$("attemptDuration").value || 0;
+    if(!per || per>win) $("attemptDuration").value = win;
+  }
+}
+["start","end","attemptDuration"].forEach(id=>{
+  const el=$(id); if(!el) return;
+  el.addEventListener("change", ()=>{
+    if(id==="attemptDuration"){
+      const win=minutesBetween($("start").value,$("end").value);
+      const v=+$("attemptDuration").value||0;
+      if(win!==null && v>win){ $("attemptDuration").value=win; }
+    } else {
+      recalcDurations();
+    }
+  });
+});
+
+function newQuiz(){$("editId").value="";["title","date","start","end","desc","instructions","passing","negative"].forEach(x=>$(x).value="");$("title").value="Rotaract Monthly Quiz";$("duration").value=30;$("attemptDuration").value=30;$("max").value="";$("shuffle").value="false";$("liveRanking").value="true";$("showAnswers").value="true";$("retake").value="false";$("createTitle").textContent="Create Quiz";recalcDurations()}
+async function editQuiz(id){let q=quizzes.find(x=>x.id===id);if(!q)return;tab("create");$("editId").value=id;$("createTitle").textContent="Edit Quiz";$("title").value=q.title;$("date").value=q.quiz_date;$("start").value=q.start_time.slice(0,5);$("end").value=q.end_time.slice(0,5);$("duration").value=q.duration_minutes;$("attemptDuration").value=q.attempt_duration_minutes??q.duration_minutes??30;$("max").value=q.max_participants||"";$("desc").value=q.description||"";$("instructions").value=q.instructions||"";$("passing").value=q.passing_score??"";$("negative").value=q.negative_marking??0;$("shuffle").value=String(!!q.shuffle_questions);$("liveRanking").value=String(q.show_live_ranking!==false);$("showAnswers").value=String(q.show_correct_answers!==false);$("retake").value=String(!!q.allow_retake);recalcDurations()}
 async function saveQuiz(){
  const obj={title:$("title").value.trim(),quiz_date:$("date").value,start_time:$("start").value,end_time:$("end").value,duration_minutes:+$("duration").value||30,attempt_duration_minutes:+$("attemptDuration").value||30,max_participants:$("max").value?+$("max").value:null,description:$("desc").value.trim(),instructions:$("instructions").value.trim(),passing_score:$("passing").value?+$("passing").value:null,negative_marking:+$("negative").value||0,shuffle_questions:$("shuffle").value==="true",show_live_ranking:$("liveRanking").value==="true",show_correct_answers:$("showAnswers").value==="true",allow_retake:$("retake").value==="true"};
  if(!obj.title||!obj.quiz_date||!obj.start_time||!obj.end_time){$("saveMsg").textContent="Title, date, start and end time are required.";return}
@@ -199,7 +460,7 @@ async function deleteQuiz(id){const q=quizzes.find(x=>x.id===id);if(!q||!confirm
 
 async function loadResults(){
  let id=$("resultQuiz").value;
- if(!id){$("resultRows").innerHTML="";return}
+ if(!id){$("resultRows").innerHTML="";const t3=document.getElementById("top3");if(t3)t3.innerHTML="";return}
  const {data:participants}=await sb.from("quiz_participants")
    .select("id,full_name,email,organization,registration_code")
    .eq("quiz_id",id);
@@ -238,6 +499,27 @@ async function loadResults(){
      };
    });
    rows.sort((a,b)=>Number(a.rank||9999)-Number(b.rank||9999));
+ }
+ // ---- Top 3 podium ----
+ const top3 = rows.slice(0,3);
+ const slots = [1,0,2]; // visual order: 2nd, 1st, 3rd
+ const labels = {0:"FIRST 🥇",1:"SECOND 🥈",2:"THIRD 🥉"};
+ const heights = {0:170,1:135,2:115};
+ const colors = {0:"#f5b301",1:"#b8c2cc",2:"#c47a3b"};
+ const top3El = document.getElementById("top3");
+ if(top3El){
+   top3El.innerHTML = top3.length
+     ? `<div class="podium">${slots.map(i=>{
+         const r=top3[i]; if(!r) return `<div class="pod-slot empty"></div>`;
+         return `<div class="pod-slot">
+           <div class="pod-label">${labels[i]}</div>
+           <div class="pod-name">${esc(r.name)}</div>
+           <div class="pod-org">${esc(r.organization||"")}</div>
+           <div class="pod-score">${esc(r.score)} <small>/ ${esc(r.total)}</small></div>
+           <div class="pod-bar" style="height:${heights[i]}px;background:${colors[i]}">#${i+1}</div>
+         </div>`;
+       }).join("")}</div>`
+     : `<p class="muted">No submitted attempts yet.</p>`;
  }
  if(!rows.length){$("resultRows").innerHTML='<tr><td colspan="6">No submitted attempts yet.</td></tr>';return;}
  $("resultRows").innerHTML=rows.map(r=>`
@@ -320,19 +602,74 @@ function closeHistory(){ $("historyModal").classList.add("hidden"); $("hmBody").
 
 function fmt(s){s=+s||0;return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
 function quizURL(q){return location.href.replace(/admin\.html.*$/,"index.html")+"?quiz="+q.id}
-function renderDesign(){
- const id=$("designQuiz").value;if(!id)return;design=quizzes.find(q=>q.id===id);if(!design)return;
- $("qr").innerHTML="";new QRCode($("qr"),{text:quizURL(design),width:210,height:210,colorDark:"#111827",colorLight:"#ffffff"});
- const c=$("banner"),x=c.getContext("2d");x.clearRect(0,0,1080,1350);
- const g=x.createLinearGradient(0,0,1080,1350);g.addColorStop(0,"#073b33");g.addColorStop(1,"#0b6b57");x.fillStyle=g;x.fillRect(0,0,1080,1350);
- x.fillStyle="#fff";x.textAlign="center";x.font="bold 64px Arial";x.fillText("ROTARACT QUIZ",540,120);
- x.font="bold 82px Arial";wrapText(x,design.title,540,245,900,95);
- x.font="bold 42px Arial";x.fillText(formatDate(design.quiz_date),540,470);x.fillText(`${design.start_time.slice(0,5)} – ${design.end_time.slice(0,5)} (Nepal Time)`,540,530);
- x.font="bold 34px Arial";x.fillText(`${design.attempt_duration_minutes??design.duration_minutes} MINUTES PER ATTEMPT • NO NEGATIVE MARKING`,540,590);
- x.fillStyle="#fff";x.fillRect(330,650,420,420);
- const qrCanvas=$("qr").querySelector("canvas"), qrImg=$("qr").querySelector("img");
- if(qrCanvas)x.drawImage(qrCanvas,330,650,420,420);else if(qrImg){qrImg.onload=()=>{x.drawImage(qrImg,330,650,420,420)}}
- x.fillStyle="#fff";x.font="bold 40px Arial";x.fillText("SCAN TO JOIN",540,1135);x.font="30px Arial";x.fillText("Register → Start → Answer → See Live Ranking",540,1190);x.font="24px Arial";x.fillText("QR is active only during the configured quiz time.",540,1245);
+
+/* ---------- banner with header/footer/logo images ---------- */
+async function renderDesign(){
+  const id=$("designQuiz").value;if(!id)return;design=quizzes.find(q=>q.id===id);if(!design)return;
+
+  $("qr").innerHTML="";
+  new QRCode($("qr"),{text:quizURL(design),width:210,height:210,colorDark:"#111827",colorLight:"#ffffff"});
+
+  const c=$("banner"), x=c.getContext("2d");
+  const W=c.width, H=c.height;
+  x.clearRect(0,0,W,H);
+
+  const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,"#073b33");g.addColorStop(1,"#0b6b57");
+  x.fillStyle=g;x.fillRect(0,0,W,H);
+
+  const loadImg = src => new Promise(res=>{const im=new Image();im.crossOrigin="anonymous";im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src;});
+  const logoImg = await loadImg("/rotaract.jpg");
+  if(logoImg) drawCircleLogo(x, logoImg, W/2-75, 38, 150);
+
+  x.textAlign="center";
+  x.fillStyle="#fff";
+  x.font="bold 60px Arial";
+  x.fillText("ROTARACT MONTHLY QUIZ", W/2, 250);
+
+  x.font="bold 68px Arial";
+  wrapText(x, design.title, W/2, 350, 900, 82);
+
+  x.font="bold 40px Arial";
+  x.fillText(formatDate(design.quiz_date), W/2, 480);
+  x.fillText(`${design.start_time.slice(0,5)} – ${design.end_time.slice(0,5)} (Nepal Time)`, W/2, 535);
+
+  x.font="bold 30px Arial";
+  x.fillText(`${design.attempt_duration_minutes??design.duration_minutes} MINUTES PER ATTEMPT`, W/2, 585);
+
+  const qrTop = 640;
+  x.fillStyle="#fff"; x.fillRect(W/2-210, qrTop, 420, 420);
+  const qrCanvas=$("qr").querySelector("canvas"), qrImg=$("qr").querySelector("img");
+  if(qrCanvas) x.drawImage(qrCanvas, W/2-210, qrTop, 420, 420);
+  else if(qrImg){ qrImg.onload=()=>{ x.drawImage(qrImg, W/2-210, qrTop, 420, 420); }; }
+
+  x.fillStyle="#fff";
+  x.font="bold 40px Arial";
+  x.fillText("SCAN TO JOIN", W/2, H-90);
+  x.font="28px Arial";
+  x.fillText("Register → Verify Code → Play → Live Ranking", W/2, H-45);
+}
+function drawCover(ctx, img, dx, dy, dw, dh){
+  const iw=img.width, ih=img.height;
+  const scale=Math.max(dw/iw, dh/ih);
+  const sw=dw/scale, sh=dh/scale;
+  const sx=(iw-sw)/2, sy=(ih-sh)/2;
+  ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+}
+function drawCircleLogo(ctx, img, cx, cy, size){
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx+size/2, cy+size/2, size/2, 0, Math.PI*2);
+  ctx.closePath();
+  ctx.clip();
+  const iw=img.width, ih=img.height;
+  const scale=Math.max(size/iw, size/ih);
+  const sw=size/scale, sh=size/scale;
+  const sx=(iw-sw)/2, sy=(ih-sh)/2;
+  ctx.drawImage(img, sx, sy, sw, sh, cx, cy, size, size);
+  ctx.restore();
+  ctx.beginPath();
+  ctx.arc(cx+size/2, cy+size/2, size/2, 0, Math.PI*2);
+  ctx.lineWidth=6; ctx.strokeStyle="#ffffff"; ctx.stroke();
 }
 function wrapText(ctx,text,x,y,maxWidth,lineHeight){let words=String(text).split(" "),line="";for(let n=0;n<words.length;n++){let test=line+words[n]+" ";if(ctx.measureText(test).width>maxWidth&&n>0){ctx.fillText(line.trim(),x,y);line=words[n]+" ";y+=lineHeight}else line=test}ctx.fillText(line.trim(),x,y)}
 function formatDate(s){return new Date(s+"T00:00:00").toLocaleDateString("en-NP",{year:"numeric",month:"long",day:"numeric"})}

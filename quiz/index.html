@@ -1,15 +1,8 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Rotaract Quiz</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Rotaract Monthly Quiz</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 :root{--bg:#f3f7fb;--card:#fff;--text:#152033;--muted:#687386;--brand:#0b6b57;--line:#e5e9f0;--good:#087f5b;--bad:#c92a2a}*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#f1f7f5,#f4f6ff);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text)}.wrap{max-width:850px;margin:auto;padding:18px}.top{text-align:center;padding:18px 0 10px}.logo{font-size:38px}.top h1{margin:5px 0;font-size:30px}.muted{color:var(--muted)}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:21px;margin:14px 0;box-shadow:0 12px 35px #14213d0b}.badge{display:inline-flex;padding:7px 11px;border-radius:999px;background:#e8f7f1;color:var(--good);font-weight:800;font-size:12px}h2,h3{margin-top:0}label{display:block;font-weight:700;margin:13px 0 6px}input,select{width:100%;padding:13px;border:1px solid #d8dee8;border-radius:12px;font-size:16px;background:white}button{border:0;border-radius:13px;padding:13px 16px;font-weight:800;font-size:15px;cursor:pointer}.primary{background:var(--brand);color:white;width:100%}.secondary{background:#edf2f7;color:#233044}.danger{background:#ffe9e9;color:var(--bad)}.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.timer{font-size:26px;font-weight:900;transition:all .2s}.timer.warning30{font-size:34px;color:#d97706;text-shadow:0 0 12px #f59e0b55}.timer.warning20{color:#dc2626;animation:timerPulse .55s infinite alternate}.timer.warning20:nth-child(odd){transform:scale(1.12)}@keyframes timerPulse{from{transform:scale(1);text-shadow:0 0 2px #ef444455}to{transform:scale(1.22);text-shadow:0 0 16px #ef4444aa}}.option.correct{background:#dcfce7!important;border-color:#16a34a!important;color:#166534}.option.incorrect{background:#fee2e2!important;border-color:#dc2626!important;color:#991b1b}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.stat{background:#f1f5f9;border-radius:13px;padding:12px;text-align:center}.stat strong{display:block;font-size:21px}.progress{height:8px;background:#e8edf3;border-radius:99px;overflow:hidden}.bar{height:100%;background:var(--brand);width:0}.option{display:block;width:100%;text-align:left;background:#f8fafc;border:1px solid var(--line);margin:10px 0;padding:15px;border-radius:14px}.option:hover{border-color:var(--brand)}.option b{margin-right:7px}.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.place{padding:12px;text-align:center;background:#f8fafc;border-radius:14px;box-shadow:0 2px 6px rgba(0,0,0,0.05)}.place strong{display:block;font-size:20px;margin-bottom:4px}table{width:100%;border-collapse:collapse}td,th{padding:10px 7px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}.notice{padding:14px;border-radius:14px;background:#fff8df}.hidden{display:none!important}.center{text-align:center}.small{font-size:13px}.quiz-tile{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}.qr{width:120px;height:120px;background:white;padding:5px;border-radius:12px}.code{font-size:20px;letter-spacing:1.5px;font-weight:900;background:#f1f5f9;padding:12px;border-radius:12px;display:inline-block}@media(max-width:600px){.wrap{padding:10px}.card{padding:15px;border-radius:16px;margin:10px 0}.quiz-tile{grid-template-columns:1fr}.qr{width:150px;height:150px}.top h1{font-size:24px;line-height:1.2}.logo{font-size:30px}.stats{grid-template-columns:1fr}.podium{grid-template-columns:1fr}.place{display:grid;grid-template-columns:1fr;gap:4px}.option{padding:16px 13px;font-size:16px;line-height:1.4;min-height:52px}input,select,button{font-size:16px;min-height:46px}.row{align-items:flex-start}.timer.warning30{font-size:30px}table{min-width:420px}td,th{padding:9px 6px;font-size:13px}}
-#celebration{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;display:none}
-#celebration.show{display:block}
-.balloon{position:absolute;bottom:-120px;width:56px;height:72px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;animation:floatUp 3.2s ease-in forwards;opacity:0}
-.balloon::after{content:"";position:absolute;bottom:-34px;left:50%;width:2px;height:34px;background:#94a3b8;transform:translateX(-50%)}
-@keyframes floatUp{0%{transform:translateY(0) scale(.6);opacity:0}15%{opacity:1}100%{transform:translateY(-115vh) scale(1.05);opacity:0}}
-.confetti{position:absolute;width:10px;height:14px;top:-20px;animation:confFall 2.8s linear forwards}
-@keyframes confFall{to{transform:translateY(115vh) rotate(720deg);opacity:0}}
 #startPopup{position:fixed;inset:0;background:#0b1220dd;display:none;align-items:center;justify-content:center;z-index:10000;padding:20px}
 #startPopup.show{display:flex}
 #startPopup .popupBox{background:linear-gradient(135deg,#073b33,#0b6b57);color:#fff;border-radius:24px;padding:36px 28px;max-width:420px;width:100%;text-align:center;box-shadow:0 30px 80px #000a;animation:popIn .35s ease-out}
@@ -18,39 +11,265 @@
 #startPopup .bigCount{font-size:88px;font-weight:900;color:#ffe08a;line-height:1;margin:14px 0;text-shadow:0 0 24px #f59e0baa;animation:pulseBig .5s ease-in-out infinite alternate}
 @keyframes pulseBig{from{transform:scale(1)}to{transform:scale(1.08)}}
 #startPopup .subtle{color:#d5eee6;font-size:14px;margin-top:8px}
-</style></head><body><div class="wrap"><div class="top"><div class="logo">🏆</div><h1 id="title">Rotaract Quiz</h1><div id="subtitle" class="muted">Loading published quizzes…</div></div>
-<section id="statusCard" class="card center"><div id="statusBadge" class="badge">CHECKING</div><h2 id="statusTitle">Please wait</h2><p id="statusText" class="muted"></p><div id="countdown" class="timer"></div></section>
+#submitPopup{position:fixed;inset:0;background:#0b1220dd;display:none;align-items:center;justify-content:center;z-index:10000;padding:20px}
+#submitPopup.show{display:flex}
+#submitPopup .popupBox{background:linear-gradient(135deg,#073b33,#0b6b57);color:#fff;border-radius:24px;padding:32px 26px;max-width:400px;width:100%;text-align:center;box-shadow:0 30px 80px #000a;animation:popIn .35s ease-out}
+#submitPopup h2{margin:0 0 10px;font-size:22px}
+#submitPopup .subtle{color:#d5eee6;font-size:14px;margin:0 0 18px}
+#submitPopup .primary{background:#ffe08a;color:#073b33;font-weight:900}
+
+/* Advanced responsive participant UI */
+body{position:relative;isolation:isolate;background-color:#f4f7fb}body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(#f4f7fbdd,#f4f7fbdd),url("/rotaract.jpg");background-repeat:no-repeat;background-position:center;background-size:min(72vw,620px);opacity:.16}
+:root{--brand:#086b56;--good:#087f5b}
+body{background:radial-gradient(ellipse at 5% 0%,#d9f2e8 0,transparent 36%),radial-gradient(ellipse at 100% 15%,#e4e9ff 0,transparent 32%),#f4f7fb}
+.wrap{max-width:900px;padding:clamp(12px,2vw,26px)}
+.card{box-shadow:0 14px 38px rgba(20,35,60,.065);border-color:#e1e8ed}
+button{transition:transform .15s ease,filter .15s ease}
+button:hover{transform:translateY(-1px);filter:brightness(.98)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #0b8f7044;outline-offset:2px}
+input:focus,select:focus{outline:none;border-color:#0b8f70;box-shadow:0 0 0 3px #0b8f7018}
+.top{padding:22px 0 14px}
+.top h1{letter-spacing:-.6px}
+.option{transition:background .15s,border-color .15s,transform .15s}
+.option:hover{transform:translateY(-1px);background:#effaf5}
+#registerCard,#entryCard,#quizCard,#finalCard{animation:cardIn .25s ease-out}
+@keyframes cardIn{from{opacity:.65;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.wrap{padding:9px}.top{padding-top:12px}.card{padding:16px}}
+
+/* =====================================================================
+   PREMIUM UI LAYER — presentation only.
+   Navy / emerald / white with restrained gold. No selectors, IDs or
+   classes that JavaScript depends on are renamed or removed.
+   ===================================================================== */
+:root{
+  --navy:#0a1f3d;--navy2:#143866;
+  --em:#0a7d5e;--em-d:#065f47;
+  --gold:#b8913b;--gold-d:#8a6a1c;--gold-l:#f1e2b4;
+  --ink:#102039;--muted:#586377;--line:#dbe3ec;--paper:#f4f6f9;
+  --brand:#0a7d5e;--good:#065f47;--bad:#b42323;
+  --r:18px;
+  --shadow:0 1px 2px rgba(10,31,61,.05),0 10px 30px rgba(10,31,61,.07);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --serif:Georgia,"Iowan Old Style","Palatino Linotype",serif;
+}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--paper);color:var(--ink);line-height:1.5;
+  font-family:Inter,"Segoe UI",system-ui,-apple-system,Roboto,"Noto Sans","Noto Sans Devanagari",sans-serif;
+}
+body::before{opacity:.07}
+.wrap{max-width:880px;padding:clamp(12px,2.4vw,28px)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+/* ---------- Hero header ---------- */
+.top{
+  position:relative;overflow:hidden;margin:4px 0 8px;
+  padding:clamp(22px,4vw,34px) 20px clamp(24px,4vw,36px);
+  border-radius:24px;color:#fff;
+  background:linear-gradient(160deg,var(--navy) 0,var(--navy2) 100%);
+  box-shadow:var(--shadow);
+}
+.top::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:linear-gradient(90deg,var(--gold),var(--gold-l),var(--gold))}
+.logo{
+  width:88px;height:88px;margin:0 auto 12px;border-radius:50%;
+  font-size:0;line-height:0;
+  background:var(--navy2) url("/rotaract.jpg") center/cover no-repeat;
+  border:3px solid var(--gold);box-shadow:0 8px 22px rgba(0,0,0,.35);
+}
+.top h1{
+  margin:4px 0 4px;color:#fff;font-family:var(--serif);font-weight:700;
+  font-size:clamp(24px,5.2vw,34px);line-height:1.2;letter-spacing:-.01em;
+}
+.top .muted{color:#cfdcf0;font-size:clamp(14px,2.4vw,16px)}
+
+/* ---------- Cards ---------- */
+.card{
+  background:#fff;border:1px solid var(--line);border-radius:var(--r);
+  padding:clamp(18px,3vw,28px);margin:16px 0;box-shadow:var(--shadow);
+}
+.card h2{margin:0 0 8px;color:var(--navy);font-size:clamp(19px,3.4vw,23px);line-height:1.25;letter-spacing:-.01em}
+.card p{margin-top:0}
+#yearlyWinners{border-top:4px solid var(--gold)}
+#yearlyWinners h2,#finalHeading{font-family:var(--serif)}
+#statusCard{border-top:4px solid var(--gold);padding-top:clamp(22px,3.4vw,30px)}
+#statusTitle{margin-top:12px}
+#registerCard{border-top:4px solid var(--em)}
+#entryCard{border-top:4px solid var(--gold)}
+#quizCard{border-top:4px solid var(--em);padding:clamp(18px,3.6vw,34px)}
+#finalCard{border-top:4px solid var(--gold)}
+
+/* ---------- Badges & timers ---------- */
+.badge{
+  background:#e3f4ee;color:var(--em-d);border:1px solid #bfe3d6;
+  padding:6px 12px;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+}
+.timer{font-variant-numeric:tabular-nums;letter-spacing:.02em;color:var(--navy)}
+#quizCard .timer{padding:4px 14px;border-radius:12px;background:#f1f5f9;border:1px solid var(--line)}
+#qCount{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* ---------- Forms ---------- */
+label{margin:16px 0 6px;color:var(--navy);font-size:13px;font-weight:700;letter-spacing:.01em}
+input,select{
+  min-height:48px;padding:12px 14px;border:1.5px solid #cdd7e3;border-radius:12px;
+  background:#fff;color:var(--ink);font-family:inherit;
+}
+select{
+  -webkit-appearance:none;appearance:none;padding-right:40px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path d='M1 1l6 6 6-6' fill='none' stroke='%230a1f3d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat:no-repeat;background-position:right 14px center;
+}
+input::placeholder{color:#8392a8}
+input:focus,select:focus{border-color:var(--em);box-shadow:0 0 0 4px rgba(10,125,94,.16)}
+input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
+input:disabled,select:disabled{background:#f1f4f8;color:var(--muted)}
+#entryCode{font-family:var(--mono);font-size:20px;font-weight:700;letter-spacing:.12em;text-align:center}
+#entryCode::placeholder{letter-spacing:.06em;font-weight:500}
+#regMsg,#entryMsg{min-height:1.4em;margin:12px 0 0;font-weight:600}
+
+/* ---------- Buttons ---------- */
+button{font-family:inherit;min-height:46px;border-radius:12px;letter-spacing:.01em}
+.primary{background:var(--em);color:#fff;box-shadow:0 4px 14px rgba(6,95,71,.28);margin-top:6px}
+.primary:hover{background:var(--em-d);filter:none}
+.primary:active{transform:translateY(0)}
+.primary:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+.secondary{background:#eef2f7;color:var(--navy);border:1px solid var(--line)}
+.secondary:hover{background:#e4eaf2;filter:none}
+button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+/* ---------- Registration confirmation ---------- */
+.notice{background:#fbf6e6;border:1px solid #ecdba4;color:#44350c;border-radius:14px;padding:16px}
+.notice p{margin:6px 0}
+.code{
+  font-family:var(--mono);font-size:20px;font-weight:800;letter-spacing:.14em;color:var(--navy);
+  background:#fff;border:2px dashed var(--gold);padding:12px 18px;border-radius:12px;
+  user-select:all;-webkit-user-select:all;word-break:break-all;
+}
+
+/* ---------- Upcoming / live quiz tiles ---------- */
+.quiz-tile{border-left:6px solid var(--em);gap:clamp(14px,3vw,28px)}
+.quiz-tile h2{margin:10px 0 6px}
+.quiz-tile p{margin:6px 0;color:var(--ink)}
+.quiz-tile a{display:block;margin-top:14px;text-decoration:none}
+.quiz-tile small{display:block;margin-top:8px;color:var(--muted);text-align:center}
+.qr{
+  width:156px;height:156px;padding:8px;margin-inline:auto;display:grid;place-items:center;overflow:hidden;
+  background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+}
+.qr img,.qr canvas{max-width:100%;height:auto}
+
+/* ---------- Progress & question ---------- */
+.progress{height:10px;background:#e6ebf2;margin:14px 0 18px!important}
+.bar{background:linear-gradient(90deg,var(--em),#19a47f);transition:width .35s ease}
+#question{margin:4px 0 16px;color:var(--navy);font-size:clamp(19px,3.8vw,25px);line-height:1.4;letter-spacing:-.005em}
+
+.option{
+  display:flex;align-items:flex-start;gap:14px;width:100%;text-align:left;
+  min-height:58px;margin:10px 0;padding:12px 16px;
+  background:#fff;color:var(--ink);border:1.5px solid var(--line);border-radius:14px;
+  font-size:16px;font-weight:600;line-height:1.45;box-shadow:0 1px 2px rgba(10,31,61,.04);
+}
+.option b{
+  flex:0 0 auto;display:inline-grid;place-items:center;width:34px;height:34px;margin:0;
+  border-radius:10px;background:var(--navy);color:#fff;font-size:14px;font-weight:800;
+}
+.option:hover:not(:disabled){border-color:var(--em);background:#f1faf6;transform:none}
+.option:disabled{cursor:default;opacity:1}
+.option:disabled:hover{background:#fff;border-color:var(--line);transform:none}
+.option.correct b{background:#15803d}
+.option.incorrect b{background:#b91c1c}
+
+/* ---------- Podium (yearly winners + live leaderboard) ---------- */
+.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end;margin:16px 0 6px}
+.place{
+  padding:14px 10px;text-align:center;word-break:break-word;
+  background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+}
+.place strong{display:block;margin-bottom:6px;color:var(--navy);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.place b{display:block;color:var(--ink);font-size:16px;line-height:1.3}
+.place span{display:block;margin-top:4px;color:var(--muted);font-size:13px}
+.podium .place:nth-child(1){order:2;padding-top:28px;padding-bottom:24px;border-top:4px solid var(--gold);background:linear-gradient(180deg,#fff8e1,#fff 70%)}
+.podium .place:nth-child(2){order:1;padding-top:20px;padding-bottom:16px;border-top:4px solid #8e9bb0}
+.podium .place:nth-child(3){order:3;border-top:4px solid #b27a3c}
+.podium .place:only-child{order:0;grid-column:1/-1;padding:18px;border-top:4px solid var(--line);background:#fff;color:var(--muted)}
+
+/* ---------- Leaderboard table & stats ---------- */
+table{border-collapse:separate;border-spacing:0;width:100%}
+th{
+  background:#eef2f7;color:var(--navy);font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+  padding:11px 10px;border-bottom:1px solid var(--line);
+}
+th:first-child{border-top-left-radius:10px}th:last-child{border-top-right-radius:10px}
+td{padding:12px 10px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+#board tr:hover{background:#f6faf8}
+#board td:first-child{width:46px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--muted)}
+#board tr:nth-child(-n+3) td:first-child{color:var(--gold-d)}
+#board td:nth-child(3),#board td:nth-child(4){font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat{background:#f4f6f9;border:1px solid var(--line);border-radius:14px}
+.stat strong{color:var(--navy)}
+
+/* ---------- Start & submit dialogs ---------- */
+#startPopup,#submitPopup{background:rgba(6,16,32,.82);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#startPopup .popupBox,#submitPopup .popupBox{
+  background:linear-gradient(160deg,var(--navy),var(--navy2));
+  border:1px solid rgba(241,226,180,.4);border-top:5px solid var(--gold);
+  border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,.55);
+}
+#startPopup .bigCount{color:var(--gold-l);text-shadow:0 0 28px rgba(184,145,59,.55)}
+#startPopup .subtle,#submitPopup .subtle{color:#d4e0f2}
+#submitPopup .primary{background:var(--gold-l);color:var(--navy);box-shadow:0 6px 18px rgba(0,0,0,.3)}
+#submitPopup .primary:hover{background:#fff}
+
+/* ---------- Motion & responsiveness ---------- */
+@media (max-width:760px){
+  .podium{grid-template-columns:1fr}
+  .podium .place:nth-child(n){order:0;padding:14px 12px}
+}
+@media (max-width:600px){
+  .wrap{padding:10px}
+  .top{border-radius:20px;margin-top:0}
+  .logo{width:72px;height:72px}
+  .card{padding:18px 16px;border-radius:16px;margin:12px 0}
+  .option{padding:12px 13px;min-height:56px}
+  .quiz-tile{border-left-width:5px}
+  td,th{padding:10px 7px;font-size:13px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+</style>
+<meta name="theme-color" content="#0a1f3d"></head><body><div class="wrap"><div class="top"><div class="logo" role="img" aria-label="Rotaract Club logo">🏆</div><h1 id="title">Rotaract Monthly Quiz</h1><div id="subtitle" class="muted">Monthly knowledge, fellowship and service</div></div><section id="yearlyWinners" class="card"><h2>🏆 Yearly Winners</h2><p class="muted small">Ranked by the number of different quizzes played using the same mobile number.</p><div id="yearlyPodium" class="podium"><div class="place">Loading winners…</div></div></section>
+<section id="statusCard" class="card center"><div id="statusBadge" class="badge">CHECKING</div><h2 id="statusTitle">Please wait</h2><p id="statusText" class="muted" aria-live="polite"></p><div id="countdown" class="timer"></div></section>
 <section id="quizList" class="hidden"></section>
-<section id="registerCard" class="card hidden"><h2 id="registerHeading">📝 Register for this Quiz</h2><p class="muted">Register now, even before the start time. Your personal entry code will be shown below. Keep it safe.</p><label>Full Name *</label><input id="name" autocomplete="name"><label>Email *</label><input id="email" type="email" autocomplete="email"><label>Mobile Number *</label><input id="phone" type="tel" autocomplete="tel"><label>Organization / Club</label><input id="org"><label>Member Type</label><select id="member"><option value="">Select</option><option>Rotaractor</option><option>Rotarian</option><option>Guest</option><option>Other</option></select><button class="primary" onclick="registerUser()">Register & Get Entry Code</button><p id="regMsg" class="small muted"></p><div id="savedCodeBox" class="notice hidden"><b>✅ You are registered!</b><p>Your entry code:</p><div class="code" id="savedCode"></div><p class="small">Use this code at quiz start. This device will remember your registration until the quiz ends.</p><button class="secondary" onclick="copySavedCode()">Copy My Code</button></div></section>
-<section id="entryCard" class="card hidden"><h2>🔐 Enter Registration Code</h2><p class="muted">You must enter the code given at registration before starting the quiz.</p><label>Registration Code</label><input id="entryCode" autocomplete="one-time-code" placeholder="RAC-XXXXXXXXXX" style="text-transform:uppercase"><button class="primary" onclick="enterQuiz()">Verify Code & Start Quiz 🚀</button><p id="entryMsg" class="small muted"></p></section>
+<section id="registerCard" class="card hidden"><h2 id="registerHeading">📝 Register for this Quiz</h2><p class="muted">Register now, even before the start time. Your personal entry code will be shown below. Keep it safe.</p><label for="name">Full Name *</label><input id="name" autocomplete="name"><label for="email">Email *</label><input id="email" type="email" autocomplete="email"><label for="phone">Mobile Number *</label><input id="phone" type="tel" autocomplete="tel"><label for="org">Organization / Club</label><input id="org"><label for="member">Member Type</label><select id="member"><option value="">Select</option><option>Rotaractor</option><option>Rotarian</option><option>Guest</option><option>Other</option></select><button class="primary" onclick="registerUser()">Register & Get Entry Code</button><p id="regMsg" class="small muted" aria-live="polite"></p><div id="savedCodeBox" class="notice hidden"><b>✅ You are registered!</b><p>Your entry code:</p><div class="code" id="savedCode"></div><p class="small">Use this code at quiz start. This device will remember your registration until the quiz ends.</p><button class="secondary" onclick="copySavedCode()">Copy My Code</button></div></section>
+<section id="entryCard" class="card hidden"><h2>🔐 Enter Registration Code</h2><p class="muted">You must enter the code given at registration before starting the quiz.</p><label for="entryCode">Registration Code</label><input id="entryCode" autocomplete="one-time-code" placeholder="RAC-XXXXXXXXXX" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"><button class="primary" onclick="enterQuiz()">Verify Code & Start Quiz 🚀</button><p id="entryMsg" class="small muted" aria-live="polite"></p></section>
 <section id="quizCard" class="card hidden"><div class="row"><span id="qCount" class="badge"></span><span id="timer" class="timer">00:00</span></div><div class="progress" style="margin:14px 0"><div id="bar" class="bar"></div></div><h2 id="question"></h2><div id="options"></div></section>
 
-<!-- Final Screen: Score + Leaderboard in one place -->
+<!-- Final Screen: Leaderboard is top, Score is below -->
 <section id="finalCard" class="card hidden">
-  <div id="finalScoreBox" class="center" style="margin-bottom: 30px;"></div>
-  
-  <div class="row" style="border-top: 2px solid var(--line); padding-top: 20px;">
-    <h2>Live Leaderboard</h2><span class="badge">REALTIME</span>
+  <div class="row">
+    <h2 id="finalHeading">🎉 Quiz completed!</h2><span class="badge">LIVE LEADERBOARD</span>
   </div>
   <div id="podium" class="podium"></div>
-  <div id="boardStats" class="stats">
+  <div id="boardStats" class="stats hidden">
     <div class="stat"><strong id="totalParticipants">—</strong><span class="small">Registered participants</span></div>
     <div class="stat"><strong id="completedCount">—</strong><span class="small">Completed</span></div>
     <div class="stat"><strong id="averageScore">—</strong><span class="small">Average marks</span></div>
   </div>
-  <p class="small muted">Live rankings refresh automatically. Marks are shown as score / total possible marks.</p>
+  <p class="small muted">Live rankings refresh automatically.</p>
   <div style="overflow:auto;margin-top:12px">
     <table>
       <thead><tr><th>#</th><th>Participant</th><th>Score</th><th>Time</th></tr></thead>
       <tbody id="board"></tbody>
     </table>
   </div>
+  
+  <div id="finalScoreBox" class="center" style="margin-top: 25px;"></div>
 </section>
 
 </div>
-<div id="celebration"></div>
 
-<div id="startPopup">
+<div id="startPopup" role="dialog" aria-modal="true" aria-label="Quiz is starting">
   <div class="popupBox">
     <h2>🎬 Quiz is starting!</h2>
     <div class="bigCount" id="popupCount">3</div>
@@ -58,10 +277,18 @@
   </div>
 </div>
 
+<div id="submitPopup" role="dialog" aria-modal="true" aria-label="Submit quiz">
+  <div class="popupBox">
+    <h2>🎉 That was the last question!</h2>
+    <p class="subtle" id="submitPopupSub">You have answered all questions. Submit now to see your score and the live leaderboard.</p>
+    <button class="primary" id="submitPopupBtn" onclick="confirmSubmit()">✅ Submit Quiz</button>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL="https://kbyfvqkfcxqgjjtfvvxf.supabase.co",SUPABASE_KEY="sb_publishable_-bOiDndDXdz_FgXq1MFkag_ioCcg8nv";
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let quizId=new URLSearchParams(location.search).get("quiz"),quiz=null,questions=[],answers={},current=0,attempt=null,serverOffset=0,deadline=null,clock=null,statusInterval=null,soundCtx=null,startedSoundFor="",warnedSoundFor="",participant=null,answeredCurrent=false,autoSubmitBusy=false,lastTimerTone="",registeredOnDevice=false,autoStartBusy=false,autoStartedForKey="",preStartInterval=null,preStartDoneFor="",startPopupTimer=null,startPopupShown=false;
+let quizId=new URLSearchParams(location.search).get("quiz"),quiz=null,questions=[],answers={},current=0,attempt=null,serverOffset=0,deadline=null,clock=null,statusInterval=null,soundCtx=null,startedSoundFor="",warnedSoundFor="",participant=null,answeredCurrent=false,autoSubmitBusy=false,lastTimerTone="",registeredOnDevice=false,autoStartBusy=false,autoStartedForKey="",preStartInterval=null,preStartDoneFor="",startPopupTimer=null,startPopupShown=false,liveBoardInterval=null;
 
 const $=id=>document.getElementById(id);
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
@@ -78,7 +305,6 @@ document.addEventListener('click', function initAudioOnce() {
 function beep(freq=880,duration=.22){try{if(!soundCtx)soundCtx=new(window.AudioContext||window.webkitAudioContext)();if(soundCtx.state==="suspended")soundCtx.resume();const o=soundCtx.createOscillator(),g=soundCtx.createGain();o.type="sine";o.frequency.value=freq;g.gain.setValueAtTime(.001,soundCtx.currentTime);g.gain.exponentialRampToValueAtTime(.18,soundCtx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.001,soundCtx.currentTime+duration);o.connect(g);g.connect(soundCtx.destination);o.start();o.stop(soundCtx.currentTime+duration+.03)}catch(e){}}
 function longBeep(){try{if(!soundCtx)soundCtx=new(window.AudioContext||window.webkitAudioContext)();if(soundCtx.state==="suspended")soundCtx.resume();const o=soundCtx.createOscillator(),g=soundCtx.createGain();o.type="sine";o.frequency.value=1040;g.gain.setValueAtTime(.001,soundCtx.currentTime);g.gain.exponentialRampToValueAtTime(.25,soundCtx.currentTime+.03);g.gain.exponentialRampToValueAtTime(.001,soundCtx.currentTime+1.2);o.connect(g);g.connect(soundCtx.destination);o.start();o.stop(soundCtx.currentTime+1.25)}catch(e){}}
 function hideAll(){["registerCard","entryCard","quizCard","finalCard","quizList"].forEach(x=>$(x).classList.add("hidden"))}
-function celebrate(){const c=$("celebration");if(!c)return;c.innerHTML="";c.classList.add("show");const colors=["#ef4444","#f59e0b","#10b981","#3b82f6","#8b5cf6","#ec4899","#14b8a6","#f97316"];for(let i=0;i<18;i++){const b=document.createElement("div");b.className="balloon";const col=colors[i%colors.length];b.style.background=`radial-gradient(circle at 30% 30%, #ffffffcc, ${col})`;b.style.left=(Math.random()*90+5)+"vw";b.style.animationDelay=(Math.random()*0.9)+"s";b.style.animationDuration=(2.6+Math.random()*1.4)+"s";c.appendChild(b)}for(let i=0;i<40;i++){const p=document.createElement("div");p.className="confetti";p.style.background=colors[Math.floor(Math.random()*colors.length)];p.style.left=(Math.random()*100)+"vw";p.style.animationDelay=(Math.random()*1.2)+"s";p.style.transform=`rotate(${Math.random()*360}deg)`;c.appendChild(p)}setTimeout(()=>{c.classList.remove("show");c.innerHTML=""},4200)}
 
 function showStartPopup(callback){
   if(startPopupShown){return;}
@@ -105,6 +331,20 @@ function showStartPopup(callback){
       },500);
     }
   },1000);
+}
+
+function showSubmitPopup(){
+  document.querySelectorAll("#options .option").forEach(b=>b.classList.add("hidden"));
+  $("submitPopup").classList.add("show");
+  beep(880,.2); setTimeout(()=>beep(1170,.25),180);
+}
+
+async function confirmSubmit(){
+  const btn=$("submitPopupBtn");
+  if(btn){btn.disabled=true;btn.textContent="Submitting…";}
+  $("submitPopup").classList.remove("show");
+  await submitQuiz(false);
+  if(btn){btn.disabled=false;btn.textContent="✅ Submit Quiz";}
 }
 
 function showStartError(msg){
@@ -146,8 +386,15 @@ async function loadQuiz(){
     return;
   }
   quiz=data[0];
+  const scheduledEnd=new Date(quiz.ends_at).getTime();
+  if(Number.isFinite(scheduledEnd)&&Date.now()>=scheduledEnd){
+    hideAll();$("yearlyWinners").classList.remove("hidden");$("statusCard").classList.remove("hidden");
+    $("title").textContent="Rotaract Monthly Quiz";$("subtitle").textContent="Monthly knowledge, fellowship and service";
+    $("statusBadge").textContent="CLOSED";$("statusTitle").textContent="This quiz has ended";$("statusText").textContent="Past quizzes are no longer displayed. See the yearly winners below.";$("countdown").textContent="";
+    await loadYearlyWinners();return;
+  }
   $("title").textContent=quiz.title;
-  $("subtitle").textContent=quiz.description||"Rotaract Quiz";
+  $("subtitle").textContent=quiz.description||"Rotaract Monthly Quiz";
   await restoreLocalRegistration();
   renderStatus();
   statusInterval=setInterval(async()=>{await syncServer();renderStatus()},1000);
@@ -157,7 +404,7 @@ async function loadQuiz(){
       if(fresh.data?.length){
         quiz=fresh.data[0];
         $("title").textContent=quiz.title;
-        $("subtitle").textContent=quiz.description||"Rotaract Quiz";
+        $("subtitle").textContent=quiz.description||"Rotaract Monthly Quiz";
         renderStatus();
       }
     }
@@ -165,14 +412,29 @@ async function loadQuiz(){
 }
 
 async function loadPublishedList(){
-  let{data,error}=await sb.from("quiz_quizzes").select("id,title,description,quiz_date,start_time,end_time,duration_minutes,status").eq("status","published").order("quiz_date",{ascending:true});
+  const {data,error}=await sb.from("quiz_quizzes").select("id,title,description,quiz_date,start_time,end_time,duration_minutes,status").eq("status","published").order("quiz_date",{ascending:true});
   if(error){$("statusTitle").textContent="Unable to load quizzes";$("statusText").textContent=error.message;return}
-  $("statusTitle").textContent=data?.length?"Published Rotaract Quizzes":"No published quizzes yet";
-  $("statusText").textContent="This page refreshes automatically to show newly published quizzes.";
+  const now=Date.now(), threeDays=now+3*24*60*60*1000;
+  const visible=(data||[]).filter(q=>{
+    const start=new Date(`${q.quiz_date}T${String(q.start_time).slice(0,8)}+05:45`).getTime();
+    const end=new Date(`${q.quiz_date}T${String(q.end_time).slice(0,8)}+05:45`).getTime();
+    return Number.isFinite(start)&&Number.isFinite(end)&&now<end&&start<=threeDays;
+  });
+  $("statusTitle").textContent=visible.length?"Upcoming & Live Monthly Quizzes":"No upcoming or live quiz";
+  $("statusText").textContent="A quiz appears 3 days before it starts and disappears when its scheduled end time passes.";
   $("quizList").classList.remove("hidden");
-  $("quizList").innerHTML=(data||[]).map(q=>`<article class="card quiz-tile"><div><span class="badge">${esc(q.status.toUpperCase())}</span><h2>${esc(q.title)}</h2><p>${esc(q.description||"Rotaract Quiz")}</p><p><b>📅 ${esc(q.quiz_date)}</b><br>🕒 ${esc(String(q.start_time).slice(0,5))} – ${esc(String(q.end_time).slice(0,5))} (Nepal Time)<br>⏱ ${q.duration_minutes} minutes</p><a href="?quiz=${q.id}"><button class="primary">Register / Open Quiz</button></a></div><div><div id="qr-${q.id}" class="qr"></div><small>Scan QR to register</small></div></article>`).join("");
-  setTimeout(()=>{(data||[]).forEach(q=>{let el=$("qr-"+q.id);if(el)new QRCode(el,{text:new URL("?quiz="+q.id,location.href).href,width:140,height:140})})},50);
+  $("quizList").innerHTML=visible.map(q=>`<article class="card quiz-tile"><div><span class="badge">${esc(q.status.toUpperCase())}</span><h2>${esc(q.title)}</h2><p>${esc(q.description||"Rotaract Monthly Quiz")}</p><p><b>📅 ${esc(q.quiz_date)}</b><br>🕒 ${esc(String(q.start_time).slice(0,5))} – ${esc(String(q.end_time).slice(0,5))} (Nepal Time)<br>⏱ ${q.duration_minutes} minutes</p><a href="?quiz=${q.id}"><button class="primary">Register / Open Quiz</button></a></div><div><div id="qr-${q.id}" class="qr"></div><small>Scan QR to register</small></div></article>`).join("")||'<div class="card center">No Monthly Quiz is available right now. Please check again soon.</div>';
+  setTimeout(()=>{visible.forEach(q=>{const el=$("qr-"+q.id);if(el)new QRCode(el,{text:new URL("?quiz="+q.id,location.href).href,width:140,height:140})})},50);
+  await loadYearlyWinners();
   setTimeout(()=>location.reload(),60000);
+}
+
+async function loadYearlyWinners(){
+  const box=$("yearlyPodium");if(!box)return;
+  const {data,error}=await sb.rpc("quiz_yearly_winners");
+  if(error){box.innerHTML='<div class="place">Yearly winners will appear here once available.</div>';console.warn('Yearly winners:',error.message);return}
+  const rows=(data||[]).slice(0,3);
+  box.innerHTML=rows.length?rows.map((w,i)=>`<div class="place"><strong>${['🥇 1st Place','🥈 2nd Place','🥉 3rd Place'][i]}</strong><b>${esc(w.full_name||'Participant')}</b><span>${Number(w.quizzes_played)||0} quizzes played</span></div>`).join(''):'<div class="place">No yearly winners yet</div>';
 }
 
 function lockRegistration(){["name","email","phone","org","member"].forEach(id=>$(id).disabled=true);const b=$("registerCard").querySelector("button.primary");if(b)b.disabled=true}
@@ -228,37 +490,8 @@ async function verifyParticipantInDb(){
 }
 
 async function tryAutoStart(){
-  if(!quiz||!registeredOnDevice||!participant?.registration_code)return;
-  if(attempt||autoStartBusy)return;
-  const now=localNow(),start=new Date(quiz.starts_at).getTime(),end=new Date(quiz.ends_at).getTime();
-  if(quiz.status!=="published"||now<start||now>=end)return;
-  const key=quiz.id+"|"+start;
-  if(autoStartedForKey===key)return;
-  const usedKey="quiz_submitted_"+quizId+"_"+(participant.registration_code||"");
-  if(localStorage.getItem(usedKey)==="1")return;
-  autoStartBusy=true;autoStartedForKey=key;
-  try{
-    const p=await verifyParticipantInDb();
-    if(!p){
-      autoStartBusy=false;autoStartedForKey="";
-      renderStatus();
-      return;
-    }
-    showStartPopup(async()=>{
-      try{
-        await startAttempt(participant.participant_id);
-      }catch(e){
-        console.error("[tryAutoStart] startAttempt error:",e);
-      }finally{
-        autoStartBusy=false;
-      }
-    });
-  }catch(e){
-    console.error("[tryAutoStart] prep error:",e);
-    showStartError(e?.message||String(e));
-    autoStartedForKey="";
-    autoStartBusy=false;
-  }
+  // Deliberately do not auto-start: participants must explicitly verify their code.
+  return;
 }
 
 function startPreStartCountdown(){
@@ -285,7 +518,29 @@ function startPreStartCountdown(){
   },250);
 }
 
-function renderStatus(){
+async function showLiveLeaderboardFirst(){
+  $("finalCard").classList.remove("hidden");
+  $("statusCard").classList.add("hidden");
+  const box=$("finalScoreBox");
+  if(box){
+    box.innerHTML=`<div style="background:#fff8df; border:1px solid #f0c419; border-radius:14px; padding:16px; text-align:left;">
+      <b>🟢 Quiz is LIVE</b>
+      <p class="small" style="margin:6px 0 0;">This is the live leaderboard. Register or enter your code below to take part.</p>
+    </div>`;
+  }
+  await loadBoard();
+  if(!liveBoardInterval){
+    liveBoardInterval=setInterval(loadBoard,5000);
+  }
+}
+
+function hideLiveLeaderboardFirst(){
+  if(liveBoardInterval){clearInterval(liveBoardInterval);liveBoardInterval=null;}
+  $("finalCard").classList.add("hidden");
+  $("finalScoreBox").innerHTML="";
+}
+
+async function renderStatus(){
   if(!quiz)return;
   const now=localNow(),start=new Date(quiz.starts_at).getTime(),end=new Date(quiz.ends_at).getTime(),key=quiz.id+"|"+start;
 
@@ -297,25 +552,28 @@ function renderStatus(){
     startedSoundFor=key;beep(1040,.45);setTimeout(()=>beep(1310,.55),260);
   }
   if(quiz.status!=="published"){
+    hideLiveLeaderboardFirst();
     $("statusBadge").textContent="NOT LIVE";
     $("statusTitle").textContent="Quiz is not published";
     $("statusText").textContent="The organizer has not published this quiz yet.";
     hideAll();return;
   }
   if(now<start){
+    hideLiveLeaderboardFirst();
     const left=Math.ceil((start-now)/1000);
     $("statusBadge").textContent="REGISTRATION OPEN";
     $("statusTitle").textContent=registeredOnDevice?"✅ You are registered!":"You can register now";
     const attMin=quiz.attempt_duration_minutes||quiz.duration_minutes||30;
     $("statusText").textContent=registeredOnDevice
-      ? "Your quiz will start automatically. Get ready — the countdown below will beep every second for the last 10 seconds. You will get "+attMin+" minutes once you start."
+      ? "Your quiz opens at the scheduled time. Please enter your registration code to start. You will get "+attMin+" minutes once you start."
       : "Quiz starts at "+new Date(quiz.starts_at).toLocaleString("en-NP",{timeZone:"Asia/Kathmandu"})+". Register now to get your entry code. Each attempt gets "+attMin+" minutes after starting.";
     $("countdown").textContent=fmt(left);
     if(registeredOnDevice){
-      $("registerCard").classList.remove("hidden");
-      renderRegisterCard();
-      $("entryCard").classList.add("hidden");
-      $("finalCard").classList.add("hidden");
+      hideAll();
+      $("statusCard").classList.remove("hidden");
+      $("statusTitle").textContent="✅ You are registered!";
+      $("statusText").textContent="Please return when the quiz opens and enter your registration code to start.";
+      $("countdown").textContent=fmt(left);
       if(left<=10)startPreStartCountdown();else{$("countdown").classList.remove("warning30","warning20");}
     }else{
       $("registerCard").classList.remove("hidden");
@@ -328,32 +586,39 @@ function renderStatus(){
     return;
   }
   if(now>=end){
+    hideLiveLeaderboardFirst();
     $("statusBadge").textContent="ENDED";
     $("statusTitle").textContent="Quiz has ended";
     $("statusText").textContent="Registration and participation for this quiz are closed.";
     $("countdown").textContent="00:00";
     $("registerCard").classList.add("hidden");
     $("entryCard").classList.add("hidden");
+    $("finalCard").classList.add("hidden");
     return;
   }
+
+  // ============ LIVE WINDOW ============
   if(!participant){
     $("statusBadge").textContent="QUIZ LIVE";
     $("statusTitle").textContent="Quiz is live";
     const attMin=quiz.attempt_duration_minutes||quiz.duration_minutes||30;
     $("statusText").textContent="You have "+attMin+" minutes once you start.";
     $("countdown").textContent=fmt((end-now)/1000);
+
+    hideLiveLeaderboardFirst();
+    $("statusCard").classList.remove("hidden");
     $("registerCard").classList.remove("hidden");
     $("entryCard").classList.add("hidden");
-    $("finalCard").classList.add("hidden");
     renderRegisterCard();
-  }else{
+  } else {
     $("statusCard").classList.add("hidden");
     $("registerCard").classList.add("hidden");
-    $("entryCard").classList.add("hidden");
     $("finalCard").classList.add("hidden");
     const usedKey="quiz_submitted_"+quizId+"_"+(participant.registration_code||"");
     if(localStorage.getItem(usedKey)==="1"){showExisting();return;}
-    tryAutoStart();
+    $("entryCard").classList.remove("hidden");
+    $("entryCode").value=participant.registration_code||$("entryCode").value||"";
+    $("entryMsg").textContent="";
   }
 }
 
@@ -377,7 +642,7 @@ async function registerUser(){
   $("entryCode").value=participant.registration_code;
   if(quiz){
     const now=localNow(),start=new Date(quiz.starts_at).getTime(),end=new Date(quiz.ends_at).getTime();
-    if(quiz.status==="published"&&now>=start&&now<end){tryAutoStart();}
+    if(quiz.status==="published"&&now>=start&&now<end){renderStatus();}
     else if(now<start){renderStatus();}
   }
 }
@@ -507,19 +772,7 @@ function answer(k){
 
   const isLast=current===questions.length-1;
   if(isLast){
-    celebrate();
-    setTimeout(()=>{
-      document.querySelectorAll("#options .option").forEach(b=>b.classList.add("hidden"));
-      if(!document.getElementById("submitBtn")) {
-        const btn=document.createElement("button");
-        btn.id = "submitBtn";
-        btn.className="primary";
-        btn.style.marginTop="14px";
-        btn.textContent="✅ Submit Quiz";
-        btn.onclick=()=>submitQuiz(false);
-        $("options").appendChild(btn);
-      }
-    },500);
+    setTimeout(()=>{ showSubmitPopup(); },450);
     return;
   }
   setTimeout(()=>{current++;renderQuestion()},220);
@@ -545,6 +798,11 @@ async function submitQuiz(auto=false){
   if(!attempt||autoSubmitBusy)return;
   autoSubmitBusy=true;
   clearInterval(clock);
+  
+  // Immediately hide the quiz card and the submit popup
+  $("quizCard").classList.add("hidden");
+  $("submitPopup").classList.remove("show");
+
   const{data,error}=await sb.rpc("quiz_submit_attempt",{p_attempt_id:attempt.attempt_id,p_answers:answers});
   if(error){autoSubmitBusy=false;alert("Submit Error: "+error.message);return}
   const result=Array.isArray(data)?data[0]:data;
@@ -552,28 +810,28 @@ async function submitQuiz(auto=false){
   
   if(participant?.registration_code)localStorage.setItem("quiz_submitted_"+quizId+"_"+participant.registration_code,"1");
   
+  if(liveBoardInterval){clearInterval(liveBoardInterval);liveBoardInterval=null;}
   hideAll();
   $("statusCard").classList.add("hidden");
-  $("quizCard").classList.add("hidden");
   $("finalCard").classList.remove("hidden");
   
-  $("finalScoreBox").innerHTML=`
-    <div style="background:#e8f7f1; border:1px solid #0b6b57; border-radius:14px; padding:20px; box-shadow:0 4px 12px rgba(11,107,87,0.1);">
-      <p style="margin:0 0 10px; font-size:16px; color:#555; font-weight:600;">Your Final Score</p>
-      <h1 style="margin:0; font-size:46px; color:#0b6b57; font-weight:900; line-height:1;">${result.total_score??0} <span style="font-size:24px; color:#687386;">/ ${result.total_points??0}</span></h1>
-    </div>
-  `;
+  // Load the leaderboard FIRST
+  $("finalScoreBox").innerHTML="";
+  await loadBoard();
+
+  $("finalHeading").textContent="🎉 Quiz completed!";
+  $("finalScoreBox").innerHTML="";
   
   autoSubmitBusy=false;
-  if(!auto)celebrate();
-  
-  await loadBoard();
 }
 
 async function showExisting(){
+  if(liveBoardInterval){clearInterval(liveBoardInterval);liveBoardInterval=null;}
   hideAll();
   $("statusCard").classList.add("hidden");
   $("finalCard").classList.remove("hidden");
+  
+  await loadBoard();
   
   const{data}=await sb.rpc("quiz_leaderboard",{p_quiz_id:quizId});
   const myScore=(data||[]).find(x=>x.registration_code===participant?.registration_code);
@@ -590,7 +848,6 @@ async function showExisting(){
   }
   
   $("finalScoreBox").innerHTML=scoreHtml;
-  await loadBoard();
 }
 
 async function loadBoard(){
